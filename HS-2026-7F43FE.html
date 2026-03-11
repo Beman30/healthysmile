@@ -447,6 +447,66 @@
   .bocca-punto ul li { font-size: 13px; color: var(--text-dim); line-height: 1.5; padding-left: 12px; position: relative; }
   .bocca-punto ul li::before { content: '–'; position: absolute; left: 0; color: var(--text-muted); }
   .footer-note { text-align: center; padding: 32px; border-top: 1px solid var(--border); font-size: 13px; color: var(--text-muted); line-height: 1.8; }
+  .filosofia-banner {
+    background: linear-gradient(135deg, rgba(45,255,122,0.06), rgba(45,255,122,0.02));
+    border: 1px solid rgba(45,255,122,0.15);
+    border-radius: 20px;
+    padding: 32px;
+    margin-bottom: 40px;
+  }
+  .filosofia-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 12px;
+    letter-spacing: -0.02em;
+  }
+  .filosofia-text {
+    font-size: 15px;
+    color: var(--text-dim);
+    line-height: 1.7;
+    margin-bottom: 28px;
+  }
+  .filosofia-text strong { color: var(--text); }
+  .filosofia-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .filosofia-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 16px 20px;
+    border-radius: 14px;
+  }
+  .filosofia-item.green { background: rgba(45,255,122,0.05); border: 1px solid rgba(45,255,122,0.15); }
+  .filosofia-item.yellow { background: rgba(255,209,102,0.05); border: 1px solid rgba(255,209,102,0.15); }
+  .filosofia-item.red { background: rgba(255,77,109,0.05); border: 1px solid rgba(255,77,109,0.15); }
+  .filosofia-dot {
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    margin-top: 4px;
+    flex-shrink: 0;
+  }
+  .green-dot { background: var(--green); box-shadow: 0 0 8px rgba(45,255,122,0.5); }
+  .yellow-dot { background: var(--yellow); box-shadow: 0 0 8px rgba(255,209,102,0.5); }
+  .red-dot { background: var(--red); box-shadow: 0 0 8px rgba(255,77,109,0.5); }
+  .filosofia-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .filosofia-sub {
+    font-size: 13px;
+    color: var(--text-dim);
+    line-height: 1.5;
+  }
+  .filosofia-sub strong { color: var(--text); }
   .footer-note strong { color: var(--green); font-weight: 500; }
   .implant-tag {
     display: inline-block;
@@ -507,7 +567,7 @@
       <div class="bocca-punto bad">
         <div class="bocca-punto-label">⚠ Aree da trattare</div>
         <ul>
-          <li>17: otturazione infiltrata — intervento urgente entro 60 gg</li>
+          <li>17: otturazione infiltrata — sotto osservazione, monitorare</li>
           <li>26: lesione occlusale piccola — da intercettare ora</li>
           <li>27: otturazione distale profonda — monitoraggio stretto</li>
           <li>45: perno in fibra + provvisorio in situ — completamento necessario</li>
@@ -526,24 +586,44 @@
     </div>
     <div class="score-card warning">
       <div class="score-label">Sotto osservazione</div>
-      <div class="score-value">4</div>
-      <div class="score-sub">14, 15, 36, 37 — stabili ma monitorati</div>
+      <div class="score-value">3</div>
+      <div class="score-sub">14, 15, 17 — stabili ma monitorati</div>
     </div>
     <div class="score-card alert">
       <div class="score-label">Intervento consigliato</div>
-      <div class="score-value">5</div>
+      <div class="score-value">4</div>
       <div class="score-sub">Agire entro 30–90 giorni</div>
     </div>
   </div>
 
-  <!-- Risparmio banner -->
-  <div class="risparmio-banner">
-    <div>
-      <div class="risparmio-label">Il tuo risparmio potenziale</div>
-      <div class="risparmio-value">fino a €1.400</div>
+  <!-- Filosofia banner -->
+  <div class="filosofia-banner">
+    <div class="filosofia-title">La nostra filosofia</div>
+    <div class="filosofia-text">
+      Il nostro obiettivo è fare la <strong>miglior prevenzione possibile</strong> per evitare che i problemi si presentino. Per questo ogni dente mappato oggi è già protetto: se in futuro dovesse insorgere qualcosa, interveniamo sempre a costo convenzionato.
     </div>
-    <div class="risparmio-desc">
-      Intercettare ora le lesioni piccole e completare la riabilitazione del 45 ti evita trattamenti endodontici e protesici di urgenza a costi molto superiori. Con la tua convenzione, il rischio lo gestiamo insieme.
+    <div class="filosofia-grid">
+      <div class="filosofia-item green">
+        <div class="filosofia-dot green-dot"></div>
+        <div>
+          <div class="filosofia-label">Denti verdi — basso rischio</div>
+          <div class="filosofia-sub">Se in futuro avranno bisogno di cure, sconto del <strong>70%</strong> sul prezzo di mercato</div>
+        </div>
+      </div>
+      <div class="filosofia-item yellow">
+        <div class="filosofia-dot yellow-dot"></div>
+        <div>
+          <div class="filosofia-label">Denti gialli — sotto osservazione</div>
+          <div class="filosofia-sub">Se interverremo, sconto del <strong>50%</strong> sul prezzo di mercato</div>
+        </div>
+      </div>
+      <div class="filosofia-item red">
+        <div class="filosofia-dot red-dot"></div>
+        <div>
+          <div class="filosofia-label">Denti rossi — intervento consigliato</div>
+          <div class="filosofia-sub">Trattamento già pianificato con sconto del <strong>30%</strong> sul prezzo di mercato</div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -629,8 +709,8 @@ document.getElementById('lightbox-img').src = 'data:image/jpeg;base64,' + panora
 
 const denti = [
   // ARCATA SUPERIORE
-  { num: 18, nome: "Ottavo sup. dx (giudizio)", arcata: "sup", pos: 0, rischio: "low", implant: false, note: "Assente o non erotto.", prezzoMercato: null, prezzoConv: null, consiglio: "Elemento non presente in arcata. Nessuna azione necessaria." },
-  { num: 17, nome: "Settimo sup. dx", arcata: "sup", pos: 1, rischio: "high", implant: false, note: "Otturazione infiltrata. Necessaria sostituzione urgente.", prezzoMercato: 220, prezzoConv: 140, consiglio: "⚠ L'otturazione esistente su questo dente si è infiltrata: i batteri stanno lavorando sotto la superficie, silenziosamente. Ogni settimana che passa aumenta il rischio di carie profonda e, nel peggiore dei casi, di devitalizzazione (€900+). Intervenire ora con la sostituzione costa molto meno — e ti salva il dente. Non rimandare oltre 60 giorni." },
+  { num: 18, nome: "Ottavo sup. dx", arcata: "sup", pos: 0, rischio: "low", implant: false, note: "Non presente.", prezzoMercato: null, prezzoConv: null, consiglio: "Elemento non presente in arcata." },
+  { num: 17, nome: "Settimo sup. dx", arcata: "sup", pos: 1, rischio: "medium", implant: false, note: "Otturazione infiltrata — sotto osservazione. Monitoraggio stretto.", prezzoMercato: 220, prezzoConv: 140, consiglio: "L'otturazione su questo dente mostra segni di infiltrazione. Al momento lo teniamo sotto osservazione — monitoriamo l'evoluzione ad ogni visita. Se i segni progrediscono, interverremo subito con la sostituzione a costo convenzionato." },
   { num: 16, nome: "Sesto sup. dx", arcata: "sup", pos: 2, rischio: "low", implant: false, note: "Dente in buono stato.", prezzoMercato: null, prezzoConv: null, consiglio: "Dente stabile. Nessun intervento previsto. Continua con l'igiene professionale ogni 6 mesi." },
   { num: 15, nome: "Quinto sup. dx", arcata: "sup", pos: 3, rischio: "medium", implant: false, note: "Otturazioni non eseguite da noi — tenere sotto controllo. Attualmente stabili.", prezzoMercato: 150, prezzoConv: 80, consiglio: "Questo dente è già stato restaurato, ma il lavoro non è stato eseguito da noi. Per ora è stabile, ma vogliamo tenerlo d'occhio ad ogni visita di controllo. Se notiamo segni di infiltrazione o progressione, interverremo subito con la tua convenzione a costo ridotto." },
   { num: 14, nome: "Quarto sup. dx", arcata: "sup", pos: 4, rischio: "medium", implant: false, note: "Otturazioni non eseguite da noi — tenere sotto controllo. Attualmente stabili.", prezzoMercato: 150, prezzoConv: 80, consiglio: "Stesso discorso del 15: restauro già presente ma non nostro. Al momento non desta preoccupazioni. Lo monitoriamo ad ogni visita — se la situazione cambia, sei coperto dalla convenzione." },
@@ -642,16 +722,16 @@ const denti = [
   { num: 23, nome: "Canino sup. sx", arcata: "sup", pos: 10, rischio: "low", implant: true, note: "Impianto osteointegrato. Stato stabile.", prezzoMercato: null, prezzoConv: null, consiglio: "Impianto in posizione canina — funzione e guida laterale preservate. Ottimo stato. Igiene quotidiana con scovolino." },
   { num: 24, nome: "Quarto sup. sx", arcata: "sup", pos: 11, rischio: "low", implant: true, note: "Impianto osteointegrato. Stato stabile.", prezzoMercato: null, prezzoConv: null, consiglio: "Impianto stabile in questa posizione. Mantieni l'igiene con lo scovolino interdentale attorno all'impianto ogni giorno." },
   { num: 25, nome: "Quinto sup. sx", arcata: "sup", pos: 12, rischio: "low", implant: true, note: "Impianto osteointegrato. Stato stabile.", prezzoMercato: null, prezzoConv: null, consiglio: "Impianto integrato e funzionale. Nessun segno di periimplantite. Ottima situazione — continua con i controlli programmati." },
-  { num: 26, nome: "Sesto sup. sx", arcata: "sup", pos: 13, rischio: "high", implant: false, note: "Lesione occlusale piccola. Intervento consigliato per evitare progressione.", prezzoMercato: 180, prezzoConv: 110, consiglio: "⚠ C'è una carie piccola sulla superficie di masticazione di questo dente. 'Piccola' non significa trascurabile: in questo stadio, l'intervento è semplice, veloce e poco costoso. Se aspetti, la lesione si approfondisce verso la polpa e il trattamento diventa molto più complesso. Intercettarla ora è la scelta giusta." },
-  { num: 27, nome: "Settimo sup. sx", arcata: "sup", pos: 14, rischio: "high", implant: false, note: "Otturazione distale profonda. Monitoraggio stretto — rischio progressione.", prezzoMercato: 250, prezzoConv: 160, consiglio: "⚠ Questo dente presenta un'otturazione nella zona distale (verso il fondo) piuttosto profonda. La profondità è la variabile critica: più è vicina alla polpa, più il rischio di devitalizzazione aumenta. Teniamolo sotto stretto monitoraggio — se alla prossima visita vediamo segni di evoluzione, interverremo subito." },
-  { num: 28, nome: "Ottavo sup. sx (giudizio)", arcata: "sup", pos: 15, rischio: "low", implant: false, note: "Assente o non erotto.", prezzoMercato: null, prezzoConv: null, consiglio: "Elemento non presente in arcata. Nessuna azione necessaria." },
+  { num: 26, nome: "Sesto sup. sx", arcata: "sup", pos: 13, rischio: "high", implant: false, note: "Lesione occlusale piccola. Intervento consigliato per evitare progressione.", prezzoMercato: 180, prezzoConv: 84, consiglio: "⚠ C'è una carie piccola sulla superficie di masticazione di questo dente. 'Piccola' non significa trascurabile: in questo stadio, l'intervento è semplice, veloce e poco costoso. Se aspetti, la lesione si approfondisce verso la polpa e il trattamento diventa molto più complesso. Intercettarla ora è la scelta giusta." },
+  { num: 27, nome: "Settimo sup. sx", arcata: "sup", pos: 14, rischio: "high", implant: false, note: "Otturazione distale profonda. Monitoraggio stretto — rischio progressione.", prezzoMercato: 250, prezzoConv: 119, consiglio: "⚠ Questo dente presenta un'otturazione nella zona distale (verso il fondo) piuttosto profonda. La profondità è la variabile critica: più è vicina alla polpa, più il rischio di devitalizzazione aumenta. Teniamolo sotto stretto monitoraggio — se alla prossima visita vediamo segni di evoluzione, interverremo subito." },
+  { num: 28, nome: "Ottavo sup. sx", arcata: "sup", pos: 15, rischio: "low", implant: false, note: "Non presente.", prezzoMercato: null, prezzoConv: null, consiglio: "Elemento non presente in arcata." },
 
   // ARCATA INFERIORE
   { num: 48, nome: "Ottavo inf. dx (giudizio)", arcata: "inf", pos: 0, rischio: "low", implant: false, note: "Assente o non erotto.", prezzoMercato: null, prezzoConv: null, consiglio: "Elemento non presente in arcata. Nessuna azione necessaria." },
   { num: 47, nome: "Settimo inf. dx", arcata: "inf", pos: 1, rischio: "low", implant: true, note: "Impianto osteointegrato. Stato stabile.", prezzoMercato: null, prezzoConv: null, consiglio: "Impianto stabile e funzionale. Nessun intervento previsto. Mantieni l'igiene con scovolino attorno all'impianto ogni sera." },
   { num: 46, nome: "Sesto inf. dx", arcata: "inf", pos: 2, rischio: "low", implant: true, note: "Impianto osteointegrato. Stato stabile.", prezzoMercato: null, prezzoConv: null, consiglio: "Impianto ben osteointegrato in posizione del sesto inferiore destro. Nessun segno di periimplantite. Ottima situazione — scovolino ogni giorno attorno al colletto." },
-  { num: 45, nome: "Quinto inf. dx", arcata: "inf", pos: 3, rischio: "high", implant: false, note: "Perno in fibra posizionato + provvisorio in situ. Necessario completamento con corona definitiva.", prezzoMercato: 900, prezzoConv: 580, consiglio: "⚠ Questo dente ha già il perno in fibra posizionato e attualmente ha un provvisorio. Il lavoro è a metà: il provvisorio protegge il dente ma non è una soluzione definitiva — nel tempo si deteriora e lascia spazio ai batteri. È importante completare con la corona definitiva al più presto. Con la tua convenzione, il costo è sensibilmente inferiore al mercato." },
-  { num: 44, nome: "Quarto inf. dx", arcata: "inf", pos: 4, rischio: "high", implant: false, note: "Carie mesiale piccola. Intervento consigliato.", prezzoMercato: 180, prezzoConv: 110, consiglio: "⚠ Piccola lesione sul lato mesiale (verso i denti anteriori) di questo dente. Come per il 26: è il momento giusto per intervenire. Una carie piccola oggi è un'otturazione semplice. La stessa carie tra 6-12 mesi potrebbe diventare un problema molto più serio e costoso. Programmiamo l'intervento nella prossima sessione." },
+  { num: 45, nome: "Quinto inf. dx", arcata: "inf", pos: 3, rischio: "high", implant: false, note: "Perno in fibra posizionato + provvisorio in situ. Necessario completamento con corona definitiva.", prezzoMercato: 900, prezzoConv: 588, consiglio: "⚠ Questo dente ha già il perno in fibra posizionato e attualmente ha un provvisorio. Il lavoro è a metà: il provvisorio protegge il dente ma non è una soluzione definitiva — nel tempo si deteriora e lascia spazio ai batteri. È importante completare con la corona definitiva al più presto. Con la tua convenzione, il costo è sensibilmente inferiore al mercato." },
+  { num: 44, nome: "Quarto inf. dx", arcata: "inf", pos: 4, rischio: "high", implant: false, note: "Carie mesiale piccola. Intervento consigliato.", prezzoMercato: 180, prezzoConv: 119, consiglio: "⚠ Piccola lesione sul lato mesiale (verso i denti anteriori) di questo dente. Come per il 26: è il momento giusto per intervenire. Una carie piccola oggi è un'otturazione semplice. La stessa carie tra 6-12 mesi potrebbe diventare un problema molto più serio e costoso. Programmiamo l'intervento nella prossima sessione." },
   { num: 43, nome: "Canino inf. dx", arcata: "inf", pos: 5, rischio: "low", implant: true, note: "Impianto osteointegrato. Stato stabile.", prezzoMercato: null, prezzoConv: null, consiglio: "Impianto in posizione canina inferiore destra — integrato e funzionale. Igiene quotidiana con scovolino interdentale." },
   { num: 42, nome: "Laterale inf. dx", arcata: "inf", pos: 6, rischio: "low", implant: true, note: "Impianto osteointegrato. Stato stabile.", prezzoMercato: null, prezzoConv: null, consiglio: "Impianto stabile. Nessun problema. Igiene con scovolino ogni giorno." },
   { num: 41, nome: "Centrale inf. dx", arcata: "inf", pos: 7, rischio: "low", implant: true, note: "Impianto osteointegrato. Stato stabile.", prezzoMercato: null, prezzoConv: null, consiglio: "Impianto centrale inferiore destro in ottimo stato. Continua con scovolino sottile ogni sera." },
@@ -660,8 +740,8 @@ const denti = [
   { num: 33, nome: "Canino inf. sx", arcata: "inf", pos: 10, rischio: "low", implant: true, note: "Impianto osteointegrato. Stato stabile.", prezzoMercato: null, prezzoConv: null, consiglio: "Impianto in posizione canina inferiore sinistra — funzione e guidanza laterale preservate. Eccellente stato. Scovolino quotidiano." },
   { num: 34, nome: "Quarto inf. sx", arcata: "inf", pos: 11, rischio: "low", implant: false, note: "Nessun problema.", prezzoMercato: null, prezzoConv: null, consiglio: "Tutto bene. Mantieni l'igiene attuale." },
   { num: 35, nome: "Quinto inf. sx", arcata: "inf", pos: 12, rischio: "low", implant: false, note: "Stato stabile.", prezzoMercato: null, prezzoConv: null, consiglio: "Dente sano. Nessuna azione richiesta." },
-  { num: 36, nome: "Sesto inf. sx", arcata: "inf", pos: 13, rischio: "medium", implant: false, note: "Restauro non eseguito da noi. Monitorare.", prezzoMercato: 150, prezzoConv: 80, consiglio: "Questo dente è già stato restaurato, ma il lavoro non è stato eseguito da noi. Per ora è stabile — lo teniamo sotto osservazione ad ogni visita di controllo. Se notiamo evoluzione, interveniamo subito con la convenzione." },
-  { num: 37, nome: "Settimo inf. sx", arcata: "inf", pos: 14, rischio: "medium", implant: false, note: "Restauro non eseguito da noi. Monitorare.", prezzoMercato: 150, prezzoConv: 80, consiglio: "Anche questo dente ha restauri non eseguiti da noi. Attualmente stabile, ma lo monitoriamo con attenzione ad ogni visita. Nessun intervento urgente al momento." },
+  { num: 36, nome: "Sesto inf. sx", arcata: "inf", pos: 13, rischio: "low", implant: true, note: "Impianto non eseguito da noi. Stato stabile — monitoraggio periodico.", prezzoMercato: null, prezzoConv: null, consiglio: "Impianto presente ma non eseguito da noi. Al momento è integrato e stabile. Lo teniamo sotto osservazione ad ogni visita — se dovessero emergere segni di periimplantite o problemi protesici, ti indirizziamo nel modo migliore." },
+  { num: 37, nome: "Settimo inf. sx", arcata: "inf", pos: 14, rischio: "low", implant: true, note: "Impianto non eseguito da noi. Stato stabile — monitoraggio periodico.", prezzoMercato: null, prezzoConv: null, consiglio: "Impianto presente ma non eseguito da noi. Stabile al momento. Lo monitoriamo ad ogni visita di controllo per verificare lo stato dei tessuti periimplantari e la tenuta protesica." },
   { num: 38, nome: "Ottavo inf. sx (giudizio)", arcata: "inf", pos: 15, rischio: "low", implant: false, note: "Assente o non erotto.", prezzoMercato: null, prezzoConv: null, consiglio: "Elemento non presente in arcata. Nessuna azione necessaria." },
 ];
 
