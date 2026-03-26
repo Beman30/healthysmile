@@ -1445,7 +1445,7 @@ function renderPrevRows() {
       <td style="padding:6px 8px;text-align:right;font-weight:600;font-family:'DM Mono',monospace;font-size:12px;color:var(--teal)">€ ${tot.toFixed(2).replace('.',',')}</td>
       <td style="padding:6px 4px;text-align:center"><button onclick="removePrevRow(${i})" style="background:none;border:none;cursor:pointer;color:var(--gray-300);font-size:13px">✕</button></td>
     </tr>`;
-  }).join('') || '<tr><td colspan="7" style="padding:1.5rem;text-align:center;color:var(--gray-300);font-size:13px">Nessuna voce — clicca 'Da odontogramma' o '+ Riga'</td></tr>';
+  }).join('') || `<tr><td colspan="7" style="padding:1.5rem;text-align:center;color:var(--gray-300);font-size:13px">Nessuna voce — clicca Da odontogramma o + Riga</td></tr>`;
 
   if (!document.getElementById('prev-prest-list')) {
     const dl = document.createElement('datalist'); dl.id='prev-prest-list';
