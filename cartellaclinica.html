@@ -238,6 +238,109 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--gray-50);color:
 .notif.ok{background:var(--teal);color:white}
 .notif.err{background:var(--red);color:white}
 .notif.i{background:var(--gray-900);color:white}
+
+/* ════════════════════════════════════════
+   MOBILE RESPONSIVE
+════════════════════════════════════════ */
+
+/* Sidebar overlay trigger button — hidden on desktop */
+.mob-menu-btn{display:none}
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:300}
+.sidebar-overlay.open{display:block}
+
+@media (max-width: 768px) {
+
+  /* ── HEADER ── */
+  .hdr{padding:0 .8rem;height:50px}
+  .hdr-name{font-size:13px}
+  .sync-pill{display:none}
+  .btn-s{padding:4px 8px;font-size:11px}
+  /* Hide some header buttons on mobile, show hamburger */
+  .mob-menu-btn{
+    display:flex;align-items:center;justify-content:center;
+    background:none;border:var(--border);border-radius:var(--r-sm);
+    width:34px;height:34px;cursor:pointer;font-size:18px;
+    color:var(--gray-700);flex-shrink:0;
+  }
+
+  /* ── SIDEBAR → drawer from left ── */
+  .app-body{position:relative}
+  .sidebar{
+    position:fixed;top:50px;left:-280px;
+    height:calc(100vh - 50px);
+    z-index:400;
+    transition:left .25s cubic-bezier(.4,0,.2,1);
+    box-shadow:none;
+  }
+  .sidebar.open{
+    left:0;
+    box-shadow:4px 0 20px rgba(0,0,0,.15);
+  }
+
+  /* ── MAIN ── */
+  .main{
+    width:100%;
+    height:calc(100vh - 50px);
+    padding:.8rem;
+  }
+
+  /* ── RECORD HEADER ── */
+  .rec-hdr{flex-direction:column;gap:.6rem;margin-bottom:.8rem}
+  .rec-code{font-size:18px}
+  .rec-actions{flex-wrap:wrap;gap:5px}
+  .rec-actions .btn-s,
+  .rec-actions .btn-save,
+  .rec-actions .btn-danger{font-size:12px;padding:6px 10px}
+
+  /* ── TABS ── */
+  .tabs{overflow-x:auto;-webkit-overflow-scrolling:touch;flex-wrap:nowrap;gap:0;padding-bottom:0}
+  .tabs::-webkit-scrollbar{display:none}
+  .tab{white-space:nowrap;padding:7px 12px;font-size:12px;flex-shrink:0}
+
+  /* ── GRIDS → single column ── */
+  .grid2{grid-template-columns:1fr}
+  .grid3{grid-template-columns:1fr 1fr}
+
+  /* ── CARDS ── */
+  .card{padding:.8rem;margin-bottom:.7rem}
+
+  /* ── ODONTOGRAMMA ── */
+  .odonto-section-title{font-size:11px;padding:.4rem .6rem}
+  .treat-grid{grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:4px}
+  .treat-btn{font-size:10px;padding:4px 6px}
+
+  /* ── PREVENTIVO ── */
+  /* Stack header controls */
+  #tab-preventivo .card > div:first-child{flex-direction:column;align-items:flex-start;gap:.5rem}
+  #tab-preventivo .card > div:first-child > div:last-child{display:flex;gap:5px;flex-wrap:wrap;width:100%}
+  #tab-preventivo .card > div:first-child > div:last-child button{font-size:11px;padding:5px 8px}
+  /* Make table scrollable */
+  #tab-preventivo [style*="overflow-x:auto"]{overflow-x:auto;-webkit-overflow-scrolling:touch}
+
+  /* ── MODAL ── */
+  .modal{width:95%;padding:1.1rem;max-height:90vh;overflow-y:auto}
+  #prest-modal .modal{max-width:98vw}
+
+  /* ── FORM ── */
+  .fg input,.fg select,.fg textarea{font-size:16px}/* 16px prevents iOS zoom */
+
+  /* ── WELCOME ── */
+  .welcome{padding:2rem 1rem}
+
+  /* ── DIARIO ── */
+  .diary-add-row{flex-direction:column}
+  .diary-add-row input{max-width:100%}
+
+  /* ── SIDEBAR close on tap outside ── */
+  .sidebar-overlay.open{display:block}
+}
+
+@media (max-width: 400px) {
+  .grid3{grid-template-columns:1fr}
+  .rec-code{font-size:16px}
+  .tab{font-size:11px;padding:6px 10px}
+}
+
 </style>
 </head>
 <body>
@@ -268,6 +371,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--gray-50);color:
 <div id="app">
   <header class="hdr">
     <div class="hdr-l">
+      <button class="mob-menu-btn" onclick="toggleSidebar()" aria-label="Menu pazienti">☰</button>
       <div class="hdr-icon"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg></div>
       <span class="hdr-name">Healthy Smile By N</span>
       <span class="sync-pill s-ok" id="sync-pill">● sync</span>
@@ -279,8 +383,9 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--gray-50);color:
     </div>
   </header>
 
+  <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
   <div class="app-body">
-    <aside class="sidebar">
+    <aside class="sidebar" id="sidebar">
       <div class="sb-search"><input type="text" id="search" placeholder="Cerca codice..." oninput="filterList(this.value)"></div>
       <div class="sb-hdr">
         <span id="pat-count">0 pazienti</span>
@@ -1717,6 +1822,31 @@ if(dz){
 
 // Autosave 3min
 setInterval(()=>{if(currentId)savePatient()},3*60*1000);
+
+// ── MOBILE SIDEBAR TOGGLE ──
+function toggleSidebar() {
+  const sb = document.getElementById('sidebar');
+  const ov = document.getElementById('sidebar-overlay');
+  const isOpen = sb.classList.contains('open');
+  sb.classList.toggle('open', !isOpen);
+  ov.classList.toggle('open', !isOpen);
+  document.body.style.overflow = isOpen ? '' : 'hidden';
+}
+
+function closeSidebar() {
+  const sb = document.getElementById('sidebar');
+  const ov = document.getElementById('sidebar-overlay');
+  sb.classList.remove('open');
+  ov.classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+// Close sidebar when a patient is selected on mobile
+const _origOpenPatient = openPatient;
+async function openPatient(id) {
+  await _origOpenPatient(id);
+  if (window.innerWidth <= 768) closeSidebar();
+}
 </script>
 </body>
 </html>
