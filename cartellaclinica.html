@@ -846,7 +846,7 @@ function renderList(list) {
   const el = document.getElementById('pat-list');
   if (!list.length) { el.innerHTML='<div class="empty-list">Nessun paziente</div>'; return; }
   el.innerHTML = list.map(p=>`
-    <div class="pat-item ${p.id===currentId?'active':''}" onclick="openPatient('${p.id}')">
+    <div class="pat-item ${p.id===currentId?'active':''}" onclick="openPatient('${p.id}');if(window.innerWidth<=768)closeSidebar()">
       <div class="pat-code">${p.codice||p.id}</div>
       <div class="pat-meta">Nato ${p.anno||'—'} · ${p.prima_visita||'—'}</div>
       ${p.rischio?`<span class="risk-pill r-${p.rischio}">${p.rischio.toUpperCase()}</span>`:''}
@@ -1841,12 +1841,7 @@ function closeSidebar() {
   document.body.style.overflow = '';
 }
 
-// Close sidebar when a patient is selected on mobile
-const _origOpenPatient = openPatient;
-async function openPatient(id) {
-  await _origOpenPatient(id);
-  if (window.innerWidth <= 768) closeSidebar();
-}
+// Close sidebar when a patient is selected on mobile — handled in renderList
 </script>
 </body>
 </html>
