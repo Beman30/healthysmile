@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Google Ads Brief – Healthy Smile Cure Estero</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Georgia, serif; background: #FAFAF8; color: #1C1C1C; padding: 48px 0; }
+  .page { max-width: 820px; margin: 0 auto; padding: 0 32px; }
+  h1 { font-size: 2rem; margin-bottom: 6px; }
+  .subtitle { color: #777; font-size: 0.95rem; margin-bottom: 48px; font-family: Arial, sans-serif; }
+  h2 { font-size: 1.1rem; font-family: Arial, sans-serif; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: #1C1C1C; border-bottom: 2px solid #1C1C1C; padding-bottom: 8px; margin: 48px 0 20px; }
+  h3 { font-size: 1rem; font-family: Arial, sans-serif; font-weight: 700; margin: 28px 0 10px; }
+  p { font-size: 0.92rem; line-height: 1.75; color: #333; margin-bottom: 10px; font-family: Arial, sans-serif; }
+
+  /* KEYWORDS */
+  .kw-group { margin-bottom: 24px; }
+  .kw-group-title { font-family: Arial, sans-serif; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #888; margin-bottom: 10px; }
+  .kw-list { display: flex; flex-wrap: wrap; gap: 8px; }
+  .kw { background: white; border: 1px solid #DDD; border-radius: 4px; font-family: Arial, sans-serif; font-size: 0.82rem; padding: 5px 12px; color: #1C1C1C; }
+
+  /* AD CARDS */
+  .ad-card { background: white; border: 1px solid #DDD; border-radius: 6px; padding: 28px 32px; margin-bottom: 24px; }
+  .ad-badge { display: inline-block; background: #2B6B5E; color: white; font-family: Arial, sans-serif; font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; padding: 3px 10px; border-radius: 3px; margin-bottom: 16px; }
+  .ad-url { font-family: Arial, sans-serif; font-size: 0.8rem; color: #1a7f37; margin-bottom: 16px; }
+  .field-label { font-family: Arial, sans-serif; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #999; margin-bottom: 4px; margin-top: 16px; }
+  .field-value { font-family: Arial, sans-serif; font-size: 0.9rem; color: #1C1C1C; line-height: 1.6; }
+  .headline { color: #1558d6; }
+  .char-note { font-size: 0.72rem; color: #AAA; margin-left: 8px; }
+
+  /* EXTENSIONS */
+  .ext-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .ext-item { background: white; border: 1px solid #DDD; border-radius: 4px; padding: 14px 16px; }
+  .ext-type { font-family: Arial, sans-serif; font-size: 0.7rem; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
+  .ext-value { font-family: Arial, sans-serif; font-size: 0.88rem; color: #1C1C1C; }
+  .ext-note { font-family: Arial, sans-serif; font-size: 0.78rem; color: #888; margin-top: 2px; }
+
+  /* SETUP STEPS */
+  .step { display: grid; grid-template-columns: 32px 1fr; gap: 16px; margin-bottom: 20px; align-items: start; }
+  .step-num { width: 32px; height: 32px; border-radius: 50%; background: #1C1C1C; color: white; font-family: Arial, sans-serif; font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .step-content { padding-top: 4px; }
+  .step-title { font-family: Arial, sans-serif; font-size: 0.92rem; font-weight: 700; margin-bottom: 4px; }
+  .step-desc { font-family: Arial, sans-serif; font-size: 0.85rem; color: #555; line-height: 1.6; }
+
+  /* TIP */
+  .tip { background: #F0F7F4; border-left: 3px solid #2B6B5E; padding: 16px 20px; margin-top: 24px; }
+  .tip p { color: #2B6B5E; margin: 0; font-size: 0.88rem; }
+
+  footer { margin-top: 60px; padding-top: 20px; border-top: 1px solid #EEE; font-family: Arial, sans-serif; font-size: 0.78rem; color: #AAA; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <h1>Google Ads Brief</h1>
+  <p class="subtitle">Healthy Smile · Piano Protezione Cure Estero · Torino</p>
+
+  <!-- KEYWORDS -->
+  <h2>Keywords da usare</h2>
+
+  <div class="kw-group">
+    <div class="kw-group-title">Bucket 1 — Chi ha il problema ma non ha ancora la soluzione</div>
+    <div class="kw-list">
+      <span class="kw">cure dentali estero rischi</span>
+      <span class="kw">impianti dentali estero problemi</span>
+      <span class="kw">protesi dentale estero complicazioni</span>
+      <span class="kw">dentista estero affidabile</span>
+      <span class="kw">fare impianti all'estero è sicuro</span>
+    </div>
+  </div>
+
+  <div class="kw-group">
+    <div class="kw-group-title">Bucket 2 — Chi cerca attivamente la soluzione</div>
+    <div class="kw-list">
+      <span class="kw">dentista controllo cure estero</span>
+      <span class="kw">check dentale prima di partire</span>
+      <span class="kw">dentista revisione lavoro estero Torino</span>
+      <span class="kw">dentista Torino impianti estero</span>
+      <span class="kw">supporto cure dentali estero Italia</span>
+    </div>
+  </div>
+
+  <div class="kw-group">
+    <div class="kw-group-title">Bucket 3 — Per destinazione (alta conversione)</div>
+    <div class="kw-list">
+      <span class="kw">impianti dentali Albania Torino</span>
+      <span class="kw">impianti Ungheria controllo Italia</span>
+      <span class="kw">dentista Romania impianti problemi</span>
+      <span class="kw">cure dentali Turchia follow-up</span>
+    </div>
+  </div>
+
+  <p style="font-size:0.82rem; color:#888; margin-top:8px;">
+    <strong>Nota pratica:</strong> quando inserisci le keyword su Google Ads, mettile tra virgolette (es. "impianti dentali estero problemi") — questo è il "phrase match" e significa che Google mostra il tuo annuncio solo quando la ricerca contiene esattamente quella frase, non a ricerche generiche non pertinenti.
+  </p>
+
+  <!-- ANNUNCI -->
+  <h2>I tre annunci</h2>
+  <p>Crea una campagna con tre gruppi di annunci separati (uno per fase). Ogni gruppo ha le sue keyword e il suo annuncio.</p>
+
+  <div class="ad-card">
+    <div class="ad-badge">Gruppo 1 — Pre-partenza</div>
+    <div class="ad-url">healthysmile.it/cure-estero</div>
+    <div class="field-label">Titoli <span class="char-note">inseriscine 3, max 30 caratteri ciascuno</span></div>
+    <div class="field-value headline">
+      Impianti all'Estero? Leggi Prima<br>
+      Check Pre-Partenza – 50€<br>
+      Dentista a Torino Ti Segue
+    </div>
+    <div class="field-label">Descrizione 1 <span class="char-note">max 90 caratteri</span></div>
+    <div class="field-value">Prima di partire, fai valutare il piano di cura da un professionista a Torino. Eviti sorprese, parti sicuro.</div>
+    <div class="field-label">Descrizione 2 <span class="char-note">max 90 caratteri</span></div>
+    <div class="field-value">Visita clinica + analisi del preventivo ricevuto. Solo 50€. Prenota su WhatsApp, risposta in poche ore.</div>
+    <div class="field-label">Keyword per questo gruppo</div>
+    <div class="field-value">cure dentali estero rischi · check dentale prima di partire · fare impianti all'estero è sicuro</div>
+  </div>
+
+  <div class="ad-card">
+    <div class="ad-badge">Gruppo 2 — Durante il percorso</div>
+    <div class="ad-url">healthysmile.it/cure-estero</div>
+    <div class="field-label">Titoli <span class="char-note">inseriscine 3, max 30 caratteri ciascuno</span></div>
+    <div class="field-value headline">
+      Cure in Corso all'Estero?<br>
+      Un Riferimento a Torino<br>
+      Controlli Tra un Viaggio e l'Altro
+    </div>
+    <div class="field-label">Descrizione 1 <span class="char-note">max 90 caratteri</span></div>
+    <div class="field-value">Stai facendo avanti e indietro per impianti o protesi? Seguiamo i pazienti in cura all'estero da Torino.</div>
+    <div class="field-label">Descrizione 2 <span class="char-note">max 90 caratteri</span></div>
+    <div class="field-value">Controlli intermedi, situazioni urgenti, monitoraggio tra una trasferta e l'altra. Scrivici su WhatsApp.</div>
+    <div class="field-label">Keyword per questo gruppo</div>
+    <div class="field-value">dentista controllo cure estero · supporto cure dentali estero Italia · impianti Albania Torino</div>
+  </div>
+
+  <div class="ad-card">
+    <div class="ad-badge">Gruppo 3 — Post-cura / problemi</div>
+    <div class="ad-url">healthysmile.it/cure-estero</div>
+    <div class="field-label">Titoli <span class="char-note">inseriscine 3, max 30 caratteri ciascuno</span></div>
+    <div class="field-value headline">
+      Problemi Dopo Cure all'Estero?<br>
+      Dentista Torino – Prenota Oggi<br>
+      Risolviamo i Lavori Esteri
+    </div>
+    <div class="field-label">Descrizione 1 <span class="char-note">max 90 caratteri</span></div>
+    <div class="field-value">Dolore, protesi mal adattata o impianto che non convince? Valutiamo il lavoro eseguito all'estero a Torino.</div>
+    <div class="field-label">Descrizione 2 <span class="char-note">max 90 caratteri</span></div>
+    <div class="field-value">Prima visita di controllo a 50€. Prenota subito su WhatsApp, ti rispondiamo in giornata.</div>
+    <div class="field-label">Keyword per questo gruppo</div>
+    <div class="field-value">impianti dentali estero problemi · dentista revisione lavoro estero Torino · protesi dentale estero complicazioni</div>
+  </div>
+
+  <!-- ESTENSIONI -->
+  <h2>Estensioni annuncio</h2>
+  <p>Le estensioni si aggiungono dentro Google Ads e rendono l'annuncio più grande e cliccabile. Aggiungile tutte.</p>
+
+  <div class="ext-grid">
+    <div class="ext-item">
+      <div class="ext-type">Sitelink</div>
+      <div class="ext-value">Come funziona il piano</div>
+      <div class="ext-note">Link alla sezione timeline della landing</div>
+    </div>
+    <div class="ext-item">
+      <div class="ext-type">Sitelink</div>
+      <div class="ext-value">Casi reali di pazienti</div>
+      <div class="ext-note">Link alla sezione testimonianze</div>
+    </div>
+    <div class="ext-item">
+      <div class="ext-type">Callout</div>
+      <div class="ext-value">Risposta in giornata</div>
+      <div class="ext-note">Testo aggiuntivo sotto l'annuncio</div>
+    </div>
+    <div class="ext-item">
+      <div class="ext-type">Callout</div>
+      <div class="ext-value">Prima visita solo 50€</div>
+      <div class="ext-note">Testo aggiuntivo sotto l'annuncio</div>
+    </div>
+    <div class="ext-item">
+      <div class="ext-type">Snippet strutturato</div>
+      <div class="ext-value">Paesi: Albania, Ungheria, Romania, Turchia</div>
+      <div class="ext-note">Mostra da dove vengono i pazienti</div>
+    </div>
+    <div class="ext-item">
+      <div class="ext-type">Posizione</div>
+      <div class="ext-value">Torino – Healthy Smile</div>
+      <div class="ext-note">Collega il tuo profilo Google Business</div>
+    </div>
+  </div>
+
+  <!-- SETUP -->
+  <h2>Come configurare su Google Ads — passo per passo</h2>
+
+  <div class="step">
+    <div class="step-num">1</div>
+    <div class="step-content">
+      <div class="step-title">Crea una nuova campagna</div>
+      <div class="step-desc">Tipo campagna: "Rete di ricerca". Obiettivo: "Traffico verso il sito web". Non usare "Campagna intelligente" — ti toglie il controllo.</div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">2</div>
+    <div class="step-content">
+      <div class="step-title">Imposta targeting geografico</div>
+      <div class="step-desc">Target: Torino + raggio 30–40km. Lingua: Italiano. Escludi chi è fisicamente all'estero.</div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">3</div>
+    <div class="step-content">
+      <div class="step-title">Budget giornaliero</div>
+      <div class="step-desc">Parti con 10–15€ al giorno. Non di più nelle prime 2–3 settimane — serve raccogliere dati prima di ottimizzare.</div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">4</div>
+    <div class="step-content">
+      <div class="step-title">Crea i 3 gruppi di annunci</div>
+      <div class="step-desc">Un gruppo per "pre-partenza", uno per "durante", uno per "post-cura". In ognuno inserisci le keyword del gruppo e l'annuncio corrispondente sopra.</div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">5</div>
+    <div class="step-content">
+      <div class="step-title">URL di destinazione</div>
+      <div class="step-desc">Per tutti e tre i gruppi usa l'URL della tua landing Healthy Smile. Ricorda di sostituire il numero WhatsApp nella landing prima di pubblicarla.</div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">6</div>
+    <div class="step-content">
+      <div class="step-title">Aggiungi le estensioni</div>
+      <div class="step-desc">Nel menu "Estensioni" aggiungi i sitelink, i callout e lo snippet strutturato elencati sopra. Aumentano il tasso di click del 15–30%.</div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">7</div>
+    <div class="step-content">
+      <div class="step-title">Attiva e monitora</div>
+      <div class="step-desc">Dopo 2 settimane guarda quali keyword portano click e quali no. Metti in pausa le keyword che consumano budget senza conversioni. Non cambiare nulla prima di 14 giorni — Google ha bisogno di tempo per ottimizzare.</div>
+    </div>
+  </div>
+
+  <div class="tip">
+    <p><strong>Cosa monitorare ogni settimana:</strong> quante persone hanno cliccato · quante hanno aperto WhatsApp dalla landing · quante hanno mandato un messaggio. Se hai 100 click ma 0 messaggi WhatsApp, il problema è la landing. Se hai pochi click, il problema sono gli annunci o le keyword.</p>
+  </div>
+
+  <footer>
+    Healthy Smile · Piano Protezione Cure Estero · Documento preparato con Claude – Anthropic
+  </footer>
+
+</div>
+</body>
+</html>
