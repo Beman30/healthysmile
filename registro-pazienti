@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Registro Pazienti — Healthy Smile By N</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f5f5f3;
+      color: #1a1a1a;
+      min-height: 100vh;
+      padding: 2rem 1rem;
+    }
+
+    .container {
+      max-width: 760px;
+      margin: 0 auto;
+      background: #ffffff;
+      border-radius: 16px;
+      border: 1px solid #e5e5e2;
+      padding: 2rem;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid #e5e5e2;
+      margin-bottom: 1.5rem;
+    }
+
+    .logo {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: #1D9E75;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .logo svg { width: 20px; height: 20px; fill: white; }
+    .brand { font-size: 12px; color: #888; margin-bottom: 2px; }
+    .title { font-size: 20px; font-weight: 600; color: #1a1a1a; }
+
+    .status {
+      display: inline-block;
+      font-size: 12px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 1.5rem;
+    }
+    .status.loading { background: #f0f0ee; color: #888; }
+    .status.ok { background: #E1F5EE; color: #0F6E56; }
+    .status.err { background: #FCEBEB; color: #A32D2D; }
+
+    .form-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .form-row input {
+      flex: 1;
+      min-width: 160px;
+      height: 40px;
+      padding: 0 14px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: inherit;
+      background: #fff;
+      color: #1a1a1a;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .form-row input:focus { border-color: #1D9E75; box-shadow: 0 0 0 3px rgba(29,158,117,0.1); }
+
+    .form-row button {
+      height: 40px;
+      padding: 0 20px;
+      background: #1D9E75;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      font-family: inherit;
+      transition: background 0.15s;
+    }
+
+    .form-row button:hover { background: #0F6E56; }
+    .form-row button:disabled { background: #9FE1CB; cursor: not-allowed; }
+
+    .saved-feedback {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: #0F6E56;
+      background: #E1F5EE;
+      border-radius: 8px;
+      padding: 10px 14px;
+      margin-bottom: 1rem;
+      font-weight: 500;
+    }
+    .saved-feedback.show { display: flex; }
+    .saved-feedback svg { width: 16px; height: 16px; flex-shrink: 0; }
+
+    .stats {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 1.5rem;
+      margin-top: 0.5rem;
+    }
+
+    .stat {
+      flex: 1;
+      background: #f8f8f6;
+      border-radius: 10px;
+      padding: 14px 18px;
+    }
+
+    .stat-label { font-size: 12px; color: #888; margin-bottom: 4px; }
+    .stat-value { font-size: 24px; font-weight: 600; color: #1a1a1a; }
+
+    .search-wrap { position: relative; margin-bottom: 1rem; }
+
+    .search-wrap input {
+      width: 100%;
+      height: 38px;
+      padding: 0 14px 0 38px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 13px;
+      font-family: inherit;
+      background: #fff;
+      color: #1a1a1a;
+      outline: none;
+    }
+
+    .search-wrap input:focus { border-color: #1D9E75; }
+
+    .search-icon {
+      position: absolute;
+      left: 11px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 16px;
+      height: 16px;
+      color: #aaa;
+    }
+
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+
+    thead th {
+      text-align: left;
+      font-size: 11px;
+      font-weight: 600;
+      color: #999;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 8px 12px;
+      border-bottom: 1px solid #e5e5e2;
+    }
+
+    tbody tr { border-bottom: 1px solid #f0f0ee; transition: background 0.1s; }
+    tbody tr:hover { background: #f8f8f6; }
+    tbody td { padding: 11px 12px; vertical-align: middle; }
+
+    .code-badge {
+      display: inline-block;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      background: #f0f0ee;
+      border: 1px solid #e5e5e2;
+      border-radius: 4px;
+      padding: 2px 8px;
+      color: #555;
+    }
+
+    .avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #9FE1CB;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 600;
+      color: #0F6E56;
+      margin-right: 10px;
+      flex-shrink: 0;
+    }
+
+    .name-cell { display: flex; align-items: center; }
+
+    .del-btn {
+      background: none;
+      border: 1px solid #e5e5e2;
+      border-radius: 4px;
+      width: 28px;
+      height: 28px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #aaa;
+      font-size: 16px;
+      transition: all 0.15s;
+    }
+
+    .del-btn:hover { background: #FCEBEB; border-color: #E24B4A; color: #A32D2D; }
+
+    .empty { text-align: center; padding: 3rem 0; color: #aaa; font-size: 14px; }
+    .date-label { font-size: 11px; color: #aaa; }
+
+    .export-row {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid #e5e5e2;
+    }
+
+    .export-btn {
+      height: 34px;
+      padding: 0 16px;
+      background: transparent;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 13px;
+      color: #666;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.15s;
+    }
+
+    .export-btn:hover { background: #f8f8f6; color: #1a1a1a; }
+
+    @media (max-width: 500px) {
+      .container { padding: 1.2rem; }
+      .form-row { flex-direction: column; }
+      .form-row input, .form-row button { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <div class="header">
+      <div class="logo">
+        <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+      </div>
+      <div>
+        <div class="brand">Healthy Smile By N</div>
+        <div class="title">Registro Pazienti</div>
+      </div>
+    </div>
+
+    <div id="status" class="status loading">Caricamento...</div>
+
+    <div class="form-row">
+      <input type="text" id="inp-nome" placeholder="Nome e cognome paziente" autocomplete="off" />
+      <input type="text" id="inp-codice" placeholder="Codice paziente" autocomplete="off" style="flex: 0 0 180px;" />
+      <button id="btn-add" onclick="aggiungi()">+ Aggiungi</button>
+    </div>
+
+    <div class="saved-feedback" id="feedback">
+      <svg viewBox="0 0 20 20" fill="none" stroke="#0F6E56" stroke-width="2.5">
+        <polyline points="4,10 8,14 16,6"/>
+      </svg>
+      Paziente salvato su Google Sheets ✓
+    </div>
+
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-label">Pazienti totali</div>
+        <div class="stat-value" id="count">—</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Ultimo aggiunto</div>
+        <div class="stat-value" id="last" style="font-size:16px;padding-top:5px;">—</div>
+      </div>
+    </div>
+
+    <div class="search-wrap">
+      <svg class="search-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
+        <circle cx="8.5" cy="8.5" r="5.5"/><line x1="13" y1="13" x2="18" y2="18"/>
+      </svg>
+      <input type="text" id="search" placeholder="Cerca per nome o codice..." oninput="render()" />
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th style="width:44%">Paziente</th>
+          <th style="width:28%">Codice</th>
+          <th style="width:20%">Aggiunto</th>
+          <th style="width:8%"></th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+    <div id="empty" class="empty" style="display:none">Nessun paziente trovato</div>
+
+    <div class="export-row">
+      <button class="export-btn" onclick="esportaCSV()">Esporta CSV</button>
+    </div>
+
+  </div>
+
+  <script>
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzhTuRuD_Gl-XdqiRh1qmUhDoqSHqXVFIVaSflNAwUzlTnHjnxfgiCnmGj7peNXCQ52rg/exec';
+    let pazienti = [];
+
+    function setStatus(msg, tipo) {
+      const s = document.getElementById('status');
+      s.textContent = msg;
+      s.className = 'status ' + tipo;
+    }
+
+    function mostraFeedback() {
+      const f = document.getElementById('feedback');
+      f.classList.add('show');
+      setTimeout(() => f.classList.remove('show'), 3000);
+    }
+
+    function iniziali(nome) {
+      return nome.trim().split(/\s+/).slice(0,2).map(p => p[0]?.toUpperCase() || '').join('');
+    }
+
+    function formatData(val) {
+      if (!val) return '—';
+      const d = new Date(val);
+      if (isNaN(d)) return val;
+      return d.toLocaleDateString('it-IT', { day:'2-digit', month:'2-digit', year:'2-digit' });
+    }
+
+    async function carica() {
+      try {
+        const res = await fetch(SCRIPT_URL + '?action=getAll');
+        const data = await res.json();
+        pazienti = Array.isArray(data) ? data : [];
+        setStatus('Connesso a Google Sheets ✓', 'ok');
+        render();
+      } catch(err) {
+        setStatus('Errore di connessione', 'err');
+      }
+    }
+
+    async function aggiungi() {
+      const nome = document.getElementById('inp-nome').value.trim();
+      const codice = document.getElementById('inp-codice').value.trim();
+      if (!nome || !codice) { alert('Inserisci nome e codice paziente'); return; }
+
+      const btn = document.getElementById('btn-add');
+      btn.disabled = true;
+      btn.textContent = 'Salvo...';
+
+      const id = Date.now();
+      const data = new Date().toISOString();
+
+      try {
+        await fetch(SCRIPT_URL + '?action=add&id=' + id + '&nome=' + encodeURIComponent(nome) + '&codice=' + encodeURIComponent(codice) + '&data=' + encodeURIComponent(data));
+        pazienti.unshift({ id, nome, codice, data });
+        document.getElementById('inp-nome').value = '';
+        document.getElementById('inp-codice').value = '';
+        render();
+        mostraFeedback();
+      } catch(err) {
+        alert('Errore nel salvataggio. Controlla la connessione.');
+      }
+
+      btn.disabled = false;
+      btn.textContent = '+ Aggiungi';
+    }
+
+    async function elimina(id) {
+      if (!confirm('Rimuovere questo paziente dal registro?')) return;
+      try {
+        await fetch(SCRIPT_URL + '?action=delete&id=' + id);
+        pazienti = pazienti.filter(p => String(p.id) !== String(id));
+        render();
+      } catch(err) {
+        alert('Errore nella rimozione.');
+      }
+    }
+
+    function render() {
+      const q = document.getElementById('search').value.toLowerCase();
+      const filtrati = q ? pazienti.filter(p => p.nome.toLowerCase().includes(q) || p.codice.toLowerCase().includes(q)) : pazienti;
+      document.getElementById('count').textContent = pazienti.length;
+      document.getElementById('last').textContent = pazienti.length ? pazienti[0].nome.split(' ')[0] : '—';
+      const tbody = document.getElementById('tbody');
+      const empty = document.getElementById('empty');
+      if (!filtrati.length) { tbody.innerHTML = ''; empty.style.display = 'block'; return; }
+      empty.style.display = 'none';
+      tbody.innerHTML = filtrati.map(p => `
+        <tr>
+          <td><div class="name-cell"><div class="avatar">${iniziali(p.nome)}</div>${p.nome}</div></td>
+          <td><span class="code-badge">${p.codice}</span></td>
+          <td><span class="date-label">${formatData(p.data)}</span></td>
+          <td><button class="del-btn" onclick="elimina('${p.id}')" title="Rimuovi">×</button></td>
+        </tr>`).join('');
+    }
+
+    function esportaCSV() {
+      const rows = [['Nome','Codice','Data aggiunta'], ...pazienti.map(p => [p.nome, p.codice, formatData(p.data)])];
+      const csv = rows.map(r => r.map(c => '"' + c + '"').join(',')).join('\n');
+      const a = document.createElement('a');
+      a.href = 'data:text/csv;charset=utf-8,\uFEFF' + encodeURIComponent(csv);
+      a.download = 'pazienti_healthy_smile.csv';
+      a.click();
+    }
+
+    document.getElementById('inp-nome').addEventListener('keydown', e => { if(e.key === 'Enter') document.getElementById('inp-codice').focus(); });
+    document.getElementById('inp-codice').addEventListener('keydown', e => { if(e.key === 'Enter') aggiungi(); });
+
+    carica();
+  </script>
+</body>
+</html>
