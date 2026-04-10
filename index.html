@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Healthy Smile By N · Torino — La prevenzione è la cura migliore</title>
+<meta name="description" content="Healthy Smile By N, Torino. Studio dentistico focalizzato sulla prevenzione. Perché un impianto che devi mettere è un fallimento — il nostro o il tuo. Il Sistema Protezione parte da €79.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --black: #0e0e0e;
+    --white: #fafaf8;
+    --gray-100: #f2f1ee;
+    --gray-300: #d4d2cc;
+    --gray-500: #888680;
+    --gray-700: #4a4845;
+    --accent: #1a6b4a;
+    --accent-light: #e8f4ef;
+    --red-soft: #fdf0ee;
+    --red-accent: #c44b2b;
+    --serif: 'DM Serif Display', Georgia, serif;
+    --sans: 'DM Sans', system-ui, sans-serif;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: var(--sans);
+    background: var(--white);
+    color: var(--black);
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* NAV */
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--white);
+    border-bottom: 1px solid var(--gray-300);
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 56px;
+  }
+  .nav-logo {
+    font-family: var(--serif);
+    font-size: 18px;
+    color: var(--black);
+    text-decoration: none;
+    letter-spacing: -0.01em;
+  }
+  .nav-logo em { font-style: italic; color: var(--accent); }
+  .nav-links {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .nav-links a {
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--gray-700);
+    text-decoration: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    transition: background 0.15s;
+  }
+  .nav-links a:hover { background: var(--gray-100); }
+  .nav-cta {
+    font-size: 13px;
+    font-weight: 500;
+    background: var(--black);
+    color: var(--white) !important;
+    padding: 8px 16px !important;
+    border-radius: 6px;
+    text-decoration: none;
+    transition: opacity 0.15s;
+  }
+  .nav-cta:hover { opacity: 0.85; background: var(--black) !important; }
+
+  /* HERO */
+  .hero {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 96px 24px 80px;
+    text-align: center;
+  }
+  .hero-tag {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: var(--accent-light);
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-bottom: 32px;
+  }
+  .hero h1 {
+    font-family: var(--serif);
+    font-size: clamp(42px, 7vw, 80px);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    color: var(--black);
+    margin-bottom: 12px;
+  }
+  .hero h1 em { font-style: italic; color: var(--accent); }
+  .hero-sub {
+    font-size: clamp(17px, 2.5vw, 20px);
+    color: var(--gray-700);
+    max-width: 600px;
+    margin: 0 auto 40px;
+    font-weight: 300;
+    line-height: 1.5;
+  }
+  .hero-ctas {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 64px;
+  }
+  .btn-primary {
+    background: var(--black);
+    color: var(--white);
+    font-family: var(--sans);
+    font-size: 15px;
+    font-weight: 500;
+    padding: 14px 28px;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: opacity 0.15s;
+  }
+  .btn-primary:hover { opacity: 0.82; }
+  .btn-secondary {
+    background: transparent;
+    color: var(--black);
+    font-family: var(--sans);
+    font-size: 15px;
+    font-weight: 400;
+    padding: 14px 28px;
+    border-radius: 8px;
+    border: 1px solid var(--gray-300);
+    text-decoration: none;
+    transition: background 0.15s;
+  }
+  .btn-secondary:hover { background: var(--gray-100); }
+  .hero-stats {
+    display: flex;
+    justify-content: center;
+    gap: 48px;
+    flex-wrap: wrap;
+    padding-top: 40px;
+    border-top: 1px solid var(--gray-300);
+  }
+  .stat { text-align: center; }
+  .stat-num {
+    font-family: var(--serif);
+    font-size: 32px;
+    color: var(--black);
+    display: block;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .stat-label { font-size: 12px; color: var(--gray-500); font-weight: 400; }
+
+  /* SECTION BASE */
+  section { padding: 80px 24px; }
+  .container { max-width: 860px; margin: 0 auto; }
+  .section-tag {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gray-500);
+    margin-bottom: 16px;
+    display: block;
+  }
+  h2 {
+    font-family: var(--serif);
+    font-size: clamp(30px, 5vw, 52px);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    margin-bottom: 20px;
+  }
+  h2 em { font-style: italic; color: var(--accent); }
+
+  /* STATEMENT — "un impianto è un fallimento" */
+  .statement-section {
+    background: var(--black);
+    color: var(--white);
+    padding: 96px 24px;
+  }
+  .statement-section .container { max-width: 800px; }
+  .statement-section .section-tag { color: #666; }
+  .statement-section h2 { color: var(--white); }
+  .statement-section h2 em { color: #7ec8a4; }
+  .statement-body {
+    font-size: clamp(17px, 2.5vw, 20px);
+    color: #b0aea8;
+    font-weight: 300;
+    line-height: 1.7;
+    max-width: 680px;
+    margin-bottom: 40px;
+  }
+  .statement-body strong { color: var(--white); font-weight: 500; }
+  .statement-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1px;
+    background: #2a2a2a;
+    border: 1px solid #2a2a2a;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-top: 48px;
+  }
+  .statement-card {
+    background: #181818;
+    padding: 28px 24px;
+  }
+  .statement-card-num {
+    font-family: var(--serif);
+    font-size: 40px;
+    color: #7ec8a4;
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+  .statement-card-label {
+    font-size: 13px;
+    color: #888;
+    font-weight: 400;
+    line-height: 1.4;
+  }
+
+  /* COME FUNZIONA */
+  .how-section { background: var(--gray-100); }
+  .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 24px; margin-top: 48px; }
+  .step {
+    background: var(--white);
+    border-radius: 12px;
+    padding: 28px 24px;
+    border: 1px solid var(--gray-300);
+    position: relative;
+  }
+  .step-num {
+    font-family: var(--serif);
+    font-size: 48px;
+    color: var(--gray-300);
+    line-height: 1;
+    margin-bottom: 16px;
+  }
+  .step-title {
+    font-family: var(--serif);
+    font-size: 20px;
+    margin-bottom: 8px;
+    line-height: 1.2;
+  }
+  .step-title em { font-style: italic; color: var(--accent); }
+  .step-body { font-size: 14px; color: var(--gray-700); line-height: 1.6; }
+
+  /* SERVIZI HUB */
+  .services-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px;
+    margin-top: 48px;
+  }
+  .service-card {
+    border-radius: 12px;
+    padding: 32px 28px;
+    text-decoration: none;
+    display: block;
+    transition: transform 0.15s, box-shadow 0.15s;
+    border: 1px solid transparent;
+  }
+  .service-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
+  .service-card.green { background: var(--accent-light); border-color: #b8dece; }
+  .service-card.black { background: var(--black); }
+  .service-card.warm { background: var(--red-soft); border-color: #f0c9be; }
+  .service-tag {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    display: block;
+  }
+  .service-card.green .service-tag { color: var(--accent); }
+  .service-card.black .service-tag { color: #7ec8a4; }
+  .service-card.warm .service-tag { color: var(--red-accent); }
+  .service-title {
+    font-family: var(--serif);
+    font-size: 24px;
+    line-height: 1.15;
+    margin-bottom: 12px;
+    letter-spacing: -0.01em;
+  }
+  .service-card.green .service-title { color: var(--black); }
+  .service-card.black .service-title { color: var(--white); }
+  .service-card.warm .service-title { color: var(--black); }
+  .service-desc { font-size: 14px; line-height: 1.6; margin-bottom: 24px; }
+  .service-card.green .service-desc { color: #2a5c3f; }
+  .service-card.black .service-desc { color: #9a9890; }
+  .service-card.warm .service-desc { color: #7a4535; }
+  .service-link {
+    font-size: 13px;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .service-card.green .service-link { color: var(--accent); }
+  .service-card.black .service-link { color: #7ec8a4; }
+  .service-card.warm .service-link { color: var(--red-accent); }
+  .service-price {
+    font-family: var(--serif);
+    font-size: 36px;
+    display: block;
+    margin-bottom: 4px;
+    line-height: 1;
+  }
+  .service-card.green .service-price { color: var(--accent); }
+  .service-card.black .service-price { color: var(--white); }
+  .service-card.warm .service-price { color: var(--red-accent); }
+
+  /* PERCHÉ NOI */
+  .why-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px; margin-top: 48px; }
+  .why-item {}
+  .why-icon { font-size: 20px; margin-bottom: 12px; }
+  .why-title { font-family: var(--serif); font-size: 18px; margin-bottom: 6px; }
+  .why-body { font-size: 14px; color: var(--gray-700); line-height: 1.6; }
+
+  /* CONTATTI */
+  .contact-section { background: var(--black); color: var(--white); padding: 80px 24px; }
+  .contact-section .container { max-width: 700px; text-align: center; }
+  .contact-section h2 { color: var(--white); }
+  .contact-section h2 em { color: #7ec8a4; }
+  .contact-body { font-size: 17px; color: #b0aea8; font-weight: 300; margin-bottom: 40px; line-height: 1.6; }
+  .contact-row { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-bottom: 48px; }
+  .btn-green {
+    background: #1a6b4a;
+    color: var(--white);
+    font-size: 15px;
+    font-weight: 500;
+    padding: 14px 28px;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: opacity 0.15s;
+  }
+  .btn-green:hover { opacity: 0.85; }
+  .btn-outline-white {
+    background: transparent;
+    color: var(--white);
+    font-size: 15px;
+    font-weight: 400;
+    padding: 14px 28px;
+    border-radius: 8px;
+    border: 1px solid #3a3a3a;
+    text-decoration: none;
+    transition: border-color 0.15s;
+  }
+  .btn-outline-white:hover { border-color: #666; }
+  .contact-info { display: flex; gap: 32px; justify-content: center; flex-wrap: wrap; }
+  .contact-item { text-align: center; }
+  .contact-item-label { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #555; margin-bottom: 6px; }
+  .contact-item-value { font-size: 15px; color: #ccc; }
+  .contact-item-value a { color: #ccc; text-decoration: none; }
+  .contact-item-value a:hover { color: var(--white); }
+
+  /* FOOTER */
+  footer {
+    background: #0a0a0a;
+    padding: 28px 24px;
+    border-top: 1px solid #1e1e1e;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .footer-logo { font-family: var(--serif); font-size: 16px; color: #555; }
+  .footer-logo em { font-style: italic; color: #7ec8a4; }
+  .footer-links { display: flex; gap: 16px; flex-wrap: wrap; }
+  .footer-links a { font-size: 13px; color: #555; text-decoration: none; transition: color 0.15s; }
+  .footer-links a:hover { color: #aaa; }
+  .footer-ig {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: #555;
+    text-decoration: none;
+    transition: color 0.15s;
+  }
+  .footer-ig:hover { color: #aaa; }
+  .ig-icon { width: 16px; height: 16px; }
+
+  /* DIVIDER */
+  .divider { height: 1px; background: var(--gray-300); max-width: 860px; margin: 0 auto; }
+
+  /* FADE IN */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .hero h1, .hero-sub, .hero-ctas { animation: fadeUp 0.6s ease both; }
+  .hero-sub { animation-delay: 0.1s; }
+  .hero-ctas { animation-delay: 0.2s; }
+
+  @media (max-width: 600px) {
+    nav { padding: 0 16px; }
+    .nav-links a:not(.nav-cta) { display: none; }
+    section { padding: 60px 16px; }
+    .hero { padding: 64px 16px 60px; }
+    .hero-stats { gap: 28px; }
+    footer { flex-direction: column; align-items: flex-start; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">Healthy Smile <em>By N</em></a>
+  <div class="nav-links">
+    <a href="https://healthysmile.it/prevenzione">Prevenzione</a>
+    <a href="https://healthysmile.it/cure-estero">Cure Estero</a>
+    <a href="https://healthysmile.it/scheda-demo">Scheda digitale</a>
+    <a href="https://wa.me/393461824965?text=Ciao,%20ho%20visto%20il%20sito%20e%20vorrei%20informazioni" class="nav-cta">Scrivici</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <span class="hero-tag">Torino · Via Servais 121 · Poliambulatorio Servais</span>
+  <h1>Il dentista che lavora<br>per <em>non rivederti.</em></h1>
+  <p class="hero-sub">Il dentista tradizionale guadagna quando stai male. Noi siamo costruiti al contrario: il nostro obiettivo è che tu non abbia mai bisogno di cure costose.</p>
+  <div class="hero-ctas">
+    <a href="https://healthysmile.it/prevenzione" class="btn-primary">Prenota igiene + visita — €79</a>
+    <a href="#come-funziona" class="btn-secondary">Come funziona ↓</a>
+  </div>
+  <div class="hero-stats">
+    <div class="stat">
+      <span class="stat-num">€79</span>
+      <span class="stat-label">igiene + visita completa + scheda digitale</span>
+    </div>
+    <div class="stat">
+      <span class="stat-num">€180</span>
+      <span class="stat-label">pacchetto protezione annuale</span>
+    </div>
+    <div class="stat">
+      <span class="stat-num">32</span>
+      <span class="stat-label">denti monitorati, dente per dente</span>
+    </div>
+  </div>
+</section>
+
+<!-- STATEMENT FORTE -->
+<div class="statement-section">
+  <div class="container">
+    <span class="section-tag">Il nostro principio fondante</span>
+    <h2>Un impianto che devi mettere<br>è un <em>fallimento.</em></h2>
+    <p class="statement-body">
+      Nostro o tuo, poco importa. Significa che da qualche parte nel percorso — mesi o anni prima — c'era un dente da salvare e nessuno l'ha salvato. Una carie intercettata in tempo costa <strong>€30</strong>. La stessa ignorata diventa una devitalizzazione da <strong>€900</strong>. Ignorata ancora, un impianto da <strong>€2.000</strong>.<br><br>
+      Noi costruiamo un sistema per <strong>non arrivare mai lì</strong>. Questo è il sistema protezione. Non è marketing: è il motivo per cui esiste Healthy Smile By N.
+    </p>
+    <div class="statement-cards">
+      <div class="statement-card">
+        <div class="statement-card-num">€30</div>
+        <div class="statement-card-label">carie intercettata in tempo</div>
+      </div>
+      <div class="statement-card">
+        <div class="statement-card-num">€900</div>
+        <div class="statement-card-label">stessa carie ignorata → devitalizzazione</div>
+      </div>
+      <div class="statement-card">
+        <div class="statement-card-num">€2.000+</div>
+        <div class="statement-card-label">ignorata ancora → impianto</div>
+      </div>
+      <div class="statement-card">
+        <div class="statement-card-num">€180</div>
+        <div class="statement-card-label">protezione annuale che blocca tutto questo</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- COME FUNZIONA -->
+<section class="how-section" id="come-funziona">
+  <div class="container">
+    <span class="section-tag">Il sistema</span>
+    <h2>Risparmiare dal dentista significa<br>fare la <em>prevenzione migliore.</em></h2>
+    <p style="font-size:17px;color:var(--gray-700);font-weight:300;max-width:600px;line-height:1.6;margin-bottom:0;">Non risparmi rimandando. Risparmi intercettando il problema prima che esista. È matematica semplice — e il Sistema Protezione è costruito esattamente su questo.</p>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">01</div>
+        <div class="step-title">Igiene + visita<br><em>completa</em></div>
+        <p class="step-body">€79 tutto incluso. Almeno 45 minuti di igiene, 30 minuti di visita approfondita. Ogni dente analizzato. Radiografie incluse. Non i 20 minuti frettolosi che conosci.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <div class="step-title">Ricevi la tua<br><em>scheda digitale</em></div>
+        <p class="step-body">Esci con una scheda clinica interattiva: ogni dente ha il suo livello di rischio, i consigli specifici e il costo reale se dovesse servire un intervento. Nessun altro studio a Torino lo fa.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">03</div>
+        <div class="step-title">Attivi il<br><em>Pacchetto Protezione</em></div>
+        <p class="step-body">€180/anno. Ogni intervento futuro sui denti già mappati viene fatto a costo ridotto. Rischio basso –70%, medio –50%, alto –30%. Il rischio lo condividiamo noi.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">04</div>
+        <div class="step-title">Monitoraggio<br><em>nel tempo</em></div>
+        <p class="step-body">Ogni 6 mesi aggiorniamo la tua scheda. La tua bocca migliora. Più stai bene, meno paghi. È l'opposto del sistema tradizionale.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SERVIZI HUB -->
+<section>
+  <div class="container">
+    <span class="section-tag">I nostri servizi</span>
+    <h2>Un sistema completo.<br>Da qualunque punto <em>tu parta.</em></h2>
+    <div class="services-grid">
+
+      <a href="https://healthysmile.it/prevenzione" class="service-card green">
+        <span class="service-tag">Prevenzione</span>
+        <span class="service-price">€79</span>
+        <p style="font-size:12px;color:var(--accent);margin-bottom:16px;font-weight:400;">igiene + visita + scheda digitale</p>
+        <div class="service-title">Il Sistema<br>Protezione</div>
+        <p class="service-desc">Igiene professionale, visita completa dente per dente, scheda digitale interattiva e pacchetto protezione annuale con sconti fino al 70% sulle cure future.</p>
+        <span class="service-link">Scopri come funziona →</span>
+      </a>
+
+      <a href="https://healthysmile.it/scheda-demo" class="service-card black">
+        <span class="service-tag">Esclusiva Healthy Smile</span>
+        <span class="service-price" style="font-size:28px;">Scheda<br>digitale</span>
+        <p style="font-size:12px;color:#666;margin:8px 0 16px;font-weight:400;">nessun altro studio a Torino</p>
+        <p class="service-desc">Ogni dente mappato con rischio, consigli personalizzati e prezzi trasparenti. La tua bocca sempre sul telefono. Clicca e guarda la demo.</p>
+        <span class="service-link">Vedi la scheda demo →</span>
+      </a>
+
+      <a href="https://healthysmile.it/cure-estero" class="service-card warm">
+        <span class="service-tag">Piano Protezione Cure Estero</span>
+        <span class="service-price">€50</span>
+        <p style="font-size:12px;color:var(--red-accent);margin-bottom:16px;font-weight:400;">visita di valutazione</p>
+        <div class="service-title">Vai all'estero.<br>Torna protetto.</div>
+        <p class="service-desc">Stai valutando impianti o protesi in Albania, Croazia, Ungheria? Ti seguiamo prima della partenza, durante il percorso e dopo il rientro.</p>
+        <span class="service-link">Come funziona →</span>
+      </a>
+
+    </div>
+  </div>
+</section>
+
+<!-- PERCHÉ NOI -->
+<div class="divider"></div>
+<section>
+  <div class="container">
+    <span class="section-tag">Perché siamo diversi</span>
+    <h2>Non siamo il dentista<br>che <em>conosci già.</em></h2>
+    <div class="why-grid">
+      <div class="why-item">
+        <div class="why-icon">↗</div>
+        <div class="why-title">Il sistema è costruito al contrario</div>
+        <p class="why-body">Il dentista tradizionale guadagna di più quando stai male. Noi guadagniamo se stai bene e torni ogni 6 mesi. Gli incentivi sono opposti — e si vede.</p>
+      </div>
+      <div class="why-item">
+        <div class="why-icon">⬚</div>
+        <div class="why-title">Scheda digitale unica a Torino</div>
+        <p class="why-body">Ogni dente ha il suo profilo di rischio, aggiornato ad ogni visita. Sai esattamente cosa hai in bocca, cosa rischi e quanto costerebbe se non lo gestissimo in tempo.</p>
+      </div>
+      <div class="why-item">
+        <div class="why-icon">◎</div>
+        <div class="why-title">Condividiamo il rischio con te</div>
+        <p class="why-body">Se un dente mappato ha bisogno di cure, le paghiamo insieme — sconti fino al 70%. Non è una promozione: è il modello di business. Il tuo benessere è il nostro interesse.</p>
+      </div>
+      <div class="why-item">
+        <div class="why-icon">◻</div>
+        <div class="why-title">Trasparenza totale, sempre</div>
+        <p class="why-body">Sai cosa hai, cosa rischi e quanto costa — prima che succeda. Nessun preventivo shock a fine visita. Nessuna cura che non capisci.</p>
+      </div>
+      <div class="why-item">
+        <div class="why-icon">◈</div>
+        <div class="why-title">Come visto al TGR Piemonte</div>
+        <p class="why-body">Nina ha raccontato perché abbiamo fondato Healthy Smile By N: un dentista che lavora davvero per la salute delle persone, non per riempire l'agenda di interventi.</p>
+      </div>
+      <div class="why-item">
+        <div class="why-icon">⌖</div>
+        <div class="why-title">Poliambulatorio Via Servais, Torino</div>
+        <p class="why-body">Studio moderno, attrezzature di ultima generazione, nessuna lista d'attesa infinita. Prenoti su WhatsApp in 30 secondi.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTATTI / CTA FINALE -->
+<div class="contact-section">
+  <div class="container">
+    <span class="section-tag" style="color:#555;display:block;text-align:center;margin-bottom:16px;">Inizia adesso</span>
+    <h2>Inizia con un'igiene.<br><em>Cambia tutto.</em></h2>
+    <p class="contact-body">€79. Igiene professionale completa + visita approfondita + scheda digitale dente per dente.<br>Prenota su WhatsApp in 30 secondi.</p>
+    <div class="contact-row">
+      <a href="https://wa.me/393461824965?text=Ciao,%20vorrei%20prenotare%20igiene%20e%20visita%20a%20%E2%82%AC79%20da%20Healthy%20Smile" class="btn-green">Prenota su WhatsApp — €79</a>
+      <a href="tel:+393461824965" class="btn-outline-white">Chiamaci</a>
+    </div>
+    <div style="margin-bottom:48px;">
+      <p style="font-size:13px;color:#555;margin-bottom:20px;">Preferisci scrivere da qui? Ti rispondiamo entro poche ore.</p>
+      <form id="contact-form" style="max-width:480px;margin:0 auto;text-align:left;" onsubmit="handleSubmit(event)">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+          <div>
+            <label style="font-size:12px;color:#666;display:block;margin-bottom:6px;letter-spacing:0.04em;text-transform:uppercase;">Nome</label>
+            <input type="text" name="nome" required placeholder="Mario Rossi"
+              style="width:100%;background:#111;border:1px solid #2a2a2a;border-radius:8px;padding:12px 14px;font-size:14px;color:#fff;font-family:var(--sans);outline:none;">
+          </div>
+          <div>
+            <label style="font-size:12px;color:#666;display:block;margin-bottom:6px;letter-spacing:0.04em;text-transform:uppercase;">Telefono</label>
+            <input type="tel" name="telefono" placeholder="+39 333 000 0000"
+              style="width:100%;background:#111;border:1px solid #2a2a2a;border-radius:8px;padding:12px 14px;font-size:14px;color:#fff;font-family:var(--sans);outline:none;">
+          </div>
+        </div>
+        <div style="margin-bottom:12px;">
+          <label style="font-size:12px;color:#666;display:block;margin-bottom:6px;letter-spacing:0.04em;text-transform:uppercase;">In cosa possiamo aiutarti?</label>
+          <select name="servizio" style="width:100%;background:#111;border:1px solid #2a2a2a;border-radius:8px;padding:12px 14px;font-size:14px;color:#888;font-family:var(--sans);outline:none;">
+            <option value="">Seleziona</option>
+            <option value="prevenzione">Prevenzione — igiene + visita €79</option>
+            <option value="protezione">Pacchetto Protezione €180/anno</option>
+            <option value="estero">Piano Protezione Cure Estero</option>
+            <option value="altro">Altro / non so ancora</option>
+          </select>
+        </div>
+        <div style="margin-bottom:20px;">
+          <label style="font-size:12px;color:#666;display:block;margin-bottom:6px;letter-spacing:0.04em;text-transform:uppercase;">Messaggio (opzionale)</label>
+          <textarea name="messaggio" rows="3" placeholder="Raccontaci brevemente la tua situazione..."
+            style="width:100%;background:#111;border:1px solid #2a2a2a;border-radius:8px;padding:12px 14px;font-size:14px;color:#fff;font-family:var(--sans);outline:none;resize:vertical;"></textarea>
+        </div>
+        <button type="submit"
+          style="width:100%;background:#1a6b4a;color:#fff;font-family:var(--sans);font-size:15px;font-weight:500;padding:14px;border-radius:8px;border:none;cursor:pointer;transition:opacity 0.15s;">
+          Invia richiesta
+        </button>
+        <p id="form-success" style="display:none;margin-top:16px;font-size:14px;color:#7ec8a4;text-align:center;">
+          Richiesta inviata. Ti contattiamo entro poche ore.
+        </p>
+      </form>
+    </div>
+
+    <div class="contact-info">
+      <div class="contact-item">
+        <div class="contact-item-label">Indirizzo</div>
+        <div class="contact-item-value">Via Servais 121, Torino<br><span style="font-size:12px;color:#555;">Poliambulatorio Servais</span></div>
+      </div>
+      <div class="contact-item">
+        <div class="contact-item-label">Telefono / WhatsApp</div>
+        <div class="contact-item-value"><a href="tel:+393461824965">+39 346 182 4965</a></div>
+      </div>
+      <div class="contact-item">
+        <div class="contact-item-label">Instagram</div>
+        <div class="contact-item-value"><a href="https://www.instagram.com/healthy.smile.by.n" target="_blank">@healthy.smile.by.n</a></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <span class="footer-logo">Healthy Smile <em>By N</em> · Torino</span>
+  <div class="footer-links">
+    <a href="https://healthysmile.it/prevenzione">Prevenzione</a>
+    <a href="https://healthysmile.it/cure-estero">Cure Estero</a>
+    <a href="https://healthysmile.it/scheda-demo">Scheda digitale</a>
+    <a href="https://www.instagram.com/healthy.smile.by.n" target="_blank" class="footer-ig">
+      <svg class="ig-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="2" y="2" width="20" height="20" rx="6" stroke="#555" stroke-width="1.5"/>
+        <circle cx="12" cy="12" r="4" stroke="#555" stroke-width="1.5"/>
+        <circle cx="17.5" cy="6.5" r="1" fill="#555"/>
+      </svg>
+      Instagram
+    </a>
+  </div>
+</footer>
+
+<script>
+function handleSubmit(e) {
+  e.preventDefault();
+  const form = e.target;
+  const data = new FormData(form);
+  const nome = data.get('nome') || '';
+  const telefono = data.get('telefono') || '';
+  const servizio = data.get('servizio') || '';
+  const messaggio = data.get('messaggio') || '';
+  const labels = {
+    prevenzione: 'Prevenzione — igiene + visita €79',
+    protezione: 'Pacchetto Protezione €180/anno',
+    estero: 'Piano Protezione Cure Estero',
+    altro: 'Altro'
+  };
+  const testo = `Ciao, mi chiamo ${nome}${telefono ? ', tel: ' + telefono : ''}. Interesse: ${labels[servizio] || servizio}${messaggio ? '. Note: ' + messaggio : ''}.`;
+  const url = `https://wa.me/393461824965?text=${encodeURIComponent(testo)}`;
+  window.open(url, '_blank');
+  document.getElementById('form-success').style.display = 'block';
+  form.reset();
+}
+</script>
+</body>
+</html>
