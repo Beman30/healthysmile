@@ -129,7 +129,37 @@ footer{background:var(--charcoal);padding:40px 60px;display:flex;justify-content
   .timeline::before{left:30px}
   .timeline-item{grid-template-columns:60px 1fr;gap:20px}
 }
+
+/* === HAMBURGER MENU MOBILE === */
+.hamburger{display:none;flex-direction:column;justify-content:center;gap:5px;width:36px;height:36px;cursor:pointer;padding:4px;background:none;border:none;flex-shrink:0}
+.hamburger span{display:block;height:2px;background:#ccc;border-radius:2px;transition:transform 0.3s,opacity 0.3s,background 0.2s}
+.hamburger:hover span{background:#fff}
+.hamburger.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+.hamburger.open span:nth-child(2){opacity:0}
+.hamburger.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+.mobile-drawer{position:fixed;top:0;right:0;bottom:0;width:260px;background:var(--charcoal);z-index:300;transform:translateX(100%);transition:transform 0.35s cubic-bezier(0.4,0,0.2,1);display:flex;flex-direction:column;padding:80px 32px 40px;gap:8px;border-left:1px solid #2a2a2a}
+.mobile-drawer.open{transform:translateX(0)}
+.mobile-drawer-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:290;opacity:0;pointer-events:none;transition:opacity 0.35s}
+.mobile-drawer-overlay.open{opacity:1;pointer-events:auto}
+.mobile-drawer a{font-family:'DM Sans',sans-serif;font-size:1.05rem;color:#aaa;text-decoration:none;padding:12px 0;border-bottom:1px solid #2a2a2a;transition:color 0.15s;display:block}
+.mobile-drawer a:hover,.mobile-drawer a.active{color:#fff}
+.mobile-drawer a.active{color:var(--gold)}
+.mobile-drawer .drawer-cta{margin-top:24px;background:var(--accent);color:#fff !important;text-align:center;padding:14px 20px !important;border-radius:4px;border:none !important;font-weight:500;display:block}
+.mobile-drawer .drawer-cta:hover{background:var(--accent-light) !important}
+.drawer-close{position:absolute;top:16px;right:16px;background:none;border:none;color:#666;font-size:1.5rem;cursor:pointer;padding:8px;line-height:1;transition:color 0.15s}
+.drawer-close:hover{color:#fff}
+@media(max-width:768px){.hamburger{display:flex}}
 </style>
+
+  <!-- Google tag (gtag.js) - GA4 + Google Ads -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-NRVQH62VHL"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-NRVQH62VHL');
+    gtag('config', 'AW-947982327');
+  </script>
 </head>
 <body>
 
@@ -141,8 +171,19 @@ footer{background:var(--charcoal);padding:40px 60px;display:flex;justify-content
     <a href="https://healthysmile.it/cure-estero" class="active">Cure Estero</a>
     <a href="https://healthysmile.it/scheda-demo">Scheda digitale</a>
     <a href="https://wa.me/393461824965?text=Ciao,%20vorrei%20informazioni%20sul%20Piano%20Protezione%20Cure%20Estero" class="site-nav-cta">Scrivici</a>
-  </div>
+  <button class="hamburger" id="hamburgerBtn" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
 </nav>
+<div class="mobile-drawer-overlay" id="drawerOverlay"></div>
+<div class="mobile-drawer" id="mobileDrawer">
+  <button class="drawer-close" id="drawerClose">✕</button>
+  <a href="https://healthysmile.it/prevenzione">Prevenzione</a>
+  <a href="https://healthysmile.it">Chi siamo</a>
+  <a href="https://healthysmile.it/cure-estero" class="active">Cure Estero</a>
+  <a href="https://healthysmile.it/scheda-demo">Scheda digitale</a>
+  <a href="https://wa.me/393461824965?text=Ciao,%20vorrei%20informazioni%20sul%20Piano%20Protezione%20Cure%20Estero" class="drawer-cta">Scrivici su WhatsApp</a>
+</div>
 
 <section class="hero">
   <div class="hero-left">
@@ -333,5 +374,90 @@ document.querySelectorAll('.faq-q').forEach(q=>{q.addEventListener('click',()=>{
 const observer=new IntersectionObserver((entries)=>{entries.forEach(e=>{if(e.isIntersecting){e.target.style.opacity='1';e.target.style.transform='translateY(0)'}});},{threshold:0.1});
 document.querySelectorAll('.problem-item,.proof-card,.timeline-item').forEach(el=>{el.style.opacity='0';el.style.transform='translateY(20px)';el.style.transition='opacity 0.6s ease,transform 0.6s ease';observer.observe(el);});
 </script>
+
+<script id="drawer-script">
+(function(){
+  var btn = document.getElementById('hamburgerBtn');
+  var drawer = document.getElementById('mobileDrawer');
+  var overlay = document.getElementById('drawerOverlay');
+  var closeBtn = document.getElementById('drawerClose');
+  function open(){btn.classList.add('open');drawer.classList.add('open');overlay.classList.add('open');document.body.style.overflow='hidden'}
+  function close(){btn.classList.remove('open');drawer.classList.remove('open');overlay.classList.remove('open');document.body.style.overflow=''}
+  btn.addEventListener('click',open);
+  closeBtn.addEventListener('click',close);
+  overlay.addEventListener('click',close);
+})();
+</script>
+
+  <!-- Tracking eventi personalizzati -->
+  <script>
+  (function(){
+
+    // === SCROLL DEPTH ===
+    var scrollMarks = {25:false, 50:false, 75:false, 90:false};
+    window.addEventListener('scroll', function(){
+      var pct = Math.round((window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100);
+      Object.keys(scrollMarks).forEach(function(mark){
+        if(!scrollMarks[mark] && pct >= mark){
+          scrollMarks[mark] = true;
+          gtag('event', 'scroll_depth', {event_category:'engagement', event_label: mark+'%', value: parseInt(mark)});
+        }
+      });
+    }, {passive:true});
+
+    // === TEMPO SULLA PAGINA ===
+    var startTime = Date.now();
+    [30, 60, 120, 180].forEach(function(sec){
+      setTimeout(function(){
+        gtag('event', 'time_on_page', {event_category:'engagement', event_label: sec+'s', value: sec});
+      }, sec * 1000);
+    });
+
+    // === CLICK WHATSAPP ===
+    document.querySelectorAll('a[href*="wa.me"]').forEach(function(el){
+      el.addEventListener('click', function(){
+        // GA4
+        gtag('event', 'whatsapp_click', {event_category:'conversione', event_label: el.textContent.trim().substring(0,50)});
+        // Google Ads conversione
+        gtag('event', 'conversion', {send_to: 'AW-947982327/whatsapp_click'});
+      });
+    });
+
+    // === CLICK TELEFONO ===
+    document.querySelectorAll('a[href^="tel:"]').forEach(function(el){
+      el.addEventListener('click', function(){
+        gtag('event', 'phone_click', {event_category:'conversione', event_label: el.getAttribute('href')});
+        gtag('event', 'conversion', {send_to: 'AW-947982327/phone_click'});
+      });
+    });
+
+    // === SUBMIT FORM ===
+    var form = document.querySelector('form');
+    if(form){
+      form.addEventListener('submit', function(){
+        gtag('event', 'form_submit', {event_category:'conversione', event_label:'form_contatti'});
+        gtag('event', 'conversion', {send_to: 'AW-947982327/form_submit'});
+      });
+    }
+
+    // === CLICK FAQ ===
+    document.querySelectorAll('.faq-q').forEach(function(el){
+      el.addEventListener('click', function(){
+        var question = el.textContent.trim().substring(0,80);
+        gtag('event', 'faq_click', {event_category:'engagement', event_label: question});
+      });
+    });
+
+    // === CLICK LINK ESTERNO ===
+    document.querySelectorAll('a[href^="http"]').forEach(function(el){
+      if(!el.href.includes('wa.me') && !el.href.includes(window.location.hostname)){
+        el.addEventListener('click', function(){
+          gtag('event', 'outbound_click', {event_category:'engagement', event_label: el.href});
+        });
+      }
+    });
+
+  })();
+  </script>
 </body>
 </html>
