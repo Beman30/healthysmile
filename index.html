@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Healthy Smile By N · Torino — Lo studio dentistico che ci rimette se non cura bene</title>
+<meta name="description" content="Healthy Smile By N, Torino. Siamo lo studio dentistico che guadagna quando stai bene — non quando stai male. Prevenzione, scheda digitale, rischio condiviso.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --black:#0e0e0e;--white:#fafaf8;--gray-100:#f2f1ee;--gray-300:#d4d2cc;
+  --gray-500:#888680;--gray-700:#4a4845;--accent:#1a6b4a;--accent-light:#e8f4ef;
+  --serif:'DM Serif Display',Georgia,serif;--sans:'DM Sans',system-ui,sans-serif;
+}
+html{scroll-behavior:smooth}
+body{font-family:var(--sans);background:var(--white);color:var(--black);font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
+
+nav{position:sticky;top:0;z-index:100;background:var(--white);border-bottom:1px solid var(--gray-300);padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:56px}
+.nav-logo{font-family:var(--serif);font-size:18px;color:var(--black);text-decoration:none;letter-spacing:-0.01em}
+.nav-logo em{font-style:italic;color:var(--accent)}
+.nav-links{display:flex;gap:8px;align-items:center}
+.nav-links a{font-size:13px;font-weight:400;color:var(--gray-700);text-decoration:none;padding:6px 12px;border-radius:6px;transition:background 0.15s}
+.nav-links a:hover{background:var(--gray-100)}
+.nav-links a.active{color:var(--accent);font-weight:500}
+.nav-cta{font-size:13px !important;font-weight:500 !important;background:var(--black);color:var(--white) !important;padding:8px 16px !important;border-radius:6px;transition:opacity 0.15s}
+.nav-cta:hover{opacity:0.85;background:var(--black) !important}
+
+/* HERO — dichiarazione di intenti */
+.hero{background:var(--black);color:var(--white);padding:100px 24px 80px;text-align:center}
+.hero-tag{display:inline-block;font-size:11px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:#7ec8a4;background:rgba(126,200,164,0.12);padding:4px 12px;border-radius:20px;margin-bottom:32px}
+.hero h1{font-family:var(--serif);font-size:clamp(36px,6vw,72px);line-height:1.05;letter-spacing:-0.02em;max-width:800px;margin:0 auto 28px}
+.hero h1 em{font-style:italic;color:#7ec8a4}
+.hero-sub{font-size:clamp(17px,2.5vw,21px);color:#b0aea8;font-weight:300;max-width:580px;margin:0 auto 48px;line-height:1.6}
+.hero-ctas{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.btn-green{background:#1a6b4a;color:var(--white);font-family:var(--sans);font-size:15px;font-weight:500;padding:14px 28px;border-radius:8px;text-decoration:none;transition:opacity 0.15s;display:inline-block}
+.btn-green:hover{opacity:0.85}
+.btn-outline{background:transparent;color:var(--white);font-family:var(--sans);font-size:15px;padding:14px 28px;border-radius:8px;border:1px solid #3a3a3a;text-decoration:none;transition:border-color 0.15s;display:inline-block}
+.btn-outline:hover{border-color:#666}
+
+/* STATEMENT CENTRALE */
+.statement{padding:100px 24px;background:var(--white)}
+.container{max-width:860px;margin:0 auto}
+.section-tag{font-size:11px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray-500);margin-bottom:16px;display:block}
+h2{font-family:var(--serif);font-size:clamp(28px,5vw,52px);line-height:1.1;letter-spacing:-0.02em;margin-bottom:24px}
+h2 em{font-style:italic;color:var(--accent)}
+
+.statement-body{font-size:clamp(17px,2vw,20px);color:var(--gray-700);font-weight:300;line-height:1.8;max-width:700px;margin-bottom:0}
+.statement-body strong{color:var(--black);font-weight:500}
+
+/* IL MODELLO AL CONTRARIO */
+.contrario{background:var(--black);padding:100px 24px}
+.contrario .section-tag{color:#555}
+.contrario h2{color:var(--white)}
+.contrario h2 em{color:#7ec8a4}
+.contrario-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:#2a2a2a;border:1px solid #2a2a2a;border-radius:12px;overflow:hidden;margin-top:56px}
+.contrario-col{padding:48px 40px}
+.contrario-col.left{background:#111}
+.contrario-col.right{background:#181818}
+.col-tag{font-size:11px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:24px;display:block}
+.col-tag.red{color:#e24b4a}
+.col-tag.green{color:#7ec8a4}
+.col-title{font-family:var(--serif);font-size:24px;margin-bottom:20px;line-height:1.2}
+.contrario-col.left .col-title{color:#888}
+.contrario-col.right .col-title{color:var(--white)}
+.col-items{list-style:none;display:flex;flex-direction:column;gap:14px}
+.col-items li{font-size:14px;line-height:1.6;display:flex;gap:10px;align-items:flex-start}
+.contrario-col.left .col-items li{color:#666}
+.contrario-col.left .col-items li::before{content:'✕';color:#e24b4a;font-size:12px;margin-top:3px;flex-shrink:0}
+.contrario-col.right .col-items li{color:#b0aea8}
+.contrario-col.right .col-items li::before{content:'✓';color:#7ec8a4;font-size:12px;margin-top:3px;flex-shrink:0}
+
+/* IL TEAM */
+.team{padding:100px 24px;background:var(--gray-100)}
+.team-grid{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:start;margin-top:56px}
+.nina-card{background:var(--white);border-radius:16px;padding:40px;border:1px solid var(--gray-300)}
+.nina-avatar{width:64px;height:64px;border-radius:50%;background:var(--accent-light);display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:26px;color:var(--accent);margin-bottom:24px}
+.nina-name{font-family:var(--serif);font-size:24px;margin-bottom:4px}
+.nina-role{font-size:14px;color:var(--gray-500);margin-bottom:8px}
+.tgr-badge{display:inline-flex;align-items:center;gap:6px;background:var(--black);color:var(--white);font-size:11px;padding:5px 10px;border-radius:6px;margin-bottom:24px;text-decoration:none}
+.nina-quote{font-size:15px;color:var(--gray-700);line-height:1.7;font-style:italic;border-left:2px solid var(--accent);padding-left:20px}
+.values-list{display:flex;flex-direction:column;gap:32px}
+.value-item{}
+.value-num{font-family:var(--serif);font-size:40px;color:var(--gray-300);line-height:1;margin-bottom:8px}
+.value-title{font-family:var(--serif);font-size:20px;margin-bottom:8px}
+.value-body{font-size:14px;color:var(--gray-700);line-height:1.6}
+
+/* IL SISTEMA IN NUMERI */
+.numeri{padding:80px 24px;background:var(--white)}
+.numeri-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;margin-top:48px}
+.numero-card{background:var(--gray-100);border-radius:12px;padding:28px 24px;text-align:center}
+.numero-val{font-family:var(--serif);font-size:40px;color:var(--black);line-height:1;margin-bottom:8px}
+.numero-label{font-size:13px;color:var(--gray-500);line-height:1.4}
+
+/* TGR */
+.tgr-section{background:var(--black);padding:80px 24px;text-align:center}
+.tgr-section h2{color:var(--white);margin-bottom:16px}
+.tgr-section h2 em{color:#7ec8a4}
+.tgr-body{font-size:17px;color:#888;font-weight:300;max-width:500px;margin:0 auto 40px;line-height:1.6}
+.tgr-player{background:#111;border:1px solid #2a2a2a;border-radius:12px;padding:40px;max-width:500px;margin:0 auto;display:flex;flex-direction:column;align-items:center;gap:16px}
+.tgr-play{width:64px;height:64px;border-radius:50%;background:#7ec8a4;display:flex;align-items:center;justify-content:center}
+.tgr-play svg{width:24px;height:24px;fill:#0e0e0e;margin-left:3px}
+.tgr-label{font-size:13px;color:#555}
+
+/* FORM */
+.form-section{padding:100px 24px;background:var(--gray-100)}
+.form-inner{max-width:580px;margin:0 auto}
+.form-card{background:var(--white);border-radius:12px;padding:40px;border:1px solid var(--gray-300);margin-top:40px}
+.form-group{margin-bottom:18px}
+.form-group label{display:block;font-size:12px;font-weight:500;letter-spacing:0.06em;text-transform:uppercase;color:var(--gray-500);margin-bottom:6px}
+.form-group input,.form-group select,.form-group textarea{width:100%;background:var(--white);border:1px solid var(--gray-300);border-radius:8px;padding:12px 14px;font-size:14px;color:var(--black);font-family:var(--sans);outline:none;transition:border-color 0.15s}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--accent)}
+.form-group textarea{resize:vertical;min-height:90px}
+.form-submit{width:100%;background:var(--black);color:var(--white);font-family:var(--sans);font-size:15px;font-weight:500;padding:14px;border-radius:8px;border:none;cursor:pointer;transition:opacity 0.15s;margin-bottom:14px}
+.form-submit:hover{opacity:0.82}
+.form-wa{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;background:#25D366;color:white;font-family:var(--sans);font-weight:500;font-size:15px;padding:14px;border-radius:8px;text-decoration:none}
+.form-success{display:none;text-align:center;padding:32px;color:var(--accent);font-family:var(--serif);font-size:1.1rem;line-height:1.6}
+.form-or{text-align:center;font-size:12px;color:var(--gray-500);margin:14px 0;text-transform:uppercase;letter-spacing:0.06em}
+
+footer{background:#0a0a0a;padding:28px 24px;border-top:1px solid #1e1e1e;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.footer-logo{font-family:var(--serif);font-size:16px;color:#555}
+.footer-logo em{font-style:italic;color:#7ec8a4}
+.footer-links{display:flex;gap:16px;flex-wrap:wrap}
+.footer-links a{font-size:13px;color:#555;text-decoration:none;transition:color 0.15s}
+.footer-links a:hover{color:#aaa}
+
+@media(max-width:700px){
+  .contrario-grid,.team-grid{grid-template-columns:1fr}
+  .numeri-grid{grid-template-columns:1fr 1fr}
+  .hero,.statement,.contrario,.team,.numeri,.tgr-section,.form-section{padding:60px 16px}
+  .nav-links a:not(.nav-cta){display:none}
+  nav{padding:0 16px}
+  .form-card{padding:24px 20px}
+  footer{flex-direction:column;align-items:flex-start}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="https://healthysmile.it" class="nav-logo">Healthy Smile <em>By N</em></a>
+  <div class="nav-links">
+    <a href="https://healthysmile.it/prevenzione">Prevenzione</a>
+    <a href="https://healthysmile.it/cure-estero">Cure Estero</a>
+    <a href="https://healthysmile.it/scheda-demo">Scheda digitale</a>
+    <a href="https://wa.me/393461824965?text=Ciao,%20ho%20visto%20il%20sito%20e%20vorrei%20informazioni" class="nav-cta">Scrivici</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">Healthy Smile By N · Torino</span>
+  <h1>Siamo quelli della prevenzione.<br><em>Quelli che ci rimettono</em><br>se non curano bene.</h1>
+  <p class="hero-sub">Probabilmente hai già sentito parlare di noi. Se non ancora — benvenuto. Questo è uno studio dentistico costruito al contrario rispetto a tutti gli altri.</p>
+  <div class="hero-ctas">
+    <a href="https://wa.me/393461824965?text=Ciao,%20vorrei%20prenotare%20igiene%20e%20visita%20a%20%E2%82%AC79%20da%20Healthy%20Smile" class="btn-green">Prenota igiene + visita — €79</a>
+    <a href="#come-funziona" class="btn-outline">Come funziona ↓</a>
+  </div>
+</div>
+
+<!-- STATEMENT -->
+<section class="statement" id="come-funziona">
+  <div class="container">
+    <span class="section-tag">Il nostro principio</span>
+    <h2>Un dentista bravo è quello<br>che <em>vedi meno.</em></h2>
+    <p class="statement-body">
+      Il sistema odontoiatrico tradizionale è costruito su un paradosso: <strong>il dentista guadagna quando stai male</strong>. Più carie, più devitalizzazioni, più impianti — più fatturato. Nessuno ha un incentivo reale a tenerti in salute.<br><br>
+      Noi abbiamo deciso di costruire un modello completamente diverso. <strong>Guadagniamo quando stai bene</strong>, quando torni ogni sei mesi per l'igiene, quando la tua bocca migliora nel tempo. E se un dente che abbiamo già mappato ha bisogno di cure, <strong>il costo lo condividiamo noi con te</strong> — fino al 70% di sconto. Non è una promozione. È come siamo fatti.
+    </p>
+  </div>
+</section>
+
+<!-- IL MODELLO AL CONTRARIO -->
+<div class="contrario">
+  <div class="container">
+    <span class="section-tag">Il confronto</span>
+    <h2>Il dentista tradizionale<br>vs <em>Healthy Smile By N.</em></h2>
+    <div class="contrario-grid">
+      <div class="contrario-col left">
+        <span class="col-tag red">Il dentista tradizionale</span>
+        <div class="col-title">Guadagna quando stai male</div>
+        <ul class="col-items">
+          <li>Ti vede solo quando hai già un problema</li>
+          <li>Non ti dice cosa rischi finché non è troppo tardi</li>
+          <li>Preventivo shock a fine visita, senza contesto</li>
+          <li>Se un dente peggiora, il costo è tutto tuo</li>
+          <li>Nessuna documentazione: esci senza sapere nulla</li>
+          <li>L'obiettivo è riempire l'agenda di interventi</li>
+        </ul>
+      </div>
+      <div class="contrario-col right">
+        <span class="col-tag green">Healthy Smile By N</span>
+        <div class="col-title">Guadagna quando stai bene</div>
+        <ul class="col-items">
+          <li>Ti intercetta prima che il danno sia fatto</li>
+          <li>Scheda digitale dente per dente: sai tutto, sempre</li>
+          <li>Prezzi trasparenti prima che serva un intervento</li>
+          <li>Se serve curarsi, condividiamo il costo — fino al –70%</li>
+          <li>Esci con la tua scheda clinica sul telefono</li>
+          <li>L'obiettivo è che tu non abbia mai bisogno di noi</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- IL TEAM -->
+<section class="team">
+  <div class="container">
+    <span class="section-tag">Le persone</span>
+    <h2>Chi c'è dietro<br><em>Healthy Smile By N.</em></h2>
+    <div class="team-grid">
+      <div class="nina-card">
+        <div class="nina-avatar">N</div>
+        <div class="nina-name">Nina Bottioni</div>
+        <div class="nina-role">Co-fondatrice e responsabile pazienti</div>
+        <a href="#tgr" class="tgr-badge">📺 Come visto al TGR Piemonte</a>
+        <blockquote class="nina-quote">"Abbiamo creato Healthy Smile perché volevamo un dentista che lavorasse davvero per la salute delle persone — non per riempire l'agenda di interventi. La scheda digitale è il nostro modo di dire: qui non ci sono segreti. Sappiamo che questo modello funziona solo se la gente sta davvero bene. Ed è esattamente quello che vogliamo."</blockquote>
+      </div>
+      <div class="values-list">
+        <div class="value-item">
+          <div class="value-num">01</div>
+          <div class="value-title">Siamo uno studio di prevenzione</div>
+          <p class="value-body">Non una catena, non un poliambulatorio generico. Siamo uno studio costruito intorno a un'idea sola: intercettare i problemi prima che esistano. Questo cambia tutto — dal modo in cui lavoriamo a come ci pagate.</p>
+        </div>
+        <div class="value-item">
+          <div class="value-num">02</div>
+          <div class="value-title">La scheda digitale è nostra — nessun altro la fa</div>
+          <p class="value-body">Abbiamo sviluppato uno strumento che nessun altro studio a Torino usa: una scheda clinica interattiva dente per dente, aggiornata ad ogni visita, sempre sul tuo telefono. Non è tecnologia per sembrare moderni. È il cuore del nostro modello.</p>
+        </div>
+        <div class="value-item">
+          <div class="value-num">03</div>
+          <div class="value-title">Siamo a Torino, al Poliambulatorio Servais</div>
+          <p class="value-body">Via Servais 121, Torino. Uno studio moderno, attrezzature di ultima generazione, nessuna lista d'attesa infinita. Prenoti su WhatsApp in 30 secondi.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- NUMERI -->
+<section class="numeri">
+  <div class="container">
+    <span class="section-tag">Il sistema in numeri</span>
+    <h2>Cosa significa concretamente<br><em>prevenzione vera.</em></h2>
+    <div class="numeri-grid">
+      <div class="numero-card">
+        <div class="numero-val">€30</div>
+        <div class="numero-label">carie intercettata in tempo</div>
+      </div>
+      <div class="numero-card">
+        <div class="numero-val">€900</div>
+        <div class="numero-label">stessa carie ignorata → devitalizzazione</div>
+      </div>
+      <div class="numero-card">
+        <div class="numero-val">€2.000+</div>
+        <div class="numero-label">ignorata ancora → impianto</div>
+      </div>
+      <div class="numero-card">
+        <div class="numero-val">–70%</div>
+        <div class="numero-label">sconto sulle cure per chi ha il pacchetto protezione</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TGR -->
+<div class="tgr-section" id="tgr">
+  <div class="container" style="text-align:center">
+    <span class="section-tag" style="color:#555;display:block;margin-bottom:16px;">Media</span>
+    <h2>Come visto al <em>TGR Piemonte.</em></h2>
+    <p class="tgr-body">Nina ha raccontato in televisione perché abbiamo fondato Healthy Smile By N e perché siamo diversi da qualsiasi altro studio a Torino.</p>
+    <div class="tgr-player">
+      <div class="tgr-play">
+        <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+      </div>
+      <span class="tgr-label">📺 TGR Piemonte · Inaugurazione Healthy Smile By N</span>
+    </div>
+  </div>
+</div>
+
+<!-- FORM -->
+<section class="form-section">
+  <div class="form-inner">
+    <span class="section-tag">Contatti</span>
+    <h2>Hai sentito parlare di noi.<br><em>Adesso vieni a trovarci.</em></h2>
+    <p style="font-size:16px;color:var(--gray-700);font-weight:300;margin-top:8px;line-height:1.6;">Inizia con l'igiene e visita a €79 — esci con la tua scheda digitale e sai esattamente come stai.</p>
+    <div class="form-card">
+      <div id="form-content">
+        <form action="https://formspree.io/f/mkopypyg" method="POST" id="chi-siamo-form">
+          <input type="hidden" name="_subject" value="Richiesta da Chi siamo — Healthy Smile">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <div class="form-group">
+              <label>Nome *</label>
+              <input type="text" name="nome" placeholder="Mario Rossi" required>
+            </div>
+            <div class="form-group">
+              <label>Telefono *</label>
+              <input type="tel" name="telefono" placeholder="+39 333 000 0000" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Mi interessa</label>
+            <select name="interesse">
+              <option value="">Seleziona</option>
+              <option value="igiene-79">Igiene + visita completa — €79</option>
+              <option value="pacchetto-180">Pacchetto Protezione annuale — €180</option>
+              <option value="cure-estero">Piano Protezione Cure Estero</option>
+              <option value="info">Solo informazioni per ora</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Messaggio (opzionale)</label>
+            <textarea name="messaggio" placeholder="Raccontaci la tua situazione o fai una domanda..."></textarea>
+          </div>
+          <button type="submit" class="form-submit">Invia richiesta</button>
+        </form>
+        <div class="form-or">oppure</div>
+        <a href="https://wa.me/393461824965?text=Ciao,%20ho%20visto%20la%20pagina%20Chi%20siamo%20e%20vorrei%20prenotare" class="form-wa">
+          <svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:white;flex-shrink:0"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.553 4.118 1.522 5.85L.057 23.5l5.797-1.522A11.943 11.943 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.811 9.811 0 01-5.003-1.37l-.36-.214-3.44.902.918-3.352-.234-.375A9.818 9.818 0 012.182 12C2.182 6.57 6.57 2.182 12 2.182S21.818 6.57 21.818 12 17.43 21.818 12 21.818z"/></svg>
+          Scrivici su WhatsApp
+        </a>
+      </div>
+      <div class="form-success" id="form-success">
+        Richiesta inviata.<br>Ti contattiamo entro poche ore.
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:32px;">
+      <p style="font-size:14px;color:var(--gray-500);">Via Servais 121, Torino · Poliambulatorio Servais</p>
+      <p style="font-size:14px;color:var(--gray-500);margin-top:4px;"><a href="tel:+393461824965" style="color:var(--accent);text-decoration:none;">+39 346 182 4965</a> · <a href="https://www.instagram.com/healthy.smile.by.n" target="_blank" style="color:var(--accent);text-decoration:none;">@healthy.smile.by.n</a></p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <span class="footer-logo">Healthy Smile <em>By N</em> · Torino</span>
+  <div class="footer-links">
+    <a href="https://healthysmile.it/prevenzione">Prevenzione</a>
+    <a href="https://healthysmile.it/cure-estero">Cure Estero</a>
+    <a href="https://healthysmile.it/scheda-demo">Scheda digitale</a>
+    <a href="https://www.instagram.com/healthy.smile.by.n" target="_blank">Instagram</a>
+    <a href="tel:+393461824965">+39 346 182 4965</a>
+  </div>
+</footer>
+
+<script>
+const form = document.getElementById('chi-siamo-form');
+if(form){
+  form.addEventListener('submit', async(e)=>{
+    e.preventDefault();
+    const btn = form.querySelector('.form-submit');
+    btn.textContent = 'Invio in corso...'; btn.disabled = true;
+    try{
+      const res = await fetch(form.action,{method:'POST',body:new FormData(form),headers:{'Accept':'application/json'}});
+      if(res.ok){
+        document.getElementById('form-content').style.display='none';
+        document.getElementById('form-success').style.display='block';
+      } else { btn.textContent='Errore — riprova'; btn.disabled=false; }
+    } catch { btn.textContent='Errore — riprova'; btn.disabled=false; }
+  });
+}
+</script>
+</body>
+</html>
