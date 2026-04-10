@@ -404,6 +404,66 @@ footer{background:#0a0a0a;padding:28px 24px;border-top:1px solid #1e1e1e;display
   </div>
 </div>
 
+<section style="padding:80px 24px;background:var(--gray-100);">
+  <div class="container" style="max-width:600px;">
+    <span class="section-tag">Contatti</span>
+    <h2>Scrivici.<br><em>Ti rispondiamo subito.</em></h2>
+    <p style="font-size:16px;color:var(--gray-700);font-weight:300;margin-bottom:40px;line-height:1.6;">Preferisci scrivere da qui? Compila il form — ti ricontattiamo entro poche ore.</p>
+
+    <form action="https://formspree.io/f/mkopypyg" method="POST" id="form-prevenzione"
+      style="display:flex;flex-direction:column;gap:16px;">
+
+      <input type="hidden" name="_subject" value="Richiesta da healthysmile.it — Prevenzione">
+      <input type="hidden" name="_next" value="https://healthysmile.it/prevenzione">
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div>
+          <label style="font-size:12px;font-weight:500;letter-spacing:0.06em;text-transform:uppercase;color:var(--gray-500);display:block;margin-bottom:6px;">Nome e cognome *</label>
+          <input type="text" name="nome" required placeholder="Mario Rossi"
+            style="width:100%;background:var(--white);border:1px solid var(--gray-300);border-radius:8px;padding:12px 14px;font-size:14px;color:var(--black);font-family:var(--sans);outline:none;transition:border-color 0.15s;"
+            onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--gray-300)'">
+        </div>
+        <div>
+          <label style="font-size:12px;font-weight:500;letter-spacing:0.06em;text-transform:uppercase;color:var(--gray-500);display:block;margin-bottom:6px;">Telefono *</label>
+          <input type="tel" name="telefono" required placeholder="+39 333 000 0000"
+            style="width:100%;background:var(--white);border:1px solid var(--gray-300);border-radius:8px;padding:12px 14px;font-size:14px;color:var(--black);font-family:var(--sans);outline:none;transition:border-color 0.15s;"
+            onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--gray-300)'">
+        </div>
+      </div>
+
+      <div>
+        <label style="font-size:12px;font-weight:500;letter-spacing:0.06em;text-transform:uppercase;color:var(--gray-500);display:block;margin-bottom:6px;">Mi interessa</label>
+        <select name="interesse"
+          style="width:100%;background:var(--white);border:1px solid var(--gray-300);border-radius:8px;padding:12px 14px;font-size:14px;color:var(--gray-700);font-family:var(--sans);outline:none;appearance:none;cursor:pointer;">
+          <option value="">Seleziona</option>
+          <option value="igiene-79">Igiene + visita completa — €79</option>
+          <option value="pacchetto-180">Pacchetto Protezione annuale — €180</option>
+          <option value="entrambi">Entrambi, voglio capire meglio</option>
+          <option value="info">Solo informazioni per ora</option>
+        </select>
+      </div>
+
+      <div>
+        <label style="font-size:12px;font-weight:500;letter-spacing:0.06em;text-transform:uppercase;color:var(--gray-500);display:block;margin-bottom:6px;">Messaggio (opzionale)</label>
+        <textarea name="messaggio" rows="3" placeholder="Raccontaci brevemente la tua situazione o fai una domanda..."
+          style="width:100%;background:var(--white);border:1px solid var(--gray-300);border-radius:8px;padding:12px 14px;font-size:14px;color:var(--black);font-family:var(--sans);outline:none;resize:vertical;transition:border-color 0.15s;"
+          onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--gray-300)'"></textarea>
+      </div>
+
+      <button type="submit"
+        style="background:var(--black);color:var(--white);font-family:var(--sans);font-size:15px;font-weight:500;padding:14px;border-radius:8px;border:none;cursor:pointer;transition:opacity 0.15s;margin-top:4px;"
+        onmouseover="this.style.opacity='0.82'" onmouseout="this.style.opacity='1'">
+        Invia richiesta
+      </button>
+
+      <p style="font-size:12px;color:var(--gray-500);text-align:center;margin-top:4px;">
+        Oppure scrivici direttamente su
+        <a href="https://wa.me/393461824965?text=Ciao,%20ho%20visto%20il%20sito%20e%20vorrei%20prenotare" style="color:var(--accent);text-decoration:none;font-weight:500;">WhatsApp →</a>
+      </p>
+    </form>
+  </div>
+</section>
+
 <footer>
   <span class="footer-logo">Healthy Smile <em>By N</em> · Torino</span>
   <div class="footer-links">
