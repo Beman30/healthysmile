@@ -377,7 +377,8 @@ document.querySelectorAll('.problem-item,.proof-card,.timeline-item').forEach(el
 
 <script id="drawer-script">
 (function(){
-  var btn = document.getElementById('hamburgerBtn');
+  var btn = document.getElementById('hamburger');
+  if(!btn) return;
   var drawer = document.getElementById('mobileDrawer');
   var overlay = document.getElementById('drawerOverlay');
   var closeBtn = document.getElementById('drawerClose');
