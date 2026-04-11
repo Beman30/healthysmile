@@ -8,6 +8,17 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+
+<!-- Google tag (gtag.js) - GA4 + Google Ads -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-SRMDX8JXL5"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-SRMDX8JXL5');
+  gtag('config', 'AW-947982327');
+</script>
+
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -15,16 +26,6 @@
   --gray-500:#888680;--gray-700:#4a4845;--accent:#1a6b4a;--accent-light:#e8f4ef;
   --serif:'DM Serif Display',Georgia,serif;--sans:'DM Sans',system-ui,sans-serif;
 }
-
-  <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-SRMDX8JXL5"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-SRMDX8JXL5');
-</script>
 html{scroll-behavior:smooth}
 body{font-family:var(--sans);background:var(--white);color:var(--black);font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
 
@@ -38,7 +39,6 @@ nav{position:sticky;top:0;z-index:100;background:var(--white);border-bottom:1px 
 .nav-cta{font-size:13px !important;font-weight:500 !important;background:var(--black);color:var(--white) !important;padding:8px 16px !important;border-radius:6px;transition:opacity 0.15s}
 .nav-cta:hover{opacity:0.85;background:var(--black) !important}
 
-/* HERO — dichiarazione di intenti */
 .hero{background:var(--black);color:var(--white);padding:100px 24px 80px;text-align:center}
 .hero-tag{display:inline-block;font-size:11px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:#7ec8a4;background:rgba(126,200,164,0.12);padding:4px 12px;border-radius:20px;margin-bottom:32px}
 .hero h1{font-family:var(--serif);font-size:clamp(36px,6vw,72px);line-height:1.05;letter-spacing:-0.02em;max-width:800px;margin:0 auto 28px}
@@ -50,17 +50,14 @@ nav{position:sticky;top:0;z-index:100;background:var(--white);border-bottom:1px 
 .btn-outline{background:transparent;color:var(--white);font-family:var(--sans);font-size:15px;padding:14px 28px;border-radius:8px;border:1px solid #3a3a3a;text-decoration:none;transition:border-color 0.15s;display:inline-block}
 .btn-outline:hover{border-color:#666}
 
-/* STATEMENT CENTRALE */
 .statement{padding:100px 24px;background:var(--white)}
 .container{max-width:860px;margin:0 auto}
 .section-tag{font-size:11px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray-500);margin-bottom:16px;display:block}
 h2{font-family:var(--serif);font-size:clamp(28px,5vw,52px);line-height:1.1;letter-spacing:-0.02em;margin-bottom:24px}
 h2 em{font-style:italic;color:var(--accent)}
-
 .statement-body{font-size:clamp(17px,2vw,20px);color:var(--gray-700);font-weight:300;line-height:1.8;max-width:700px;margin-bottom:0}
 .statement-body strong{color:var(--black);font-weight:500}
 
-/* IL MODELLO AL CONTRARIO */
 .contrario{background:var(--black);padding:100px 24px}
 .contrario .section-tag{color:#555}
 .contrario h2{color:var(--white)}
@@ -82,7 +79,6 @@ h2 em{font-style:italic;color:var(--accent)}
 .contrario-col.right .col-items li{color:#b0aea8}
 .contrario-col.right .col-items li::before{content:'✓';color:#7ec8a4;font-size:12px;margin-top:3px;flex-shrink:0}
 
-/* IL TEAM */
 .team{padding:100px 24px;background:var(--gray-100)}
 .team-grid{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:start;margin-top:56px}
 .nina-card{background:var(--white);border-radius:16px;padding:40px;border:1px solid var(--gray-300)}
@@ -97,14 +93,12 @@ h2 em{font-style:italic;color:var(--accent)}
 .value-title{font-family:var(--serif);font-size:20px;margin-bottom:8px}
 .value-body{font-size:14px;color:var(--gray-700);line-height:1.6}
 
-/* IL SISTEMA IN NUMERI */
 .numeri{padding:80px 24px;background:var(--white)}
 .numeri-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;margin-top:48px}
 .numero-card{background:var(--gray-100);border-radius:12px;padding:28px 24px;text-align:center}
 .numero-val{font-family:var(--serif);font-size:40px;color:var(--black);line-height:1;margin-bottom:8px}
 .numero-label{font-size:13px;color:var(--gray-500);line-height:1.4}
 
-/* TGR */
 .tgr-section{background:var(--black);padding:80px 24px;text-align:center}
 .tgr-section h2{color:var(--white);margin-bottom:16px}
 .tgr-section h2 em{color:#7ec8a4}
@@ -114,7 +108,6 @@ h2 em{font-style:italic;color:var(--accent)}
 .tgr-play svg{width:24px;height:24px;fill:#0e0e0e;margin-left:3px}
 .tgr-label{font-size:13px;color:#555}
 
-/* FORM */
 .form-section{padding:100px 24px;background:var(--gray-100)}
 .form-inner{max-width:580px;margin:0 auto}
 .form-card{background:var(--white);border-radius:12px;padding:40px;border:1px solid var(--gray-300);margin-top:40px}
@@ -156,7 +149,6 @@ footer{background:#0a0a0a;padding:28px 24px;border-top:1px solid #1e1e1e;display
 .mobile-menu.open{display:flex}
 @media(max-width:700px){.hamburger{display:flex}}
 
-/* === HAMBURGER MENU MOBILE === */
 .hamburger{display:none;flex-direction:column;justify-content:center;gap:5px;width:36px;height:36px;cursor:pointer;padding:4px;background:none;border:none;flex-shrink:0}
 .hamburger span{display:block;height:2px;background:#ccc;border-radius:2px;transition:transform 0.3s,opacity 0.3s,background 0.2s}
 .hamburger:hover span{background:#fff}
@@ -176,17 +168,6 @@ footer{background:#0a0a0a;padding:28px 24px;border-top:1px solid #1e1e1e;display
 .drawer-close:hover{color:#fff}
 @media(max-width:768px){.hamburger{display:flex}}
 </style>
-
-  <!-- Google tag (gtag.js) - GA4 + Google Ads -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-NRVQH62VHL"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-NRVQH62VHL');
-    gtag('config', 'AW-947982327');
-  </script>
-<!-- build:20260411_061836 -->
 </head>
 <body>
 
@@ -448,7 +429,8 @@ if(hbg && mob){
 <script id="drawer-script">
 (function(){
   var btn = document.getElementById('hamburger');
-  if(!btn) return;  var drawer = document.getElementById('mobileDrawer');
+  if(!btn) return;
+  var drawer = document.getElementById('mobileDrawer');
   var overlay = document.getElementById('drawerOverlay');
   var closeBtn = document.getElementById('drawerClose');
   function open(){btn.classList.add('open');drawer.classList.add('open');overlay.classList.add('open');document.body.style.overflow='hidden'}
@@ -459,75 +441,74 @@ if(hbg && mob){
 })();
 </script>
 
-  <!-- Tracking eventi personalizzati -->
-  <script>
-  (function(){
+<!-- Tracking eventi personalizzati -->
+<script>
+(function(){
 
-    // === SCROLL DEPTH ===
-    var scrollMarks = {25:false, 50:false, 75:false, 90:false};
-    window.addEventListener('scroll', function(){
-      var pct = Math.round((window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100);
-      Object.keys(scrollMarks).forEach(function(mark){
-        if(!scrollMarks[mark] && pct >= mark){
-          scrollMarks[mark] = true;
-          gtag('event', 'scroll_depth', {event_category:'engagement', event_label: mark+'%', value: parseInt(mark)});
-        }
-      });
-    }, {passive:true});
-
-    // === TEMPO SULLA PAGINA ===
-    var startTime = Date.now();
-    [30, 60, 120, 180].forEach(function(sec){
-      setTimeout(function(){
-        gtag('event', 'time_on_page', {event_category:'engagement', event_label: sec+'s', value: sec});
-      }, sec * 1000);
-    });
-
-    // === CLICK WHATSAPP ===
-    document.querySelectorAll('a[href*="wa.me"]').forEach(function(el){
-      el.addEventListener('click', function(){
-        // GA4
-        gtag('event', 'whatsapp_click', {event_category:'conversione', event_label: el.textContent.trim().substring(0,50)});
-        // Google Ads conversione
-        gtag('event', 'conversion', {send_to: 'AW-947982327/whatsapp_click'});
-      });
-    });
-
-    // === CLICK TELEFONO ===
-    document.querySelectorAll('a[href^="tel:"]').forEach(function(el){
-      el.addEventListener('click', function(){
-        gtag('event', 'phone_click', {event_category:'conversione', event_label: el.getAttribute('href')});
-        gtag('event', 'conversion', {send_to: 'AW-947982327/phone_click'});
-      });
-    });
-
-    // === SUBMIT FORM ===
-    var form = document.querySelector('form');
-    if(form){
-      form.addEventListener('submit', function(){
-        gtag('event', 'form_submit', {event_category:'conversione', event_label:'form_contatti'});
-        gtag('event', 'conversion', {send_to: 'AW-947982327/form_submit'});
-      });
-    }
-
-    // === CLICK FAQ ===
-    document.querySelectorAll('.faq-q').forEach(function(el){
-      el.addEventListener('click', function(){
-        var question = el.textContent.trim().substring(0,80);
-        gtag('event', 'faq_click', {event_category:'engagement', event_label: question});
-      });
-    });
-
-    // === CLICK LINK ESTERNO ===
-    document.querySelectorAll('a[href^="http"]').forEach(function(el){
-      if(!el.href.includes('wa.me') && !el.href.includes(window.location.hostname)){
-        el.addEventListener('click', function(){
-          gtag('event', 'outbound_click', {event_category:'engagement', event_label: el.href});
-        });
+  // === SCROLL DEPTH ===
+  var scrollMarks = {25:false, 50:false, 75:false, 90:false};
+  window.addEventListener('scroll', function(){
+    var pct = Math.round((window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100);
+    Object.keys(scrollMarks).forEach(function(mark){
+      if(!scrollMarks[mark] && pct >= mark){
+        scrollMarks[mark] = true;
+        gtag('event', 'scroll_depth', {event_category:'engagement', event_label: mark+'%', value: parseInt(mark)});
       }
     });
+  }, {passive:true});
 
-  })();
-  </script>
+  // === TEMPO SULLA PAGINA ===
+  var startTime = Date.now();
+  [30, 60, 120, 180].forEach(function(sec){
+    setTimeout(function(){
+      gtag('event', 'time_on_page', {event_category:'engagement', event_label: sec+'s', value: sec});
+    }, sec * 1000);
+  });
+
+  // === CLICK WHATSAPP ===
+  document.querySelectorAll('a[href*="wa.me"]').forEach(function(el){
+    el.addEventListener('click', function(){
+      gtag('event', 'whatsapp_click', {event_category:'conversione', event_label: el.textContent.trim().substring(0,50)});
+      gtag('event', 'conversion', {send_to: 'AW-947982327/whatsapp_click'});
+    });
+  });
+
+  // === CLICK TELEFONO ===
+  document.querySelectorAll('a[href^="tel:"]').forEach(function(el){
+    el.addEventListener('click', function(){
+      gtag('event', 'phone_click', {event_category:'conversione', event_label: el.getAttribute('href')});
+      gtag('event', 'conversion', {send_to: 'AW-947982327/phone_click'});
+    });
+  });
+
+  // === SUBMIT FORM ===
+  var form = document.querySelector('form');
+  if(form){
+    form.addEventListener('submit', function(){
+      gtag('event', 'form_submit', {event_category:'conversione', event_label:'form_contatti'});
+      gtag('event', 'conversion', {send_to: 'AW-947982327/form_submit'});
+    });
+  }
+
+  // === CLICK FAQ ===
+  document.querySelectorAll('.faq-q').forEach(function(el){
+    el.addEventListener('click', function(){
+      var question = el.textContent.trim().substring(0,80);
+      gtag('event', 'faq_click', {event_category:'engagement', event_label: question});
+    });
+  });
+
+  // === CLICK LINK ESTERNO ===
+  document.querySelectorAll('a[href^="http"]').forEach(function(el){
+    if(!el.href.includes('wa.me') && !el.href.includes(window.location.hostname)){
+      el.addEventListener('click', function(){
+        gtag('event', 'outbound_click', {event_category:'engagement', event_label: el.href});
+      });
+    }
+  });
+
+})();
+</script>
+
 </body>
 </html>
