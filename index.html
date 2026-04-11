@@ -437,8 +437,8 @@ if(hbg && mob){
 
 <script id="drawer-script">
 (function(){
-  var btn = document.getElementById('hamburgerBtn');
-  var drawer = document.getElementById('mobileDrawer');
+  var btn = document.getElementById('hamburger');
+  if(!btn) return;  var drawer = document.getElementById('mobileDrawer');
   var overlay = document.getElementById('drawerOverlay');
   var closeBtn = document.getElementById('drawerClose');
   function open(){btn.classList.add('open');drawer.classList.add('open');overlay.classList.add('open');document.body.style.overflow='hidden'}
