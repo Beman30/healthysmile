@@ -538,7 +538,8 @@ footer{background:#0a0a0a;padding:28px 24px;border-top:1px solid #1e1e1e;display
 
 <script id="drawer-script">
 (function(){
-  var btn = document.getElementById('hamburgerBtn');
+  var btn = document.getElementById('hamburger');
+  if(!btn) return;
   var drawer = document.getElementById('mobileDrawer');
   var overlay = document.getElementById('drawerOverlay');
   var closeBtn = document.getElementById('drawerClose');
