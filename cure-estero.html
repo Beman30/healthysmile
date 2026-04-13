@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Piano Protezione Cure Estero – Healthy Smile Torino</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  
+<!-- Google tag (gtag.js) - GA4 + Google Ads -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-SRMDX8JXL5"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-SRMDX8JXL5');
+  gtag('config', 'AW-947982327');
+</script>
+<style>
+  
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--cream:#F7F3EE;--warm-white:#FDFAF6;--charcoal:#1C1C1C;--mid:#5A5A5A;--accent:#2B6B5E;--accent-light:#3D8A7A;--gold:#C9A84C;--border:#E0D8CE}
+html{scroll-behavior:smooth}
+body{font-family:'DM Sans',sans-serif;background:var(--warm-white);color:var(--charcoal);overflow-x:hidden}
+.site-nav{position:sticky;top:0;z-index:200;background:var(--charcoal);border-bottom:1px solid #2a2a2a;padding:0 32px;display:flex;align-items:center;justify-content:space-between;height:56px}
+.site-nav-logo{font-family:'Playfair Display',serif;font-size:17px;color:var(--gold);text-decoration:none;letter-spacing:0.05em}
+.site-nav-logo em{font-style:italic}
+.site-nav-links{display:flex;gap:4px;align-items:center}
+.site-nav-links a{font-size:13px;color:#888;text-decoration:none;padding:6px 12px;border-radius:6px;transition:color 0.15s}
+.site-nav-links a:hover{color:#fff}
+.site-nav-links a.active{color:var(--gold);font-weight:500}
+.site-nav-cta{font-size:13px !important;font-weight:500 !important;background:var(--accent) !important;color:#fff !important;padding:8px 16px !important;border-radius:6px}
+.site-nav-cta:hover{background:var(--accent-light) !important;color:#fff !important}
+.hero{min-height:100vh;display:grid;grid-template-columns:55% 45%;position:relative;overflow:hidden}
+.hero-left{background:var(--charcoal);display:flex;flex-direction:column;justify-content:center;padding:80px 70px 80px 8%;position:relative;z-index:1}
+.hero-left::after{content:'';position:absolute;right:-40px;top:0;bottom:0;width:80px;background:var(--charcoal);clip-path:polygon(0 0,0 100%,100% 100%);z-index:2}
+.logo{font-family:'Playfair Display',serif;font-size:1.1rem;color:var(--gold);letter-spacing:0.15em;text-transform:uppercase;margin-bottom:60px;opacity:0;animation:fadeUp 0.8s ease forwards 0.1s}
+.hero-badge{display:inline-block;align-self:flex-start;background:var(--accent);color:white;font-size:0.7rem;letter-spacing:0.12em;text-transform:uppercase;padding:6px 14px;border-radius:2px;margin-bottom:28px;opacity:0;animation:fadeUp 0.8s ease forwards 0.2s}
+.hero-title{font-family:'Playfair Display',serif;font-size:clamp(2.2rem,4vw,3.4rem);line-height:1.15;color:white;margin-bottom:24px;opacity:0;animation:fadeUp 0.8s ease forwards 0.35s}
+.hero-title em{font-style:italic;color:var(--gold)}
+.hero-sub{font-size:1rem;color:#A0A0A0;line-height:1.7;max-width:420px;margin-bottom:48px;opacity:0;animation:fadeUp 0.8s ease forwards 0.5s}
+.cta-btn{display:inline-flex;align-items:center;gap:12px;background:#25D366;color:white;font-family:'DM Sans',sans-serif;font-weight:500;font-size:1rem;padding:18px 32px;border-radius:4px;text-decoration:none;transition:transform 0.2s,box-shadow 0.2s;opacity:0;animation:fadeUp 0.8s ease forwards 0.8s}
+.cta-btn:hover{transform:translateY(-2px);box-shadow:0 12px 40px rgba(37,211,102,0.3)}
+.cta-btn svg,.cta-btn-white svg,.form-wa-btn svg{width:22px;height:22px;fill:white;flex-shrink:0}
+.hero-right{background:var(--cream);display:flex;align-items:center;justify-content:center;padding:80px 6% 80px 80px}
+.phases-stack{display:flex;flex-direction:column;gap:0;width:100%}
+.phase-card{background:white;border:1px solid var(--border);padding:28px 32px;position:relative;opacity:0;transform:translateX(30px);transition:box-shadow 0.3s}
+.phase-card:hover{box-shadow:0 8px 32px rgba(0,0,0,0.08)}
+.phase-card:nth-child(1){animation:slideIn 0.7s ease forwards 0.5s}
+.phase-card:nth-child(2){animation:slideIn 0.7s ease forwards 0.7s;margin-left:20px}
+.phase-card:nth-child(3){animation:slideIn 0.7s ease forwards 0.9s;margin-left:40px}
+.phase-number{font-family:'Playfair Display',serif;font-size:3rem;color:var(--border);position:absolute;right:20px;top:10px;line-height:1}
+.phase-label{font-size:0.65rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--accent);font-weight:500;margin-bottom:8px}
+.phase-title{font-family:'Playfair Display',serif;font-size:1.3rem;margin-bottom:8px}
+.phase-desc{font-size:0.85rem;color:var(--mid);line-height:1.6}
+.problem-section{background:var(--charcoal);padding:100px 6%;position:relative;overflow:hidden}
+.problem-section::before{content:'"';font-family:'Playfair Display',serif;font-size:20rem;color:rgba(255,255,255,0.03);position:absolute;top:-60px;left:40px;line-height:1;pointer-events:none}
+.section-inner{max-width:1400px;margin:0 auto}
+.section-tag{font-size:0.65rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:20px;display:block}
+.section-title{font-family:'Playfair Display',serif;font-size:clamp(1.8rem,3vw,2.8rem);color:white;margin-bottom:60px;max-width:600px;line-height:1.3}
+.problem-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:rgba(255,255,255,0.08)}
+.problem-item{background:var(--charcoal);padding:40px 36px;transition:background 0.3s}
+.problem-item:hover{background:#242424}
+.problem-icon{font-size:1.8rem;margin-bottom:16px}
+.problem-item h3{font-family:'Playfair Display',serif;font-size:1.15rem;color:white;margin-bottom:12px}
+.problem-item p{font-size:0.85rem;color:#808080;line-height:1.7}
+.solution-section{padding:100px 6%;background:var(--warm-white)}
+.solution-header{text-align:center;margin-bottom:80px}
+.solution-header p{color:var(--mid);font-size:1rem;max-width:500px;margin:0 auto;line-height:1.7}
+.timeline{max-width:900px;margin:0 auto;position:relative}
+.timeline::before{content:'';position:absolute;left:50px;top:0;bottom:0;width:1px;background:var(--border)}
+.timeline-item{display:grid;grid-template-columns:100px 1fr;gap:40px;margin-bottom:60px;align-items:start}
+.timeline-marker{display:flex;flex-direction:column;align-items:center;gap:8px}
+.timeline-dot{width:20px;height:20px;border-radius:50%;background:var(--accent);border:3px solid var(--warm-white);outline:1px solid var(--accent);position:relative;z-index:1}
+.timeline-phase{font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--accent);text-align:center;font-weight:500}
+.timeline-content h3{font-family:'Playfair Display',serif;font-size:1.5rem;margin-bottom:12px;color:var(--charcoal)}
+.timeline-content p{color:var(--mid);font-size:0.9rem;line-height:1.7;margin-bottom:16px}
+.timeline-tags{display:flex;flex-wrap:wrap;gap:8px}
+.tag{background:var(--cream);border:1px solid var(--border);font-size:0.75rem;padding:5px 12px;border-radius:2px;color:var(--mid)}
+.proof-section{background:var(--cream);padding:100px 6%}
+.proof-grid{margin:60px auto 0;display:grid;grid-template-columns:repeat(3,1fr);gap:32px}
+.proof-card{background:white;padding:36px;border-left:3px solid var(--accent)}
+.proof-quote{font-family:'Playfair Display',serif;font-size:1rem;font-style:italic;color:var(--charcoal);line-height:1.7;margin-bottom:24px}
+.proof-meta{font-size:0.75rem;color:var(--mid);letter-spacing:0.05em}
+.proof-meta strong{display:block;color:var(--charcoal);font-size:0.85rem;margin-bottom:2px}
+.final-cta{background:var(--accent);padding:100px 6%;text-align:center;position:relative;overflow:hidden}
+.final-cta::before{content:'';position:absolute;top:-100px;right:-100px;width:400px;height:400px;border-radius:50%;background:rgba(255,255,255,0.05)}
+.final-cta::after{content:'';position:absolute;bottom:-80px;left:-80px;width:300px;height:300px;border-radius:50%;background:rgba(255,255,255,0.04)}
+.final-cta .section-tag{color:rgba(255,255,255,0.6)}
+.final-cta h2{font-family:'Playfair Display',serif;font-size:clamp(2rem,4vw,3rem);color:white;margin-bottom:20px;position:relative;z-index:1}
+.final-cta p{color:rgba(255,255,255,0.75);font-size:1rem;max-width:500px;margin:0 auto 48px;line-height:1.7;position:relative;z-index:1}
+.cta-btn-white{display:inline-flex;align-items:center;gap:12px;background:white;color:var(--accent);font-family:'DM Sans',sans-serif;font-weight:500;font-size:1rem;padding:18px 36px;border-radius:4px;text-decoration:none;transition:transform 0.2s,box-shadow 0.2s;position:relative;z-index:1}
+.cta-btn-white:hover{transform:translateY(-2px);box-shadow:0 12px 40px rgba(0,0,0,0.2)}
+.form-section{padding:100px 6%;background:var(--warm-white)}
+.form-inner{max-width:600px;margin:0 auto}
+.form-header{text-align:center;margin-bottom:48px}
+.form-header h2{font-family:'Playfair Display',serif;font-size:clamp(1.6rem,2.5vw,2.2rem);color:var(--charcoal);margin-bottom:12px}
+.form-header p{color:var(--mid);font-size:0.95rem;line-height:1.7}
+.form-card{background:white;border:1px solid var(--border);border-radius:6px;padding:40px}
+.form-group{margin-bottom:20px}
+.form-group label{display:block;font-size:0.78rem;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:var(--mid);margin-bottom:8px}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:12px 16px;border:1px solid var(--border);border-radius:4px;font-family:'DM Sans',sans-serif;font-size:0.95rem;color:var(--charcoal);background:var(--warm-white);transition:border-color 0.2s;outline:none}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--accent)}
+.form-group textarea{resize:vertical;min-height:90px}
+.form-submit{width:100%;background:var(--accent);color:white;font-family:'DM Sans',sans-serif;font-weight:500;font-size:1rem;padding:16px;border:none;border-radius:4px;cursor:pointer;transition:background 0.2s,transform 0.2s;margin-bottom:16px}
+.form-submit:hover{background:var(--accent-light);transform:translateY(-1px)}
+.form-divider{text-align:center;margin:24px 0;position:relative}
+.form-divider::before{content:'';position:absolute;left:0;right:0;top:50%;height:1px;background:var(--border)}
+.form-divider span{background:white;padding:0 16px;position:relative;font-size:0.8rem;color:var(--mid);text-transform:uppercase;letter-spacing:0.1em}
+.form-wa-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;background:#25D366;color:white;font-family:'DM Sans',sans-serif;font-weight:500;font-size:1rem;padding:16px;border-radius:4px;text-decoration:none;transition:background 0.2s}
+.form-wa-btn:hover{background:#1fb855}
+.form-success{display:none;text-align:center;padding:40px 20px;color:var(--accent);font-family:'Playfair Display',serif;font-size:1.2rem;line-height:1.7}
+.faq-section{padding:100px 6%;background:var(--warm-white)}
+.faq-inner{max-width:700px;margin:60px auto 0}
+.faq-item{border-bottom:1px solid var(--border);padding:28px 0}
+.faq-q{font-family:'Playfair Display',serif;font-size:1.05rem;color:var(--charcoal);cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:20px;user-select:none}
+.faq-q::after{content:'+';font-size:1.4rem;color:var(--accent);font-family:'DM Sans',sans-serif;flex-shrink:0;transition:transform 0.3s}
+.faq-item.open .faq-q::after{transform:rotate(45deg)}
+.faq-a{font-size:0.9rem;color:var(--mid);line-height:1.8;max-height:0;overflow:hidden;transition:max-height 0.4s ease,padding 0.3s ease}
+.faq-item.open .faq-a{max-height:300px;padding-top:16px}
+footer{background:var(--charcoal);padding:40px 60px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:20px}
+.footer-logo{font-family:'Playfair Display',serif;color:var(--gold);font-size:1rem;letter-spacing:0.1em}
+.footer-links-bottom{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
+.footer-links-bottom a{font-size:0.8rem;color:#606060;text-decoration:none;transition:color 0.15s}
+.footer-links-bottom a:hover{color:#aaa}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideIn{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:translateX(0)}}
+@media(max-width:768px){
+  .site-nav{padding:0 16px}
+  .site-nav-links a:not(.site-nav-cta){display:none}
+  .hero{grid-template-columns:1fr;min-height:auto}
+  .hero-left{padding:60px 30px}
+  .hero-left::after{display:none}
+  .hero-right{padding:60px 30px}
+  .phase-card:nth-child(2),.phase-card:nth-child(3){margin-left:0}
+  .problem-grid,.proof-grid{grid-template-columns:1fr}
+  .problem-section,.solution-section,.proof-section,.final-cta,.faq-section,.form-section{padding:70px 30px}
+  .form-card{padding:28px 20px}
+  footer{padding:30px;flex-direction:column;text-align:center}
+  .footer-links-bottom{justify-content:center}
+  .timeline::before{left:30px}
+  .timeline-item{grid-template-columns:60px 1fr;gap:20px}
+}
+
+/* === HAMBURGER MENU MOBILE === */
+.hamburger{display:none;flex-direction:column;justify-content:center;gap:5px;width:36px;height:36px;cursor:pointer;padding:4px;background:none;border:none;flex-shrink:0}
+.hamburger span{display:block;height:2px;background:var(--gold);border-radius:2px;transition:transform 0.3s,opacity 0.3s,background 0.2s}
+.hamburger:hover span{background:#fff}
+.hamburger.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+.hamburger.open span:nth-child(2){opacity:0}
+.hamburger.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+.mobile-drawer{position:fixed;top:0;right:0;bottom:0;width:260px;background:var(--charcoal);z-index:300;transform:translateX(100%);transition:transform 0.35s cubic-bezier(0.4,0,0.2,1);display:flex;flex-direction:column;padding:80px 32px 40px;gap:8px;border-left:1px solid #2a2a2a}
+.mobile-drawer.open{transform:translateX(0)}
+.mobile-drawer-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:290;opacity:0;pointer-events:none;transition:opacity 0.35s}
+.mobile-drawer-overlay.open{opacity:1;pointer-events:auto}
+.mobile-drawer a{font-family:'DM Sans',sans-serif;font-size:1.05rem;color:#aaa;text-decoration:none;padding:12px 0;border-bottom:1px solid #2a2a2a;transition:color 0.15s;display:block}
+.mobile-drawer a:hover,.mobile-drawer a.active{color:#fff}
+.mobile-drawer a.active{color:var(--gold)}
+.mobile-drawer .drawer-cta{margin-top:24px;background:var(--accent);color:#fff !important;text-align:center;padding:14px 20px !important;border-radius:4px;border:none !important;font-weight:500;display:block}
+.mobile-drawer .drawer-cta:hover{background:var(--accent-light) !important}
+.drawer-close{position:absolute;top:16px;right:16px;background:none;border:none;color:#666;font-size:1.5rem;cursor:pointer;padding:8px;line-height:1;transition:color 0.15s}
+.drawer-close:hover{color:#fff}
+@media(max-width:768px){.hamburger{display:flex}}
+</style>
+
+</head>
+<body>
+
+<nav class="site-nav">
+  <a href="https://healthysmile.it" class="site-nav-logo">Healthy Smile <em>By N</em></a>
+  <div class="site-nav-links">
+    <a href="https://healthysmile.it/prevenzione">Prevenzione</a>
+    <a href="https://healthysmile.it">Chi siamo</a>
+    <a href="https://healthysmile.it/cure-estero" class="active">Cure Estero</a>
+    <a href="https://healthysmile.it/scheda-demo">Scheda digitale</a>
+    <a href="https://wa.me/393461824965?text=Ciao,%20vorrei%20informazioni%20sul%20Piano%20Protezione%20Cure%20Estero" class="site-nav-cta">Scrivici</a>
+  <button class="hamburger" id="hamburger" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+<div class="mobile-drawer-overlay" id="drawerOverlay"></div>
+<div class="mobile-drawer" id="mobileDrawer">
+  <button class="drawer-close" id="drawerClose">✕</button>
+  <a href="https://healthysmile.it/prevenzione">Prevenzione</a>
+  <a href="https://healthysmile.it">Chi siamo</a>
+  <a href="https://healthysmile.it/cure-estero" class="active">Cure Estero</a>
+  <a href="https://healthysmile.it/scheda-demo">Scheda digitale</a>
+  <a href="https://wa.me/393461824965?text=Ciao,%20vorrei%20informazioni%20sul%20Piano%20Protezione%20Cure%20Estero" class="drawer-cta">Scrivici su WhatsApp</a>
+</div>
+
+<section class="hero">
+  <div class="hero-left">
+    <div class="logo">Healthy Smile · Via Servais 121, Torino</div>
+    <span class="hero-badge">Piano Protezione Cure Estero</span>
+    <h1 class="hero-title">Stai pensando di fare cure dentali <em>all'estero?</em></h1>
+    <p class="hero-sub">Stai pensando di andare all'estero per impianti o protesi? Parlaci prima — ti aiutiamo a comprendere qual è il percorso migliore per la tua salute.</p>
+    <a href="https://wa.me/393461824965?text=Ciao,%20sto%20pensando%20di%20andare%20all%27estero%20per%20cure%20dentali.%20Potete%20aiutarmi?" class="cta-btn">
+      <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.553 4.118 1.522 5.85L.057 23.5l5.797-1.522A11.943 11.943 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.811 9.811 0 01-5.003-1.37l-.36-.214-3.44.902.918-3.352-.234-.375A9.818 9.818 0 012.182 12C2.182 6.57 6.57 2.182 12 2.182S21.818 6.57 21.818 12 17.43 21.818 12 21.818z"/></svg>
+      Inviaci la tua panoramica su WhatsApp
+    </a>
+    <p style="color:#707070;font-size:0.8rem;margin-top:10px;opacity:0;animation:fadeUp 0.8s ease forwards 0.95s;">La valutiamo e ti diciamo se è necessario un controllo in studio.</p>
+  </div>
+  <div class="hero-right">
+    <div class="phases-stack">
+      <div class="phase-card">
+        <span class="phase-number">01</span>
+        <div class="phase-label">Prima della partenza</div>
+        <h3 class="phase-title">Check pre-partenza</h3>
+        <p class="phase-desc">Valutiamo il piano di cura che hai ricevuto, controlliamo la tua situazione clinica e ti diciamo se è sicuro procedere.</p>
+      </div>
+      <div class="phase-card">
+        <span class="phase-number">02</span>
+        <div class="phase-label">Durante il percorso</div>
+        <h3 class="phase-title">Supporto continuo</h3>
+        <p class="phase-desc">Sei il nostro punto di riferimento tra una trasferta e l'altra. Controlli intermedi, dubbi clinici, situazioni urgenti.</p>
+      </div>
+      <div class="phase-card">
+        <span class="phase-number">03</span>
+        <div class="phase-label">Dopo il rientro</div>
+        <h3 class="phase-title">Follow-up e protezione</h3>
+        <p class="phase-desc">Igiene professionale, monitoraggio nel tempo, intervento immediato se qualcosa non va come dovrebbe.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="problem-section">
+  <div class="section-inner">
+    <span class="section-tag">Il problema reale</span>
+    <h2 class="section-title">Cure all'estero: il risparmio è reale. Il rischio anche.</h2>
+    <div class="problem-grid">
+      <div class="problem-item"><div class="problem-icon">🌍</div><h3>Nessun riferimento medico in Italia</h3><p>La clinica estera è lontana. Se hai un problema tra una visita e l'altra, non hai nessuno a cui rivolgerti con competenza.</p></div>
+      <div class="problem-item"><div class="problem-icon">📋</div><h3>Piani di cura difficili da valutare</h3><p>Ricevi una proposta di trattamento in un'altra lingua, spesso con materiali e protocolli diversi da quelli italiani. Come sai se va bene?</p></div>
+      <div class="problem-item"><div class="problem-icon">⚠️</div><h3>Complicazioni senza supporto</h3><p>Infezioni, protesi mal adattate, problemi implantari. Affrontarli senza un medico di fiducia vicino è stressante e costoso.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="solution-section">
+  <div class="section-inner">
+    <div class="solution-header">
+      <span class="section-tag" style="color:var(--accent)">Come funziona</span>
+      <h2 class="section-title" style="color:var(--charcoal);font-size:clamp(1.8rem,3vw,2.5rem);margin:0 auto 16px">Un percorso in tre fasi. Sei seguito dall'inizio alla fine.</h2>
+      <p>Non è una visita singola. È un sistema pensato per chi ha scelto di curarsi all'estero e vuole farlo in sicurezza.</p>
+    </div>
+    <div class="timeline">
+      <div class="timeline-item">
+        <div class="timeline-marker"><div class="timeline-dot"></div><span class="timeline-phase">Fase 1</span></div>
+        <div class="timeline-content">
+          <h3>Check pre-partenza</h3>
+          <p>Prima di partire, vieni da noi. Analizziamo il piano di cura ricevuto dalla clinica estera, valutiamo la tua situazione con rx e visita clinica, e ti diciamo esattamente cosa aspettarti. Se qualcosa non torna, te lo diciamo prima — non dopo.</p>
+          <div class="timeline-tags"><span class="tag">Analisi piano di cura</span><span class="tag">Visita clinica</span><span class="tag">Valutazione radiografica</span><span class="tag">Consulenza pre-viaggio</span></div>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-marker"><div class="timeline-dot"></div><span class="timeline-phase">Fase 2</span></div>
+        <div class="timeline-content">
+          <h3>Supporto durante il percorso</h3>
+          <p>Sei tornato dall'estero con la prima fase completata e aspetti il prossimo appuntamento? Siamo il tuo riferimento. Controlli intermedi, dubbi, dolori, situazioni che non ti convincono — ci siamo noi.</p>
+          <div class="timeline-tags"><span class="tag">Controlli inter-trasferta</span><span class="tag">Consulenza urgente</span><span class="tag">Monitoraggio progressi</span></div>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-marker"><div class="timeline-dot"></div><span class="timeline-phase">Fase 3</span></div>
+        <div class="timeline-content">
+          <h3>Follow-up dopo il rientro definitivo</h3>
+          <p>Il lavoro è finito. Ma la protezione no. Il follow-up regolare, l'igiene professionale e il monitoraggio nel tempo sono la differenza tra un investimento che dura e uno che si deteriora.</p>
+          <div class="timeline-tags"><span class="tag">Igiene professionale</span><span class="tag">Monitoraggio annuale</span><span class="tag">Intervento rapido se necessario</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="proof-section">
+  <div class="section-inner">
+    <span class="section-tag" style="color:var(--accent)">Casi reali</span>
+    <h2 class="section-title" style="color:var(--charcoal);font-size:clamp(1.8rem,3vw,2.5rem);margin-bottom:0">Chi ha già vissuto questa situazione.</h2>
+    <div class="proof-grid">
+      <div class="proof-card"><p class="proof-quote">"Avevo fatto gli impianti in Albania. Tornata, ho avuto dolore al sito per settimane. Nessuno sapeva cosa fare. Qui mi hanno seguita e risolto in tre settimane."</p><div class="proof-meta"><strong>Patrizia P., 54 anni</strong>Impianti — clinica in Albania</div></div>
+      <div class="proof-card"><p class="proof-quote">"Prima di partire per Budapest mi hanno analizzato il piano di cura. Hanno trovato un errore nel numero degli impianti proposti. Ho evitato un problema serio."</p><div class="proof-meta"><strong>Marco G., 47 anni</strong>Protesi su impianti — Ungheria</div></div>
+      <div class="proof-card"><p class="proof-quote">"Fare avanti e indietro con la Romania è stressante. Sapere che ho un riferimento qui a Torino tra un viaggio e l'altro cambia tutto mentalmente."</p><div class="proof-meta"><strong>Olaru H., 61 anni</strong>Riabilitazione completa — Romania</div></div>
+    </div>
+    <p style="text-align:center;font-size:0.75rem;color:#999;margin-top:24px">*Testimonianze anonimizzate nel rispetto della privacy — casi reali seguiti presso Healthy Smile</p>
+  </div>
+</section>
+
+<section class="final-cta">
+  <span class="section-tag">Inizia adesso</span>
+  <h2>Parlaci prima di partire</h2>
+  <p>Hai ricevuto un preventivo da una clinica estera o stai valutando di partire? Contattaci — ti aiutiamo a capire se è la scelta giusta per la tua salute.</p>
+  <br>
+  <a href="https://wa.me/393461824965?text=Ciao,%20sto%20pensando%20di%20andare%20all%27estero%20per%20cure%20dentali.%20Potete%20aiutarmi?" class="cta-btn-white">
+    <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.553 4.118 1.522 5.85L.057 23.5l5.797-1.522A11.943 11.943 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.811 9.811 0 01-5.003-1.37l-.36-.214-3.44.902.918-3.352-.234-.375A9.818 9.818 0 012.182 12C2.182 6.57 6.57 2.182 12 2.182S21.818 6.57 21.818 12 17.43 21.818 12 21.818z"/></svg>
+    Scrivici su WhatsApp
+  </a>
+</section>
+
+<section class="form-section" id="prenota">
+  <div class="form-inner">
+    <div class="form-header">
+      <span class="section-tag" style="color:var(--accent)">Prenota la visita</span>
+      <h2>Richiedi la visita di valutazione</h2>
+      <p>Compila il form oppure scrivici direttamente su WhatsApp. Ti ricontattiamo entro poche ore.</p>
+    </div>
+    <div class="form-card">
+      <div id="form-content">
+        <form action="https://formspree.io/f/mkopypyg" method="POST" id="contact-form">
+          <input type="hidden" name="_subject" value="Richiesta visita — Healthy Smile Cure Estero">
+          <div class="form-group"><label>Nome e cognome *</label><input type="text" name="nome" placeholder="Mario Rossi" required></div>
+          <div class="form-group"><label>Telefono *</label><input type="tel" name="telefono" placeholder="+39 333 000 0000" required></div>
+          <div class="form-group"><label>Città</label><input type="text" name="citta" placeholder="Torino"></div>
+          <div class="form-group">
+            <label>In quale fase ti trovi?</label>
+            <select name="fase">
+              <option value="">Seleziona</option>
+              <option value="pre">Devo ancora partire — voglio valutare il piano di cura</option>
+              <option value="durante">Sono già in corso di cura all'estero</option>
+              <option value="post">Sono tornato e ho un problema</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Messaggio (opzionale)</label><textarea name="messaggio" placeholder="Raccontaci brevemente la tua situazione..."></textarea></div>
+          <button type="submit" class="form-submit">Invia richiesta</button>
+        </form>
+        <div class="form-divider"><span>oppure</span></div>
+        <a href="https://wa.me/393461824965?text=Ciao,%20vorrei%20prenotare%20la%20visita%20di%20valutazione%20da%2050%E2%82%AC" class="form-wa-btn">
+          <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.553 4.118 1.522 5.85L.057 23.5l5.797-1.522A11.943 11.943 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.811 9.811 0 01-5.003-1.37l-.36-.214-3.44.902.918-3.352-.234-.375A9.818 9.818 0 012.182 12C2.182 6.57 6.57 2.182 12 2.182S21.818 6.57 21.818 12 17.43 21.818 12 21.818z"/></svg>
+          Prenota ora su WhatsApp
+        </a>
+      </div>
+      <div class="form-success" id="form-success">Richiesta inviata.<br>Ti contattiamo entro poche ore.</div>
+    </div>
+  </div>
+</section>
+
+<section class="faq-section">
+  <div class="section-inner" style="text-align:center">
+    <span class="section-tag" style="color:var(--accent)">Domande frequenti</span>
+    <h2 class="section-title" style="color:var(--charcoal);font-size:clamp(1.6rem,2.5vw,2.2rem);margin:0 auto">Hai qualche dubbio?</h2>
+  </div>
+  <div class="faq-inner">
+    <div class="faq-item"><div class="faq-q">Posso venire anche se ho già iniziato le cure all'estero?</div><div class="faq-a">Sì, assolutamente. Anzi, è uno dei casi più frequenti. Ti valutiamo la situazione attuale, i lavori già eseguiti, e definiamo insieme come seguirti da qui in avanti.</div></div>
+    <div class="faq-item"><div class="faq-q">E se il piano di cura che ho ricevuto è sbagliato?</div><div class="faq-a">Te lo diciamo chiaramente. Se ci sono criticità nel piano proposto dalla clinica estera, le identifichiamo prima che tu parta — così puoi decidere con informazioni complete.</div></div>
+    <div class="faq-item"><div class="faq-q">Cosa include esattamente il check pre-partenza?</div><div class="faq-a">Visita clinica, analisi del piano di cura ricevuto, valutazione radiografica se necessario, e una consulenza completa sulla tua situazione. Al termine sai esattamente dove sei e cosa fare.</div></div>
+    <div class="faq-item"><div class="faq-q">Posso poi continuare le cure da voi invece che all'estero?</div><div class="faq-a">Certamente. Se dopo il check preferisci proseguire il percorso con noi a Torino, ti prepariamo un piano completo. La scelta è tua, senza nessuna pressione.</div></div>
+    <div class="faq-item"><div class="faq-q">Siete disponibili anche per urgenze tra un viaggio e l'altro?</div><div class="faq-a">Sì. Per i pazienti inseriti nel Piano Protezione garantiamo accesso prioritario in caso di situazioni urgenti — dolore, gonfiore, problemi alle protesi provvisorie.</div></div>
+  </div>
+</section>
+
+<footer>
+  <div>
+    <div class="footer-logo">Healthy Smile · Torino</div>
+    <div style="font-size:0.75rem;color:#606060;margin-top:8px;line-height:1.6;">Piano Protezione Cure Estero<br>Servizio erogato presso Healthy Smile – Via Servais 121, Torino</div>
+  </div>
+  <div class="footer-links-bottom">
+    <a href="https://healthysmile.it">← Homepage</a>
+    <a href="https://healthysmile.it/prevenzione">Prevenzione</a>
+    <a href="https://healthysmile.it/scheda-demo">Scheda digitale</a>
+    <a href="https://www.instagram.com/healthy.smile.by.n" target="_blank">Instagram</a>
+    <a href="tel:+393461824965">+39 346 182 4965</a>
+  </div>
+</footer>
+
+<script>
+const form=document.getElementById('contact-form');
+if(form){form.addEventListener('submit',async(e)=>{
+  e.preventDefault();
+  const btn=form.querySelector('.form-submit');
+  btn.textContent='Invio in corso...';btn.disabled=true;
+  try{
+    const res=await fetch(form.action,{method:'POST',body:new FormData(form),headers:{'Accept':'application/json'}});
+    if(res.ok){document.getElementById('form-content').style.display='none';document.getElementById('form-success').style.display='block';}
+    else{btn.textContent='Errore — riprova';btn.disabled=false;}
+  }catch{btn.textContent='Errore — riprova';btn.disabled=false;}
+});}
+document.querySelectorAll('.faq-q').forEach(q=>{q.addEventListener('click',()=>{const item=q.parentElement;const wasOpen=item.classList.contains('open');document.querySelectorAll('.faq-item').forEach(i=>i.classList.remove('open'));if(!wasOpen)item.classList.add('open');});});
+const observer=new IntersectionObserver((entries)=>{entries.forEach(e=>{if(e.isIntersecting){e.target.style.opacity='1';e.target.style.transform='translateY(0)'}});},{threshold:0.1});
+document.querySelectorAll('.problem-item,.proof-card,.timeline-item').forEach(el=>{el.style.opacity='0';el.style.transform='translateY(20px)';el.style.transition='opacity 0.6s ease,transform 0.6s ease';observer.observe(el);});
+</script>
+
+<script id="drawer-script">
+(function(){
+  var btn = document.getElementById('hamburger');
+  if(!btn) return;
+  var drawer = document.getElementById('mobileDrawer');
+  var overlay = document.getElementById('drawerOverlay');
+  var closeBtn = document.getElementById('drawerClose');
+  function open(){btn.classList.add('open');drawer.classList.add('open');overlay.classList.add('open');document.body.style.overflow='hidden'}
+  function close(){btn.classList.remove('open');drawer.classList.remove('open');overlay.classList.remove('open');document.body.style.overflow=''}
+  btn.addEventListener('click',open);
+  closeBtn.addEventListener('click',close);
+  overlay.addEventListener('click',close);
+})();
+</script>
+
+  <!-- Tracking eventi personalizzati -->
+  <script>
+  (function(){
+
+    // === SCROLL DEPTH ===
+    var scrollMarks = {25:false, 50:false, 75:false, 90:false};
+    window.addEventListener('scroll', function(){
+      var pct = Math.round((window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100);
+      Object.keys(scrollMarks).forEach(function(mark){
+        if(!scrollMarks[mark] && pct >= mark){
+          scrollMarks[mark] = true;
+          gtag('event', 'scroll_depth', {event_category:'engagement', event_label: mark+'%', value: parseInt(mark)});
+        }
+      });
+    }, {passive:true});
+
+    // === TEMPO SULLA PAGINA ===
+    var startTime = Date.now();
+    [30, 60, 120, 180].forEach(function(sec){
+      setTimeout(function(){
+        gtag('event', 'time_on_page', {event_category:'engagement', event_label: sec+'s', value: sec});
+      }, sec * 1000);
+    });
+
+    // === CLICK WHATSAPP ===
+    document.querySelectorAll('a[href*="wa.me"]').forEach(function(el){
+      el.addEventListener('click', function(){
+        // GA4
+        gtag('event', 'whatsapp_click', {event_category:'conversione', event_label: el.textContent.trim().substring(0,50)});
+        // Google Ads conversione
+        gtag('event', 'conversion', {send_to: 'AW-947982327/whatsapp_click'});
+      });
+    });
+
+    // === CLICK TELEFONO ===
+    document.querySelectorAll('a[href^="tel:"]').forEach(function(el){
+      el.addEventListener('click', function(){
+        gtag('event', 'phone_click', {event_category:'conversione', event_label: el.getAttribute('href')});
+        gtag('event', 'conversion', {send_to: 'AW-947982327/phone_click'});
+      });
+    });
+
+    // === SUBMIT FORM ===
+    var form = document.querySelector('form');
+    if(form){
+      form.addEventListener('submit', function(){
+        gtag('event', 'form_submit', {event_category:'conversione', event_label:'form_contatti'});
+        gtag('event', 'conversion', {send_to: 'AW-947982327/form_submit'});
+      });
+    }
+
+    // === CLICK FAQ ===
+    document.querySelectorAll('.faq-q').forEach(function(el){
+      el.addEventListener('click', function(){
+        var question = el.textContent.trim().substring(0,80);
+        gtag('event', 'faq_click', {event_category:'engagement', event_label: question});
+      });
+    });
+
+    // === CLICK LINK ESTERNO ===
+    document.querySelectorAll('a[href^="http"]').forEach(function(el){
+      if(!el.href.includes('wa.me') && !el.href.includes(window.location.hostname)){
+        el.addEventListener('click', function(){
+          gtag('event', 'outbound_click', {event_category:'engagement', event_label: el.href});
+        });
+      }
+    });
+
+  })();
+  </script>
+</body>
+</html>
