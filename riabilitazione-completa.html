@@ -34,6 +34,9 @@
 html{scroll-behavior:smooth}
 body{font-family:var(--sans);background:var(--white);color:var(--black);font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
 
+.topbar{background:var(--black);color:rgba(255,255,255,0.55);text-align:center;font-size:12px;padding:9px 16px;letter-spacing:0.04em;border-bottom:1px solid #1e1e1e}
+.topbar a{color:var(--green-bright);text-decoration:none}
+.topbar a:hover{opacity:0.8}
 nav{position:sticky;top:0;z-index:100;background:var(--white);border-bottom:1px solid var(--gray-300);padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:56px}
 .nav-logo{font-family:var(--serif);font-size:18px;color:var(--black);text-decoration:none;letter-spacing:-0.01em}
 .nav-logo em{font-style:italic;color:var(--accent)}
@@ -172,6 +175,7 @@ footer{background:#0a0a0a;padding:28px 24px;border-top:1px solid #1e1e1e;display
 </head>
 <body>
 
+<div class="topbar">📍 Via Servais 121, Torino &nbsp;·&nbsp; Poliambulatorio Servais &nbsp;·&nbsp; <a href="tel:+393461824965">+39 346 182 4965</a></div>
 <nav>
   <a href="https://healthysmile.it" class="nav-logo">Healthy Smile <em>By N</em></a>
   <div class="nav-links">
