@@ -79,34 +79,11 @@ h2 em{font-style:italic;color:var(--accent)}
 .contrario-col.right .col-items li{color:#b0aea8}
 .contrario-col.right .col-items li::before{content:'✓';color:#7ec8a4;font-size:12px;margin-top:3px;flex-shrink:0}
 
-.team{padding:100px 24px;background:var(--gray-100)}
-.team-grid{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:start;margin-top:56px}
-.nina-card{background:var(--white);border-radius:16px;padding:40px;border:1px solid var(--gray-300)}
-.nina-avatar{width:64px;height:64px;border-radius:50%;background:var(--accent-light);display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:26px;color:var(--accent);margin-bottom:24px}
-.nina-name{font-family:var(--serif);font-size:24px;margin-bottom:4px}
-.nina-role{font-size:14px;color:var(--gray-500);margin-bottom:8px}
-.tgr-badge{display:inline-flex;align-items:center;gap:6px;background:var(--black);color:var(--white);font-size:11px;padding:5px 10px;border-radius:6px;margin-bottom:24px;text-decoration:none}
-.nina-quote{font-size:15px;color:var(--gray-700);line-height:1.7;font-style:italic;border-left:2px solid var(--accent);padding-left:20px}
-.values-list{display:flex;flex-direction:column;gap:32px}
-.value-item{}
-.value-num{font-family:var(--serif);font-size:40px;color:var(--gray-300);line-height:1;margin-bottom:8px}
-.value-title{font-family:var(--serif);font-size:20px;margin-bottom:8px}
-.value-body{font-size:14px;color:var(--gray-700);line-height:1.6}
-
 .numeri{padding:80px 24px;background:var(--white)}
 .numeri-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;margin-top:48px}
 .numero-card{background:var(--gray-100);border-radius:12px;padding:28px 24px;text-align:center}
 .numero-val{font-family:var(--serif);font-size:40px;color:var(--black);line-height:1;margin-bottom:8px}
 .numero-label{font-size:13px;color:var(--gray-500);line-height:1.4}
-
-.tgr-section{background:var(--black);padding:80px 24px;text-align:center}
-.tgr-section h2{color:var(--white);margin-bottom:16px}
-.tgr-section h2 em{color:#7ec8a4}
-.tgr-body{font-size:17px;color:#888;font-weight:300;max-width:500px;margin:0 auto 40px;line-height:1.6}
-.tgr-player{background:#111;border:1px solid #2a2a2a;border-radius:12px;padding:40px;max-width:500px;margin:0 auto;display:flex;flex-direction:column;align-items:center;gap:16px}
-.tgr-play{width:64px;height:64px;border-radius:50%;background:#7ec8a4;display:flex;align-items:center;justify-content:center}
-.tgr-play svg{width:24px;height:24px;fill:#0e0e0e;margin-left:3px}
-.tgr-label{font-size:13px;color:#555}
 
 .form-section{padding:100px 24px;background:var(--gray-100)}
 .form-inner{max-width:580px;margin:0 auto}
@@ -122,6 +99,21 @@ h2 em{font-style:italic;color:var(--accent)}
 .form-success{display:none;text-align:center;padding:32px;color:var(--accent);font-family:var(--serif);font-size:1.1rem;line-height:1.6}
 .form-or{text-align:center;font-size:12px;color:var(--gray-500);margin:14px 0;text-transform:uppercase;letter-spacing:0.06em}
 
+.dove-siamo{padding:100px 24px;background:var(--black);color:var(--white)}
+.dove-siamo .section-tag{color:#555}
+.dove-siamo h2{color:var(--white)}
+.dove-siamo h2 em{color:#7ec8a4}
+.map-grid{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:start;margin-top:48px}
+.map-info{display:flex;flex-direction:column;gap:16px}
+.map-details{list-style:none;display:flex;flex-direction:column;gap:20px}
+.map-details li{display:flex;gap:14px;align-items:flex-start;font-size:15px;color:#b0aea8;line-height:1.6}
+.map-details li strong{display:block;color:var(--white);font-weight:500;margin-bottom:2px}
+.map-icon{font-size:18px;flex-shrink:0;margin-top:2px}
+.btn-directions{display:inline-flex;align-items:center;gap:8px;margin-top:16px;background:#1a6b4a;color:var(--white);font-family:var(--sans);font-size:14px;font-weight:500;padding:12px 20px;border-radius:8px;text-decoration:none;transition:opacity 0.15s;align-self:flex-start}
+.btn-directions:hover{opacity:0.85}
+.map-embed{border-radius:12px;overflow:hidden;border:1px solid #2a2a2a;aspect-ratio:4/3}
+.map-embed iframe{width:100%;height:100%;border:0}
+
 footer{background:#0a0a0a;padding:28px 24px;border-top:1px solid #1e1e1e;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
 .footer-logo{font-family:var(--serif);font-size:16px;color:#555}
 .footer-logo em{font-style:italic;color:#7ec8a4}
@@ -130,9 +122,10 @@ footer{background:#0a0a0a;padding:28px 24px;border-top:1px solid #1e1e1e;display
 .footer-links a:hover{color:#aaa}
 
 @media(max-width:700px){
-  .contrario-grid,.team-grid{grid-template-columns:1fr}
+  .contrario-grid{grid-template-columns:1fr}
+  .map-grid{grid-template-columns:1fr}
   .numeri-grid{grid-template-columns:1fr 1fr}
-  .hero,.statement,.contrario,.team,.numeri,.tgr-section,.form-section{padding:60px 16px}
+  .hero,.statement,.contrario,.numeri,.form-section{padding:60px 16px}
   .nav-links{display:none}
   nav{padding:0 16px}
   .form-card{padding:24px 20px}
@@ -187,7 +180,7 @@ footer{background:#0a0a0a;padding:28px 24px;border-top:1px solid #1e1e1e;display
   <a href="https://healthysmile.it" class="active">Chi siamo</a>
   <a href="https://healthysmile.it/cure-estero">Cure Estero</a>
   <a href="https://healthysmile.it/scheda-demo">Scheda digitale</a>
-  <a href="https://wa.me/393461824965?text=Ciao,%20vorrei%20informazioni%20sul%20Piano%20Protezione%20Cure%20Estero" class="drawer-cta">Scrivici su WhatsApp</a>
+  <a href="https://wa.me/393461824965?text=Ciao,%20vorrei%20informazioni" class="drawer-cta">Scrivici su WhatsApp</a>
 </div>
 
 
@@ -196,9 +189,8 @@ footer{background:#0a0a0a;padding:28px 24px;border-top:1px solid #1e1e1e;display
   <span class="hero-tag">Healthy Smile By N · Torino</span>
   <h1>Siamo quelli della prevenzione.<br><em>Quelli che ci rimettono</em><br>se non curano bene.</h1>
   <p class="hero-sub">Probabilmente hai già sentito parlare di noi. Se non ancora — benvenuto. Questo è uno studio dentistico costruito al contrario rispetto a tutti gli altri.</p>
-  <p style="font-size:15px;color:#7ec8a4;font-weight:400;margin-bottom:32px;margin-top:-16px;">Questo mese puoi scoprire com'è stare dal dentista che lavora per tenerti sano — con un trattamento completo che altrove pagheresti il doppio.</p>
   <div class="hero-ctas">
-    <a href="https://wa.me/393461824965?text=Ciao,%20vorrei%20prenotare%20la%20Promo%20Sorriso%20Luminoso%20a%20%E2%82%AC148" class="btn-green">Prenota igiene + sbiancamento — €148</a>
+    <a href="https://wa.me/393461824965?text=Ciao,%20vorrei%20prenotare%20igiene%20e%20visita%20a%20%E2%82%AC79" class="btn-green">Inizia il tuo percorso — Igiene + visita €79</a>
     <a href="#come-funziona" class="btn-outline">Come funziona ↓</a>
   </div>
 </div>
@@ -249,72 +241,6 @@ footer{background:#0a0a0a;padding:28px 24px;border-top:1px solid #1e1e1e;display
   </div>
 </div>
 
-<!-- PROMO SORRISO LUMINOSO -->
-<section class="team" id="promo">
-  <div class="container">
-    <span class="section-tag">Offerta del momento</span>
-    <h2>Promo Sorriso Luminoso —<br><em>solo questo mese.</em></h2>
-    <div class="team-grid" style="align-items:start;margin-top:48px;">
-      <div class="nina-card" style="text-align:left;">
-        <div style="font-size:13px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:var(--accent);margin-bottom:20px;">Cosa include</div>
-        <ul style="list-style:none;display:flex;flex-direction:column;gap:14px;margin-bottom:32px;">
-          <li style="display:flex;gap:12px;align-items:flex-start;font-size:15px;color:var(--gray-700);">
-            <span style="color:var(--accent);font-size:16px;margin-top:1px;">✓</span>
-            Igiene professionale completa — <strong>60 minuti</strong>
-          </li>
-          <li style="display:flex;gap:12px;align-items:flex-start;font-size:15px;color:var(--gray-700);">
-            <span style="color:var(--accent);font-size:16px;margin-top:1px;">✓</span>
-            Polveri illuminanti
-          </li>
-          <li style="display:flex;gap:12px;align-items:flex-start;font-size:15px;color:var(--gray-700);">
-            <span style="color:var(--accent);font-size:16px;margin-top:1px;">✓</span>
-            Sbiancamento quick
-          </li>
-          <li style="display:flex;gap:12px;align-items:flex-start;font-size:15px;color:var(--gray-700);">
-            <span style="color:var(--accent);font-size:16px;margin-top:1px;">✓</span>
-            Visita di controllo
-          </li>
-        </ul>
-        <div style="border-top:1px solid var(--gray-300);padding-top:24px;display:flex;align-items:baseline;gap:8px;">
-          <span style="font-family:var(--serif);font-size:52px;color:var(--black);line-height:1;">€148</span>
-          <span style="font-size:13px;color:var(--gray-500);">trattamento completo</span>
-        </div>
-      </div>
-      <div style="display:flex;flex-direction:column;gap:16px;padding-top:8px;">
-        <p style="font-size:16px;color:var(--gray-700);font-weight:300;line-height:1.7;">Un sorriso più luminoso in una sola seduta. Igiene profonda, polveri illuminanti e sbiancamento quick: tutto quello che serve, fatto bene, da chi fa solo prevenzione.</p>
-        <p style="font-size:14px;color:var(--gray-500);line-height:1.6;">Prenota adesso su WhatsApp o compila il form qui sotto — ti richiamiamo entro poche ore.</p>
-        <a href="https://wa.me/393461824965?text=Ciao,%20vorrei%20prenotare%20la%20Promo%20Sorriso%20Luminoso%20a%20%E2%82%AC148" class="form-wa" style="margin-top:8px;border-radius:8px;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:8px;padding:14px 20px;font-weight:500;font-size:15px;">
-          <svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:white;flex-shrink:0"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.553 4.118 1.522 5.85L.057 23.5l5.797-1.522A11.943 11.943 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.811 9.811 0 01-5.003-1.37l-.36-.214-3.44.902.918-3.352-.234-.375A9.818 9.818 0 012.182 12C2.182 6.57 6.57 2.182 12 2.182S21.818 6.57 21.818 12 17.43 21.818 12 21.818z"/></svg>
-          Prenota su WhatsApp — €148
-        </a>
-        <div style="text-align:center;font-size:12px;color:var(--gray-500);text-transform:uppercase;letter-spacing:0.06em;margin:12px 0;">oppure</div>
-        <div style="background:var(--white);border-radius:12px;padding:28px;border:1px solid var(--gray-300);">
-          <form action="https://formspree.io/f/mkopypyg" method="POST" id="promo-form">
-            <input type="hidden" name="_subject" value="Promo Sorriso Luminoso — Healthy Smile">
-            <input type="hidden" name="interesse" value="promo-sorriso-luminoso-148">
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-              <div class="form-group">
-                <label>Nome *</label>
-                <input type="text" name="nome" placeholder="Mario Rossi" required>
-              </div>
-              <div class="form-group">
-                <label>Telefono *</label>
-                <input type="tel" name="telefono" placeholder="+39 333 000 0000" required>
-              </div>
-            </div>
-            <div class="form-group">
-              <label>Messaggio (opzionale)</label>
-              <textarea name="messaggio" placeholder="Scrivi qui se hai domande..." style="min-height:70px;"></textarea>
-            </div>
-            <button type="submit" class="form-submit" id="promo-submit">Invia richiesta</button>
-          </form>
-          <div id="promo-success" style="display:none;text-align:center;padding:24px;color:var(--accent);font-family:var(--serif);font-size:1.1rem;line-height:1.6;">Richiesta inviata.<br>Ti contattiamo entro poche ore.</div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
 <!-- NUMERI -->
 <section class="numeri">
   <div class="container">
@@ -346,7 +272,7 @@ footer{background:#0a0a0a;padding:28px 24px;border-top:1px solid #1e1e1e;display
   <div class="form-inner">
     <span class="section-tag">Contatti</span>
     <h2>Hai sentito parlare di noi.<br><em>Adesso vieni a trovarci.</em></h2>
-    <p style="font-size:16px;color:var(--gray-700);font-weight:300;margin-top:8px;line-height:1.6;">Inizia con l'igiene e visita a €79 — esci con la tua scheda digitale e sai esattamente come stai.</p>
+    <p style="font-size:16px;color:var(--gray-700);font-weight:300;margin-top:8px;line-height:1.6;">Inizia con l'igiene e visita a €79 — 45 minuti con igienista. Esci con la tua scheda digitale e sai esattamente come stai.</p>
     <div class="form-card">
       <div id="form-content">
         <form action="https://formspree.io/f/mkopypyg" method="POST" id="chi-siamo-form">
@@ -387,9 +313,45 @@ footer{background:#0a0a0a;padding:28px 24px;border-top:1px solid #1e1e1e;display
         Richiesta inviata.<br>Ti contattiamo entro poche ore.
       </div>
     </div>
-    <div style="text-align:center;margin-top:32px;">
-      <p style="font-size:14px;color:var(--gray-500);">Via Servais 121, Torino · Poliambulatorio Servais</p>
-      <p style="font-size:14px;color:var(--gray-500);margin-top:4px;"><a href="tel:+393461824965" style="color:var(--accent);text-decoration:none;">+39 346 182 4965</a> · <a href="https://www.instagram.com/healthy.smile.by.n" target="_blank" style="color:var(--accent);text-decoration:none;">@healthy.smile.by.n</a></p>
+  </div>
+</section>
+
+<!-- DOVE TROVARCI -->
+<section class="dove-siamo" id="dove-siamo">
+  <div class="container">
+    <span class="section-tag">Dove trovarci</span>
+    <h2>Siamo in <em>Via Servais 121</em><br>a Torino.</h2>
+    <div class="map-grid">
+      <div class="map-info">
+        <ul class="map-details">
+          <li>
+            <span class="map-icon">📍</span>
+            <div><strong>Indirizzo</strong>Via Servais 121, 10146 Torino (TO)<br>Poliambulatorio Servais</div>
+          </li>
+          <li>
+            <span class="map-icon">📞</span>
+            <div><strong>Telefono / WhatsApp</strong><br><a href="tel:+393461824965" style="color:var(--accent);text-decoration:none;">+39 346 182 4965</a></div>
+          </li>
+          <li>
+            <span class="map-icon">🕐</span>
+            <div><strong>Orari</strong><br>Lun – Ven 10:00 – 19:00</div>
+          </li>
+          <li>
+            <span class="map-icon">📸</span>
+            <div><strong>Instagram</strong><br><a href="https://www.instagram.com/healthy.smile.by.n" target="_blank" style="color:var(--accent);text-decoration:none;">@healthy.smile.by.n</a></div>
+          </li>
+        </ul>
+        <a class="btn-directions" href="https://www.google.com/maps/dir/?api=1&destination=Via+Servais+121,+10146+Torino+TO" target="_blank" rel="noopener">🧭 Indicazioni stradali</a>
+      </div>
+      <div class="map-embed">
+        <iframe
+          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2817.5!2d7.6186!3d45.0732!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x478812eb4f96c5ab%3A0x3f5e0a3e4b8c9d12!2sVia+Servais+121%2C+10146+Torino+TO!5e0!3m2!1sit!2sit!4v1700000000000!5m2!1sit!2sit"
+          allowfullscreen=""
+          loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade"
+          title="Healthy Smile By N — Via Servais 121, Torino">
+        </iframe>
+      </div>
     </div>
   </div>
 </section>
@@ -406,23 +368,6 @@ footer{background:#0a0a0a;padding:28px 24px;border-top:1px solid #1e1e1e;display
 </footer>
 
 <script>
-const promoForm = document.getElementById('promo-form');
-if(promoForm){
-  promoForm.addEventListener('submit', async(e)=>{
-    e.preventDefault();
-    const btn = document.getElementById('promo-submit');
-    btn.textContent = 'Invio in corso...'; btn.disabled = true;
-    try{
-      const res = await fetch(promoForm.action,{method:'POST',body:new FormData(promoForm),headers:{'Accept':'application/json'}});
-      if(res.ok){
-        promoForm.style.display='none';
-        document.getElementById('promo-success').style.display='block';
-        gtag('event', 'form_submit', {event_category:'conversione', event_label:'promo_sorriso_luminoso'});
-        gtag('event', 'conversion', {send_to: 'AW-947982327/form_submit'});
-      } else { btn.textContent='Errore — riprova'; btn.disabled=false; }
-    } catch { btn.textContent='Errore — riprova'; btn.disabled=false; }
-  });
-}
 const form = document.getElementById('chi-siamo-form');
 if(form){
   form.addEventListener('submit', async(e)=>{
@@ -437,18 +382,6 @@ if(form){
       } else { btn.textContent='Errore — riprova'; btn.disabled=false; }
     } catch { btn.textContent='Errore — riprova'; btn.disabled=false; }
   });
-}
-const hbg = document.getElementById('hamburger');
-const mob = document.getElementById('mobile-menu');
-if(hbg && mob){
-  hbg.addEventListener('click',()=>{
-    hbg.classList.toggle('open');
-    mob.classList.toggle('open');
-  });
-  mob.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{
-    hbg.classList.remove('open');
-    mob.classList.remove('open');
-  }));
 }
 </script>
 
@@ -484,7 +417,6 @@ if(hbg && mob){
   }, {passive:true});
 
   // === TEMPO SULLA PAGINA ===
-  var startTime = Date.now();
   [30, 60, 120, 180].forEach(function(sec){
     setTimeout(function(){
       gtag('event', 'time_on_page', {event_category:'engagement', event_label: sec+'s', value: sec});
@@ -508,21 +440,13 @@ if(hbg && mob){
   });
 
   // === SUBMIT FORM ===
-  var form = document.querySelector('form');
-  if(form){
-    form.addEventListener('submit', function(){
+  var formEl = document.querySelector('form');
+  if(formEl){
+    formEl.addEventListener('submit', function(){
       gtag('event', 'form_submit', {event_category:'conversione', event_label:'form_contatti'});
       gtag('event', 'conversion', {send_to: 'AW-947982327/form_submit'});
     });
   }
-
-  // === CLICK FAQ ===
-  document.querySelectorAll('.faq-q').forEach(function(el){
-    el.addEventListener('click', function(){
-      var question = el.textContent.trim().substring(0,80);
-      gtag('event', 'faq_click', {event_category:'engagement', event_label: question});
-    });
-  });
 
   // === CLICK LINK ESTERNO ===
   document.querySelectorAll('a[href^="http"]').forEach(function(el){
