@@ -1,0 +1,240 @@
+Sì, allora te lo metto direttamente qui. Copia tutto in un file chiamato ad esempio:
+
+`brochure-rsa.html`
+
+e aprilo con Chrome.
+
+```html
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<title>Brochure RSA - Healthy Smile</title>
+<style>
+body{
+  margin:0;
+  background:#f3f5f4;
+  font-family:Arial, Helvetica, sans-serif;
+  color:#183b36;
+}
+.page{
+  width:210mm;
+  min-height:297mm;
+  margin:20px auto;
+  background:white;
+  padding:18mm;
+  box-sizing:border-box;
+}
+.label{
+  text-transform:uppercase;
+  letter-spacing:2px;
+  font-size:12px;
+  color:#5f7f78;
+  font-weight:bold;
+  margin-bottom:20px;
+}
+.hero{
+  display:grid;
+  grid-template-columns:1.1fr .9fr;
+  gap:28px;
+  align-items:center;
+  border-bottom:1px solid #d9e3df;
+  padding-bottom:28px;
+}
+h1{
+  font-size:36px;
+  line-height:1.08;
+  margin:0 0 16px;
+}
+h2{
+  font-size:22px;
+  margin:0 0 12px;
+}
+p{
+  font-size:16px;
+  line-height:1.55;
+  color:#344844;
+}
+.img{
+  height:250px;
+  border-radius:22px;
+  background:#e8f3ef;
+  border:1px solid #d7e4df;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  color:#6d817c;
+  padding:20px;
+}
+.section{
+  margin-top:28px;
+}
+.grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:22px;
+  margin-top:24px;
+}
+.card{
+  border:1px solid #d9e3df;
+  border-radius:18px;
+  padding:20px;
+  background:#fbfdfc;
+}
+ul{
+  list-style:none;
+  padding:0;
+  margin:0;
+}
+li{
+  margin-bottom:10px;
+  font-size:15.5px;
+  line-height:1.45;
+}
+li:before{
+  content:"• ";
+  color:#2f7b6f;
+  font-weight:bold;
+}
+.highlight{
+  margin:28px 0;
+  padding:18px 20px;
+  background:#eef8f5;
+  border-left:5px solid #2f7b6f;
+  border-radius:14px;
+  font-size:17px;
+  font-weight:bold;
+}
+.contact{
+  margin-top:28px;
+  background:#173c36;
+  color:white;
+  padding:24px;
+  border-radius:22px;
+}
+.contact p{
+  color:#e8f2ef;
+}
+.whatsapp{
+  display:inline-block;
+  background:white;
+  color:#173c36;
+  padding:12px 18px;
+  border-radius:999px;
+  font-size:18px;
+  font-weight:bold;
+}
+.footer{
+  margin-top:24px;
+  display:flex;
+  justify-content:space-between;
+  color:#6d817c;
+  font-size:13px;
+}
+.brand{
+  font-size:24px;
+  font-weight:bold;
+  color:#173c36;
+}
+@media print{
+  body{background:white;}
+  .page{margin:0;}
+}
+</style>
+</head>
+
+<body>
+<div class="page">
+
+  <div class="label">Informazione per le famiglie</div>
+
+  <div class="hero">
+    <div>
+      <h1>Negli anziani i problemi alla bocca spesso non vengono detti.</h1>
+      <p>
+        Piccoli fastidi, protesi instabili o infiammazioni possono passare inosservati
+        per settimane o mesi, fino a diventare problemi più difficili da gestire.
+      </p>
+    </div>
+    <div class="img">
+      Inserire immagine:<br>
+      anziano sereno con familiare adulto,<br>
+      ambiente luminoso e rassicurante.
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Cosa succede spesso</h2>
+    <p>
+      Con l’età può diventare più difficile riferire un fastidio, spiegare un dolore
+      o accorgersi che qualcosa nella bocca non funziona più come prima.
+    </p>
+    <p>
+      Per questo, nelle persone anziane, la prevenzione non serve solo a “controllare i denti”:
+      serve a intercettare segnali che altrimenti rischiano di non essere visti.
+    </p>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h2>Problemi frequenti</h2>
+      <ul>
+        <li>Protesi che si muove, dà fastidio o crea piccole ferite.</li>
+        <li>Difficoltà a masticare alcuni cibi.</li>
+        <li>Infiammazioni, arrossamenti o sanguinamento.</li>
+        <li>Dolore leggero ma continuo, spesso non riferito.</li>
+        <li>Residui di cibo difficili da pulire.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2>Possibili conseguenze</h2>
+      <ul>
+        <li>Riduzione dell’alimentazione e perdita di peso.</li>
+        <li>Infezioni o peggioramento delle mucose.</li>
+        <li>Maggiore difficoltà nella gestione quotidiana.</li>
+        <li>Urgenze improvvise che richiedono interventi più complessi.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="highlight">
+    Un controllo periodico permette di individuare questi segnali prima che diventino un problema più serio.
+  </div>
+
+  <div class="section">
+    <h2>Un riferimento periodico in struttura</h2>
+    <p>
+      Il dott. [NOME] è presente periodicamente in struttura per monitorare la salute orale
+      degli ospiti con un approccio semplice, attento e non invasivo.
+    </p>
+    <p>
+      L’obiettivo è aiutare le famiglie a riconoscere prima eventuali segnali di disagio
+      e a gestire la situazione con più tranquillità.
+    </p>
+  </div>
+
+  <div class="contact">
+    <h2>Vuole capire meglio la situazione?</h2>
+    <p>
+      Se desidera una valutazione più approfondita o vuole parlarne con calma,
+      può contattare direttamente lo studio.
+    </p>
+    <div class="whatsapp">WhatsApp: [NUMERO]</div>
+  </div>
+
+  <div class="footer">
+    <div>
+      <div class="brand">Healthy Smile</div>
+      <div>Prevenzione e salute nel tempo</div>
+    </div>
+    <div>
+      Brochure informativa per le famiglie RSA.
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
+```
