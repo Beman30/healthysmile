@@ -292,7 +292,7 @@
           </select>
         </div>
         <div class="fg">
-          <label>Calendario / Risorsa</label>
+          <label>Calendario</label>
           <select id="f-calendar" onchange="updateModalColor()"></select>
         </div>
       </div>
@@ -303,19 +303,11 @@
         <input type="text" id="f-patient" placeholder="es. Rossi Mario" autocomplete="off">
       </div>
 
-      <!-- Cartella + Anno + Età -->
+      <!-- Cartella -->
       <div class="form-row">
-        <div class="fg">
+        <div class="fg" style="flex:0 0 180px">
           <label>N° Cartella</label>
           <input type="text" id="f-card" placeholder="es. 573">
-        </div>
-        <div class="fg">
-          <label>Anno cartella</label>
-          <input type="text" id="f-year" placeholder="es. 21">
-        </div>
-        <div class="fg">
-          <label>Età / Note paz.</label>
-          <input type="text" id="f-age" placeholder="es. 16 anni">
         </div>
       </div>
 
@@ -360,16 +352,11 @@
             <option value="no">— nessuno</option>
           </select>
         </div>
-        <div class="fg">
-          <label>Stato conferma</label>
-          <select id="f-confirm">
-            <option value="no">no – non confermato</option>
-            <option value="si">sì – confermato</option>
-            <option value="-">- (in attesa)</option>
-            <option value="rid">rid – ridotto</option>
-          </select>
-        </div>
       </div>
+      <!-- campo nascosto per compatibilità dati salvati -->
+      <input type="hidden" id="f-confirm" value="no">
+      <input type="hidden" id="f-year" value="">
+      <input type="hidden" id="f-age" value="">
 
       <div class="form-row">
         <div class="fg">
@@ -409,18 +396,35 @@
 //  CONFIGURAZIONE CALENDARI
 // ════════════════════════════════════════════
 const CALS = [
-  { id:'caduti',          name:'Caduti',               color:'#2e2e2e', group:null },
-  { id:'barra_rinforzo',  name:'Barra di rinforzo',    color:'#1565c0', group:'Laboratori' },
-  { id:'loreni_arturo',   name:'Loreni Arturo',        color:'#1976d2', group:'Laboratori' },
-  { id:'palmia_lab',      name:'Palmia',               color:'#388e3c', group:'Laboratori' },
-  { id:'wisildent',       name:'Wisildent',            color:'#00695c', group:'Laboratori' },
-  { id:'dott_palmia',     name:'Dott. Palmia',         color:'#e65100', group:'Medici' },
-  { id:'dott_ladelia',    name:'Dott. ssa La Delia',   color:'#6a1b9a', group:'Medici' },
-  { id:'dottssa_arduino', name:'Dott.ssa Arduino',     color:'#37474f', group:'Medici' },
-  { id:'ablazione',       name:'Ablazione/ Igiene pt', color:'#f9a825', group:'Prestazioni' },
-  { id:'cad',             name:'Cad',                  color:'#00acc1', group:'Prestazioni' },
-  { id:'chirurgia',       name:'Chirurgia',            color:'#c62828', group:'Prestazioni' },
-  { id:'consegna_corone', name:'Consegna corone de...', color:'#ad1457', group:'Prestazioni' },
+  // ── Caduti ──
+  { id:'caduti',               name:'Caduti',                                color:'#5d4037', group:null },
+  // ── Laboratori ──
+  { id:'barra_rinforzo',       name:'Barra di rinforzo',                     color:'#2e7d32', group:'Laboratori' },
+  { id:'loreni_arturo',        name:'Loreni Arturo',                         color:'#26a69a', group:'Laboratori' },
+  { id:'palmia_lab',           name:'Palmia',                                color:'#546e7a', group:'Laboratori' },
+  { id:'wisildent',            name:'Wisildent',                             color:'#558b2f', group:'Laboratori' },
+  // ── Medici ──
+  { id:'dott_palmia',          name:'Dott. Palmia',                          color:'#9e9e9e', group:'Medici' },
+  { id:'dott_ladelia',         name:'Dott. ssa La Delia',                    color:'#795548', group:'Medici' },
+  { id:'dottssa_arduino',      name:'Dott.ssa Arduino',                      color:'#ff8f00', group:'Medici' },
+  // ── Prestazioni ──
+  { id:'ablazione',            name:'Ablazione/ Igiene pt',                  color:'#fdd835', group:'Prestazioni' },
+  { id:'cad',                  name:'Cad',                                   color:'#ff8a65', group:'Prestazioni' },
+  { id:'chirurgia',            name:'Chirurgia',                             color:'#e53935', group:'Prestazioni' },
+  { id:'consegna_corone',      name:'Consegna corone definitive',            color:'#d81b60', group:'Prestazioni' },
+  { id:'consegna_protesi',     name:'Consegna Protesi Definitiva intera arcata', color:'#f06292', group:'Prestazioni' },
+  { id:'endodonzia',           name:'Endodonzia/Conservativa',               color:'#3f51b5', group:'Prestazioni' },
+  { id:'implantologia',        name:'Implantologia',                         color:'#212121', group:'Prestazioni' },
+  { id:'impronte_scanner',     name:'Impronte con scanner',                  color:'#e91e63', group:'Prestazioni' },
+  { id:'impronte_alginato',    name:'Impronte in alginato',                  color:'#7b1fa2', group:'Prestazioni' },
+  { id:'itto',                 name:'Itto',                                  color:'#00bcd4', group:'Prestazioni' },
+  { id:'ortodonzia',           name:'Ortodonzia',                            color:'#9c27b0', group:'Prestazioni' },
+  { id:'prime_visite',         name:'Prime Visite',                          color:'#e65100', group:'Prestazioni' },
+  { id:'protesi_provvisori',   name:'Protesi generica e Consegna provvisori',color:'#afb42b', group:'Prestazioni' },
+  { id:'ribasatura',           name:'Ribasatura',                            color:'#f50057', group:'Prestazioni' },
+  { id:'sbiancamento',         name:'Sbiancamento/brillantino',              color:'#ab47bc', group:'Prestazioni' },
+  { id:'urgenze',              name:'Urgenze',                               color:'#00838f', group:'Prestazioni' },
+  { id:'varie',                name:'Varie',                                 color:'#6d4c41', group:'Prestazioni' },
 ];
 const GROUPS = ['Laboratori','Medici','Prestazioni'];
 
@@ -534,10 +538,20 @@ function renderSidebar(){
     if(!closed) items.forEach(c=>wrap.appendChild(mkCalItem(c,false)));
     list.appendChild(wrap);
   });
-  // populate modal select
+  // populate modal select — tutti i calendari raggruppati
   const sel=document.getElementById('f-calendar');
   sel.innerHTML='';
-  CALS.forEach(c=>{ const o=document.createElement('option'); o.value=c.id; o.textContent=c.name; sel.appendChild(o); });
+  // Caduti prima (ungrouped)
+  const cadutiOpts=CALS.filter(c=>c.group===null);
+  cadutiOpts.forEach(c=>{ const o=document.createElement('option'); o.value=c.id; o.textContent=c.name; sel.appendChild(o); });
+  // poi i gruppi
+  GROUPS.forEach(g=>{
+    const items=CALS.filter(c=>c.group===g);
+    if(!items.length) return;
+    const og=document.createElement('optgroup'); og.label='── '+g+' ──';
+    items.forEach(c=>{ const o=document.createElement('option'); o.value=c.id; o.textContent=c.name; og.appendChild(o); });
+    sel.appendChild(og);
+  });
 }
 
 function mkCalItem(cal,ungrouped){
