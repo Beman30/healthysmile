@@ -2,8 +2,14 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Torino | Calendario Studio</title>
+
+  <!-- Firebase SDK (compat) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
     body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:13px;color:#333;background:#f0f0f0;height:100vh;display:flex;flex-direction:column;overflow:hidden}
@@ -14,17 +20,25 @@
     .hd-logo{display:flex;align-items:center;gap:6px;color:#1a73e8;font-size:14px;font-weight:600;letter-spacing:-.3px}
     .hd-logo svg{width:22px;height:22px;fill:currentColor}
     .hd-title{font-size:18px;font-weight:400;color:#333;flex:1}
-    .view-tabs{display:flex;background:#e8e8e8;border-radius:4px;padding:2px;gap:1px}
-    .view-tab{padding:4px 9px;border-radius:3px;cursor:pointer;font-size:11.5px;color:#555;white-space:nowrap;user-select:none}
+    .view-tabs{display:flex;background:#e8e8e8;border-radius:4px;padding:2px;gap:1px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+    .view-tabs::-webkit-scrollbar{height:0}
+    .view-tab{padding:4px 9px;border-radius:3px;cursor:pointer;font-size:11.5px;color:#555;white-space:nowrap;user-select:none;flex-shrink:0}
     .view-tab.active{background:white;color:#1a73e8;font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.15)}
     .view-tab:hover:not(.active){background:rgba(255,255,255,.6)}
     .hd-icons{display:flex;gap:10px;color:#666;font-size:18px;margin-left:4px;cursor:pointer}
+    .hd-menu-btn{display:none;background:none;border:none;font-size:22px;cursor:pointer;color:#555;padding:2px 6px}
+
+    /* ── SYNC STATUS ── */
+    .sync-dot{width:8px;height:8px;border-radius:50%;background:#4caf50;flex-shrink:0;transition:background .3s}
+    .sync-dot.syncing{background:#ff9800;animation:pulse .8s infinite alternate}
+    .sync-dot.error{background:#f44336}
+    @keyframes pulse{from{opacity:.5}to{opacity:1}}
 
     /* ── MAIN LAYOUT ── */
     .main{display:flex;flex:1;overflow:hidden}
 
     /* ── SIDEBAR ── */
-    .sidebar{width:196px;background:white;border-right:1px solid #ddd;overflow-y:auto;flex-shrink:0;font-size:12px}
+    .sidebar{width:196px;background:white;border-right:1px solid #ddd;overflow-y:auto;flex-shrink:0;font-size:12px;transition:transform .25s;z-index:15}
     .mini-cal{padding:8px 6px 4px}
     .mc-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
     .mc-title{font-size:12.5px;font-weight:500;color:#333}
@@ -72,7 +86,7 @@
 
     /* ── CAL AREA ── */
     .cal-area{flex:1;overflow:hidden;display:flex;flex-direction:column}
-    .cal-scroll{flex:1;overflow-y:auto;overflow-x:auto;position:relative}
+    .cal-scroll{flex:1;overflow-y:auto;overflow-x:auto;position:relative;-webkit-overflow-scrolling:touch}
     ::-webkit-scrollbar{width:7px;height:7px}
     ::-webkit-scrollbar-track{background:#f5f5f5}
     ::-webkit-scrollbar-thumb{background:#ccc;border-radius:4px}
@@ -124,17 +138,20 @@
     .modal-x:hover{color:#333}
     .modal-body{padding:16px 20px;display:flex;flex-direction:column;gap:13px}
     .form-row{display:flex;gap:10px}
-    .fg{display:flex;flex-direction:column;gap:4px;flex:1}
+    .fg{display:flex;flex-direction:column;gap:4px;flex:1;position:relative}
     .fg label{font-size:11.5px;color:#666;font-weight:500}
     .fg input,.fg select,.fg textarea{border:1px solid #ddd;border-radius:6px;padding:7px 9px;font-size:13px;color:#333;transition:border-color .15s;outline:none;font-family:inherit;background:white}
     .fg input:focus,.fg select:focus,.fg textarea:focus{border-color:#1a73e8;box-shadow:0 0 0 2px rgba(26,115,232,.1)}
+    .fg select optgroup{font-weight:700;color:#1a73e8;background:#f0f4ff;font-size:11px;letter-spacing:.5px}
+    .fg select option{font-weight:400;color:#333;padding-left:8px}
     .fg textarea{resize:vertical;min-height:64px}
     .form-div{border:none;border-top:1px solid #f0f0f0;margin:2px 0}
     .form-sec{font-size:11px;font-weight:600;color:#999;text-transform:uppercase;letter-spacing:.5px}
     .modal-ft{display:flex;align-items:center;padding:12px 20px;border-top:1px solid #eee;gap:8px;flex-wrap:wrap}
     .btn{padding:8px 16px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;border:none;transition:all .15s;white-space:nowrap}
+    .btn:disabled{opacity:.6;cursor:not-allowed}
     .btn-primary{background:#1a73e8;color:white}
-    .btn-primary:hover{background:#1557b0}
+    .btn-primary:hover:not(:disabled){background:#1557b0}
     .btn-sec{background:none;border:1px solid #ccc;color:#555}
     .btn-sec:hover{background:#f5f5f5}
     .btn-del{background:none;border:1px solid #d93025;color:#d93025}
@@ -142,6 +159,14 @@
     .btn-wa{background:#25D366;color:white;display:flex;align-items:center;gap:6px;margin-left:auto;padding:9px 16px;font-size:13px}
     .btn-wa:hover{background:#1dba57}
     .btn-wa svg{width:16px;height:16px;fill:white;flex-shrink:0}
+
+    /* ── PATIENT AUTOCOMPLETE ── */
+    .ac-dropdown{position:absolute;top:100%;left:0;right:0;background:white;border:1px solid #ddd;border-radius:6px;box-shadow:0 4px 12px rgba(0,0,0,.15);z-index:200;max-height:200px;overflow-y:auto;margin-top:2px}
+    .ac-item{padding:8px 12px;cursor:pointer;font-size:12.5px;border-bottom:1px solid #f5f5f5}
+    .ac-item:hover{background:#e8f0fe}
+    .ac-item:last-child{border-bottom:none}
+    .ac-name{font-weight:500;color:#333}
+    .ac-sub{font-size:11px;color:#888;margin-top:1px}
 
     /* ── EVENT POPUP ── */
     .popup{position:fixed;background:white;border-radius:8px;padding:14px;max-width:320px;min-width:240px;z-index:90;box-shadow:0 4px 20px rgba(0,0,0,.18);border:1px solid #e0e0e0;font-size:12px;line-height:1.5}
@@ -157,15 +182,70 @@
     .popup-edit{background:#e8f0fe;color:#1a73e8}
     .popup-wa{background:#25D366;color:white;display:flex;align-items:center;gap:4px}
 
+    /* ── ALLEGATI ── */
+    .attach-area{display:flex;flex-direction:column;gap:6px}
+    .btn-attach{background:#f0f4ff;border:1px dashed #1a73e8;border-radius:6px;padding:7px 14px;color:#1a73e8;font-size:12.5px;cursor:pointer;font-weight:500;text-align:left;transition:background .15s}
+    .btn-attach:hover{background:#e3ecff}
+    .attach-list{display:flex;flex-wrap:wrap;gap:6px}
+    .attach-chip{display:flex;align-items:center;gap:5px;background:#f5f5f5;border:1px solid #ddd;border-radius:20px;padding:3px 10px 3px 8px;font-size:11.5px;color:#444;max-width:200px}
+    .attach-chip span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+    .attach-chip.uploading{opacity:.6}
+    .attach-del{background:none;border:none;cursor:pointer;color:#999;font-size:14px;line-height:1;padding:0;flex-shrink:0}
+    .attach-del:hover{color:#d93025}
+    /* popup allegati */
+    .popup-attach{margin-top:8px;padding-top:8px;border-top:1px solid #eee}
+    .popup-attach-title{font-size:11px;color:#888;margin-bottom:4px}
+    .popup-attach-chip{display:inline-flex;align-items:center;gap:4px;background:#f0f4ff;border:1px solid #c5d8ff;border-radius:12px;padding:2px 8px;font-size:11px;color:#1a73e8;cursor:pointer;margin:2px 2px 0 0;text-decoration:none}
+    .popup-attach-chip:hover{background:#ddeaff}
+
     /* ── TOAST ── */
-    .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#333;color:white;padding:8px 18px;border-radius:20px;font-size:12.5px;z-index:200;opacity:0;transition:opacity .3s}
+    .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#333;color:white;padding:8px 18px;border-radius:20px;font-size:12.5px;z-index:200;opacity:0;transition:opacity .3s;pointer-events:none}
     .toast.show{opacity:1}
+
+    /* ── MOBILE OVERLAY SIDEBAR ── */
+    .sb-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:14}
+
+    /* ── MOBILE RESPONSIVE ── */
+    @media (max-width: 768px) {
+      .hd-menu-btn{display:block}
+      .hd-title{font-size:15px}
+      .view-tabs{max-width:200px}
+      .hd-icons span:not(:last-child){display:none}
+
+      .sidebar{position:fixed;top:0;left:0;bottom:0;width:240px;transform:translateX(-100%);z-index:15;box-shadow:4px 0 20px rgba(0,0,0,.2)}
+      .sidebar.open{transform:translateX(0)}
+      .sb-overlay.show{display:block}
+
+      .modal{width:100%;max-width:100%;max-height:100vh;border-radius:0;margin:0;position:fixed;top:0;left:0;right:0;bottom:0}
+      .overlay{align-items:flex-start}
+      .form-row{flex-direction:column}
+      .modal-ft{flex-wrap:wrap}
+      .btn-wa{margin-left:0;width:100%;justify-content:center}
+
+      .nb-btn{padding:5px 10px;font-size:17px}
+      .nb-today{padding:5px 12px}
+
+      .cal-head-col{min-width:60px}
+      .day-col{min-width:60px}
+      .time-gutter{width:40px}
+      .cal-head-time{width:40px}
+      .time-label{font-size:9px;padding:0 3px}
+    }
+
+    @media (max-width: 480px) {
+      .view-tabs{max-width:140px}
+      .hd-title{display:none}
+    }
   </style>
 </head>
 <body>
 
+<!-- SIDEBAR OVERLAY (mobile) -->
+<div class="sb-overlay" id="sb-overlay"></div>
+
 <!-- HEADER -->
 <header class="header">
+  <button class="hd-menu-btn" id="hd-menu">☰</button>
   <div class="hd-logo">
     <svg viewBox="0 0 24 24"><rect x="2" y="2" width="4" height="4" rx="1"/><rect x="10" y="2" width="4" height="4" rx="1"/><rect x="18" y="2" width="4" height="4" rx="1"/><rect x="2" y="10" width="4" height="4" rx="1"/><rect x="10" y="10" width="4" height="4" rx="1"/><rect x="18" y="10" width="4" height="4" rx="1"/><rect x="2" y="18" width="4" height="4" rx="1"/><rect x="10" y="18" width="4" height="4" rx="1"/><rect x="18" y="18" width="4" height="4" rx="1"/></svg>
     teamup
@@ -175,15 +255,14 @@
     <span class="view-tab" data-view="pianificatore">Pianificatore</span>
     <span class="view-tab active" data-view="giorno">Giorno</span>
     <span class="view-tab" data-view="3giorni">3 giorni</span>
-    <span class="view-tab active-none" data-view="settimana">Settimana</span>
+    <span class="view-tab" data-view="settimana">Settimana</span>
     <span class="view-tab" data-view="4settimane">4 settimane</span>
     <span class="view-tab" data-view="mese">Mese</span>
     <span class="view-tab" data-view="anno">Anno</span>
-    <span class="view-tab" data-view="tabella">Tabella</span>
     <span class="view-tab" data-view="agenda">Agenda</span>
-    <span class="view-tab" data-view="elenco">Elenco</span>
   </div>
   <div class="hd-icons">
+    <div class="sync-dot" id="sync-dot" title="Sincronizzazione"></div>
     <span title="Cerca">🔍</span>
     <span title="Impostazioni">⚙️</span>
     <span title="Nicola" style="font-size:14px;font-weight:500;color:#555">Nicola</span>
@@ -192,7 +271,7 @@
 
 <div class="main">
   <!-- SIDEBAR -->
-  <aside class="sidebar">
+  <aside class="sidebar" id="sidebar">
     <div class="mini-cal">
       <div class="mc-header">
         <button class="mc-btn" id="mc-prev">‹</button>
@@ -221,8 +300,8 @@
     <div class="sb-section" style="padding:8px 12px;font-size:11px;color:#888">
       <div style="font-weight:600;color:#555;margin-bottom:4px">About</div>
       <div>Studio Dentistico Palmia</div>
-      <div>Torino</div>
-      <div style="margin-top:8px;color:#1a73e8;cursor:pointer;font-size:11.5px">✏️ Modifica</div>
+      <div>Healthy Smile By N</div>
+      <div>Via Madama Cristina 2, Torino</div>
     </div>
   </aside>
 
@@ -234,7 +313,7 @@
       <button class="nb-btn" id="nb-prev">‹</button>
       <button class="nb-today" id="nb-today">Oggi</button>
       <button class="nb-btn" id="nb-next">›</button>
-      <span class="nb-date" id="nb-label">ven 24 apr 2026 ▾</span>
+      <span class="nb-date" id="nb-label">▾</span>
     </div>
     <div class="cal-scroll" id="cal-scroll">
       <div id="cal-grid"></div>
@@ -250,7 +329,7 @@
     <button class="popup-x" id="pp-close">×</button>
   </div>
   <div class="popup-row"><span class="popup-lbl">📅 Data/Ora</span><span class="popup-val" id="pp-dt"></span></div>
-  <div class="popup-row" id="pp-doc-row"><span class="popup-lbl">👨‍⚕️ Medico</span><span class="popup-val" id="pp-doc"></span></div>
+  <div class="popup-row" id="pp-doc-row"><span class="popup-lbl">📋 Calendario</span><span class="popup-val" id="pp-doc"></span></div>
   <div class="popup-row" id="pp-treat-row"><span class="popup-lbl">🔧 Trattamento</span><span class="popup-val" id="pp-treat"></span></div>
   <div class="popup-row" id="pp-card-row"><span class="popup-lbl">📋 Cartella</span><span class="popup-val" id="pp-card"></span></div>
   <div class="popup-row" id="pp-amt-row"><span class="popup-lbl">💶 Importo</span><span class="popup-val" id="pp-amt"></span></div>
@@ -297,17 +376,22 @@
         </div>
       </div>
 
-      <!-- Paziente -->
-      <div class="fg">
+      <!-- Paziente con autocomplete -->
+      <div class="fg" id="fg-patient">
         <label>👤 Paziente – Nome e Cognome</label>
-        <input type="text" id="f-patient" placeholder="es. Rossi Mario" autocomplete="off">
+        <input type="text" id="f-patient" placeholder="es. Mario Rossi" autocomplete="off">
+        <div class="ac-dropdown hidden" id="ac-dropdown"></div>
       </div>
 
-      <!-- Cartella -->
+      <!-- Cartella + Telefono -->
       <div class="form-row">
-        <div class="fg" style="flex:0 0 180px">
+        <div class="fg" style="flex:0 0 160px">
           <label>N° Cartella</label>
           <input type="text" id="f-card" placeholder="es. 573">
+        </div>
+        <div class="fg">
+          <label>📱 Numero WhatsApp</label>
+          <input type="tel" id="f-phone" placeholder="+39 333 1234567">
         </div>
       </div>
 
@@ -352,17 +436,6 @@
             <option value="no">— nessuno</option>
           </select>
         </div>
-      </div>
-      <!-- campo nascosto per compatibilità dati salvati -->
-      <input type="hidden" id="f-confirm" value="no">
-      <input type="hidden" id="f-year" value="">
-      <input type="hidden" id="f-age" value="">
-
-      <div class="form-row">
-        <div class="fg">
-          <label>📱 Numero WhatsApp</label>
-          <input type="tel" id="f-phone" placeholder="+39 333 1234567">
-        </div>
         <div class="fg">
           <label>💶 Importo (€)</label>
           <input type="text" id="f-amount" placeholder="es. 200">
@@ -372,6 +445,25 @@
       <div class="fg">
         <label>📝 Note aggiuntive</label>
         <input type="text" id="f-notes" placeholder="Annotazioni extra, promemoria…">
+      </div>
+
+      <!-- campi nascosti per compatibilità -->
+      <input type="hidden" id="f-confirm" value="no">
+      <input type="hidden" id="f-year" value="">
+      <input type="hidden" id="f-age" value="">
+
+      <hr class="form-div">
+
+      <!-- Allegati -->
+      <div class="fg">
+        <label>📎 Allegati</label>
+        <div class="attach-area" id="attach-area">
+          <input type="file" id="f-file" multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt" style="display:none">
+          <button type="button" class="btn-attach" id="btn-attach-pick">
+            📎 Aggiungi file
+          </button>
+          <div class="attach-list" id="attach-list"></div>
+        </div>
       </div>
 
     </div><!-- /modal-body -->
@@ -392,6 +484,27 @@
 <div class="toast" id="toast"></div>
 
 <script>
+// ════════════════════════════════════════════
+//  FIREBASE INIT
+// ════════════════════════════════════════════
+const firebaseConfig = {
+  apiKey: "AIzaSyB9BXoJQLCx_Y9pwoXmxtVj1CLULohaUsw",
+  authDomain: "healthysmile-d2b52.firebaseapp.com",
+  projectId: "healthysmile-d2b52",
+  storageBucket: "healthysmile-d2b52.firebasestorage.app",
+  messagingSenderId: "984573798131",
+  appId: "1:984573798131:web:e96e695fb86b90a2413986"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const storage = firebase.storage();
+
+function setSyncStatus(status){
+  // status: 'ok' | 'syncing' | 'error'
+  const dot = document.getElementById('sync-dot');
+  dot.className = 'sync-dot' + (status!=='ok' ? ' '+status : '');
+}
+
 // ════════════════════════════════════════════
 //  CONFIGURAZIONE CALENDARI
 // ════════════════════════════════════════════
@@ -434,7 +547,7 @@ const GROUPS = ['Laboratori','Medici','Prestazioni'];
 let view = 'giorno';
 let curDate = new Date();
 let miniMonth = new Date();
-let events = JSON.parse(localStorage.getItem('tc-events') || '[]');
+let events = [];           // popolato da Firestore onSnapshot
 let editId = null;
 let activeCals = new Set(CALS.map(c=>c.id));
 let collapsedGroups = new Set();
@@ -468,13 +581,12 @@ function fmtDate(ds){
   const d=new Date(ds+'T12:00:00');
   return `${IT_DAYS[d.getDay()]} ${d.getDate()} ${IT_MONTHS[d.getMonth()]} ${d.getFullYear()}`;
 }
-function saveEvs(){ localStorage.setItem('tc-events',JSON.stringify(events)) }
 function getEventsForDay(ds){ return events.filter(e=>e.date===ds && activeCals.has(e.calendar)) }
 
 function toast(msg){
   const t=document.getElementById('toast');
   t.textContent=msg; t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),2200);
+  setTimeout(()=>t.classList.remove('show'),2500);
 }
 
 function getWeekMon(d){
@@ -508,7 +620,7 @@ function renderMini(){
     const td=new Date(y,m,d2);
     if(sameDay(td,today)) el.classList.add('today');
     if(sameDay(td,curDate)) el.classList.add('selected');
-    el.addEventListener('click',()=>{ curDate=new Date(y,m,d2); miniMonth=new Date(curDate); renderMini(); renderCal(); updateLabel(); });
+    el.addEventListener('click',()=>{ curDate=new Date(y,m,d2); miniMonth=new Date(curDate); renderMini(); renderCal(); updateLabel(); closeSidebar(); });
     grid.appendChild(el);
   }
   const total=dow+last, rem=total%7===0?0:7-total%7;
@@ -538,18 +650,24 @@ function renderSidebar(){
     if(!closed) items.forEach(c=>wrap.appendChild(mkCalItem(c,false)));
     list.appendChild(wrap);
   });
-  // populate modal select — tutti i calendari raggruppati
+  // Populate modal select
   const sel=document.getElementById('f-calendar');
   sel.innerHTML='';
-  // Caduti prima (ungrouped)
   const cadutiOpts=CALS.filter(c=>c.group===null);
-  cadutiOpts.forEach(c=>{ const o=document.createElement('option'); o.value=c.id; o.textContent=c.name; sel.appendChild(o); });
-  // poi i gruppi
+  cadutiOpts.forEach(c=>{
+    const o=document.createElement('option');
+    o.value=c.id; o.textContent='⬛ '+c.name; sel.appendChild(o);
+  });
+  const groupIcons={'Laboratori':'🔬','Medici':'👨‍⚕️','Prestazioni':'🦷'};
   GROUPS.forEach(g=>{
     const items=CALS.filter(c=>c.group===g);
     if(!items.length) return;
-    const og=document.createElement('optgroup'); og.label='── '+g+' ──';
-    items.forEach(c=>{ const o=document.createElement('option'); o.value=c.id; o.textContent=c.name; og.appendChild(o); });
+    const og=document.createElement('optgroup');
+    og.label=(groupIcons[g]||'')+'  '+g.toUpperCase();
+    items.forEach(c=>{
+      const o=document.createElement('option');
+      o.value=c.id; o.textContent='  '+c.name; og.appendChild(o);
+    });
     sel.appendChild(og);
   });
 }
@@ -566,6 +684,18 @@ function mkCalItem(cal,ungrouped){
     renderCal();
   });
   return el;
+}
+
+// ════════════════════════════════════════════
+//  MOBILE SIDEBAR
+// ════════════════════════════════════════════
+function openSidebar(){
+  document.getElementById('sidebar').classList.add('open');
+  document.getElementById('sb-overlay').classList.add('show');
+}
+function closeSidebar(){
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sb-overlay').classList.remove('show');
 }
 
 // ════════════════════════════════════════════
@@ -599,7 +729,7 @@ function renderCal(){
     const mon=getWeekMon(curDate);
     renderDayView(grid,Array.from({length:7},(_,i)=>addDays(mon,i)));
   } else {
-    renderDayView(grid,[curDate]); // fallback
+    renderDayView(grid,[curDate]);
   }
   const scroll=document.getElementById('cal-scroll');
   const now=new Date();
@@ -614,7 +744,7 @@ function renderDayView(container, dates){
   const today=new Date();
   const view_el=document.createElement('div'); view_el.className='cal-view';
 
-  // ── HEADER ──
+  // HEADER
   const head=document.createElement('div'); head.className='cal-head';
   const htCell=document.createElement('div'); htCell.className='cal-head-time'; head.appendChild(htCell);
   dates.forEach(d=>{
@@ -629,7 +759,7 @@ function renderDayView(container, dates){
   });
   view_el.appendChild(head);
 
-  // ── BODY ──
+  // BODY
   const body=document.createElement('div'); body.className='cal-body';
   const gutter=document.createElement('div'); gutter.className='time-gutter';
   for(let h=H_START;h<=H_END;h++){
@@ -639,7 +769,6 @@ function renderDayView(container, dates){
   }
   body.appendChild(gutter);
 
-  // ── COLUMNS ──
   const colWrap=document.createElement('div'); colWrap.className='col-wrap';
   dates.forEach(d=>{
     const dateStr=d2s(d);
@@ -647,7 +776,6 @@ function renderDayView(container, dates){
     col.className=`day-col ${sameDay(d,today)?'today-bg':''}`;
     col.style.position='relative';
 
-    // hour rows (click to create)
     for(let h=H_START;h<=H_END;h++){
       const row=document.createElement('div'); row.className='hour-row';
       const half=document.createElement('div'); half.className='half-tick'; row.appendChild(half);
@@ -661,9 +789,7 @@ function renderDayView(container, dates){
       col.appendChild(row);
     }
 
-    // EVENTS
     const dayEvs=getEventsForDay(dateStr);
-    // Layout overlapping events into lanes
     const lanes=layoutEvents(dayEvs);
     dayEvs.forEach(ev=>{
       const {laneIdx,laneCount}=lanes.get(ev.id)||{laneIdx:0,laneCount:1};
@@ -671,7 +797,6 @@ function renderDayView(container, dates){
       col.appendChild(el);
     });
 
-    // NOW line
     if(sameDay(d,today)){
       const now=new Date();
       const nm=now.getHours()*60+now.getMinutes();
@@ -690,12 +815,10 @@ function renderDayView(container, dates){
   container.appendChild(view_el);
 }
 
-// Simple lane layout for overlapping events
 function layoutEvents(evs){
   const map=new Map();
   const sorted=[...evs].sort((a,b)=>t2m(a.start)-t2m(b.start));
-  const lanes=[]; // each lane is an array of end-times
-
+  const lanes=[];
   sorted.forEach(ev=>{
     const start=t2m(ev.start), end=t2m(ev.end)||start+30;
     let placed=false;
@@ -717,25 +840,18 @@ function mkEvent(ev,laneIdx,laneCount){
   const endM=ev.end?t2m(ev.end):startM+30;
   const top=(startM-H_START*60)/60*PX_HOUR;
   const height=Math.max(18,(endM-startM)/60*PX_HOUR-2);
-
-  // Lane positioning
   const laneW=100/laneCount;
   el.style.top=top+'px';
   el.style.height=height+'px';
   el.style.left=`calc(${laneIdx*laneW}% + 2px)`;
   el.style.right=`calc(${(laneCount-laneIdx-1)*laneW}% + 2px)`;
   el.style.width='';
-
-  const cardPart=ev.card?` (${ev.card}${ev.year?'/'+ev.year:''})`:''
+  const cardPart=ev.card?` (${ev.card})`:''
   const typePart=ev.type?`${ev.type}/ `:'';
-  const amtPart=ev.amount?` (€${ev.amount})`:'';
-  const confirmPart=ev.confirm&&ev.confirm!='no'?`/${ev.confirm}`:'';
-  const contactPart=ev.contact&&ev.contact!='no'?`/Cc-wa`:'';
-
   el.innerHTML=`
     <div class="ev-time">${fmtTime(ev.start)}</div>
     <div class="ev-patient">${typePart}${ev.patient||''}${cardPart}</div>
-    ${ev.treatment?`<div class="ev-detail">${ev.treatment}${contactPart}${confirmPart}${amtPart}</div>`:''}
+    ${ev.treatment?`<div class="ev-detail">${ev.treatment}</div>`:''}
   `;
   el.addEventListener('click',e=>{ e.stopPropagation(); showPopup(ev.id,e); });
   return el;
@@ -750,25 +866,43 @@ function showPopup(evId, e){
   popupEventId=evId;
   const pp=document.getElementById('popup');
   document.getElementById('pp-dot').style.background=cal.color;
-  document.getElementById('pp-title').textContent=`${ev.type?ev.type+'/ ':''}${ev.patient||'Appuntamento'}${ev.card?' ('+ev.card+(ev.year?'/'+ev.year:'')+')':''}`;
+  document.getElementById('pp-title').textContent=`${ev.type?ev.type+'/ ':''}${ev.patient||'Appuntamento'}${ev.card?' ('+ev.card+')':''}`;
   document.getElementById('pp-dt').textContent=`${fmtDate(ev.date)} · ${fmtTime(ev.start)}${ev.end?' – '+fmtTime(ev.end):''}`;
   document.getElementById('pp-doc').textContent=cal.name;
   const treat=ev.treatment||'';
   document.getElementById('pp-treat').textContent=treat;
   document.getElementById('pp-treat-row').classList.toggle('hidden',!treat);
-  const card=ev.card?(ev.card+(ev.year?'/'+ev.year:'')):'';
-  document.getElementById('pp-card').textContent=card+(ev.age?' – '+ev.age:'');
-  document.getElementById('pp-card-row').classList.toggle('hidden',!card&&!ev.age);
+  const card=ev.card||'';
+  document.getElementById('pp-card').textContent=card;
+  document.getElementById('pp-card-row').classList.toggle('hidden',!card);
   document.getElementById('pp-amt').textContent=ev.amount?`€${ev.amount}`:'';
   document.getElementById('pp-amt-row').classList.toggle('hidden',!ev.amount);
   document.getElementById('pp-note').textContent=ev.notes||'';
   document.getElementById('pp-note-row').classList.toggle('hidden',!ev.notes);
+  // allegati nel popup
+  let ppAttach=pp.querySelector('.popup-attach');
+  if(ppAttach) ppAttach.remove();
+  if(ev.attachments&&ev.attachments.length){
+    const div=document.createElement('div'); div.className='popup-attach';
+    div.innerHTML=`<div class="popup-attach-title">📎 Allegati (${ev.attachments.length})</div>`;
+    ev.attachments.forEach(a=>{
+      const chip=document.createElement('a'); chip.className='popup-attach-chip';
+      chip.href=a.url||a.data; chip.target='_blank';
+      let icon='📄';
+      if(a.type&&a.type.startsWith('image/')) icon='🖼️';
+      else if(a.type==='application/pdf') icon='📕';
+      chip.textContent=icon+' '+a.name;
+      div.appendChild(chip);
+    });
+    document.getElementById('pp-close').closest('.popup-hd').after(div);
+  }
   // position
   const vw=window.innerWidth, vh=window.innerHeight;
   let x=e.clientX+10, y=e.clientY+10;
   pp.classList.remove('hidden');
-  if(x+pp.offsetWidth>vw-10) x=e.clientX-pp.offsetWidth-10;
-  if(y+pp.offsetHeight>vh-10) y=e.clientY-pp.offsetHeight-10;
+  const pw=pp.offsetWidth, ph=pp.offsetHeight;
+  if(x+pw>vw-10) x=Math.max(10,e.clientX-pw-10);
+  if(y+ph>vh-10) y=Math.max(10,e.clientY-ph-10);
   pp.style.left=x+'px'; pp.style.top=y+'px';
 }
 
@@ -809,6 +943,7 @@ function openModal(evId, defDate, defStart, defEnd){
     document.getElementById('f-phone').value=ev.phone||'';
     document.getElementById('f-amount').value=ev.amount||'';
     document.getElementById('f-notes').value=ev.notes||'';
+    initAttachments(ev.attachments||[]);
   } else {
     title.textContent='Nuovo Appuntamento';
     delBtn.classList.add('hidden');
@@ -827,15 +962,19 @@ function openModal(evId, defDate, defStart, defEnd){
     document.getElementById('f-phone').value='';
     document.getElementById('f-amount').value='';
     document.getElementById('f-notes').value='';
+    initAttachments([]);
   }
   updateModalColor();
   overlay.classList.remove('hidden');
-  document.getElementById('f-patient').focus();
+  setTimeout(()=>document.getElementById('f-patient').focus(),100);
 }
 
-function closeModal(){ document.getElementById('overlay').classList.add('hidden'); editId=null; }
+function closeModal(){ document.getElementById('overlay').classList.add('hidden'); editId=null; hideAcDropdown(); }
 
-function saveEvent(){
+// ════════════════════════════════════════════
+//  SAVE / DELETE  (Firestore)
+// ════════════════════════════════════════════
+async function saveEvent(){
   const patient=document.getElementById('f-patient').value.trim();
   const treatment=document.getElementById('f-treatment').value.trim();
   if(!patient&&!treatment){ toast('⚠️ Inserisci il nome del paziente o la descrizione.'); return; }
@@ -843,60 +982,102 @@ function saveEvent(){
   const start=document.getElementById('f-start').value;
   if(!date||!start){ toast('⚠️ Inserisci data e ora di inizio.'); return; }
 
-  const ev={
-    id: editId||uid(),
-    type: document.getElementById('f-type').value,
-    calendar: document.getElementById('f-calendar').value,
-    patient,
-    card: document.getElementById('f-card').value.trim(),
-    year: document.getElementById('f-year').value.trim(),
-    age: document.getElementById('f-age').value.trim(),
-    date, start,
-    end: document.getElementById('f-end').value,
-    treatment,
-    contact: document.getElementById('f-contact').value,
-    confirm: document.getElementById('f-confirm').value,
-    phone: document.getElementById('f-phone').value.trim(),
-    amount: document.getElementById('f-amount').value.trim(),
-    notes: document.getElementById('f-notes').value.trim(),
-  };
+  const saveBtn=document.getElementById('m-save');
+  saveBtn.disabled=true; saveBtn.textContent='⏳ Salvataggio...';
+  setSyncStatus('syncing');
 
-  if(editId){ const i=events.findIndex(e=>e.id===editId); if(i>=0) events[i]=ev; }
-  else events.push(ev);
+  try {
+    // Use pre-generated ID so we can reference it for Storage uploads
+    const evId = editId || db.collection('appuntamenti').doc().id;
 
-  saveEvs(); closeModal(); renderCal();
-  toast(editId?'✅ Appuntamento aggiornato':'✅ Appuntamento salvato');
+    // Upload any pending attachments to Firebase Storage
+    const finalAttachments = [];
+    for(const att of currentAttachments){
+      if(att.pending && att.localData){
+        try {
+          const path = `attachments/${evId}/${Date.now()}_${att.name}`;
+          const ref = storage.ref(path);
+          // Convert base64 data URL to blob
+          const res = await fetch(att.localData);
+          const blob = await res.blob();
+          const snap = await ref.put(blob);
+          const url = await snap.ref.getDownloadURL();
+          finalAttachments.push({ name:att.name, type:att.type, url, storagePath:path });
+        } catch(e){
+          console.warn('Upload allegato fallito:', e);
+          // Keep local base64 as fallback
+          finalAttachments.push({ name:att.name, type:att.type, url: att.localData });
+        }
+      } else {
+        finalAttachments.push(att);
+      }
+    }
+
+    const ev = {
+      id: evId,
+      type: document.getElementById('f-type').value,
+      calendar: document.getElementById('f-calendar').value,
+      patient,
+      card: document.getElementById('f-card').value.trim(),
+      year: document.getElementById('f-year').value.trim(),
+      age: document.getElementById('f-age').value.trim(),
+      date, start,
+      end: document.getElementById('f-end').value,
+      treatment,
+      contact: document.getElementById('f-contact').value,
+      confirm: document.getElementById('f-confirm').value,
+      phone: document.getElementById('f-phone').value.trim(),
+      amount: document.getElementById('f-amount').value.trim(),
+      notes: document.getElementById('f-notes').value.trim(),
+      attachments: finalAttachments,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    };
+
+    await db.collection('appuntamenti').doc(evId).set(ev);
+    setSyncStatus('ok');
+    closeModal();
+    toast(editId?'✅ Appuntamento aggiornato':'✅ Appuntamento salvato');
+  } catch(err){
+    console.error('Errore salvataggio:', err);
+    setSyncStatus('error');
+    toast('❌ Errore: '+err.message);
+  } finally {
+    saveBtn.disabled=false; saveBtn.textContent='💾 Salva';
+  }
 }
 
-function deleteEvent(){
+async function deleteEvent(){
   if(!editId) return;
   if(!confirm('Eliminare questo appuntamento?')) return;
-  events=events.filter(e=>e.id!==editId);
-  saveEvs(); closeModal(); renderCal();
-  toast('🗑 Appuntamento eliminato');
+  setSyncStatus('syncing');
+  try {
+    await db.collection('appuntamenti').doc(editId).delete();
+    setSyncStatus('ok');
+    closeModal();
+    toast('🗑 Appuntamento eliminato');
+  } catch(err){
+    setSyncStatus('error');
+    toast('❌ Errore eliminazione: '+err.message);
+  }
 }
 
 // ════════════════════════════════════════════
 //  WHATSAPP
 // ════════════════════════════════════════════
 function buildWAMsg(evOrForm){
-  // Format date: "Giovedì 14/05/2026"
   let dayName='', dateDDMMYYYY='';
   if(evOrForm.date){
     const d=new Date(evOrForm.date+'T12:00:00');
-    const IT_DAYS_LONG=['Domenica','Lunedì','Martedì','Mercoledì','Giovedì','Venerdì','Sabato'];
     dayName=IT_DAYS_LONG[d.getDay()];
     dateDDMMYYYY=String(d.getDate()).padStart(2,'0')+'/'
                 +String(d.getMonth()+1).padStart(2,'0')+'/'
                 +d.getFullYear();
   }
-  // Format time: "15:00"
   let oraFmt='';
   if(evOrForm.start){
     const[h,m]=evOrForm.start.split(':');
     oraFmt=h+':'+m;
   }
-
   let msg='Buongiorno, Studio Dentistico Healthy Smile.\n';
   msg+=`Ha effettuato una prenotazione per il *${dayName} ${dateDDMMYYYY} alle ore ${oraFmt}:*\n`;
   msg+=`presso il nostro Studio sito in *Via Madama Cristina 2, Torino*,\n`;
@@ -920,18 +1101,127 @@ function formToObj(){
     start: document.getElementById('f-start').value,
     end: document.getElementById('f-end').value,
     card: document.getElementById('f-card').value.trim(),
-    year: document.getElementById('f-year').value.trim(),
     amount: document.getElementById('f-amount').value.trim(),
-    confirm: document.getElementById('f-confirm').value,
     phone: document.getElementById('f-phone').value.trim(),
   };
 }
 
 // ════════════════════════════════════════════
+//  ALLEGATI
+// ════════════════════════════════════════════
+let currentAttachments = [];
+
+function renderAttachList(){
+  const list=document.getElementById('attach-list');
+  if(!list) return;
+  list.innerHTML='';
+  currentAttachments.forEach((a,i)=>{
+    const chip=document.createElement('div'); chip.className='attach-chip'+(a.pending?' uploading':'');
+    let icon='📄';
+    if(a.type&&a.type.startsWith('image/')) icon='🖼️';
+    else if(a.type==='application/pdf') icon='📕';
+    else if(a.type&&a.type.includes('word')) icon='📝';
+    else if(a.type&&(a.type.includes('excel')||a.type.includes('sheet'))) icon='📊';
+    chip.innerHTML=`<span title="${a.name}">${icon} ${a.name}${a.pending?' ⏳':''}</span>
+      <button class="attach-del" data-i="${i}" title="Rimuovi">×</button>`;
+    chip.querySelector('.attach-del').addEventListener('click',()=>{
+      currentAttachments.splice(i,1); renderAttachList();
+    });
+    list.appendChild(chip);
+  });
+}
+
+function initAttachments(savedAttachments){
+  currentAttachments = savedAttachments ? [...savedAttachments] : [];
+  renderAttachList();
+}
+
+document.addEventListener('DOMContentLoaded', ()=>{
+  const inp=document.getElementById('f-file');
+  const btn=document.getElementById('btn-attach-pick');
+  if(btn) btn.addEventListener('click',()=>inp.click());
+  if(inp) inp.addEventListener('change',()=>{
+    const files=Array.from(inp.files);
+    if(!files.length) return;
+    // Size check: warn if any file > 10MB
+    for(const file of files){
+      if(file.size > 10*1024*1024){ toast('⚠️ File troppo grande (max 10MB): '+file.name); continue; }
+      const reader=new FileReader();
+      reader.onload=e=>{
+        currentAttachments.push({name:file.name, type:file.type, localData:e.target.result, pending:true});
+        renderAttachList();
+      };
+      reader.readAsDataURL(file);
+    }
+    inp.value='';
+  });
+});
+
+// ════════════════════════════════════════════
+//  PATIENT AUTOCOMPLETE (da Firestore "pazienti")
+// ════════════════════════════════════════════
+let acTimeout = null;
+
+function showAcDropdown(items){
+  const dd=document.getElementById('ac-dropdown');
+  dd.innerHTML='';
+  if(!items.length){ dd.classList.add('hidden'); return; }
+  items.forEach(p=>{
+    const el=document.createElement('div'); el.className='ac-item';
+    el.innerHTML=`<div class="ac-name">${p.nome||''} ${p.cognome||''}</div>
+      <div class="ac-sub">Cartella: ${p.codice||'—'} · Tel: ${p.telefono||'—'}</div>`;
+    el.addEventListener('mousedown', e=>{
+      e.preventDefault(); // prevent blur before click
+      document.getElementById('f-patient').value=`${p.nome||''} ${p.cognome||''}`.trim();
+      document.getElementById('f-card').value=p.codice||'';
+      document.getElementById('f-phone').value=p.telefono||'';
+      dd.classList.add('hidden');
+    });
+    dd.appendChild(el);
+  });
+  dd.classList.remove('hidden');
+}
+
+function hideAcDropdown(){
+  document.getElementById('ac-dropdown').classList.add('hidden');
+}
+
+document.addEventListener('DOMContentLoaded', ()=>{
+  const inp=document.getElementById('f-patient');
+  if(!inp) return;
+  inp.addEventListener('input', ()=>{
+    clearTimeout(acTimeout);
+    const q=inp.value.trim().toLowerCase();
+    if(q.length < 2){ hideAcDropdown(); return; }
+    acTimeout=setTimeout(async ()=>{
+      try {
+        // Search in "pazienti" collection (will be populated by Cartella Clinica app)
+        const snap = await db.collection('pazienti')
+          .orderBy('cognome')
+          .limit(50)
+          .get();
+        const results = snap.docs
+          .map(d=>d.data())
+          .filter(p=>{
+            const full=`${p.nome||''} ${p.cognome||''} ${p.codice||''}`.toLowerCase();
+            return full.includes(q);
+          })
+          .slice(0,8);
+        showAcDropdown(results);
+      } catch(e){
+        // Collection doesn't exist yet — silently ignore
+        hideAcDropdown();
+      }
+    }, 250);
+  });
+  inp.addEventListener('blur', ()=>{ setTimeout(hideAcDropdown, 200); });
+});
+
+// ════════════════════════════════════════════
 //  NAVIGATION
 // ════════════════════════════════════════════
 function navigate(dir){
-  const steps={giorno:1,'3giorni':3,settimana:7,'4settimane':28,mese:30,anno:365,tabella:1,agenda:1,elenco:1,pianificatore:1};
+  const steps={giorno:1,'3giorni':3,settimana:7,'4settimane':28,mese:30,anno:365,agenda:1,pianificatore:1};
   const step=steps[view]||1;
   curDate=addDays(curDate,dir*step);
   miniMonth=new Date(curDate);
@@ -979,6 +1269,28 @@ document.getElementById('cal-scroll').addEventListener('click',e=>{
   if(!e.target.closest('.popup')&&!e.target.closest('.ev')) hidePopup();
 });
 
+// Mobile sidebar
+document.getElementById('hd-menu').addEventListener('click',openSidebar);
+document.getElementById('sb-overlay').addEventListener('click',closeSidebar);
+
+// ════════════════════════════════════════════
+//  FIRESTORE REAL-TIME LISTENER
+// ════════════════════════════════════════════
+setSyncStatus('syncing');
+db.collection('appuntamenti')
+  .onSnapshot(snapshot => {
+    events = snapshot.docs.map(doc => {
+      const d = doc.data();
+      return { ...d, id: doc.id };
+    });
+    setSyncStatus('ok');
+    renderCal();
+  }, err => {
+    console.error('Firestore error:', err);
+    setSyncStatus('error');
+    toast('⚠️ Connessione persa. Riprovo...');
+  });
+
 // ════════════════════════════════════════════
 //  INIT
 // ════════════════════════════════════════════
@@ -986,6 +1298,9 @@ renderMini();
 renderSidebar();
 renderCal();
 updateLabel();
+
+// Update now-line every minute
+setInterval(renderCal, 60000);
 </script>
 </body>
 </html>
