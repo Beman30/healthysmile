@@ -1,1306 +1,1847 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Torino | Calendario Studio</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Healthy Smile By N — Cartella Clinica</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&display=swap');
 
-  <!-- Firebase SDK (compat) -->
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+:root {
+  --teal:        #0F6E56;
+  --teal-mid:    #1D9E75;
+  --teal-light:  #E1F5EE;
+  --teal-pale:   #F2FBF7;
+  --red:         #C0392B;
+  --red-light:   #FDECEA;
+  --amber:       #B7651A;
+  --amber-light: #FEF3E2;
+  --blue:        #1A5EA8;
+  --blue-light:  #E8F1FD;
+  --purple:      #5B4BBF;
+  --purple-light:#EEEDFB;
+  --orange:      #C05621;
+  --orange-light:#FEF0E7;
+  --gray-900:    #1A1A18;
+  --gray-700:    #3C3C39;
+  --gray-500:    #686864;
+  --gray-300:    #C4C2BA;
+  --gray-100:    #EFEDE7;
+  --gray-50:     #F7F6F2;
+  --white:       #FFFFFF;
+  --border:      1px solid #E5E3DC;
+  --r:           10px;
+  --r-sm:        6px;
+}
 
-  <style>
-    *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:13px;color:#333;background:#f0f0f0;height:100vh;display:flex;flex-direction:column;overflow:hidden}
-    .hidden{display:none!important}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',system-ui,sans-serif;background:var(--gray-50);color:var(--gray-900);font-size:14px;min-height:100vh}
 
-    /* ── HEADER ── */
-    .header{display:flex;align-items:center;padding:0 12px;height:48px;background:white;border-bottom:1px solid #ddd;flex-shrink:0;gap:10px;z-index:20}
-    .hd-logo{display:flex;align-items:center;gap:6px;color:#1a73e8;font-size:14px;font-weight:600;letter-spacing:-.3px}
-    .hd-logo svg{width:22px;height:22px;fill:currentColor}
-    .hd-title{font-size:18px;font-weight:400;color:#333;flex:1}
-    .view-tabs{display:flex;background:#e8e8e8;border-radius:4px;padding:2px;gap:1px;overflow-x:auto;-webkit-overflow-scrolling:touch}
-    .view-tabs::-webkit-scrollbar{height:0}
-    .view-tab{padding:4px 9px;border-radius:3px;cursor:pointer;font-size:11.5px;color:#555;white-space:nowrap;user-select:none;flex-shrink:0}
-    .view-tab.active{background:white;color:#1a73e8;font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.15)}
-    .view-tab:hover:not(.active){background:rgba(255,255,255,.6)}
-    .hd-icons{display:flex;gap:10px;color:#666;font-size:18px;margin-left:4px;cursor:pointer}
-    .hd-menu-btn{display:none;background:none;border:none;font-size:22px;cursor:pointer;color:#555;padding:2px 6px}
+/* ── SETUP ── */
+#setup-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem}
+.setup-card{background:var(--white);border-radius:14px;border:var(--border);padding:2.5rem;width:100%;max-width:500px;box-shadow:0 2px 16px rgba(0,0,0,.07)}
+.brand{display:flex;align-items:center;gap:10px;margin-bottom:2rem}
+.brand-icon{width:36px;height:36px;background:var(--teal);border-radius:8px;display:flex;align-items:center;justify-content:center}
+.brand-icon svg{width:20px;height:20px;fill:white}
+.brand-name{font-size:15px;font-weight:600}
+.brand-sub{font-size:12px;color:var(--gray-500)}
+.setup-card h2{font-size:18px;font-weight:600;margin-bottom:.3rem}
+.setup-card p{color:var(--gray-500);font-size:13px;margin-bottom:1.5rem;line-height:1.6}
+.step{display:flex;gap:10px;margin-bottom:.7rem;align-items:flex-start}
+.step-n{min-width:20px;height:20px;background:var(--teal);color:white;border-radius:50%;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:1px}
+.step-t{font-size:13px;color:var(--gray-500);line-height:1.5}
+.step-t strong{color:var(--gray-900)}
+.step-t a{color:var(--teal);text-decoration:none}
+.ig{margin-top:1.2rem}
+.ig label{display:block;font-size:11px;font-weight:600;color:var(--gray-500);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px}
+.ig input{width:100%;padding:10px 12px;border:var(--border);border-radius:var(--r-sm);font-size:13px;font-family:'DM Mono',monospace;outline:none;transition:border-color .15s}
+.ig input:focus{border-color:var(--teal)}
+.ig .hint{font-size:11px;color:var(--gray-300);margin-top:4px}
+.btn-main{width:100%;background:var(--teal);color:white;border:none;border-radius:var(--r-sm);padding:11px;font-size:14px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;margin-top:1.2rem;transition:background .15s}
+.btn-main:hover{background:#0a5040}
+.demo-lnk{text-align:center;margin-top:.8rem;font-size:12px;color:var(--gray-500)}
+.demo-lnk a{color:var(--teal);cursor:pointer}
 
-    /* ── SYNC STATUS ── */
-    .sync-dot{width:8px;height:8px;border-radius:50%;background:#4caf50;flex-shrink:0;transition:background .3s}
-    .sync-dot.syncing{background:#ff9800;animation:pulse .8s infinite alternate}
-    .sync-dot.error{background:#f44336}
-    @keyframes pulse{from{opacity:.5}to{opacity:1}}
+/* ── APP ── */
+#app{display:none;flex-direction:column;min-height:100vh}
 
-    /* ── MAIN LAYOUT ── */
-    .main{display:flex;flex:1;overflow:hidden}
+/* ── HEADER ── */
+.hdr{background:var(--white);border-bottom:var(--border);height:52px;padding:0 1.2rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200}
+.hdr-l{display:flex;align-items:center;gap:10px}
+.hdr-icon{width:28px;height:28px;background:var(--teal);border-radius:6px;display:flex;align-items:center;justify-content:center}
+.hdr-icon svg{width:16px;height:16px;fill:white}
+.hdr-name{font-size:14px;font-weight:600}
+.sync-pill{font-size:10px;font-weight:600;padding:2px 7px;border-radius:3px;font-family:'DM Mono',monospace}
+.s-ok{background:var(--teal-light);color:var(--teal)}
+.s-sy{background:var(--amber-light);color:var(--amber)}
+.s-er{background:var(--red-light);color:var(--red)}
+.hdr-r{display:flex;gap:6px}
+.btn-s{background:none;border:var(--border);border-radius:var(--r-sm);padding:5px 10px;font-size:12px;font-weight:500;cursor:pointer;color:var(--gray-700);font-family:'DM Sans',sans-serif;transition:all .15s}
+.btn-s:hover{background:var(--gray-100)}
+.btn-s.c{background:var(--teal);color:white;border-color:var(--teal)}
 
-    /* ── SIDEBAR ── */
-    .sidebar{width:196px;background:white;border-right:1px solid #ddd;overflow-y:auto;flex-shrink:0;font-size:12px;transition:transform .25s;z-index:15}
-    .mini-cal{padding:8px 6px 4px}
-    .mc-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
-    .mc-title{font-size:12.5px;font-weight:500;color:#333}
-    .mc-nav{display:flex;gap:2px}
-    .mc-btn{background:none;border:none;cursor:pointer;padding:2px 5px;border-radius:4px;color:#666;font-size:16px;line-height:1}
-    .mc-btn:hover{background:#f0f0f0}
-    .mc-grid{display:grid;grid-template-columns:repeat(7,1fr);text-align:center;gap:1px}
-    .mc-dow{font-size:9.5px;color:#888;padding:2px 0}
-    .mc-day{font-size:10.5px;padding:2px;border-radius:50%;cursor:pointer;width:22px;height:22px;display:flex;align-items:center;justify-content:center;margin:0 auto}
-    .mc-day:hover{background:#f0f0f0}
-    .mc-day.today{background:#1a73e8;color:white}
-    .mc-day.selected:not(.today){background:#e8f0fe;color:#1a73e8;font-weight:600}
-    .mc-day.other-month{color:#ccc}
+/* ── LAYOUT ── */
+.app-body{display:flex;flex:1}
+.sidebar{width:260px;min-width:260px;background:var(--white);border-right:var(--border);height:calc(100vh - 52px);position:sticky;top:52px;display:flex;flex-direction:column;overflow:hidden}
+.sb-search{padding:10px}
+.sb-search input{width:100%;padding:7px 10px;border:var(--border);border-radius:var(--r-sm);font-size:12px;background:var(--gray-50);outline:none;transition:border-color .15s;font-family:'DM Sans',sans-serif}
+.sb-search input:focus{border-color:var(--teal);background:var(--white)}
+.sb-hdr{padding:6px 10px;display:flex;justify-content:space-between;align-items:center;border-bottom:var(--border)}
+.sb-hdr span{font-size:10px;font-weight:600;color:var(--gray-500);text-transform:uppercase;letter-spacing:.05em}
+.btn-new{background:var(--teal);color:white;border:none;border-radius:4px;padding:4px 9px;font-size:11px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif}
+.pat-list{overflow-y:auto;flex:1}
+.pat-item{padding:9px 10px;border-bottom:var(--border);cursor:pointer;transition:background .1s}
+.pat-item:hover{background:var(--gray-50)}
+.pat-item.active{background:var(--teal-light);border-left:3px solid var(--teal)}
+.pat-code{font-size:13px;font-weight:600;font-family:'DM Mono',monospace}
+.pat-meta{font-size:11px;color:var(--gray-500);margin-top:1px}
+.risk-pill{display:inline-block;font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px;margin-top:3px}
+.r-alto{background:var(--red-light);color:var(--red)}
+.r-medio{background:var(--amber-light);color:var(--amber)}
+.r-basso{background:var(--teal-light);color:var(--teal)}
+.empty-list{padding:2rem;text-align:center;color:var(--gray-300);font-size:13px}
 
-    .sb-section{border-top:1px solid #eee;padding:6px 0}
-    .sb-section-hd{display:flex;align-items:center;justify-content:space-between;padding:4px 10px 4px;cursor:pointer}
-    .sb-section-title{font-size:11px;font-weight:600;color:#666;text-transform:uppercase;letter-spacing:.4px}
-    .sb-section-toggle{font-size:10px;color:#999;transition:transform .2s}
-    .sb-section-toggle.collapsed{transform:rotate(-180deg)}
+/* ── MAIN ── */
+.main{flex:1;overflow-y:auto;height:calc(100vh - 52px);padding:1.2rem}
+.welcome{display:flex;flex-direction:column;align-items:center;justify-content:center;height:80%;color:var(--gray-300);text-align:center}
+.welcome svg{width:44px;height:44px;fill:var(--gray-100);margin-bottom:1rem}
+.welcome h3{font-size:15px;color:var(--gray-500);font-weight:500;margin-bottom:.3rem}
 
-    .cal-list{padding:0 4px}
-    .cal-group{margin-bottom:2px}
-    .cal-group-hd{display:flex;align-items:center;gap:4px;padding:3px 6px;cursor:pointer;border-radius:4px}
-    .cal-group-hd:hover{background:#f5f5f5}
-    .cal-group-arrow{font-size:9px;color:#888;transition:transform .2s;display:inline-block}
-    .cal-group-arrow.closed{transform:rotate(-90deg)}
-    .cal-group-name{font-size:11.5px;color:#444;font-weight:500;flex:1}
-    .cal-item{display:flex;align-items:center;gap:6px;padding:3px 6px 3px 20px;border-radius:4px;cursor:pointer}
-    .cal-item:hover{background:#f5f5f5}
-    .cal-item.ungrouped{padding-left:6px}
-    .cal-dot{width:12px;height:12px;border-radius:2px;flex-shrink:0}
-    .cal-name{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:11.5px;color:#444}
-    .cal-chk{width:13px;height:13px;flex-shrink:0;cursor:pointer}
-    .sb-add{display:flex;align-items:center;gap:5px;padding:4px 10px;color:#1a73e8;font-size:11.5px;cursor:pointer;margin-top:2px}
-    .sb-add:hover{background:#f0f0f0;border-radius:4px;margin:2px 4px;padding:4px 6px}
+/* ── RECORD ── */
+.rec-hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1rem}
+.rec-code{font-size:22px;font-weight:700;font-family:'DM Mono',monospace}
+.rec-sub{font-size:12px;color:var(--gray-500);margin-top:2px}
+.rec-actions{display:flex;gap:6px}
+.btn-save{background:var(--teal);color:white;border:none;border-radius:var(--r-sm);padding:8px 18px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif}
+.btn-save:hover{background:#0a5040}
+.btn-danger{background:none;border:1px solid var(--red);color:var(--red);border-radius:var(--r-sm);padding:8px 16px;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif}
+.btn-danger:hover{background:var(--red-light)}
 
-    /* ── NAV BAR ── */
-    .nav-bar{display:flex;align-items:center;padding:6px 12px;background:white;border-bottom:1px solid #ddd;flex-shrink:0;gap:6px}
-    .nb-btn{background:none;border:1px solid #ccc;border-radius:4px;padding:3px 8px;cursor:pointer;color:#555;font-size:15px;line-height:1}
-    .nb-btn:hover{background:#f5f5f5}
-    .nb-today{background:none;border:1px solid #ccc;border-radius:4px;padding:4px 10px;cursor:pointer;font-size:12px;color:#555;font-weight:500}
-    .nb-today:hover{background:#f5f5f5}
-    .nb-date{font-size:15px;font-weight:400;color:#222;cursor:pointer;display:flex;align-items:center;gap:4px}
-    .nb-date:hover{color:#1a73e8}
+/* ── TABS ── */
+.tabs{display:flex;border-bottom:var(--border);margin-bottom:1rem}
+.tab{padding:7px 14px;font-size:13px;font-weight:500;color:var(--gray-500);cursor:pointer;border:none;background:none;border-bottom:2px solid transparent;margin-bottom:-1px;font-family:'DM Sans',sans-serif;transition:all .15s}
+.tab:hover{color:var(--gray-900)}
+.tab.on{color:var(--teal);border-bottom-color:var(--teal)}
 
-    /* ── CAL AREA ── */
-    .cal-area{flex:1;overflow:hidden;display:flex;flex-direction:column}
-    .cal-scroll{flex:1;overflow-y:auto;overflow-x:auto;position:relative;-webkit-overflow-scrolling:touch}
-    ::-webkit-scrollbar{width:7px;height:7px}
-    ::-webkit-scrollbar-track{background:#f5f5f5}
-    ::-webkit-scrollbar-thumb{background:#ccc;border-radius:4px}
-    ::-webkit-scrollbar-thumb:hover{background:#aaa}
+/* ── CARD ── */
+.card{background:var(--white);border:var(--border);border-radius:var(--r);padding:1.1rem;margin-bottom:.9rem}
+.card-title{font-size:11px;font-weight:600;color:var(--gray-500);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.9rem;padding-bottom:.6rem;border-bottom:var(--border);display:flex;justify-content:space-between;align-items:center}
 
-    /* ── DAY / WEEK GRID ── */
-    .cal-view{display:flex;flex-direction:column;min-height:100%}
-    .cal-head{display:flex;background:white;border-bottom:2px solid #ddd;position:sticky;top:0;z-index:10}
-    .cal-head-time{width:56px;flex-shrink:0;border-right:1px solid #eee}
-    .cal-head-col{flex:1;text-align:center;padding:6px 4px;border-left:1px solid #e0e0e0;min-width:90px}
-    .cal-head-col.today-bg{background:#e8f3ff}
-    .col-dow{font-size:10.5px;color:#888;text-transform:uppercase;letter-spacing:.5px}
-    .col-num{font-size:22px;font-weight:300;color:#444;line-height:1.2;margin-top:2px}
-    .col-num.today-circle{background:#1a73e8;color:white;border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:500;margin:2px auto 0}
+/* ── FORM ── */
+.fg{display:flex;flex-direction:column;gap:4px}
+.fg label{font-size:11px;font-weight:600;color:var(--gray-500);text-transform:uppercase;letter-spacing:.04em}
+.fg input,.fg select,.fg textarea{border:var(--border);border-radius:var(--r-sm);padding:8px 10px;font-size:13px;font-family:'DM Sans',sans-serif;outline:none;transition:border-color .15s;background:var(--white);color:var(--gray-900);resize:vertical}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--teal)}
+.fg textarea{min-height:60px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
 
-    .cal-body{display:flex;flex:1}
-    .time-gutter{width:56px;flex-shrink:0;border-right:1px solid #eee}
-    .time-label{height:60px;display:flex;align-items:flex-start;justify-content:flex-end;padding:0 6px;font-size:10px;color:#999;margin-top:-6px}
-    .col-wrap{flex:1;display:flex}
-    .day-col{flex:1;border-left:1px solid #e0e0e0;position:relative;min-width:90px}
-    .day-col.today-bg{background:#fdfeff}
-    .hour-row{height:60px;border-top:1px solid #ebebeb;position:relative}
-    .hour-row:first-child{border-top:none}
-    .half-tick{position:absolute;left:0;right:0;top:50%;border-top:1px dashed #f0f0f0}
+/* ════════════════════════════════════════
+   ODONTOGRAMMA — SHARED STYLES
+════════════════════════════════════════ */
+.odonto-section-title{
+  display:flex;align-items:center;gap:8px;
+  font-size:12px;font-weight:700;color:var(--gray-700);
+  text-transform:uppercase;letter-spacing:.05em;
+  margin-bottom:.7rem;padding:.6rem .8rem;
+  border-radius:var(--r-sm);
+}
+.odonto-section-title.attuale{background:var(--blue-light);color:var(--blue)}
+.odonto-section-title.piano{background:var(--amber-light);color:var(--amber)}
+.odonto-section-title .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
 
-    /* events */
-    .ev{position:absolute;left:2px;right:2px;border-radius:4px;padding:2px 5px;font-size:11px;color:white;overflow:hidden;cursor:pointer;z-index:5;border-left:3px solid rgba(0,0,0,.2)}
-    .ev:hover{box-shadow:0 2px 8px rgba(0,0,0,.3);z-index:6;opacity:.92}
-    .ev-time{font-size:10px;font-weight:700;white-space:nowrap;opacity:.95}
-    .ev-patient{font-size:11px;line-height:1.3;word-break:break-word}
-    .ev-detail{font-size:10px;opacity:.85;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.odonto-wrap{overflow-x:auto;margin-bottom:.5rem}
 
-    /* now line */
-    .now-line{position:absolute;left:0;right:0;z-index:8;pointer-events:none}
-    .now-line::before{content:'';position:absolute;left:-5px;top:-4px;width:9px;height:9px;background:#ea4335;border-radius:50%}
-    .now-line::after{content:'';position:absolute;left:0;right:0;top:0;border-top:2px solid #ea4335}
+/* Legend */
+.legend-wrap{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:.8rem}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--gray-700);padding:3px 7px;border-radius:3px;border:var(--border);background:var(--white)}
+.legend-sym{width:16px;height:16px;border-radius:2px;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;flex-shrink:0}
 
-    /* click zone */
-    .hour-row{cursor:crosshair}
-    .hour-row:hover{background:rgba(26,115,232,.03)}
+/* Tooth SVG */
+.tooth-g{cursor:pointer}
+.tooth-g:hover ellipse{stroke-width:2.5}
+.tooth-num{font-family:'DM Mono',monospace;fill:var(--gray-500);font-size:8px;pointer-events:none;user-select:none}
 
-    /* ── MODAL ── */
-    .overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;display:flex;align-items:center;justify-content:center}
-    .modal{background:white;border-radius:10px;width:600px;max-width:96vw;max-height:92vh;overflow-y:auto;box-shadow:0 10px 40px rgba(0,0,0,.25)}
-    .modal-hd{display:flex;align-items:center;padding:16px 20px 12px;border-bottom:1px solid #eee;gap:8px}
-    .modal-hd-color{width:14px;height:14px;border-radius:3px;flex-shrink:0}
-    .modal-title{font-size:16px;font-weight:500;flex:1}
-    .modal-x{background:none;border:none;font-size:22px;cursor:pointer;color:#aaa;line-height:1;padding:0}
-    .modal-x:hover{color:#333}
-    .modal-body{padding:16px 20px;display:flex;flex-direction:column;gap:13px}
-    .form-row{display:flex;gap:10px}
-    .fg{display:flex;flex-direction:column;gap:4px;flex:1;position:relative}
-    .fg label{font-size:11.5px;color:#666;font-weight:500}
-    .fg input,.fg select,.fg textarea{border:1px solid #ddd;border-radius:6px;padding:7px 9px;font-size:13px;color:#333;transition:border-color .15s;outline:none;font-family:inherit;background:white}
-    .fg input:focus,.fg select:focus,.fg textarea:focus{border-color:#1a73e8;box-shadow:0 0 0 2px rgba(26,115,232,.1)}
-    .fg select optgroup{font-weight:700;color:#1a73e8;background:#f0f4ff;font-size:11px;letter-spacing:.5px}
-    .fg select option{font-weight:400;color:#333;padding-left:8px}
-    .fg textarea{resize:vertical;min-height:64px}
-    .form-div{border:none;border-top:1px solid #f0f0f0;margin:2px 0}
-    .form-sec{font-size:11px;font-weight:600;color:#999;text-transform:uppercase;letter-spacing:.5px}
-    .modal-ft{display:flex;align-items:center;padding:12px 20px;border-top:1px solid #eee;gap:8px;flex-wrap:wrap}
-    .btn{padding:8px 16px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;border:none;transition:all .15s;white-space:nowrap}
-    .btn:disabled{opacity:.6;cursor:not-allowed}
-    .btn-primary{background:#1a73e8;color:white}
-    .btn-primary:hover:not(:disabled){background:#1557b0}
-    .btn-sec{background:none;border:1px solid #ccc;color:#555}
-    .btn-sec:hover{background:#f5f5f5}
-    .btn-del{background:none;border:1px solid #d93025;color:#d93025}
-    .btn-del:hover{background:#fce8e6}
-    .btn-wa{background:#25D366;color:white;display:flex;align-items:center;gap:6px;margin-left:auto;padding:9px 16px;font-size:13px}
-    .btn-wa:hover{background:#1dba57}
-    .btn-wa svg{width:16px;height:16px;fill:white;flex-shrink:0}
+/* Piano stato badges */
+.stato-wrap{display:flex;gap:3px;flex-wrap:wrap;margin-top:.3rem}
+.stato-badge{font-size:9px;font-weight:700;padding:1px 4px;border-radius:2px;white-space:nowrap}
+.sb-dafare{background:var(--red-light);color:var(--red);border:1px solid #f5c0bb}
+.sb-eseguito{background:var(--teal-light);color:var(--teal);border:1px solid #9ee0c8}
+.sb-incorso{background:var(--amber-light);color:var(--amber);border:1px solid #f5d8a0}
 
-    /* ── PATIENT AUTOCOMPLETE ── */
-    .ac-dropdown{position:absolute;top:100%;left:0;right:0;background:white;border:1px solid #ddd;border-radius:6px;box-shadow:0 4px 12px rgba(0,0,0,.15);z-index:200;max-height:200px;overflow-y:auto;margin-top:2px}
-    .ac-item{padding:8px 12px;cursor:pointer;font-size:12.5px;border-bottom:1px solid #f5f5f5}
-    .ac-item:hover{background:#e8f0fe}
-    .ac-item:last-child{border-bottom:none}
-    .ac-name{font-weight:500;color:#333}
-    .ac-sub{font-size:11px;color:#888;margin-top:1px}
+/* Tooth popup */
+.tooth-popup{display:none;background:var(--white);border:var(--border);border-radius:var(--r);padding:1rem;box-shadow:0 6px 24px rgba(0,0,0,.13);margin-top:.7rem}
+.tooth-popup.open{display:block}
+.popup-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:.8rem}
+.popup-hdr strong{font-size:14px}
+.popup-close{background:none;border:none;cursor:pointer;color:var(--gray-500);font-size:15px;padding:2px 6px;border-radius:3px}
+.popup-close:hover{background:var(--gray-100)}
 
-    /* ── EVENT POPUP ── */
-    .popup{position:fixed;background:white;border-radius:8px;padding:14px;max-width:320px;min-width:240px;z-index:90;box-shadow:0 4px 20px rgba(0,0,0,.18);border:1px solid #e0e0e0;font-size:12px;line-height:1.5}
-    .popup-hd{display:flex;align-items:flex-start;gap:8px;margin-bottom:10px}
-    .popup-dot{width:12px;height:12px;border-radius:3px;flex-shrink:0;margin-top:2px}
-    .popup-title{font-weight:600;font-size:13px;flex:1}
-    .popup-x{background:none;border:none;cursor:pointer;color:#aaa;font-size:16px;line-height:1;padding:0;margin-left:4px}
-    .popup-row{display:flex;gap:6px;margin:3px 0}
-    .popup-lbl{color:#888;min-width:76px;flex-shrink:0}
-    .popup-val{color:#333;word-break:break-word}
-    .popup-actions{display:flex;gap:6px;margin-top:10px}
-    .popup-btn{padding:5px 10px;border-radius:5px;font-size:11.5px;border:none;cursor:pointer;font-weight:500}
-    .popup-edit{background:#e8f0fe;color:#1a73e8}
-    .popup-wa{background:#25D366;color:white;display:flex;align-items:center;gap:4px}
+.treat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:5px;margin-bottom:.8rem}
+.treat-btn{display:flex;align-items:center;gap:5px;padding:5px 8px;border-radius:var(--r-sm);border:var(--border);font-size:11px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .12s;background:var(--white);text-align:left}
+.treat-btn:hover{opacity:.8}
+.treat-btn.on{color:white!important;border-color:transparent!important}
+.treat-sym{width:14px;height:14px;border-radius:2px;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;flex-shrink:0}
 
-    /* ── ALLEGATI ── */
-    .attach-area{display:flex;flex-direction:column;gap:6px}
-    .btn-attach{background:#f0f4ff;border:1px dashed #1a73e8;border-radius:6px;padding:7px 14px;color:#1a73e8;font-size:12.5px;cursor:pointer;font-weight:500;text-align:left;transition:background .15s}
-    .btn-attach:hover{background:#e3ecff}
-    .attach-list{display:flex;flex-wrap:wrap;gap:6px}
-    .attach-chip{display:flex;align-items:center;gap:5px;background:#f5f5f5;border:1px solid #ddd;border-radius:20px;padding:3px 10px 3px 8px;font-size:11.5px;color:#444;max-width:200px}
-    .attach-chip span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
-    .attach-chip.uploading{opacity:.6}
-    .attach-del{background:none;border:none;cursor:pointer;color:#999;font-size:14px;line-height:1;padding:0;flex-shrink:0}
-    .attach-del:hover{color:#d93025}
-    /* popup allegati */
-    .popup-attach{margin-top:8px;padding-top:8px;border-top:1px solid #eee}
-    .popup-attach-title{font-size:11px;color:#888;margin-bottom:4px}
-    .popup-attach-chip{display:inline-flex;align-items:center;gap:4px;background:#f0f4ff;border:1px solid #c5d8ff;border-radius:12px;padding:2px 8px;font-size:11px;color:#1a73e8;cursor:pointer;margin:2px 2px 0 0;text-decoration:none}
-    .popup-attach-chip:hover{background:#ddeaff}
+/* Piano popup extra: stato selector */
+.stato-selector{display:flex;gap:6px;margin-top:.6rem;flex-wrap:wrap}
+.stato-opt{padding:4px 10px;border-radius:var(--r-sm);border:var(--border);font-size:11px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;background:var(--white);transition:all .12s}
+.stato-opt:hover{opacity:.8}
+.stato-opt.on{color:white;border-color:transparent}
+.so-dafare.on{background:var(--red)}
+.so-incorso.on{background:var(--amber)}
+.so-eseguito.on{background:var(--teal)}
 
-    /* ── TOAST ── */
-    .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#333;color:white;padding:8px 18px;border-radius:20px;font-size:12.5px;z-index:200;opacity:0;transition:opacity .3s;pointer-events:none}
-    .toast.show{opacity:1}
+/* Arcate */
+.arcate-row{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:.8rem}
+.arcata-btn{display:flex;align-items:center;gap:5px;padding:5px 11px;border-radius:var(--r-sm);border:var(--border);font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .12s;background:var(--white)}
+.arcata-btn:hover{border-color:var(--teal)}
+.arcata-btn.has{border-color:var(--teal);background:var(--teal-pale);color:var(--teal)}
+.arcata-popup{display:none;background:var(--white);border:var(--border);border-radius:var(--r);padding:.9rem;margin-top:.5rem;box-shadow:0 4px 16px rgba(0,0,0,.09)}
+.arcata-popup.open{display:block}
 
-    /* ── MOBILE OVERLAY SIDEBAR ── */
-    .sb-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:14}
+/* Divisore tra i due odontogrammi */
+.odonto-divider{height:1px;background:var(--border);margin:1.2rem 0;position:relative}
+.odonto-divider::after{content:'▼ Piano trattamenti';position:absolute;left:50%;transform:translateX(-50%) translateY(-50%);background:var(--amber-light);color:var(--amber);font-size:10px;font-weight:700;padding:2px 10px;border-radius:10px;white-space:nowrap;letter-spacing:.04em}
 
-    /* ── MOBILE RESPONSIVE ── */
-    @media (max-width: 768px) {
-      .hd-menu-btn{display:block}
-      .hd-title{font-size:15px}
-      .view-tabs{max-width:200px}
-      .hd-icons span:not(:last-child){display:none}
+/* ── DIARIO ── */
+.diary-entry{border-left:3px solid var(--teal);background:var(--gray-50);border-radius:0 var(--r-sm) var(--r-sm) 0;padding:.7rem 1rem;margin-bottom:.6rem}
+.diary-meta{font-size:11px;color:var(--gray-500);font-family:'DM Mono',monospace;margin-bottom:.3rem;display:flex;gap:.8rem}
+.diary-author{font-weight:600;color:var(--teal)}
+.diary-text{font-size:13px;line-height:1.6;white-space:pre-wrap}
+.diary-add{display:flex;flex-direction:column;gap:8px;margin-top:.9rem;padding-top:.9rem;border-top:var(--border)}
+.diary-add-row{display:flex;gap:8px}
+.diary-add-row input{flex:1;border:var(--border);border-radius:var(--r-sm);padding:7px 10px;font-size:12px;font-family:'DM Sans',sans-serif;outline:none;max-width:220px}
+.diary-add-row input:focus{border-color:var(--teal)}
+.diary-add textarea{border:var(--border);border-radius:var(--r-sm);padding:9px 10px;font-size:13px;font-family:'DM Sans',sans-serif;outline:none;resize:vertical;min-height:68px}
+.diary-add textarea:focus{border-color:var(--teal)}
+.btn-diary{background:var(--teal);color:white;border:none;border-radius:var(--r-sm);padding:8px 16px;font-size:13px;font-weight:600;cursor:pointer;align-self:flex-end;font-family:'DM Sans',sans-serif}
 
-      .sidebar{position:fixed;top:0;left:0;bottom:0;width:240px;transform:translateX(-100%);z-index:15;box-shadow:4px 0 20px rgba(0,0,0,.2)}
-      .sidebar.open{transform:translateX(0)}
-      .sb-overlay.show{display:block}
+/* ── DOCUMENTI ── */
+.doc-zone{border:2px dashed var(--gray-300);border-radius:var(--r);padding:1.5rem;text-align:center;cursor:pointer;font-size:13px;color:var(--gray-500);transition:all .15s}
+.doc-zone:hover{border-color:var(--teal);background:var(--teal-pale);color:var(--teal)}
+.doc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px;margin-top:.8rem}
+.doc-item{background:var(--gray-50);border:var(--border);border-radius:var(--r-sm);padding:.7rem;text-align:center;cursor:pointer;font-size:11px;color:var(--gray-700);transition:all .15s}
+.doc-item:hover{border-color:var(--teal);background:var(--teal-pale)}
 
-      .modal{width:100%;max-width:100%;max-height:100vh;border-radius:0;margin:0;position:fixed;top:0;left:0;right:0;bottom:0}
-      .overlay{align-items:flex-start}
-      .form-row{flex-direction:column}
-      .modal-ft{flex-wrap:wrap}
-      .btn-wa{margin-left:0;width:100%;justify-content:center}
+/* ── MODAL ── */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:500;align-items:center;justify-content:center}
+.modal-bg.open{display:flex}
+.modal{background:var(--white);border-radius:14px;padding:1.5rem;width:90%;max-width:420px;box-shadow:0 8px 32px rgba(0,0,0,.15)}
+.modal h3{font-size:15px;font-weight:600;margin-bottom:1rem}
+.modal-foot{display:flex;gap:8px;justify-content:flex-end;margin-top:1.2rem}
+.btn-sec{background:none;border:var(--border);border-radius:var(--r-sm);padding:8px 14px;font-size:13px;cursor:pointer;color:var(--gray-500);font-family:'DM Sans',sans-serif}
 
-      .nb-btn{padding:5px 10px;font-size:17px}
-      .nb-today{padding:5px 12px}
+/* ── NOTIF ── */
+.notif{position:fixed;bottom:1.2rem;right:1.2rem;padding:9px 14px;border-radius:var(--r-sm);font-size:13px;font-weight:500;z-index:9999;opacity:0;transition:opacity .2s;pointer-events:none;font-family:'DM Sans',sans-serif}
+.notif.show{opacity:1}
+.notif.ok{background:var(--teal);color:white}
+.notif.err{background:var(--red);color:white}
+.notif.i{background:var(--gray-900);color:white}
 
-      .cal-head-col{min-width:60px}
-      .day-col{min-width:60px}
-      .time-gutter{width:40px}
-      .cal-head-time{width:40px}
-      .time-label{font-size:9px;padding:0 3px}
-    }
+/* ════════════════════════════════════════
+   MOBILE RESPONSIVE
+════════════════════════════════════════ */
 
-    @media (max-width: 480px) {
-      .view-tabs{max-width:140px}
-      .hd-title{display:none}
-    }
-  </style>
+/* Sidebar overlay trigger button — hidden on desktop */
+.mob-menu-btn{display:none}
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:300}
+.sidebar-overlay.open{display:block}
+
+@media (max-width: 768px) {
+
+  /* ── HEADER ── */
+  .hdr{padding:0 .8rem;height:50px}
+  .hdr-name{font-size:13px}
+  .sync-pill{display:none}
+  .btn-s{padding:4px 8px;font-size:11px}
+  /* Hide some header buttons on mobile, show hamburger */
+  .mob-menu-btn{
+    display:flex;align-items:center;justify-content:center;
+    background:none;border:var(--border);border-radius:var(--r-sm);
+    width:34px;height:34px;cursor:pointer;font-size:18px;
+    color:var(--gray-700);flex-shrink:0;
+  }
+
+  /* ── SIDEBAR → drawer from left ── */
+  .app-body{position:relative}
+  .sidebar{
+    position:fixed;top:50px;left:-280px;
+    height:calc(100vh - 50px);
+    z-index:400;
+    transition:left .25s cubic-bezier(.4,0,.2,1);
+    box-shadow:none;
+  }
+  .sidebar.open{
+    left:0;
+    box-shadow:4px 0 20px rgba(0,0,0,.15);
+  }
+
+  /* ── MAIN ── */
+  .main{
+    width:100%;
+    height:calc(100vh - 50px);
+    padding:.8rem;
+  }
+
+  /* ── RECORD HEADER ── */
+  .rec-hdr{flex-direction:column;gap:.6rem;margin-bottom:.8rem}
+  .rec-code{font-size:18px}
+  .rec-actions{flex-wrap:wrap;gap:5px}
+  .rec-actions .btn-s,
+  .rec-actions .btn-save,
+  .rec-actions .btn-danger{font-size:12px;padding:6px 10px}
+
+  /* ── TABS ── */
+  .tabs{overflow-x:auto;-webkit-overflow-scrolling:touch;flex-wrap:nowrap;gap:0;padding-bottom:0}
+  .tabs::-webkit-scrollbar{display:none}
+  .tab{white-space:nowrap;padding:7px 12px;font-size:12px;flex-shrink:0}
+
+  /* ── GRIDS → single column ── */
+  .grid2{grid-template-columns:1fr}
+  .grid3{grid-template-columns:1fr 1fr}
+
+  /* ── CARDS ── */
+  .card{padding:.8rem;margin-bottom:.7rem}
+
+  /* ── ODONTOGRAMMA ── */
+  .odonto-section-title{font-size:11px;padding:.4rem .6rem}
+  .treat-grid{grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:4px}
+  .treat-btn{font-size:10px;padding:4px 6px}
+
+  /* ── PREVENTIVO ── */
+  /* Stack header controls */
+  #tab-preventivo .card > div:first-child{flex-direction:column;align-items:flex-start;gap:.5rem}
+  #tab-preventivo .card > div:first-child > div:last-child{display:flex;gap:5px;flex-wrap:wrap;width:100%}
+  #tab-preventivo .card > div:first-child > div:last-child button{font-size:11px;padding:5px 8px}
+  /* Make table scrollable */
+  #tab-preventivo [style*="overflow-x:auto"]{overflow-x:auto;-webkit-overflow-scrolling:touch}
+
+  /* ── MODAL ── */
+  .modal{width:95%;padding:1.1rem;max-height:90vh;overflow-y:auto}
+  #prest-modal .modal{max-width:98vw}
+
+  /* ── FORM ── */
+  .fg input,.fg select,.fg textarea{font-size:16px}/* 16px prevents iOS zoom */
+
+  /* ── WELCOME ── */
+  .welcome{padding:2rem 1rem}
+
+  /* ── DIARIO ── */
+  .diary-add-row{flex-direction:column}
+  .diary-add-row input{max-width:100%}
+
+  /* ── SIDEBAR close on tap outside ── */
+  .sidebar-overlay.open{display:block}
+}
+
+@media (max-width: 400px) {
+  .grid3{grid-template-columns:1fr}
+  .rec-code{font-size:16px}
+  .tab{font-size:11px;padding:6px 10px}
+}
+
+</style>
 </head>
 <body>
 
-<!-- SIDEBAR OVERLAY (mobile) -->
-<div class="sb-overlay" id="sb-overlay"></div>
-
-<!-- HEADER -->
-<header class="header">
-  <button class="hd-menu-btn" id="hd-menu">☰</button>
-  <div class="hd-logo">
-    <svg viewBox="0 0 24 24"><rect x="2" y="2" width="4" height="4" rx="1"/><rect x="10" y="2" width="4" height="4" rx="1"/><rect x="18" y="2" width="4" height="4" rx="1"/><rect x="2" y="10" width="4" height="4" rx="1"/><rect x="10" y="10" width="4" height="4" rx="1"/><rect x="18" y="10" width="4" height="4" rx="1"/><rect x="2" y="18" width="4" height="4" rx="1"/><rect x="10" y="18" width="4" height="4" rx="1"/><rect x="18" y="18" width="4" height="4" rx="1"/></svg>
-    teamup
-  </div>
-  <span class="hd-title">Torino</span>
-  <div class="view-tabs">
-    <span class="view-tab" data-view="pianificatore">Pianificatore</span>
-    <span class="view-tab active" data-view="giorno">Giorno</span>
-    <span class="view-tab" data-view="3giorni">3 giorni</span>
-    <span class="view-tab" data-view="settimana">Settimana</span>
-    <span class="view-tab" data-view="4settimane">4 settimane</span>
-    <span class="view-tab" data-view="mese">Mese</span>
-    <span class="view-tab" data-view="anno">Anno</span>
-    <span class="view-tab" data-view="agenda">Agenda</span>
-  </div>
-  <div class="hd-icons">
-    <div class="sync-dot" id="sync-dot" title="Sincronizzazione"></div>
-    <span title="Cerca">🔍</span>
-    <span title="Impostazioni">⚙️</span>
-    <span title="Nicola" style="font-size:14px;font-weight:500;color:#555">Nicola</span>
-  </div>
-</header>
-
-<div class="main">
-  <!-- SIDEBAR -->
-  <aside class="sidebar" id="sidebar">
-    <div class="mini-cal">
-      <div class="mc-header">
-        <button class="mc-btn" id="mc-prev">‹</button>
-        <span class="mc-title" id="mc-title">aprile 2026</span>
-        <button class="mc-btn" id="mc-next">›</button>
-      </div>
-      <div class="mc-grid" id="mc-grid"></div>
+<!-- SETUP -->
+<div id="setup-screen">
+  <div class="setup-card">
+    <div class="brand">
+      <div class="brand-icon"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg></div>
+      <div><div class="brand-name">Healthy Smile By N</div><div class="brand-sub">Cartella Clinica v4</div></div>
     </div>
-
-    <div class="sb-section">
-      <div class="sb-section-hd" id="sb-cal-toggle">
-        <span class="sb-section-title">Calendari</span>
-        <span class="sb-section-toggle" id="sb-cal-arrow">▲</span>
-      </div>
-      <div id="cal-list"></div>
-      <div class="sb-add">+ Aggiungi / Modifica</div>
+    <h2>Configurazione</h2>
+    <p>Inserisci l'URL del tuo Google Apps Script per sincronizzare i dati.</p>
+    <div class="step"><div class="step-n">1</div><div class="step-t">Google Sheet → <strong>Estensioni → Apps Script</strong> → incolla script v4 → esegui <strong>setup()</strong></div></div>
+    <div class="step"><div class="step-n">2</div><div class="step-t"><strong>Distribuisci → Nuova distribuzione → App web → Chiunque</strong> → copia URL</div></div>
+    <div class="ig">
+      <label>URL Apps Script</label>
+      <input type="url" id="api-url-input" placeholder="https://script.google.com/macros/s/.../exec">
+      <div class="hint">Stesso URL per tutti i PC dello studio.</div>
     </div>
-
-    <div class="sb-section">
-      <div class="sb-section-hd" id="sb-filter-toggle">
-        <span class="sb-section-title">Filtro</span>
-        <span class="sb-section-toggle">▼</span>
-      </div>
-    </div>
-
-    <div class="sb-section" style="padding:8px 12px;font-size:11px;color:#888">
-      <div style="font-weight:600;color:#555;margin-bottom:4px">About</div>
-      <div>Studio Dentistico Palmia</div>
-      <div>Healthy Smile By N</div>
-      <div>Via Madama Cristina 2, Torino</div>
-    </div>
-  </aside>
-
-  <!-- CALENDAR AREA -->
-  <div class="cal-area">
-    <div class="nav-bar">
-      <button class="nb-btn" id="nb-first" title="Prima">«</button>
-      <button class="nb-btn" id="nb-refresh" title="Aggiorna">↻</button>
-      <button class="nb-btn" id="nb-prev">‹</button>
-      <button class="nb-today" id="nb-today">Oggi</button>
-      <button class="nb-btn" id="nb-next">›</button>
-      <span class="nb-date" id="nb-label">▾</span>
-    </div>
-    <div class="cal-scroll" id="cal-scroll">
-      <div id="cal-grid"></div>
-    </div>
+    <div id="setup-err" style="display:none;color:#C0392B;font-size:12px;margin-top:8px;padding:8px 10px;background:#FDECEA;border-radius:6px"></div>
+    <button class="btn-main" onclick="doSetup()">Accedi →</button>
+    <div class="demo-lnk"><a onclick="startDemo()">Modalità demo</a></div>
   </div>
 </div>
 
-<!-- EVENT POPUP -->
-<div class="popup hidden" id="popup">
-  <div class="popup-hd">
-    <div class="popup-dot" id="pp-dot"></div>
-    <div class="popup-title" id="pp-title"></div>
-    <button class="popup-x" id="pp-close">×</button>
-  </div>
-  <div class="popup-row"><span class="popup-lbl">📅 Data/Ora</span><span class="popup-val" id="pp-dt"></span></div>
-  <div class="popup-row" id="pp-doc-row"><span class="popup-lbl">📋 Calendario</span><span class="popup-val" id="pp-doc"></span></div>
-  <div class="popup-row" id="pp-treat-row"><span class="popup-lbl">🔧 Trattamento</span><span class="popup-val" id="pp-treat"></span></div>
-  <div class="popup-row" id="pp-card-row"><span class="popup-lbl">📋 Cartella</span><span class="popup-val" id="pp-card"></span></div>
-  <div class="popup-row" id="pp-amt-row"><span class="popup-lbl">💶 Importo</span><span class="popup-val" id="pp-amt"></span></div>
-  <div class="popup-row" id="pp-note-row"><span class="popup-lbl">📝 Note</span><span class="popup-val" id="pp-note"></span></div>
-  <div class="popup-actions">
-    <button class="popup-btn popup-edit" id="pp-edit">✏️ Modifica</button>
-    <button class="popup-btn popup-wa" id="pp-wa">
-      <svg viewBox="0 0 24 24" fill="white" width="13" height="13"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
-      WhatsApp
-    </button>
+<!-- APP -->
+<div id="app">
+  <header class="hdr">
+    <div class="hdr-l">
+      <button class="mob-menu-btn" onclick="toggleSidebar()" aria-label="Menu pazienti">☰</button>
+      <div class="hdr-icon"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg></div>
+      <span class="hdr-name">Healthy Smile By N</span>
+      <span class="sync-pill s-ok" id="sync-pill">● sync</span>
+    </div>
+    <div class="hdr-r">
+      <button class="btn-s" onclick="syncAll()">↻ Aggiorna</button>
+      <button class="btn-s" onclick="openPrestazioniModal()" title="Gestisci prestazioni">🦷 Prestazioni</button>
+      <button class="btn-s" onclick="resetSetup()">⚙</button>
+    </div>
+  </header>
+
+  <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+  <div class="app-body">
+    <aside class="sidebar" id="sidebar">
+      <div class="sb-search"><input type="text" id="search" placeholder="Cerca codice..." oninput="filterList(this.value)"></div>
+      <div class="sb-hdr">
+        <span id="pat-count">0 pazienti</span>
+        <button class="btn-new" onclick="openNewModal()">+ Nuovo</button>
+      </div>
+      <div class="pat-list" id="pat-list"><div class="empty-list">Caricamento...</div></div>
+    </aside>
+
+    <main class="main">
+      <div class="welcome" id="welcome">
+        <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14l4-4h12c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/></svg>
+        <h3>Seleziona un paziente</h3>
+        <p style="font-size:13px">o crea una nuova cartella</p>
+      </div>
+
+      <div id="record" style="display:none">
+        <div class="rec-hdr">
+          <div>
+            <div class="rec-code" id="rec-code">—</div>
+            <div class="rec-sub" id="rec-sub">—</div>
+          </div>
+          <div class="rec-actions">
+            <button class="btn-s" onclick="apriInEditor()" style="background:var(--teal-light);color:var(--teal);border-color:var(--teal);font-weight:600">↗ Apri in Editor</button>
+            <button class="btn-save" onclick="savePatient()">💾 Salva</button>
+            <button class="btn-danger" onclick="confirmDelete()">Elimina</button>
+          </div>
+        </div>
+
+        <div class="tabs">
+          <button class="tab on"  onclick="switchTab('anagrafica')">Anagrafica</button>
+          <button class="tab"     onclick="switchTab('odontogramma')">Odontogramma</button>
+          <button class="tab"     onclick="openPreventivoTab()">Preventivo</button>
+          <button class="tab"     onclick="switchTab('diario')">Diario clinico</button>
+          <button class="tab"     onclick="switchTab('documenti')">Documenti</button>
+        </div>
+
+        <!-- ANAGRAFICA -->
+        <div id="tab-anagrafica">
+          <div class="card">
+            <div class="card-title">Identificazione</div>
+            <div class="grid3" style="margin-bottom:10px">
+              <div class="fg"><label>Codice paziente</label><input id="f-codice" readonly style="background:var(--gray-50);font-family:'DM Mono',monospace"></div>
+              <div class="fg"><label>Rischio carie</label>
+                <select id="f-rischio"><option value="">—</option><option value="basso">Basso</option><option value="medio">Medio</option><option value="alto">Alto</option></select>
+              </div>
+              <div class="fg"><label>Prima visita</label><input id="f-prima" type="date"></div>
+              <div class="fg"><label>Operatore ref.</label><input id="f-op" list="op-list" placeholder="Dott.ssa N."><datalist id="op-list"><option value="Dott.ssa N."><option value="Igienista"></datalist></div>
+              <div class="fg" style="grid-column:1/-1"><label>Note generali</label><textarea id="f-note" style="min-height:46px"></textarea></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">Dati anagrafici</div>
+            <div class="grid3" style="margin-bottom:10px">
+              <div class="fg"><label>Nome</label><input id="f-nome" placeholder="Mario"></div>
+              <div class="fg"><label>Cognome</label><input id="f-cognome" placeholder="Rossi"></div>
+              <div class="fg"><label>Data di nascita</label><input id="f-dob" type="date"></div>
+              <div class="fg"><label>Codice fiscale</label><input id="f-cf" placeholder="RSSMRA85M01H501Z" style="text-transform:uppercase;font-family:'DM Mono',monospace" maxlength="16"></div>
+              <div class="fg"><label>Telefono</label><input id="f-telefono" placeholder="+39 333 1234567" type="tel"></div>
+              <div class="fg"><label>Anno di nascita</label><input id="f-anno" type="number" placeholder="es. 1985"></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">Residenza</div>
+            <div class="grid3">
+              <div class="fg" style="grid-column:span 2"><label>Via / Corso / Piazza</label><input id="f-via" placeholder="Via Roma"></div>
+              <div class="fg"><label>Civico</label><input id="f-civico" placeholder="42"></div>
+              <div class="fg"><label>CAP</label><input id="f-cap" placeholder="10100" maxlength="5"></div>
+              <div class="fg"><label>Città / Località</label><input id="f-citta" placeholder="Torino"></div>
+              <div class="fg"><label>Provincia</label><input id="f-prov" placeholder="TO" maxlength="2" style="text-transform:uppercase"></div>
+              <div class="fg"><label>Nazione</label><input id="f-nazione" placeholder="Italia"></div>
+            </div>
+          </div>
+        </div>
+        <!-- ODONTOGRAMMA -->
+        <div id="tab-odontogramma" style="display:none">
+
+          <!-- LEGENDA -->
+          <div class="card">
+            <div class="card-title">Legenda trattamenti</div>
+            <div class="legend-wrap" id="legend-wrap"></div>
+            <div style="display:flex;gap:8px;margin-top:.5rem;flex-wrap:wrap">
+              <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--gray-700)">
+                <div style="width:18px;height:18px;border-radius:3px;border:2.5px solid var(--red)"></div>
+                Da fare
+              </div>
+              <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--gray-700)">
+                <div style="width:18px;height:18px;border-radius:3px;border:2.5px solid var(--teal)"></div>
+                Eseguito
+              </div>
+              <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--gray-700)">
+                <div style="width:18px;height:18px;border-radius:3px;border:2.5px solid var(--amber)"></div>
+                In corso
+              </div>
+            </div>
+          </div>
+
+          <!-- ODONTOGRAMMA 1: SITUAZIONE ATTUALE -->
+          <div class="card">
+            <div class="odonto-section-title attuale">
+              <div class="dot" style="background:var(--blue)"></div>
+              Situazione attuale in bocca
+            </div>
+            <div style="font-size:11px;color:var(--gray-500);margin-bottom:.6rem">Clicca un dente per registrare la situazione esistente (otturazioni, corone, impianti già presenti...)</div>
+
+            <!-- Arcate attuali -->
+            <div style="font-size:10px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.04em;margin-bottom:.4rem">Arcate complete</div>
+            <div class="arcate-row" id="arcate-attuali-btns"></div>
+            <div id="arcata-attuale-popup" class="arcata-popup"></div>
+
+            <div class="odonto-wrap">
+              <svg id="odonto-attuale" viewBox="0 0 660 200" style="width:100%;min-width:580px"></svg>
+            </div>
+            <div id="popup-attuale" class="tooth-popup"></div>
+          </div>
+
+          <!-- DIVISORE -->
+          <div class="odonto-divider"></div>
+
+          <!-- ODONTOGRAMMA 2: PIANO TRATTAMENTI -->
+          <div class="card">
+            <div class="odonto-section-title piano">
+              <div class="dot" style="background:var(--amber)"></div>
+              Piano trattamenti
+            </div>
+            <div style="font-size:11px;color:var(--gray-500);margin-bottom:.6rem">Clicca un dente per assegnare trattamenti da eseguire. Il bordo indica lo stato: <span style="color:var(--red);font-weight:600">rosso = da fare</span> · <span style="color:var(--amber);font-weight:600">giallo = in corso</span> · <span style="color:var(--teal);font-weight:600">verde = eseguito</span></div>
+
+            <!-- Arcate piano -->
+            <div style="font-size:10px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.04em;margin-bottom:.4rem">Arcate complete</div>
+            <div class="arcate-row" id="arcate-piano-btns"></div>
+            <div id="arcata-piano-popup" class="arcata-popup"></div>
+
+            <div class="odonto-wrap">
+              <svg id="odonto-piano" viewBox="0 0 660 200" style="width:100%;min-width:580px"></svg>
+            </div>
+            <div id="popup-piano" class="tooth-popup"></div>
+
+            <!-- Riepilogo piano -->
+            <div id="piano-riepilogo" style="margin-top:1rem"></div>
+          </div>
+
+        </div>
+
+
+        <!-- PREVENTIVO -->
+        <div id="tab-preventivo" style="display:none">
+          <div class="card" style="padding:0;overflow:hidden">
+            <div style="padding:.8rem 1.2rem;border-bottom:var(--border);display:flex;justify-content:space-between;align-items:center">
+              <div>
+                <div style="font-size:13px;font-weight:600">Preventivo</div>
+                <div style="font-size:11px;color:var(--gray-500);margin-top:1px">N° <span id="prev-num" style="font-family:'DM Mono',monospace;font-weight:600;color:var(--teal)">—</span> · Data <span id="prev-data">—</span> · Scade il <span id="prev-scad">—</span></div>
+              </div>
+              <div style="display:flex;gap:6px">
+                <button class="btn-s" onclick="importDaOdonto()">⟳ Da odontogramma</button>
+                <button class="btn-s c" onclick="addPrevRow()">+ Riga</button>
+                <button class="btn-s" onclick="stampaPrev()" style="background:var(--blue-light);color:var(--blue);border-color:var(--blue)">🖨 Stampa / PDF</button>
+              </div>
+            </div>
+            <div style="padding:.8rem 1.2rem;border-bottom:var(--border);background:var(--gray-50);display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+              <div class="fg" style="flex:1;min-width:140px"><label>Validità (giorni)</label><input type="number" id="prev-validita" value="30" style="width:80px"></div>
+              <div class="fg" style="flex:2;min-width:200px"><label>Note preventivo</label><input id="prev-note" placeholder="es. Prezzi validi salvo variazioni cliniche..."></div>
+              <div class="fg"><label>Sconto globale %</label><input type="number" id="prev-sconto-glob" value="0" min="0" max="100" style="width:70px" oninput="applyGlobalDiscount()"></div>
+            </div>
+            <!-- Tabella righe -->
+            <div style="overflow-x:auto">
+              <table style="width:100%;border-collapse:collapse" id="prev-table">
+                <thead>
+                  <tr style="background:var(--gray-50)">
+                    <th style="padding:7px 10px;font-size:10px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.04em;border-bottom:var(--border);text-align:left;width:55px">Dente</th>
+                    <th style="padding:7px 10px;font-size:10px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.04em;border-bottom:var(--border);text-align:left">Prestazione</th>
+                    <th style="padding:7px 10px;font-size:10px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.04em;border-bottom:var(--border);text-align:right;width:80px">Q.tà</th>
+                    <th style="padding:7px 10px;font-size:10px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.04em;border-bottom:var(--border);text-align:right;width:90px">€ Unit.</th>
+                    <th style="padding:7px 10px;font-size:10px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.04em;border-bottom:var(--border);text-align:right;width:75px">Sc. %</th>
+                    <th style="padding:7px 10px;font-size:10px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.04em;border-bottom:var(--border);text-align:right;width:95px">Totale €</th>
+                    <th style="width:30px;border-bottom:var(--border)"></th>
+                  </tr>
+                </thead>
+                <tbody id="prev-body"></tbody>
+              </table>
+            </div>
+            <!-- Totali -->
+            <div style="padding:1rem 1.2rem;border-top:var(--border);display:flex;justify-content:flex-end">
+              <div style="min-width:260px">
+                <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px">
+                  <span style="color:var(--gray-500)">Totale imponibile</span>
+                  <span id="prev-tot-lordo" style="font-family:'DM Mono',monospace">€ 0,00</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px">
+                  <span style="color:var(--gray-500)">Sconto applicato</span>
+                  <span id="prev-tot-sconto" style="font-family:'DM Mono',monospace;color:var(--amber)">- € 0,00</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;font-size:15px;font-weight:700;padding-top:8px;border-top:var(--border)">
+                  <span>Totale preventivo</span>
+                  <span id="prev-tot-netto" style="font-family:'DM Mono',monospace;color:var(--teal)">€ 0,00</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- DIARIO CLINICO -->
+        <div id="tab-diario" style="display:none">
+          <div class="card">
+            <div class="card-title">Diario clinico</div>
+            <div id="diary-list"></div>
+            <div class="diary-add">
+              <div class="diary-add-row">
+                <input id="diary-author" list="op-list2" placeholder="Autore (es. Dott.ssa N.)">
+                <datalist id="op-list2"><option value="Dott.ssa N."><option value="Igienista"><option value="Rec"></datalist>
+              </div>
+              <textarea id="diary-text" placeholder="Scrivi una voce clinica... La data viene inserita automaticamente."></textarea>
+              <button class="btn-diary" onclick="addDiaryEntry()">Aggiungi voce</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- DOCUMENTI -->
+        <div id="tab-documenti" style="display:none">
+          <div class="card">
+            <div class="card-title">Documenti, radiografie, foto</div>
+            <div class="doc-zone" onclick="document.getElementById('doc-input').click()">
+              <input type="file" id="doc-input" multiple accept="image/*,.pdf" style="display:none" onchange="handleUpload(this.files)">
+              <div style="font-size:22px;margin-bottom:5px">📎</div>
+              <div>Clicca o trascina per caricare</div>
+              <div style="font-size:11px;margin-top:3px;color:var(--gray-300)">Immagini, PDF, rx — max 10MB</div>
+            </div>
+            <div class="doc-grid" id="doc-grid"></div>
+          </div>
+        </div>
+
+      </div><!-- /record -->
+    </main>
   </div>
 </div>
 
-<!-- APPOINTMENT MODAL -->
-<div class="overlay hidden" id="overlay">
+<!-- MODAL NUOVO PAZIENTE -->
+<div class="modal-bg" id="new-modal">
   <div class="modal">
-    <div class="modal-hd">
-      <div class="modal-hd-color" id="m-color-dot"></div>
-      <span class="modal-title" id="m-title">Nuovo Appuntamento</span>
-      <button class="modal-x" id="m-close">×</button>
+    <h3>Nuovo paziente</h3>
+    <div class="fg" style="margin-bottom:10px">
+      <label>Codice paziente</label>
+      <input id="new-code" placeholder="es. HS-2025-042" style="font-family:'DM Mono',monospace">
+      <div style="font-size:11px;color:var(--gray-300);margin-top:3px">Codice anonimo — non inserire dati personali.</div>
     </div>
-    <div class="modal-body">
-
-      <!-- Tipo + Calendario -->
-      <div class="form-row">
-        <div class="fg" style="flex:0 0 130px">
-          <label>Tipo visita</label>
-          <select id="f-type">
-            <option value="cc">cc – controllo</option>
-            <option value="nb">nb – nuovo paz.</option>
-            <option value="CC">CC – controllo</option>
-            <option value="NB">NB – nuovo paz.</option>
-            <option value="jg">jg – igiene</option>
-            <option value="pv">pv – prima visita</option>
-            <option value="rp">rp – ripresa</option>
-            <option value="oc">oc – ortodonzia</option>
-            <option value="GG">GG</option>
-            <option value="altro">altro</option>
-          </select>
-        </div>
-        <div class="fg">
-          <label>Calendario</label>
-          <select id="f-calendar" onchange="updateModalColor()"></select>
-        </div>
+    <div class="grid2">
+      <div class="fg"><label>Anno nascita</label><input id="new-anno" type="number" placeholder="1985"></div>
+      <div class="fg"><label>Rischio carie</label>
+        <select id="new-rischio">
+          <option value="basso">Basso</option>
+          <option value="medio">Medio</option>
+          <option value="alto">Alto</option>
+        </select>
       </div>
-
-      <!-- Paziente con autocomplete -->
-      <div class="fg" id="fg-patient">
-        <label>👤 Paziente – Nome e Cognome</label>
-        <input type="text" id="f-patient" placeholder="es. Mario Rossi" autocomplete="off">
-        <div class="ac-dropdown hidden" id="ac-dropdown"></div>
-      </div>
-
-      <!-- Cartella + Telefono -->
-      <div class="form-row">
-        <div class="fg" style="flex:0 0 160px">
-          <label>N° Cartella</label>
-          <input type="text" id="f-card" placeholder="es. 573">
-        </div>
-        <div class="fg">
-          <label>📱 Numero WhatsApp</label>
-          <input type="tel" id="f-phone" placeholder="+39 333 1234567">
-        </div>
-      </div>
-
-      <hr class="form-div">
-
-      <!-- Data + Orari -->
-      <div class="form-row">
-        <div class="fg">
-          <label>📅 Data</label>
-          <input type="date" id="f-date">
-        </div>
-        <div class="fg">
-          <label>⏰ Ora inizio</label>
-          <input type="time" id="f-start" step="900">
-        </div>
-        <div class="fg">
-          <label>⏰ Ora fine</label>
-          <input type="time" id="f-end" step="900">
-        </div>
-      </div>
-
-      <hr class="form-div">
-
-      <!-- Trattamento -->
-      <div class="fg">
-        <label>🔧 Trattamento / Descrizione</label>
-        <textarea id="f-treatment" placeholder="es. impronta scanner per allineatore, rps + exo 35-36, cnt orto 4, consegna corona…"></textarea>
-      </div>
-
-      <hr class="form-div">
-      <span class="form-sec">Contatto &amp; Conferma</span>
-
-      <div class="form-row">
-        <div class="fg">
-          <label>Modalità contatto</label>
-          <select id="f-contact">
-            <option value="cc-wa">cc-wa – chiamata + WhatsApp</option>
-            <option value="Cc-wa">Cc-wa – conf. chiamata + WA</option>
-            <option value="Co-wa">Co-wa – solo WhatsApp</option>
-            <option value="wa">wa – WhatsApp</option>
-            <option value="cc">cc – solo chiamata</option>
-            <option value="no">— nessuno</option>
-          </select>
-        </div>
-        <div class="fg">
-          <label>💶 Importo (€)</label>
-          <input type="text" id="f-amount" placeholder="es. 200">
-        </div>
-      </div>
-
-      <div class="fg">
-        <label>📝 Note aggiuntive</label>
-        <input type="text" id="f-notes" placeholder="Annotazioni extra, promemoria…">
-      </div>
-
-      <!-- campi nascosti per compatibilità -->
-      <input type="hidden" id="f-confirm" value="no">
-      <input type="hidden" id="f-year" value="">
-      <input type="hidden" id="f-age" value="">
-
-      <hr class="form-div">
-
-      <!-- Allegati -->
-      <div class="fg">
-        <label>📎 Allegati</label>
-        <div class="attach-area" id="attach-area">
-          <input type="file" id="f-file" multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt" style="display:none">
-          <button type="button" class="btn-attach" id="btn-attach-pick">
-            📎 Aggiungi file
-          </button>
-          <div class="attach-list" id="attach-list"></div>
-        </div>
-      </div>
-
-    </div><!-- /modal-body -->
-
-    <div class="modal-ft">
-      <button class="btn btn-sec" id="m-cancel">Annulla</button>
-      <button class="btn btn-del hidden" id="m-delete">🗑 Elimina</button>
-      <button class="btn btn-primary" id="m-save">💾 Salva</button>
-      <button class="btn btn-wa" id="m-wa">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
-        Invia WhatsApp
-      </button>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-sec" onclick="closeModal()">Annulla</button>
+      <button class="btn-save" onclick="createPatient()">Crea cartella</button>
     </div>
   </div>
 </div>
 
-<!-- TOAST -->
-<div class="toast" id="toast"></div>
+
+<!-- MODAL PRESTAZIONI -->
+<div class="modal-bg" id="prest-modal">
+  <div class="modal" style="max-width:600px;max-height:85vh;overflow-y:auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+      <h3 style="font-size:15px;font-weight:600">Gestisci prestazioni</h3>
+      <button class="btn-sec" onclick="document.getElementById('prest-modal').classList.remove('open')">✕</button>
+    </div>
+
+    <!-- Form modifica/aggiungi -->
+    <div id="prest-form" style="display:none;background:var(--teal-pale);border:1px solid var(--teal-light);border-radius:var(--r-sm);padding:1rem;margin-bottom:1rem">
+      <div style="font-size:12px;font-weight:600;margin-bottom:.7rem" id="prest-form-title">Nuova prestazione</div>
+      <input type="hidden" id="pe-tipo">
+      <input type="hidden" id="pe-idx">
+      <div class="grid3" style="margin-bottom:8px">
+        <div class="fg" style="grid-column:span 2"><label>Nome</label><input id="pe-label" placeholder="es. Otturazione composito"></div>
+        <div class="fg"><label>Simbolo (2-3 car.)</label><input id="pe-sym" placeholder="es. O" maxlength="3"></div>
+        <div class="fg"><label>Prezzo base €</label><input id="pe-prezzo" type="number" placeholder="0.00" step="0.01"></div>
+        <div class="fg"><label>Colore testo</label><input id="pe-color" type="color" value="#686864" style="height:36px;padding:2px"></div>
+        <div class="fg"><label>Colore sfondo</label><input id="pe-bg" type="color" value="#EFEDE7" style="height:36px;padding:2px"></div>
+      </div>
+      <div style="display:flex;gap:6px;justify-content:flex-end">
+        <button class="btn-sec" onclick="document.getElementById('prest-form').style.display='none'">Annulla</button>
+        <button class="btn-save" onclick="savePrestazioneLine()">Salva voce</button>
+      </div>
+    </div>
+
+    <!-- Lista ATTUALE -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
+      <div style="font-size:11px;font-weight:700;color:var(--teal);text-transform:uppercase;letter-spacing:.05em">Situazione attuale</div>
+      <button class="btn-s c" onclick="newPrestazione('attuale')" style="font-size:11px;padding:4px 8px">+ Aggiungi</button>
+    </div>
+    <div id="prest-list-attuale" style="margin-bottom:1rem"></div>
+
+    <!-- Lista PIANO -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
+      <div style="font-size:11px;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:.05em">Piano trattamenti</div>
+      <button class="btn-s" onclick="newPrestazione('piano')" style="font-size:11px;padding:4px 8px;border-color:var(--amber);color:var(--amber)">+ Aggiungi</button>
+    </div>
+    <div id="prest-list-piano" style="margin-bottom:1rem"></div>
+
+    <div style="display:flex;justify-content:flex-end;gap:8px;padding-top:.8rem;border-top:var(--border)">
+      <button class="btn-sec" onclick="document.getElementById('prest-modal').classList.remove('open')">Chiudi senza salvare</button>
+      <button class="btn-save" onclick="saveAndClosePrestazioni()">💾 Salva su tutti i PC</button>
+    </div>
+  </div>
+</div>
+<div class="notif" id="notif"></div>
 
 <script>
-// ════════════════════════════════════════════
-//  FIREBASE INIT
-// ════════════════════════════════════════════
-const firebaseConfig = {
-  apiKey: "AIzaSyB9BXoJQLCx_Y9pwoXmxtVj1CLULohaUsw",
-  authDomain: "healthysmile-d2b52.firebaseapp.com",
-  projectId: "healthysmile-d2b52",
-  storageBucket: "healthysmile-d2b52.firebasestorage.app",
-  messagingSenderId: "984573798131",
-  appId: "1:984573798131:web:e96e695fb86b90a2413986"
-};
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-const storage = firebase.storage();
+// ════════════════════════════════════════════════════════════
+// TRATTAMENTI — due set separati: ATTUALE e PIANO
+// Salvati su Google Sheet foglio "Prestazioni"
+// ════════════════════════════════════════════════════════════
 
-function setSyncStatus(status){
-  // status: 'ok' | 'syncing' | 'error'
-  const dot = document.getElementById('sync-dot');
-  dot.className = 'sync-dot' + (status!=='ok' ? ' '+status : '');
-}
-
-// ════════════════════════════════════════════
-//  CONFIGURAZIONE CALENDARI
-// ════════════════════════════════════════════
-const CALS = [
-  // ── Caduti ──
-  { id:'caduti',               name:'Caduti',                                color:'#5d4037', group:null },
-  // ── Laboratori ──
-  { id:'barra_rinforzo',       name:'Barra di rinforzo',                     color:'#2e7d32', group:'Laboratori' },
-  { id:'loreni_arturo',        name:'Loreni Arturo',                         color:'#26a69a', group:'Laboratori' },
-  { id:'palmia_lab',           name:'Palmia',                                color:'#546e7a', group:'Laboratori' },
-  { id:'wisildent',            name:'Wisildent',                             color:'#558b2f', group:'Laboratori' },
-  // ── Medici ──
-  { id:'dott_palmia',          name:'Dott. Palmia',                          color:'#9e9e9e', group:'Medici' },
-  { id:'dott_ladelia',         name:'Dott. ssa La Delia',                    color:'#795548', group:'Medici' },
-  { id:'dottssa_arduino',      name:'Dott.ssa Arduino',                      color:'#ff8f00', group:'Medici' },
-  // ── Prestazioni ──
-  { id:'ablazione',            name:'Ablazione/ Igiene pt',                  color:'#fdd835', group:'Prestazioni' },
-  { id:'cad',                  name:'Cad',                                   color:'#ff8a65', group:'Prestazioni' },
-  { id:'chirurgia',            name:'Chirurgia',                             color:'#e53935', group:'Prestazioni' },
-  { id:'consegna_corone',      name:'Consegna corone definitive',            color:'#d81b60', group:'Prestazioni' },
-  { id:'consegna_protesi',     name:'Consegna Protesi Definitiva intera arcata', color:'#f06292', group:'Prestazioni' },
-  { id:'endodonzia',           name:'Endodonzia/Conservativa',               color:'#3f51b5', group:'Prestazioni' },
-  { id:'implantologia',        name:'Implantologia',                         color:'#212121', group:'Prestazioni' },
-  { id:'impronte_scanner',     name:'Impronte con scanner',                  color:'#e91e63', group:'Prestazioni' },
-  { id:'impronte_alginato',    name:'Impronte in alginato',                  color:'#7b1fa2', group:'Prestazioni' },
-  { id:'itto',                 name:'Itto',                                  color:'#00bcd4', group:'Prestazioni' },
-  { id:'ortodonzia',           name:'Ortodonzia',                            color:'#9c27b0', group:'Prestazioni' },
-  { id:'prime_visite',         name:'Prime Visite',                          color:'#e65100', group:'Prestazioni' },
-  { id:'protesi_provvisori',   name:'Protesi generica e Consegna provvisori',color:'#afb42b', group:'Prestazioni' },
-  { id:'ribasatura',           name:'Ribasatura',                            color:'#f50057', group:'Prestazioni' },
-  { id:'sbiancamento',         name:'Sbiancamento/brillantino',              color:'#ab47bc', group:'Prestazioni' },
-  { id:'urgenze',              name:'Urgenze',                               color:'#00838f', group:'Prestazioni' },
-  { id:'varie',                name:'Varie',                                 color:'#6d4c41', group:'Prestazioni' },
+const TR_ATTUALE_DEFAULT = [
+  {id:'sano',        label:'Sano',               color:'#1D9E75', sym:'✓',  bg:'#E1F5EE', tipo:'attuale'},
+  {id:'otturato',    label:'Otturato',            color:'#1A5EA8', sym:'O',  bg:'#E8F1FD', tipo:'attuale'},
+  {id:'devitaliz',   label:'Devitalizzato',       color:'#B7651A', sym:'D',  bg:'#FEF3E2', tipo:'attuale'},
+  {id:'impianto',    label:'Impianto',            color:'#0F6E56', sym:'I',  bg:'#D0F0E6', tipo:'attuale'},
+  {id:'corona',      label:'Corona',              color:'#5B4BBF', sym:'K',  bg:'#EEEDFB', tipo:'attuale'},
+  {id:'ponte',       label:'Ponte',               color:'#1A5EA8', sym:'▬',  bg:'#E8F1FD', tipo:'attuale'},
+  {id:'provvisorio', label:'Provvisorio',         color:'#B7651A', sym:'PR', bg:'#FEF3E2', tipo:'attuale'},
+  {id:'parziale',    label:'Prot. parziale',      color:'#C05621', sym:'P',  bg:'#FEF0E7', tipo:'attuale'},
+  {id:'estratto',    label:'Estratto/assente',    color:'#686864', sym:'X',  bg:'#EFEDE7', tipo:'attuale'},
+  {id:'frattura',    label:'Frattura',            color:'#C0392B', sym:'//', bg:'#FDECEA', tipo:'attuale'},
+  {id:'erosione',    label:'Erosione/abrasione',  color:'#686864', sym:'~',  bg:'#EFEDE7', tipo:'attuale'},
+  {id:'bite_att',    label:'Bite presente',       color:'#5B4BBF', sym:'B',  bg:'#EEEDFB', tipo:'attuale'},
+  {id:'igiene_att',  label:'Igiene eseguita',     color:'#1D9E75', sym:'IG', bg:'#E1F5EE', tipo:'attuale'},
+  {id:'sbianc_att',  label:'Sbiancamento fatto',  color:'#1D9E75', sym:'SB', bg:'#E1F5EE', tipo:'attuale'},
 ];
-const GROUPS = ['Laboratori','Medici','Prestazioni'];
 
-// ════════════════════════════════════════════
-//  STATO
-// ════════════════════════════════════════════
-let view = 'giorno';
-let curDate = new Date();
-let miniMonth = new Date();
-let events = [];           // popolato da Firestore onSnapshot
-let editId = null;
-let activeCals = new Set(CALS.map(c=>c.id));
-let collapsedGroups = new Set();
-let popupEventId = null;
+const TR_PIANO_DEFAULT = [
+  {id:'da_otturare', label:'Da otturare',          color:'#C0392B', sym:'C',  bg:'#FDECEA', tipo:'piano'},
+  {id:'endo_fare',   label:'Endodonzia',            color:'#B7651A', sym:'E',  bg:'#FEF3E2', tipo:'piano'},
+  {id:'da_estrarre', label:'Da estrarre',           color:'#C0392B', sym:'†',  bg:'#FDECEA', tipo:'piano'},
+  {id:'imp_fare',    label:'Impianto',              color:'#0F6E56', sym:'I+', bg:'#D0F0E6', tipo:'piano'},
+  {id:'corona_fare', label:'Corona',                color:'#5B4BBF', sym:'K+', bg:'#EEEDFB', tipo:'piano'},
+  {id:'ponte_fare',  label:'Ponte',                 color:'#1A5EA8', sym:'▬+', bg:'#E8F1FD', tipo:'piano'},
+  {id:'igiene_fare', label:'Igiene',                color:'#1D9E75', sym:'IG', bg:'#E1F5EE', tipo:'piano'},
+  {id:'bite_fare',   label:'Bite',                  color:'#5B4BBF', sym:'B+', bg:'#EEEDFB', tipo:'piano'},
+  {id:'sbianc_fare', label:'Sbiancamento',          color:'#1D9E75', sym:'SB', bg:'#E1F5EE', tipo:'piano'},
+  {id:'controllo',   label:'Controllo',             color:'#686864', sym:'CC', bg:'#EFEDE7', tipo:'piano'},
+  {id:'altro_piano', label:'Altro',                 color:'#686864', sym:'?',  bg:'#EFEDE7', tipo:'piano'},
+];
 
-// ════════════════════════════════════════════
-//  UTILS
-// ════════════════════════════════════════════
-const IT_DAYS  = ['dom','lun','mar','mer','gio','ven','sab'];
-const IT_DAYS_LONG = ['Domenica','Lunedì','Martedì','Mercoledì','Giovedì','Venerdì','Sabato'];
-const IT_MONTHS = ['gennaio','febbraio','marzo','aprile','maggio','giugno','luglio','agosto','settembre','ottobre','novembre','dicembre'];
-const IT_MONTHS_S = ['gen','feb','mar','apr','mag','giu','lug','ago','set','ott','nov','dic'];
+let TR_ATTUALE = [...TR_ATTUALE_DEFAULT];
+let TR_PIANO   = [...TR_PIANO_DEFAULT];
 
-const H_START = 7, H_END = 23, PX_HOUR = 60;
-
-function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2) }
-function d2s(d){ return d.toISOString().split('T')[0] }
-function sameDay(a,b){ return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate() }
-function addDays(d,n){ const r=new Date(d); r.setDate(r.getDate()+n); return r }
-function getCal(id){ return CALS.find(c=>c.id===id)||CALS[5] }
-function t2m(t){ const[h,m]=t.split(':').map(Number); return h*60+m }
-function m2t(m){ return String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0') }
-function fmtTime(t){
-  if(!t) return '';
-  const[h,m]=t.split(':').map(Number);
-  const p=h>=12?'pm':'am', hh=h>12?h-12:(h===0?12:h);
-  return m===0?`${hh}${p}`:`${hh}:${String(m).padStart(2,'0')}${p}`;
-}
-function fmtDate(ds){
-  if(!ds) return '';
-  const d=new Date(ds+'T12:00:00');
-  return `${IT_DAYS[d.getDay()]} ${d.getDate()} ${IT_MONTHS[d.getMonth()]} ${d.getFullYear()}`;
-}
-function getEventsForDay(ds){ return events.filter(e=>e.date===ds && activeCals.has(e.calendar)) }
-
-function toast(msg){
-  const t=document.getElementById('toast');
-  t.textContent=msg; t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),2500);
+function findTR(id) {
+  return TR_ATTUALE.find(t=>t.id===id) || TR_PIANO.find(t=>t.id===id) || {id,label:id,color:'#686864',sym:'?',bg:'#EFEDE7'};
 }
 
-function getWeekMon(d){
-  const dow=d.getDay(), diff=dow===0?-6:1-dow;
-  return addDays(d,diff);
-}
+const ARCH_TR = [
+  {id:'tot_rimov',  label:'Protesi totale rimovibile',     color:'#C05621', sym:'TR'},
+  {id:'tot_fissa',  label:'Protesi totale fissa/All-on-4', color:'#0F6E56', sym:'TF'},
+  {id:'parz_rimov', label:'Protesi parziale rimovibile',   color:'#B7651A', sym:'PR'},
+  {id:'ortodonzia', label:'Apparecchio ortodontico',       color:'#1A5EA8', sym:'OR'},
+];
 
-// ════════════════════════════════════════════
-//  MINI CALENDAR
-// ════════════════════════════════════════════
-function renderMini(){
-  const y=miniMonth.getFullYear(), m=miniMonth.getMonth();
-  document.getElementById('mc-title').textContent=`${IT_MONTHS[m]} ${y}`;
-  const grid=document.getElementById('mc-grid');
-  grid.innerHTML='';
-  ['L','M','M','G','V','S','D'].forEach(d=>{
-    const el=document.createElement('div'); el.className='mc-dow'; el.textContent=d; grid.appendChild(el);
-  });
-  const first=new Date(y,m,1);
-  let dow=first.getDay(); dow=dow===0?6:dow-1;
-  const prevLast=new Date(y,m,0).getDate();
-  const last=new Date(y,m+1,0).getDate();
-  const today=new Date();
-  for(let i=dow-1;i>=0;i--){
-    const el=document.createElement('div'); el.className='mc-day other-month';
-    el.textContent=prevLast-i; grid.appendChild(el);
-  }
-  for(let d2=1;d2<=last;d2++){
-    const el=document.createElement('div'); el.className='mc-day';
-    el.textContent=d2;
-    const td=new Date(y,m,d2);
-    if(sameDay(td,today)) el.classList.add('today');
-    if(sameDay(td,curDate)) el.classList.add('selected');
-    el.addEventListener('click',()=>{ curDate=new Date(y,m,d2); miniMonth=new Date(curDate); renderMini(); renderCal(); updateLabel(); closeSidebar(); });
-    grid.appendChild(el);
-  }
-  const total=dow+last, rem=total%7===0?0:7-total%7;
-  for(let d2=1;d2<=rem;d2++){
-    const el=document.createElement('div'); el.className='mc-day other-month';
-    el.textContent=d2; grid.appendChild(el);
-  }
-}
+const ARCATE = [
+  {id:'sup',      label:'Arcata superiore'},
+  {id:'inf',      label:'Arcata inferiore'},
+  {id:'entrambe', label:'Entrambe le arcate'},
+];
 
-// ════════════════════════════════════════════
-//  SIDEBAR CALENDARS
-// ════════════════════════════════════════════
-function renderSidebar(){
-  const list=document.getElementById('cal-list');
-  list.innerHTML='';
-  const caduti=CALS.find(c=>c.group===null);
-  if(caduti) list.appendChild(mkCalItem(caduti,true));
-  GROUPS.forEach(g=>{
-    const items=CALS.filter(c=>c.group===g);
-    if(!items.length) return;
-    const wrap=document.createElement('div'); wrap.className='cal-group';
-    const hd=document.createElement('div'); hd.className='cal-group-hd';
-    const closed=collapsedGroups.has(g);
-    hd.innerHTML=`<span class="cal-group-arrow ${closed?'closed':''}">▼</span><span class="cal-group-name">${g}</span>`;
-    hd.addEventListener('click',()=>{ closed?collapsedGroups.delete(g):collapsedGroups.add(g); renderSidebar(); });
-    wrap.appendChild(hd);
-    if(!closed) items.forEach(c=>wrap.appendChild(mkCalItem(c,false)));
-    list.appendChild(wrap);
-  });
-  // Populate modal select
-  const sel=document.getElementById('f-calendar');
-  sel.innerHTML='';
-  const cadutiOpts=CALS.filter(c=>c.group===null);
-  cadutiOpts.forEach(c=>{
-    const o=document.createElement('option');
-    o.value=c.id; o.textContent='⬛ '+c.name; sel.appendChild(o);
-  });
-  const groupIcons={'Laboratori':'🔬','Medici':'👨‍⚕️','Prestazioni':'🦷'};
-  GROUPS.forEach(g=>{
-    const items=CALS.filter(c=>c.group===g);
-    if(!items.length) return;
-    const og=document.createElement('optgroup');
-    og.label=(groupIcons[g]||'')+'  '+g.toUpperCase();
-    items.forEach(c=>{
-      const o=document.createElement('option');
-      o.value=c.id; o.textContent='  '+c.name; og.appendChild(o);
-    });
-    sel.appendChild(og);
-  });
-}
+const UPPER = [18,17,16,15,14,13,12,11,21,22,23,24,25,26,27,28];
+const LOWER = [48,47,46,45,44,43,42,41,31,32,33,34,35,36,37,38];
 
-function mkCalItem(cal,ungrouped){
-  const el=document.createElement('div');
-  el.className=`cal-item ${ungrouped?'ungrouped':''}`;
-  const on=activeCals.has(cal.id);
-  el.innerHTML=`<div class="cal-dot" style="background:${cal.color};opacity:${on?1:.3}"></div>
-    <span class="cal-name">${cal.name}</span>
-    <input type="checkbox" class="cal-chk" ${on?'checked':''}>`;
-  el.querySelector('.cal-chk').addEventListener('change',e=>{
-    e.target.checked?activeCals.add(cal.id):activeCals.delete(cal.id);
-    renderCal();
-  });
-  return el;
-}
+// ════════════════════════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════════════════════════
+let API_URL = localStorage.getItem('hs_api_url') || '';
+let DEMO = false;
+let patients = [];
+let currentId = null;
 
-// ════════════════════════════════════════════
-//  MOBILE SIDEBAR
-// ════════════════════════════════════════════
-function openSidebar(){
-  document.getElementById('sidebar').classList.add('open');
-  document.getElementById('sb-overlay').classList.add('show');
-}
-function closeSidebar(){
-  document.getElementById('sidebar').classList.remove('open');
-  document.getElementById('sb-overlay').classList.remove('show');
-}
+// Odontogramma attuale (situazione in bocca)
+let teethAttuale = {};   // {16: ['impianto','corona']}
+let arcateAttuale = {};  // {sup: ['tot_rimov']}
 
-// ════════════════════════════════════════════
-//  NAV LABEL
-// ════════════════════════════════════════════
-function updateLabel(){
-  const lbl=document.getElementById('nb-label');
-  if(view==='giorno'){
-    lbl.textContent=`${IT_DAYS[curDate.getDay()]} ${curDate.getDate()} ${IT_MONTHS_S[curDate.getMonth()]} ${curDate.getFullYear()} ▾`;
-  } else if(view==='settimana'){
-    const mon=getWeekMon(curDate), sun=addDays(mon,6);
-    lbl.textContent=`${mon.getDate()} – ${sun.getDate()} ${IT_MONTHS_S[mon.getMonth()]} ${mon.getFullYear()} ▾`;
-  } else if(view==='3giorni'){
-    const end=addDays(curDate,2);
-    lbl.textContent=`${curDate.getDate()} – ${end.getDate()} ${IT_MONTHS_S[curDate.getMonth()]} ${curDate.getFullYear()} ▾`;
+// Odontogramma piano (trattamenti da fare/eseguiti)
+let teethPiano = {};     // {16: [{tid:'estrazione', stato:'dafare'}]}
+let arcatePiano = {};
+
+let diary    = [];
+let docs     = [];
+let prevRows = [];   // righe preventivo corrente
+
+// ════════════════════════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════════════════════════
+window.addEventListener('load', () => {
+  buildSVG('odonto-attuale');
+  buildSVG('odonto-piano');
+  buildArcateBtns('arcate-attuali-btns', 'arcata-attuale-popup', 'attuale');
+  buildArcateBtns('arcate-piano-btns',   'arcata-piano-popup',   'piano');
+  if (API_URL) {
+    startApp();
   } else {
-    lbl.textContent=`${IT_MONTHS[curDate.getMonth()]} ${curDate.getFullYear()} ▾`;
+    document.getElementById('setup-screen').style.display = 'flex';
   }
+});
+
+// ════════════════════════════════════════════════════════════
+// SETUP / API
+// ════════════════════════════════════════════════════════════
+function doSetup() {
+  const u = document.getElementById('api-url-input').value.trim();
+  if (!u) { 
+    document.getElementById('setup-err').style.display='block';
+    document.getElementById('setup-err').textContent='Inserisci un URL prima di continuare.';
+    return; 
+  }
+  if (!u.includes('script.google.com')) { 
+    document.getElementById('setup-err').style.display='block';
+    document.getElementById('setup-err').textContent='URL non valido. Deve contenere script.google.com';
+    return; 
+  }
+  document.getElementById('setup-err').style.display='none';
+  API_URL = u; 
+  localStorage.setItem('hs_api_url', u); 
+  startApp();
 }
-
-// ════════════════════════════════════════════
-//  CALENDAR RENDER
-// ════════════════════════════════════════════
-function renderCal(){
-  const grid=document.getElementById('cal-grid');
-  grid.innerHTML='';
-  hidePopup();
-  if(view==='giorno') renderDayView(grid,[curDate]);
-  else if(view==='3giorni') renderDayView(grid,[curDate,addDays(curDate,1),addDays(curDate,2)]);
-  else if(view==='settimana'){
-    const mon=getWeekMon(curDate);
-    renderDayView(grid,Array.from({length:7},(_,i)=>addDays(mon,i)));
-  } else {
-    renderDayView(grid,[curDate]);
-  }
-  const scroll=document.getElementById('cal-scroll');
-  const now=new Date();
-  let scrollTo=0;
-  if(view==='giorno'&&sameDay(now,curDate)){
-    scrollTo=Math.max(0,(now.getHours()-H_START-1)*PX_HOUR);
-  }
-  setTimeout(()=>{ scroll.scrollTop=scrollTo; },40);
+function startDemo() {
+  DEMO = true; API_URL = 'demo'; localStorage.setItem('hs_api_url','demo');
+  patients = demoPatients(); startApp();
 }
-
-function renderDayView(container, dates){
-  const today=new Date();
-  const view_el=document.createElement('div'); view_el.className='cal-view';
-
-  // HEADER
-  const head=document.createElement('div'); head.className='cal-head';
-  const htCell=document.createElement('div'); htCell.className='cal-head-time'; head.appendChild(htCell);
-  dates.forEach(d=>{
-    const col=document.createElement('div');
-    col.className=`cal-head-col ${sameDay(d,today)?'today-bg':''}`;
-    const num=document.createElement('div');
-    num.className=`col-num ${sameDay(d,today)?'today-circle':''}`;
-    num.textContent=d.getDate();
-    col.innerHTML=`<div class="col-dow">${IT_DAYS[d.getDay()].toUpperCase()}</div>`;
-    col.appendChild(num);
-    head.appendChild(col);
+function resetSetup() { localStorage.removeItem('hs_api_url'); location.reload(); }
+function startApp() {
+  document.getElementById('setup-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
+  loadPrestazioni().then(() => loadPatients()).catch(err => {
+    console.error('Errore avvio:', err);
+    notify('Errore connessione — controlla URL e distribuzione','err');
   });
-  view_el.appendChild(head);
-
-  // BODY
-  const body=document.createElement('div'); body.className='cal-body';
-  const gutter=document.createElement('div'); gutter.className='time-gutter';
-  for(let h=H_START;h<=H_END;h++){
-    const lbl=document.createElement('div'); lbl.className='time-label';
-    if(h>H_START){ const p=h>=12?(h===12?'12pm':`${h-12}pm`):`${h}am`; lbl.textContent=p; }
-    gutter.appendChild(lbl);
-  }
-  body.appendChild(gutter);
-
-  const colWrap=document.createElement('div'); colWrap.className='col-wrap';
-  dates.forEach(d=>{
-    const dateStr=d2s(d);
-    const col=document.createElement('div');
-    col.className=`day-col ${sameDay(d,today)?'today-bg':''}`;
-    col.style.position='relative';
-
-    for(let h=H_START;h<=H_END;h++){
-      const row=document.createElement('div'); row.className='hour-row';
-      const half=document.createElement('div'); half.className='half-tick'; row.appendChild(half);
-      row.addEventListener('click',e=>{
-        if(e.target.closest('.ev')) return;
-        const rect=row.getBoundingClientRect();
-        const relY=e.clientY-rect.top;
-        const mins=h*60+Math.round(relY/PX_HOUR*60/15)*15;
-        openModal(null,dateStr,m2t(mins),m2t(mins+30));
-      });
-      col.appendChild(row);
-    }
-
-    const dayEvs=getEventsForDay(dateStr);
-    const lanes=layoutEvents(dayEvs);
-    dayEvs.forEach(ev=>{
-      const {laneIdx,laneCount}=lanes.get(ev.id)||{laneIdx:0,laneCount:1};
-      const el=mkEvent(ev,laneIdx,laneCount);
-      col.appendChild(el);
-    });
-
-    if(sameDay(d,today)){
-      const now=new Date();
-      const nm=now.getHours()*60+now.getMinutes();
-      if(nm>=H_START*60&&nm<=H_END*60){
-        const nl=document.createElement('div'); nl.className='now-line';
-        nl.style.top=((nm-H_START*60)/60*PX_HOUR)+'px';
-        col.appendChild(nl);
-      }
-    }
-
-    colWrap.appendChild(col);
-  });
-
-  body.appendChild(colWrap);
-  view_el.appendChild(body);
-  container.appendChild(view_el);
 }
 
-function layoutEvents(evs){
-  const map=new Map();
-  const sorted=[...evs].sort((a,b)=>t2m(a.start)-t2m(b.start));
-  const lanes=[];
-  sorted.forEach(ev=>{
-    const start=t2m(ev.start), end=t2m(ev.end)||start+30;
-    let placed=false;
-    for(let i=0;i<lanes.length;i++){
-      if(lanes[i]<=start){ lanes[i]=end; map.set(ev.id,{laneIdx:i,laneCount:0}); placed=true; break; }
-    }
-    if(!placed){ lanes.push(end); map.set(ev.id,{laneIdx:lanes.length-1,laneCount:0}); }
-  });
-  const total=lanes.length||1;
-  map.forEach(v=>{ v.laneCount=total; });
-  return map;
-}
-
-function mkEvent(ev,laneIdx,laneCount){
-  const cal=getCal(ev.calendar);
-  const el=document.createElement('div'); el.className='ev';
-  el.style.background=cal.color;
-  const startM=t2m(ev.start);
-  const endM=ev.end?t2m(ev.end):startM+30;
-  const top=(startM-H_START*60)/60*PX_HOUR;
-  const height=Math.max(18,(endM-startM)/60*PX_HOUR-2);
-  const laneW=100/laneCount;
-  el.style.top=top+'px';
-  el.style.height=height+'px';
-  el.style.left=`calc(${laneIdx*laneW}% + 2px)`;
-  el.style.right=`calc(${(laneCount-laneIdx-1)*laneW}% + 2px)`;
-  el.style.width='';
-  const cardPart=ev.card?` (${ev.card})`:''
-  const typePart=ev.type?`${ev.type}/ `:'';
-  el.innerHTML=`
-    <div class="ev-time">${fmtTime(ev.start)}</div>
-    <div class="ev-patient">${typePart}${ev.patient||''}${cardPart}</div>
-    ${ev.treatment?`<div class="ev-detail">${ev.treatment}</div>`:''}
-  `;
-  el.addEventListener('click',e=>{ e.stopPropagation(); showPopup(ev.id,e); });
-  return el;
-}
-
-// ════════════════════════════════════════════
-//  POPUP
-// ════════════════════════════════════════════
-function showPopup(evId, e){
-  const ev=events.find(x=>x.id===evId); if(!ev) return;
-  const cal=getCal(ev.calendar);
-  popupEventId=evId;
-  const pp=document.getElementById('popup');
-  document.getElementById('pp-dot').style.background=cal.color;
-  document.getElementById('pp-title').textContent=`${ev.type?ev.type+'/ ':''}${ev.patient||'Appuntamento'}${ev.card?' ('+ev.card+')':''}`;
-  document.getElementById('pp-dt').textContent=`${fmtDate(ev.date)} · ${fmtTime(ev.start)}${ev.end?' – '+fmtTime(ev.end):''}`;
-  document.getElementById('pp-doc').textContent=cal.name;
-  const treat=ev.treatment||'';
-  document.getElementById('pp-treat').textContent=treat;
-  document.getElementById('pp-treat-row').classList.toggle('hidden',!treat);
-  const card=ev.card||'';
-  document.getElementById('pp-card').textContent=card;
-  document.getElementById('pp-card-row').classList.toggle('hidden',!card);
-  document.getElementById('pp-amt').textContent=ev.amount?`€${ev.amount}`:'';
-  document.getElementById('pp-amt-row').classList.toggle('hidden',!ev.amount);
-  document.getElementById('pp-note').textContent=ev.notes||'';
-  document.getElementById('pp-note-row').classList.toggle('hidden',!ev.notes);
-  // allegati nel popup
-  let ppAttach=pp.querySelector('.popup-attach');
-  if(ppAttach) ppAttach.remove();
-  if(ev.attachments&&ev.attachments.length){
-    const div=document.createElement('div'); div.className='popup-attach';
-    div.innerHTML=`<div class="popup-attach-title">📎 Allegati (${ev.attachments.length})</div>`;
-    ev.attachments.forEach(a=>{
-      const chip=document.createElement('a'); chip.className='popup-attach-chip';
-      chip.href=a.url||a.data; chip.target='_blank';
-      let icon='📄';
-      if(a.type&&a.type.startsWith('image/')) icon='🖼️';
-      else if(a.type==='application/pdf') icon='📕';
-      chip.textContent=icon+' '+a.name;
-      div.appendChild(chip);
-    });
-    document.getElementById('pp-close').closest('.popup-hd').after(div);
-  }
-  // position
-  const vw=window.innerWidth, vh=window.innerHeight;
-  let x=e.clientX+10, y=e.clientY+10;
-  pp.classList.remove('hidden');
-  const pw=pp.offsetWidth, ph=pp.offsetHeight;
-  if(x+pw>vw-10) x=Math.max(10,e.clientX-pw-10);
-  if(y+ph>vh-10) y=Math.max(10,e.clientY-ph-10);
-  pp.style.left=x+'px'; pp.style.top=y+'px';
-}
-
-function hidePopup(){ document.getElementById('popup').classList.add('hidden'); popupEventId=null; }
-
-// ════════════════════════════════════════════
-//  MODAL
-// ════════════════════════════════════════════
-function updateModalColor(){
-  const calId=document.getElementById('f-calendar').value;
-  const cal=getCal(calId);
-  document.getElementById('m-color-dot').style.background=cal.color;
-}
-
-function openModal(evId, defDate, defStart, defEnd){
-  editId=evId;
-  const overlay=document.getElementById('overlay');
-  const title=document.getElementById('m-title');
-  const delBtn=document.getElementById('m-delete');
-  hidePopup();
-
-  if(evId){
-    const ev=events.find(e=>e.id===evId); if(!ev) return;
-    title.textContent='Modifica Appuntamento';
-    delBtn.classList.remove('hidden');
-    document.getElementById('f-type').value=ev.type||'cc';
-    document.getElementById('f-calendar').value=ev.calendar||'dott_palmia';
-    document.getElementById('f-patient').value=ev.patient||'';
-    document.getElementById('f-card').value=ev.card||'';
-    document.getElementById('f-year').value=ev.year||'';
-    document.getElementById('f-age').value=ev.age||'';
-    document.getElementById('f-date').value=ev.date||'';
-    document.getElementById('f-start').value=ev.start||'';
-    document.getElementById('f-end').value=ev.end||'';
-    document.getElementById('f-treatment').value=ev.treatment||'';
-    document.getElementById('f-contact').value=ev.contact||'cc-wa';
-    document.getElementById('f-confirm').value=ev.confirm||'no';
-    document.getElementById('f-phone').value=ev.phone||'';
-    document.getElementById('f-amount').value=ev.amount||'';
-    document.getElementById('f-notes').value=ev.notes||'';
-    initAttachments(ev.attachments||[]);
-  } else {
-    title.textContent='Nuovo Appuntamento';
-    delBtn.classList.add('hidden');
-    document.getElementById('f-type').value='cc';
-    document.getElementById('f-calendar').value='dott_palmia';
-    document.getElementById('f-patient').value='';
-    document.getElementById('f-card').value='';
-    document.getElementById('f-year').value='';
-    document.getElementById('f-age').value='';
-    document.getElementById('f-date').value=defDate||d2s(curDate);
-    document.getElementById('f-start').value=defStart||'09:00';
-    document.getElementById('f-end').value=defEnd||'09:30';
-    document.getElementById('f-treatment').value='';
-    document.getElementById('f-contact').value='cc-wa';
-    document.getElementById('f-confirm').value='no';
-    document.getElementById('f-phone').value='';
-    document.getElementById('f-amount').value='';
-    document.getElementById('f-notes').value='';
-    initAttachments([]);
-  }
-  updateModalColor();
-  overlay.classList.remove('hidden');
-  setTimeout(()=>document.getElementById('f-patient').focus(),100);
-}
-
-function closeModal(){ document.getElementById('overlay').classList.add('hidden'); editId=null; hideAcDropdown(); }
-
-// ════════════════════════════════════════════
-//  SAVE / DELETE  (Firestore)
-// ════════════════════════════════════════════
-async function saveEvent(){
-  const patient=document.getElementById('f-patient').value.trim();
-  const treatment=document.getElementById('f-treatment').value.trim();
-  if(!patient&&!treatment){ toast('⚠️ Inserisci il nome del paziente o la descrizione.'); return; }
-  const date=document.getElementById('f-date').value;
-  const start=document.getElementById('f-start').value;
-  if(!date||!start){ toast('⚠️ Inserisci data e ora di inizio.'); return; }
-
-  const saveBtn=document.getElementById('m-save');
-  saveBtn.disabled=true; saveBtn.textContent='⏳ Salvataggio...';
-  setSyncStatus('syncing');
-
+async function api(action, data={}) {
+  if (DEMO) return demoApi(action, data);
+  setSyncPill('sy');
   try {
-    // Use pre-generated ID so we can reference it for Storage uploads
-    const evId = editId || db.collection('appuntamenti').doc().id;
-
-    // Upload any pending attachments to Firebase Storage
-    const finalAttachments = [];
-    for(const att of currentAttachments){
-      if(att.pending && att.localData){
-        try {
-          const path = `attachments/${evId}/${Date.now()}_${att.name}`;
-          const ref = storage.ref(path);
-          // Convert base64 data URL to blob
-          const res = await fetch(att.localData);
-          const blob = await res.blob();
-          const snap = await ref.put(blob);
-          const url = await snap.ref.getDownloadURL();
-          finalAttachments.push({ name:att.name, type:att.type, url, storagePath:path });
-        } catch(e){
-          console.warn('Upload allegato fallito:', e);
-          // Keep local base64 as fallback
-          finalAttachments.push({ name:att.name, type:att.type, url: att.localData });
-        }
-      } else {
-        finalAttachments.push(att);
-      }
-    }
-
-    const ev = {
-      id: evId,
-      type: document.getElementById('f-type').value,
-      calendar: document.getElementById('f-calendar').value,
-      patient,
-      card: document.getElementById('f-card').value.trim(),
-      year: document.getElementById('f-year').value.trim(),
-      age: document.getElementById('f-age').value.trim(),
-      date, start,
-      end: document.getElementById('f-end').value,
-      treatment,
-      contact: document.getElementById('f-contact').value,
-      confirm: document.getElementById('f-confirm').value,
-      phone: document.getElementById('f-phone').value.trim(),
-      amount: document.getElementById('f-amount').value.trim(),
-      notes: document.getElementById('f-notes').value.trim(),
-      attachments: finalAttachments,
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-    };
-
-    await db.collection('appuntamenti').doc(evId).set(ev);
-    setSyncStatus('ok');
-    closeModal();
-    toast(editId?'✅ Appuntamento aggiornato':'✅ Appuntamento salvato');
-  } catch(err){
-    console.error('Errore salvataggio:', err);
-    setSyncStatus('error');
-    toast('❌ Errore: '+err.message);
-  } finally {
-    saveBtn.disabled=false; saveBtn.textContent='💾 Salva';
-  }
+    const r = await fetch(`${API_URL}?action=${action}`,{method:'POST',body:JSON.stringify(data)});
+    const j = await r.json(); setSyncPill('ok'); return j;
+  } catch(e) { setSyncPill('er'); notify('Errore connessione','err'); return null; }
 }
 
-async function deleteEvent(){
-  if(!editId) return;
-  if(!confirm('Eliminare questo appuntamento?')) return;
-  setSyncStatus('syncing');
-  try {
-    await db.collection('appuntamenti').doc(editId).delete();
-    setSyncStatus('ok');
-    closeModal();
-    toast('🗑 Appuntamento eliminato');
-  } catch(err){
-    setSyncStatus('error');
-    toast('❌ Errore eliminazione: '+err.message);
-  }
+// ════════════════════════════════════════════════════════════
+// PATIENTS
+// ════════════════════════════════════════════════════════════
+async function loadPatients() {
+  const r = await api('getPatients');
+  if (r) { patients = r.patients||[]; renderList(patients); }
 }
 
-// ════════════════════════════════════════════
-//  WHATSAPP
-// ════════════════════════════════════════════
-function buildWAMsg(evOrForm){
-  let dayName='', dateDDMMYYYY='';
-  if(evOrForm.date){
-    const d=new Date(evOrForm.date+'T12:00:00');
-    dayName=IT_DAYS_LONG[d.getDay()];
-    dateDDMMYYYY=String(d.getDate()).padStart(2,'0')+'/'
-                +String(d.getMonth()+1).padStart(2,'0')+'/'
-                +d.getFullYear();
-  }
-  let oraFmt='';
-  if(evOrForm.start){
-    const[h,m]=evOrForm.start.split(':');
-    oraFmt=h+':'+m;
-  }
-  let msg='Buongiorno, Studio Dentistico Healthy Smile.\n';
-  msg+=`Ha effettuato una prenotazione per il *${dayName} ${dateDDMMYYYY} alle ore ${oraFmt}:*\n`;
-  msg+=`presso il nostro Studio sito in *Via Madama Cristina 2, Torino*,\n`;
-  msg+='Buona giornata.';
-  return msg;
+function renderList(list) {
+  document.getElementById('pat-count').textContent = list.length+' pazienti';
+  const el = document.getElementById('pat-list');
+  if (!list.length) { el.innerHTML='<div class="empty-list">Nessun paziente</div>'; return; }
+  el.innerHTML = list.map(p=>`
+    <div class="pat-item ${p.id===currentId?'active':''}" onclick="openPatient('${p.id}');if(window.innerWidth<=768)closeSidebar()">
+      <div class="pat-code">${p.codice||p.id}</div>
+      <div class="pat-meta">Nato ${p.anno||'—'} · ${p.prima_visita||'—'}</div>
+      ${p.rischio?`<span class="risk-pill r-${p.rischio}">${p.rischio.toUpperCase()}</span>`:''}
+    </div>`).join('');
 }
 
-function sendWA(evOrForm, phone){
-  const msg=buildWAMsg(evOrForm);
-  const ph=(phone||'').replace(/[\s\-\(\)]/g,'').replace(/^\+/,'');
-  const url=ph?`https://wa.me/${ph}?text=${encodeURIComponent(msg)}`:`https://wa.me/?text=${encodeURIComponent(msg)}`;
-  window.open(url,'_blank');
+function filterList(q) {
+  renderList(patients.filter(p=>(p.codice||'').toLowerCase().includes(q.toLowerCase())));
 }
 
-function formToObj(){
+async function openPatient(id) {
+  currentId = id;
+  renderList(patients);
+  const r = await api('getPatient',{id});
+  if (!r||!r.patient) return;
+  const p = r.patient;
+  sv('f-codice',   p.codice||'');
+  sv('f-anno',     p.anno||'');
+  sv('f-rischio',  p.rischio||'');
+  sv('f-prima',    p.prima_visita||'');
+  sv('f-op',       p.operatore||'');
+  sv('f-note',     p.note_generali||'');
+  sv('f-nome',     p.nome||'');
+  sv('f-cognome',  p.cognome||'');
+  sv('f-dob',      p.dob||'');
+  sv('f-cf',       p.cf||'');
+  sv('f-telefono', p.telefono||'');
+  sv('f-via',      p.via||'');
+  sv('f-civico',   p.civico||'');
+  sv('f-cap',      p.cap||'');
+  sv('f-citta',    p.citta||'');
+  sv('f-prov',     p.prov||'');
+  sv('f-nazione',  p.nazione||'Italia');
+  teethAttuale  = safeJson(p.odontogramma, {});
+  arcateAttuale = safeJson(p.arcate, {});
+  teethPiano    = safeJson(p.piano, {});
+  arcatePiano   = safeJson(p.arcate_piano, {});
+  diary         = safeJson(p.diario, []);
+  docs          = safeJson(p.documenti, []);
+  prevRows      = safeJson(p.preventivi, []);
+  refreshOdonto('attuale');
+  refreshOdonto('piano');
+  refreshArcate('attuale');
+  refreshArcate('piano');
+  renderPianoRiepilogo();
+  renderPrevRows();
+  initPrevHeader();
+  renderDiary();
+  renderDocs();
+  document.getElementById('welcome').style.display = 'none';
+  document.getElementById('record').style.display = 'block';
+  document.getElementById('rec-code').textContent = p.codice||id;
+  document.getElementById('rec-sub').textContent = `Anno: ${p.anno||'—'} · Rischio: ${p.rischio||'—'} · Prima visita: ${p.prima_visita||'—'}`;
+}
+
+function collectData() {
   return {
-    patient: document.getElementById('f-patient').value.trim(),
-    calendar: document.getElementById('f-calendar').value,
-    treatment: document.getElementById('f-treatment').value.trim(),
-    date: document.getElementById('f-date').value,
-    start: document.getElementById('f-start').value,
-    end: document.getElementById('f-end').value,
-    card: document.getElementById('f-card').value.trim(),
-    amount: document.getElementById('f-amount').value.trim(),
-    phone: document.getElementById('f-phone').value.trim(),
+    id: currentId,
+    codice:        gv('f-codice'),
+    anno:          gv('f-anno'),
+    rischio:       gv('f-rischio'),
+    prima_visita:  gv('f-prima'),
+    operatore:     gv('f-op'),
+    note_generali: gv('f-note'),
+    nome:          gv('f-nome'),
+    cognome:       gv('f-cognome'),
+    dob:           gv('f-dob'),
+    cf:            gv('f-cf').toUpperCase(),
+    telefono:      gv('f-telefono'),
+    via:           gv('f-via'),
+    civico:        gv('f-civico'),
+    cap:           gv('f-cap'),
+    citta:         gv('f-citta'),
+    prov:          gv('f-prov').toUpperCase(),
+    nazione:       gv('f-nazione'),
+    odontogramma:  JSON.stringify(teethAttuale),
+    arcate:        JSON.stringify(arcateAttuale),
+    piano:         JSON.stringify(teethPiano),
+    arcate_piano:  JSON.stringify(arcatePiano),
+    preventivi:    JSON.stringify(prevRows),
+    diario:        JSON.stringify(diary),
+    documenti:     JSON.stringify(docs)
   };
 }
 
-// ════════════════════════════════════════════
-//  ALLEGATI
-// ════════════════════════════════════════════
-let currentAttachments = [];
+async function savePatient() {
+  if (!currentId) return;
+  const r = await api('savePatient', collectData());
+  if (r && r.ok) { notify('Salvato!','ok'); await loadPatients(); }
+}
 
-function renderAttachList(){
-  const list=document.getElementById('attach-list');
-  if(!list) return;
-  list.innerHTML='';
-  currentAttachments.forEach((a,i)=>{
-    const chip=document.createElement('div'); chip.className='attach-chip'+(a.pending?' uploading':'');
-    let icon='📄';
-    if(a.type&&a.type.startsWith('image/')) icon='🖼️';
-    else if(a.type==='application/pdf') icon='📕';
-    else if(a.type&&a.type.includes('word')) icon='📝';
-    else if(a.type&&(a.type.includes('excel')||a.type.includes('sheet'))) icon='📊';
-    chip.innerHTML=`<span title="${a.name}">${icon} ${a.name}${a.pending?' ⏳':''}</span>
-      <button class="attach-del" data-i="${i}" title="Rimuovi">×</button>`;
-    chip.querySelector('.attach-del').addEventListener('click',()=>{
-      currentAttachments.splice(i,1); renderAttachList();
-    });
-    list.appendChild(chip);
+function openNewModal() {
+  const y = new Date().getFullYear();
+  const n = String(patients.length+1).padStart(3,'0');
+  document.getElementById('new-code').value = `HS-${y}-${n}`;
+  document.getElementById('new-modal').classList.add('open');
+}
+function closeModal() { document.getElementById('new-modal').classList.remove('open'); }
+
+async function createPatient() {
+  const code = document.getElementById('new-code').value.trim();
+  if (!code) { notify('Inserisci codice','err'); return; }
+  const id = 'pt_'+Date.now();
+  const today = new Date().toISOString().split('T')[0];
+  const r = await api('savePatient',{
+    id, codice:code,
+    anno: document.getElementById('new-anno').value,
+    rischio: document.getElementById('new-rischio').value,
+    prima_visita: today,
+    odontogramma:'{}',arcate:'{}',piano:'{}',arcate_piano:'{}',diario:'[]',documenti:'[]'
   });
+  if (r && r.ok) { closeModal(); await loadPatients(); openPatient(id); notify('Paziente creato!','ok'); }
 }
 
-function initAttachments(savedAttachments){
-  currentAttachments = savedAttachments ? [...savedAttachments] : [];
-  renderAttachList();
+async function confirmDelete() {
+  if (!confirm('Eliminare questa cartella?')) return;
+  const r = await api('deletePatient',{id:currentId});
+  if (r && r.ok) {
+    currentId = null;
+    document.getElementById('record').style.display = 'none';
+    document.getElementById('welcome').style.display = 'flex';
+    await loadPatients(); notify('Eliminato');
+  }
 }
 
-document.addEventListener('DOMContentLoaded', ()=>{
-  const inp=document.getElementById('f-file');
-  const btn=document.getElementById('btn-attach-pick');
-  if(btn) btn.addEventListener('click',()=>inp.click());
-  if(inp) inp.addEventListener('change',()=>{
-    const files=Array.from(inp.files);
-    if(!files.length) return;
-    // Size check: warn if any file > 10MB
-    for(const file of files){
-      if(file.size > 10*1024*1024){ toast('⚠️ File troppo grande (max 10MB): '+file.name); continue; }
-      const reader=new FileReader();
-      reader.onload=e=>{
-        currentAttachments.push({name:file.name, type:file.type, localData:e.target.result, pending:true});
-        renderAttachList();
-      };
-      reader.readAsDataURL(file);
+async function syncAll() {
+  await loadPatients();
+  if (currentId) await openPatient(currentId);
+  notify('Aggiornato','ok');
+}
+
+// ════════════════════════════════════════════════════════════
+// BUILD SVG ODONTOGRAMMA
+// ════════════════════════════════════════════════════════════
+function buildSVG(svgId) {
+  const svg = document.getElementById(svgId);
+  const cw = 660/16;
+  let h = '';
+  h += `<line x1="330" y1="0" x2="330" y2="200" stroke="#E5E3DC" stroke-width="1" stroke-dasharray="4,3"/>`;
+  h += `<line x1="0" y1="55" x2="660" y2="55" stroke="#E5E3DC" stroke-width=".5"/>`;
+  h += `<line x1="0" y1="145" x2="660" y2="145" stroke="#E5E3DC" stroke-width=".5"/>`;
+  h += `<text x="16" y="10" font-size="9" fill="#C4C2BA" font-family="DM Mono,monospace">DESTRA</text>`;
+  h += `<text x="596" y="10" font-size="9" fill="#C4C2BA" font-family="DM Mono,monospace">SINISTRA</text>`;
+
+  const drawRow = (teeth, cy) => {
+    teeth.forEach((num,i) => {
+      const cx = i*cw + cw/2;
+      const isMolar = num%10 >= 6;
+      const rx = isMolar ? 15 : 11, ry = 13;
+      const type = svgId.includes('attuale') ? 'attuale' : 'piano';
+      h += `<g class="tooth-g" id="${svgId}-g-${num}" onclick="selectTooth(${num},'${type}')">
+        <ellipse id="${svgId}-e-${num}" cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}"
+          fill="#FFFFFF" stroke="#C4C2BA" stroke-width="1.5"/>
+        <text class="tooth-num" x="${cx}" y="${cy+4}" text-anchor="middle"
+          font-size="8.5" font-family="DM Mono,monospace" fill="#686864">${num}</text>
+        <g id="${svgId}-s-${num}" transform="translate(${cx},${cy-18})"></g>
+      </g>`;
+    });
+  };
+  drawRow(UPPER, 32);
+  drawRow(LOWER, 168);
+  svg.innerHTML = h;
+}
+
+// ════════════════════════════════════════════════════════════
+// REFRESH ODONTOGRAMMI
+// ════════════════════════════════════════════════════════════
+function refreshOdonto(type) {
+  const svgId = type==='attuale' ? 'odonto-attuale' : 'odonto-piano';
+  const data  = type==='attuale' ? teethAttuale : teethPiano;
+
+  ;[...UPPER,...LOWER].forEach(num => {
+    const el = document.getElementById(`${svgId}-e-${num}`);
+    const sg = document.getElementById(`${svgId}-s-${num}`);
+    if (!el || !sg) return;
+
+    const entry = data[num];
+    if (!entry || (Array.isArray(entry) && !entry.length) || (typeof entry==='object' && !Array.isArray(entry) && !entry.tid)) {
+      el.setAttribute('fill','#FFFFFF');
+      el.setAttribute('stroke','#C4C2BA');
+      el.setAttribute('stroke-width','1.5');
+      sg.innerHTML = '';
+      return;
     }
-    inp.value='';
-  });
-});
 
-// ════════════════════════════════════════════
-//  PATIENT AUTOCOMPLETE (da Firestore "pazienti")
-// ════════════════════════════════════════════
-let acTimeout = null;
-
-function showAcDropdown(items){
-  const dd=document.getElementById('ac-dropdown');
-  dd.innerHTML='';
-  if(!items.length){ dd.classList.add('hidden'); return; }
-  items.forEach(p=>{
-    const el=document.createElement('div'); el.className='ac-item';
-    el.innerHTML=`<div class="ac-name">${p.nome||''} ${p.cognome||''}</div>
-      <div class="ac-sub">Cartella: ${p.codice||'—'} · Tel: ${p.telefono||'—'}</div>`;
-    el.addEventListener('mousedown', e=>{
-      e.preventDefault(); // prevent blur before click
-      document.getElementById('f-patient').value=`${p.nome||''} ${p.cognome||''}`.trim();
-      document.getElementById('f-card').value=p.codice||'';
-      document.getElementById('f-phone').value=p.telefono||'';
-      dd.classList.add('hidden');
-    });
-    dd.appendChild(el);
-  });
-  dd.classList.remove('hidden');
-}
-
-function hideAcDropdown(){
-  document.getElementById('ac-dropdown').classList.add('hidden');
-}
-
-document.addEventListener('DOMContentLoaded', ()=>{
-  const inp=document.getElementById('f-patient');
-  if(!inp) return;
-  inp.addEventListener('input', ()=>{
-    clearTimeout(acTimeout);
-    const q=inp.value.trim().toLowerCase();
-    if(q.length < 2){ hideAcDropdown(); return; }
-    acTimeout=setTimeout(async ()=>{
-      try {
-        // Search in "pazienti" collection (will be populated by Cartella Clinica app)
-        const snap = await db.collection('pazienti')
-          .orderBy('cognome')
-          .limit(50)
-          .get();
-        const results = snap.docs
-          .map(d=>d.data())
-          .filter(p=>{
-            const full=`${p.nome||''} ${p.cognome||''} ${p.codice||''}`.toLowerCase();
-            return full.includes(q);
-          })
-          .slice(0,8);
-        showAcDropdown(results);
-      } catch(e){
-        // Collection doesn't exist yet — silently ignore
-        hideAcDropdown();
+    if (type === 'attuale') {
+      // entry = array di tid
+      const treats = Array.isArray(entry) ? entry : [entry];
+      const primary = TR_ATTUALE.find(t=>t.id===treats[0]);
+      if (primary) {
+        el.setAttribute('fill', primary.bg);
+        el.setAttribute('stroke', primary.color);
+        el.setAttribute('stroke-width','2');
       }
-    }, 250);
-  });
-  inp.addEventListener('blur', ()=>{ setTimeout(hideAcDropdown, 200); });
-});
+      sg.innerHTML = treats.slice(0,3).map((tid,i) => {
+        const t = findTR(tid); if(!t) return '';
+        const xo = (i - Math.min(treats.length-1,2)/2)*13;
+        return `<rect x="${xo-7}" y="-6" width="14" height="12" rx="2" fill="${t.bg}" stroke="${t.color}" stroke-width="1"/>
+                <text x="${xo}" y="4" text-anchor="middle" font-size="7" font-weight="700" fill="${t.color}" font-family="DM Mono,monospace">${t.sym}</text>`;
+      }).join('') + (treats.length>3?`<rect x="17" y="-6" width="12" height="12" rx="2" fill="#686864"/><text x="23" y="4" text-anchor="middle" font-size="6" font-weight="700" fill="white" font-family="DM Mono,monospace">+${treats.length-3}</text>`:'');
+    } else {
+      // entry = array di {tid, stato}
+      const items = Array.isArray(entry) ? entry : [entry];
+      // Stato dominante: se tutti eseguiti → verde, se almeno uno dafare → rosso, altrimenti giallo
+      const stati = items.map(x=>x.stato||'dafare');
+      let strokeColor = '#C0392B'; // dafare = rosso
+      if (stati.every(s=>s==='eseguito')) strokeColor = '#1D9E75';
+      else if (!stati.includes('dafare') && stati.includes('incorso')) strokeColor = '#B7651A';
 
-// ════════════════════════════════════════════
-//  NAVIGATION
-// ════════════════════════════════════════════
-function navigate(dir){
-  const steps={giorno:1,'3giorni':3,settimana:7,'4settimane':28,mese:30,anno:365,agenda:1,pianificatore:1};
-  const step=steps[view]||1;
-  curDate=addDays(curDate,dir*step);
-  miniMonth=new Date(curDate);
-  renderMini(); renderCal(); updateLabel();
+      const primary = findTR(items[0].tid);
+      el.setAttribute('fill', primary ? primary.bg : '#FFF');
+      el.setAttribute('stroke', strokeColor);
+      el.setAttribute('stroke-width','3');
+
+      sg.innerHTML = items.slice(0,3).map((item,i) => {
+        const t = findTR(item.tid); if(!t) return '';
+        const xo = (i - Math.min(items.length-1,2)/2)*13;
+        const statoColor = item.stato==='eseguito' ? '#1D9E75' : item.stato==='incorso' ? '#B7651A' : '#C0392B';
+        return `<rect x="${xo-7}" y="-6" width="14" height="12" rx="2" fill="${t.bg}" stroke="${statoColor}" stroke-width="1.5"/>
+                <text x="${xo}" y="4" text-anchor="middle" font-size="7" font-weight="700" fill="${t.color}" font-family="DM Mono,monospace">${t.sym}</text>`;
+      }).join('') + (items.length>3?`<rect x="17" y="-6" width="12" height="12" rx="2" fill="#686864"/><text x="23" y="4" text-anchor="middle" font-size="6" font-weight="700" fill="white" font-family="DM Mono,monospace">+${items.length-3}</text>`:'');
+    }
+  });
 }
 
-// ════════════════════════════════════════════
-//  EVENT LISTENERS
-// ════════════════════════════════════════════
-document.getElementById('mc-prev').addEventListener('click',()=>{ miniMonth.setMonth(miniMonth.getMonth()-1); renderMini(); });
-document.getElementById('mc-next').addEventListener('click',()=>{ miniMonth.setMonth(miniMonth.getMonth()+1); renderMini(); });
+// ════════════════════════════════════════════════════════════
+// TOOTH CLICK
+// ════════════════════════════════════════════════════════════
+function selectTooth(num, type) {
+  const popupId = type==='attuale' ? 'popup-attuale' : 'popup-piano';
+  const popup = document.getElementById(popupId);
 
-document.getElementById('nb-prev').addEventListener('click',()=>navigate(-1));
-document.getElementById('nb-next').addEventListener('click',()=>navigate(1));
-document.getElementById('nb-first').addEventListener('click',()=>{ curDate=new Date(); miniMonth=new Date(); renderMini(); renderCal(); updateLabel(); });
-document.getElementById('nb-refresh').addEventListener('click',()=>{ renderCal(); toast('↻ Aggiornato'); });
-document.getElementById('nb-today').addEventListener('click',()=>{ curDate=new Date(); miniMonth=new Date(); renderMini(); renderCal(); updateLabel(); });
+  if (type === 'attuale') {
+    const treats = teethAttuale[num] || [];
+    const btns = (type==='attuale' ? TR_ATTUALE : TR_PIANO).map(t => {
+      const on = treats.includes(t.id);
+      return `<button class="treat-btn ${on?'on':''}"
+        style="color:${t.color};${on?'background:'+t.color+';':''}border-color:${on?t.color:'#E5E3DC'}"
+        onclick="toggleAttuale(${num},'${t.id}')">
+        <span class="treat-sym" style="background:${on?'rgba(255,255,255,.25)':t.bg};color:${on?'white':t.color}">${t.sym}</span>
+        ${t.label}
+      </button>`;
+    }).join('');
+    popup.innerHTML = `
+      <div class="popup-hdr"><strong>Dente ${num} — situazione attuale</strong>
+        <button class="popup-close" onclick="closePopup('${popupId}')">✕</button></div>
+      <div class="treat-grid">${btns}</div>`;
+  } else {
+    const items = teethPiano[num] || [];
+    const btns = (type==='attuale' ? TR_ATTUALE : TR_PIANO).map(t => {
+      const item = items.find(x=>x.tid===t.id);
+      const on = !!item;
+      const stato = item ? item.stato : 'dafare';
+      return `<button class="treat-btn ${on?'on':''}"
+        style="color:${t.color};${on?'background:'+t.color+';':''}border-color:${on?t.color:'#E5E3DC'}"
+        onclick="togglePiano(${num},'${t.id}')">
+        <span class="treat-sym" style="background:${on?'rgba(255,255,255,.25)':t.bg};color:${on?'white':t.color}">${t.sym}</span>
+        ${t.label}
+      </button>`;
+    }).join('');
 
-document.querySelectorAll('.view-tab').forEach(tab=>{
-  tab.addEventListener('click',()=>{
-    document.querySelectorAll('.view-tab').forEach(t=>t.classList.remove('active'));
-    tab.classList.add('active');
-    view=tab.dataset.view;
-    renderCal(); updateLabel();
+    // stato selector per i trattamenti già assegnati
+    const statoHtml = items.length ? `
+      <div style="margin-top:.7rem;border-top:var(--border);padding-top:.7rem">
+        <div style="font-size:11px;font-weight:600;color:var(--gray-500);margin-bottom:.4rem">Stato trattamenti assegnati:</div>
+        ${items.map(item => {
+          const t = findTR(item.tid);
+          return t ? `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px">
+            <span style="font-size:12px;font-weight:600;color:${t.color}">${t.sym} ${t.label}</span>
+            <div class="stato-selector">
+              <button class="stato-opt so-dafare ${item.stato==='dafare'?'on':''}" onclick="setStato(${num},'${item.tid}','dafare')">Da fare</button>
+              <button class="stato-opt so-incorso ${item.stato==='incorso'?'on':''}" onclick="setStato(${num},'${item.tid}','incorso')">In corso</button>
+              <button class="stato-opt so-eseguito ${item.stato==='eseguito'?'on':''}" onclick="setStato(${num},'${item.tid}','eseguito')">Eseguito</button>
+            </div>
+          </div>` : '';
+        }).join('')}
+      </div>` : '';
+
+    popup.innerHTML = `
+      <div class="popup-hdr"><strong>Dente ${num} — piano trattamenti</strong>
+        <button class="popup-close" onclick="closePopup('${popupId}')">✕</button></div>
+      <div class="treat-grid">${btns}</div>
+      ${statoHtml}`;
+  }
+  popup.classList.add('open');
+  popup.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function closePopup(id) { document.getElementById(id).classList.remove('open'); }
+
+function toggleAttuale(num, tid) {
+  if (!teethAttuale[num]) teethAttuale[num] = [];
+  const arr = teethAttuale[num];
+  const idx = arr.indexOf(tid);
+  if (idx>=0) arr.splice(idx,1); else arr.push(tid);
+  if (!arr.length) delete teethAttuale[num];
+  refreshOdonto('attuale');
+  selectTooth(num,'attuale');
+}
+
+function togglePiano(num, tid) {
+  if (!teethPiano[num]) teethPiano[num] = [];
+  const arr = teethPiano[num];
+  const idx = arr.findIndex(x=>x.tid===tid);
+  if (idx>=0) arr.splice(idx,1); else arr.push({tid, stato:'dafare'});
+  if (!arr.length) delete teethPiano[num];
+  refreshOdonto('piano');
+  selectTooth(num,'piano');
+  renderPianoRiepilogo();
+}
+
+function setStato(num, tid, stato) {
+  const item = (teethPiano[num]||[]).find(x=>x.tid===tid);
+  if (item) { item.stato = stato; refreshOdonto('piano'); selectTooth(num,'piano'); renderPianoRiepilogo(); }
+}
+
+// ════════════════════════════════════════════════════════════
+// ARCATE
+// ════════════════════════════════════════════════════════════
+function buildArcateBtns(rowId, popupId, type) {
+  const el = document.getElementById(rowId);
+  el.innerHTML = ARCATE.map(a =>
+    `<button class="arcata-btn" id="${rowId}-${a.id}" onclick="selectArcata('${a.id}','${type}','${rowId}','${popupId}')">${a.label}</button>`
+  ).join('');
+}
+
+function refreshArcate(type) {
+  const rowId  = type==='attuale' ? 'arcate-attuali-btns' : 'arcate-piano-btns';
+  const data   = type==='attuale' ? arcateAttuale : arcatePiano;
+  ARCATE.forEach(a => {
+    const btn = document.getElementById(`${rowId}-${a.id}`);
+    if (!btn) return;
+    const items = data[a.id] || [];
+    btn.classList.toggle('has', items.length>0);
+    const syms = (type==='attuale' ? items : items.map(x=>x.tid||x)).map(tid => {
+      const t = ARCH_TR.find(x=>x.id===tid);
+      return t?`<span style="background:${t.color};color:white;font-size:9px;font-weight:700;padding:1px 4px;border-radius:3px;margin-left:3px">${t.sym}</span>`:'';
+    }).join('');
+    btn.innerHTML = `${a.label}${syms}`;
   });
-});
+}
 
-document.getElementById('m-close').addEventListener('click',closeModal);
-document.getElementById('m-cancel').addEventListener('click',closeModal);
-document.getElementById('m-save').addEventListener('click',saveEvent);
-document.getElementById('m-delete').addEventListener('click',deleteEvent);
-document.getElementById('m-wa').addEventListener('click',()=>sendWA(formToObj(),document.getElementById('f-phone').value));
-document.getElementById('overlay').addEventListener('click',e=>{ if(e.target===e.currentTarget) closeModal(); });
+function selectArcata(aid, type, rowId, popupId) {
+  const popup = document.getElementById(popupId);
+  const data  = type==='attuale' ? arcateAttuale : arcatePiano;
+  if (!data[aid]) data[aid] = [];
+  const items = data[aid];
+  const arcata = ARCATE.find(a=>a.id===aid);
 
-document.getElementById('pp-close').addEventListener('click',hidePopup);
-document.getElementById('pp-edit').addEventListener('click',()=>{ if(popupEventId) openModal(popupEventId); });
-document.getElementById('pp-wa').addEventListener('click',()=>{
-  if(!popupEventId) return;
-  const ev=events.find(e=>e.id===popupEventId); if(!ev) return;
-  sendWA(ev, ev.phone);
-});
+  const btns = ARCH_TR.map(t => {
+    const on = type==='attuale'
+      ? items.includes(t.id)
+      : items.some(x=>(x.tid||x)===t.id);
+    return `<button class="treat-btn ${on?'on':''}"
+      style="color:${t.color};${on?'background:'+t.color+';':''}border-color:${on?t.color:'#E5E3DC'}"
+      onclick="toggleArcata('${aid}','${t.id}','${type}','${rowId}','${popupId}')">
+      <span class="treat-sym" style="background:${on?'rgba(255,255,255,.25)':t.color+'22'};color:${on?'white':t.color}">${t.sym}</span>
+      ${t.label}
+    </button>`;
+  }).join('');
 
-document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ closeModal(); hidePopup(); } });
-document.getElementById('cal-scroll').addEventListener('click',e=>{
-  if(!e.target.closest('.popup')&&!e.target.closest('.ev')) hidePopup();
-});
+  let statoHtml = '';
+  if (type==='piano' && items.length) {
+    statoHtml = `<div style="margin-top:.7rem;border-top:var(--border);padding-top:.7rem">
+      <div style="font-size:11px;font-weight:600;color:var(--gray-500);margin-bottom:.4rem">Stato:</div>
+      ${items.map(item => {
+        const tid = item.tid||item;
+        const stato = item.stato||'dafare';
+        const t = ARCH_TR.find(x=>x.id===tid);
+        return t?`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px">
+          <span style="font-size:12px;font-weight:600;color:${t.color}">${t.sym} ${t.label}</span>
+          <div class="stato-selector">
+            <button class="stato-opt so-dafare ${stato==='dafare'?'on':''}" onclick="setStatoArcata('${aid}','${tid}','dafare','${type}','${rowId}','${popupId}')">Da fare</button>
+            <button class="stato-opt so-incorso ${stato==='incorso'?'on':''}" onclick="setStatoArcata('${aid}','${tid}','incorso','${type}','${rowId}','${popupId}')">In corso</button>
+            <button class="stato-opt so-eseguito ${stato==='eseguito'?'on':''}" onclick="setStatoArcata('${aid}','${tid}','eseguito','${type}','${rowId}','${popupId}')">Eseguito</button>
+          </div>
+        </div>`:'';
+      }).join('')}
+    </div>`;
+  }
 
-// Mobile sidebar
-document.getElementById('hd-menu').addEventListener('click',openSidebar);
-document.getElementById('sb-overlay').addEventListener('click',closeSidebar);
+  popup.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.8rem">
+      <strong style="font-size:13px">${arcata.label}</strong>
+      <button class="popup-close" onclick="document.getElementById('${popupId}').classList.remove('open')">✕</button>
+    </div>
+    <div class="treat-grid">${btns}</div>
+    ${statoHtml}`;
+  popup.classList.add('open');
+}
 
-// ════════════════════════════════════════════
-//  FIRESTORE REAL-TIME LISTENER
-// ════════════════════════════════════════════
-setSyncStatus('syncing');
-db.collection('appuntamenti')
-  .onSnapshot(snapshot => {
-    events = snapshot.docs.map(doc => {
-      const d = doc.data();
-      return { ...d, id: doc.id };
+function toggleArcata(aid, tid, type, rowId, popupId) {
+  const data = type==='attuale' ? arcateAttuale : arcatePiano;
+  if (!data[aid]) data[aid] = [];
+  if (type==='attuale') {
+    const idx = data[aid].indexOf(tid);
+    if (idx>=0) data[aid].splice(idx,1); else data[aid].push(tid);
+  } else {
+    const idx = data[aid].findIndex(x=>(x.tid||x)===tid);
+    if (idx>=0) data[aid].splice(idx,1); else data[aid].push({tid, stato:'dafare'});
+  }
+  refreshArcate(type);
+  selectArcata(aid, type, rowId, popupId);
+}
+
+function setStatoArcata(aid, tid, stato, type, rowId, popupId) {
+  const data = type==='attuale' ? arcateAttuale : arcatePiano;
+  const item = (data[aid]||[]).find(x=>(x.tid||x)===tid);
+  if (item && typeof item==='object') { item.stato=stato; refreshArcate(type); selectArcata(aid,type,rowId,popupId); }
+}
+
+// ════════════════════════════════════════════════════════════
+// PIANO RIEPILOGO (sotto l'odontogramma piano)
+// ════════════════════════════════════════════════════════════
+function renderPianoRiepilogo() {
+  const el = document.getElementById('piano-riepilogo');
+  const entries = [];
+  Object.entries(teethPiano).forEach(([num, items]) => {
+    (items||[]).forEach(item => {
+      const t = findTR(item.tid);
+      if (t) entries.push({num, t, stato: item.stato||'dafare'});
     });
-    setSyncStatus('ok');
-    renderCal();
-  }, err => {
-    console.error('Firestore error:', err);
-    setSyncStatus('error');
-    toast('⚠️ Connessione persa. Riprovo...');
   });
+  if (!entries.length) { el.innerHTML=''; return; }
 
-// ════════════════════════════════════════════
-//  INIT
-// ════════════════════════════════════════════
-renderMini();
-renderSidebar();
-renderCal();
-updateLabel();
+  const statiLabel = {dafare:'Da fare', incorso:'In corso', eseguito:'Eseguito'};
+  const statiClass = {dafare:'sb-dafare', incorso:'sb-incorso', eseguito:'sb-eseguito'};
 
-// Update now-line every minute
-setInterval(renderCal, 60000);
+  el.innerHTML = `
+    <div style="font-size:10px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.04em;margin-bottom:.5rem">Riepilogo piano</div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap">
+      ${entries.map(e=>`
+        <div style="display:flex;align-items:center;gap:5px;padding:4px 8px;border-radius:5px;border:var(--border);background:${e.t.bg};font-size:11px">
+          <span style="font-weight:700;color:${e.t.color}">${e.t.sym} ${e.t.label}</span>
+          <span style="color:var(--gray-500)">·</span>
+          <span style="color:var(--gray-500)">Dente ${e.num}</span>
+          <span class="stato-badge ${statiClass[e.stato]}">${statiLabel[e.stato]}</span>
+        </div>`).join('')}
+    </div>`;
+}
+
+// ════════════════════════════════════════════════════════════
+// LEGENDA
+// ════════════════════════════════════════════════════════════
+function buildLegend() {
+  const el = document.getElementById("legend-wrap");
+  const renderSet = (arr, title) =>
+    `<div style="font-size:10px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.04em;margin-bottom:.4rem;margin-top:.5rem">${title}</div>` +
+    arr.map(t=>`<div class="legend-item"><div class="legend-sym" style="background:${t.bg};color:${t.color}">${t.sym}</div>${t.label}</div>`).join("");
+  el.innerHTML = renderSet(TR_ATTUALE, "Situazione attuale") + renderSet(TR_PIANO, "Piano trattamenti");
+}
+
+// ════════════════════════════════════════════════════════════
+// DIARIO
+// ════════════════════════════════════════════════════════════
+function renderDiary() {
+  const el = document.getElementById('diary-list');
+  if (!diary.length) { el.innerHTML='<div style="color:var(--gray-300);font-size:13px;padding:.3rem 0;margin-bottom:.6rem">Nessuna voce ancora</div>'; return; }
+  el.innerHTML = [...diary].reverse().map(e=>`
+    <div class="diary-entry">
+      <div class="diary-meta"><span>${e.ts}</span><span class="diary-author">${e.author||'—'}</span></div>
+      <div class="diary-text">${esc(e.text)}</div>
+    </div>`).join('');
+}
+
+function addDiaryEntry() {
+  const text = document.getElementById('diary-text').value.trim();
+  const author = document.getElementById('diary-author').value.trim()||'—';
+  if (!text) { notify('Scrivi qualcosa','err'); return; }
+  const now = new Date();
+  const ts = now.toLocaleDateString('it-IT')+' '+now.toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'});
+  diary.push({ts,author,text});
+  document.getElementById('diary-text').value='';
+  renderDiary();
+}
+
+// ════════════════════════════════════════════════════════════
+// DOCUMENTI
+// ════════════════════════════════════════════════════════════
+function renderDocs() {
+  document.getElementById('doc-grid').innerHTML = docs.map(d=>`
+    <div class="doc-item" onclick="${d.url?`window.open('${d.url}','_blank')`:''}">
+      <div style="font-size:20px;margin-bottom:3px">${d.type==='pdf'?'📄':'🖼️'}</div>
+      <div style="font-size:10px;word-break:break-word;line-height:1.3">${d.nome}</div>
+      <div style="font-size:10px;color:var(--gray-300);margin-top:2px">${d.data}</div>
+    </div>`).join('');
+}
+
+async function handleUpload(files) {
+  for (const file of files) {
+    if (file.size>10*1024*1024) { notify(file.name+' supera 10MB','err'); continue; }
+    notify('Caricamento '+file.name+'...','i');
+    const reader = new FileReader();
+    reader.onload = async e => {
+      const b64 = e.target.result.split(',')[1];
+      const r = await api('uploadFile',{patientId:currentId,fileName:file.name,mimeType:file.type,data:b64});
+      if (r&&r.url) { docs.push({nome:file.name,url:r.url,type:file.type.includes('pdf')?'pdf':'img',data:new Date().toLocaleDateString('it-IT')}); renderDocs(); notify('Caricato!','ok'); }
+    };
+    reader.readAsDataURL(file);
+  }
+}
+
+// ════════════════════════════════════════════════════════════
+// TABS
+// ════════════════════════════════════════════════════════════
+function switchTab(name) {
+  ['anagrafica','odontogramma','preventivo','diario','documenti'].forEach(t=>{
+    document.getElementById('tab-'+t).style.display = t===name?'':'none';
+  });
+  document.querySelectorAll('.tab').forEach((b,i)=>{
+    b.classList.toggle('on',['anagrafica','odontogramma','preventivo','diario','documenti'][i]===name);
+  });
+}
+
+// ════════════════════════════════════════════════════════════
+// PRESTAZIONI — carica/salva su Google Sheet
+// ════════════════════════════════════════════════════════════
+async function loadPrestazioni() {
+  const r = await api('getPrestazioni');
+  if (r && r.attuale && r.attuale.length) TR_ATTUALE = r.attuale;
+  if (r && r.piano && r.piano.length)   TR_PIANO   = r.piano;
+  buildLegend();
+}
+
+async function savePrestazioni() {
+  await api('savePrestazioni', {attuale: TR_ATTUALE, piano: TR_PIANO});
+}
+
+function openPrestazioniModal() {
+  renderPrestazioniModal();
+  document.getElementById('prest-modal').classList.add('open');
+}
+
+function renderPrestazioniModal() {
+  const renderSet = (arr, tipo) => arr.map((t,i) => `
+    <div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:var(--border)">
+      <div style="width:28px;height:22px;border-radius:3px;background:${t.bg};color:${t.color};font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">${t.sym}</div>
+      <span style="flex:1;font-size:12px">${t.label}</span>
+      <button onclick="editPrestazione('${tipo}',${i})" style="background:none;border:var(--border);border-radius:4px;padding:3px 8px;font-size:11px;cursor:pointer;color:var(--gray-500)">✎</button>
+      <button onclick="deletePrestazione('${tipo}',${i})" style="background:none;border:none;cursor:pointer;color:var(--gray-300);font-size:13px;padding:2px 5px">✕</button>
+    </div>`).join('');
+
+  document.getElementById('prest-list-attuale').innerHTML = renderSet(TR_ATTUALE, 'attuale');
+  document.getElementById('prest-list-piano').innerHTML   = renderSet(TR_PIANO,   'piano');
+}
+
+function editPrestazione(tipo, idx) {
+  const arr = tipo==='attuale' ? TR_ATTUALE : TR_PIANO;
+  const t = arr[idx];
+  document.getElementById('pe-tipo').value  = tipo;
+  document.getElementById('pe-idx').value   = idx;
+  document.getElementById('pe-label').value = t.label;
+  document.getElementById('pe-sym').value   = t.sym;
+  document.getElementById('pe-color').value = t.color;
+  document.getElementById('pe-bg').value     = t.bg;
+  document.getElementById('pe-prezzo').value = t.prezzo||'';
+  document.getElementById('prest-form-title').textContent = 'Modifica prestazione';
+  document.getElementById('prest-form').style.display = 'block';
+}
+
+function newPrestazione(tipo) {
+  document.getElementById('pe-tipo').value  = tipo;
+  document.getElementById('pe-idx').value   = '-1';
+  document.getElementById('pe-label').value = '';
+  document.getElementById('pe-sym').value   = '';
+  document.getElementById('pe-color').value = '#686864';
+  document.getElementById('pe-bg').value    = '#EFEDE7';
+  document.getElementById('prest-form-title').textContent = 'Nuova prestazione';
+  document.getElementById('prest-form').style.display = 'block';
+}
+
+function savePrestazioneLine() {
+  const tipo  = document.getElementById('pe-tipo').value;
+  const idx   = parseInt(document.getElementById('pe-idx').value);
+  const label = document.getElementById('pe-label').value.trim();
+  const sym   = document.getElementById('pe-sym').value.trim();
+  const color = document.getElementById('pe-color').value;
+  const bg    = document.getElementById('pe-bg').value;
+  if (!label || !sym) { notify('Inserisci nome e simbolo','err'); return; }
+  const arr = tipo==='attuale' ? TR_ATTUALE : TR_PIANO;
+  const prezzo = parseFloat(document.getElementById('pe-prezzo').value)||0;
+  const entry = {id: idx>=0 ? arr[idx].id : 'c_'+Date.now(), label, sym, color, bg, tipo, prezzo};
+  if (idx>=0) arr[idx] = entry; else arr.push(entry);
+  document.getElementById('prest-form').style.display = 'none';
+  renderPrestazioniModal();
+  buildLegend();
+}
+
+function deletePrestazione(tipo, idx) {
+  if (!confirm('Eliminare questa prestazione?')) return;
+  const arr = tipo==='attuale' ? TR_ATTUALE : TR_PIANO;
+  arr.splice(idx,1);
+  renderPrestazioniModal();
+  buildLegend();
+}
+
+async function saveAndClosePrestazioni() {
+  await savePrestazioni();
+  document.getElementById('prest-modal').classList.remove('open');
+  notify('Prestazioni salvate su tutti i PC!','ok');
+}
+
+
+// ════════════════════════════════════════════════════════════
+// PREVENTIVO
+// ════════════════════════════════════════════════════════════
+
+// Dati studio (modificabili qui)
+const STUDIO = {
+  nome:     'Healthy Smile By N',
+  via:      'Via della Salute, 1',
+  cap:      '10100',
+  citta:    'Torino',
+  prov:     'TO',
+  piva:     '12345678901',
+  tel:      '+39 346 182 4965',
+  email:    'info@healthysmilebyn.it'
+};
+
+function initPrevHeader() {
+  const today = new Date();
+  const scad  = new Date(today.getTime() + (parseInt(document.getElementById('prev-validita')?.value||30)*24*60*60*1000));
+  document.getElementById('prev-data').textContent = today.toLocaleDateString('it-IT');
+  document.getElementById('prev-scad').textContent = scad.toLocaleDateString('it-IT');
+}
+
+async function getNextPrevNum() {
+  const r = await api('getNextPrevNum', {});
+  if (r && r.num) return r.num;
+  // fallback locale
+  const y = new Date().getFullYear();
+  const n = Math.floor(Math.random()*900+100);
+  return `PREV-${y}-${String(n).padStart(3,'0')}`;
+}
+
+async function openPreventivoTab() {
+  if (!document.getElementById('prev-num').textContent || document.getElementById('prev-num').textContent === '—') {
+    const num = await getNextPrevNum();
+    document.getElementById('prev-num').textContent = num;
+  }
+  initPrevHeader();
+  switchTab('preventivo');
+}
+
+function importDaOdonto() {
+  // Prende tutte le voci dal piano trattamenti
+  const newRows = [];
+  Object.entries(teethPiano).forEach(([num, items]) => {
+    (items||[]).forEach(item => {
+      const t = findTR(item.tid);
+      if (!t) return;
+      const existing = prevRows.find(r => r.dente==num && r.tid===item.tid);
+      if (!existing) {
+        newRows.push({
+          id:    'pr_'+Date.now()+'_'+Math.random().toString(36).slice(2,5),
+          dente: num,
+          tid:   item.tid,
+          label: t.label,
+          qta:   1,
+          prezzo: parseFloat(t.prezzo||0),
+          sconto: 0
+        });
+      }
+    });
+  });
+  if (!newRows.length) { notify('Nessun trattamento nel piano','i'); return; }
+  prevRows = [...prevRows, ...newRows];
+  renderPrevRows();
+  notify(`${newRows.length} voci importate dall'odontogramma`,'ok');
+}
+
+function addPrevRow() {
+  prevRows.push({
+    id:     'pr_'+Date.now(),
+    dente:  '',
+    tid:    '',
+    label:  '',
+    qta:    1,
+    prezzo: 0,
+    sconto: 0
+  });
+  renderPrevRows();
+}
+
+function renderPrevRows() {
+  const tbody = document.getElementById('prev-body');
+  if (!tbody) return;
+  tbody.innerHTML = prevRows.map((r,i) => {
+    const tot = calcTotRow(r);
+    return `<tr style="border-bottom:var(--border)">
+      <td style="padding:6px 8px"><input value="${r.dente||''}" onchange="updatePrevRow(${i},'dente',this.value)"
+        style="width:48px;border:1px solid transparent;border-radius:4px;padding:4px 5px;font-size:12px;font-family:'DM Mono',monospace;background:transparent;outline:none" onfocus="this.style.borderColor='var(--gray-300)'" onblur="this.style.borderColor='transparent'"></td>
+      <td style="padding:6px 8px"><input value="${esc(r.label||'')}" onchange="updatePrevRow(${i},'label',this.value)"
+        list="prev-prest-list" style="width:100%;border:1px solid transparent;border-radius:4px;padding:4px 5px;font-size:12px;background:transparent;outline:none" onfocus="this.style.borderColor='var(--gray-300)'" onblur="this.style.borderColor='transparent'"></td>
+      <td style="padding:6px 8px;text-align:right"><input type="number" value="${r.qta||1}" min="1" onchange="updatePrevRow(${i},'qta',this.value)"
+        style="width:50px;border:1px solid transparent;border-radius:4px;padding:4px 5px;font-size:12px;text-align:right;background:transparent;outline:none" onfocus="this.style.borderColor='var(--gray-300)'" onblur="this.style.borderColor='transparent'"></td>
+      <td style="padding:6px 8px;text-align:right"><input type="number" value="${r.prezzo||0}" step="0.01" onchange="updatePrevRow(${i},'prezzo',this.value)"
+        style="width:80px;border:1px solid transparent;border-radius:4px;padding:4px 5px;font-size:12px;text-align:right;background:transparent;outline:none" onfocus="this.style.borderColor='var(--gray-300)'" onblur="this.style.borderColor='transparent'"></td>
+      <td style="padding:6px 8px;text-align:right"><input type="number" value="${r.sconto||0}" min="0" max="100" onchange="updatePrevRow(${i},'sconto',this.value)"
+        style="width:55px;border:1px solid transparent;border-radius:4px;padding:4px 5px;font-size:12px;text-align:right;background:transparent;outline:none" onfocus="this.style.borderColor='var(--gray-300)'" onblur="this.style.borderColor='transparent'"></td>
+      <td style="padding:6px 8px;text-align:right;font-weight:600;font-family:'DM Mono',monospace;font-size:12px;color:var(--teal)">€ ${tot.toFixed(2).replace('.',',')}</td>
+      <td style="padding:6px 4px;text-align:center"><button onclick="removePrevRow(${i})" style="background:none;border:none;cursor:pointer;color:var(--gray-300);font-size:13px">✕</button></td>
+    </tr>`;
+  }).join('') || `<tr><td colspan="7" style="padding:1.5rem;text-align:center;color:var(--gray-300);font-size:13px">Nessuna voce — clicca Da odontogramma o + Riga</td></tr>`;
+
+  if (!document.getElementById('prev-prest-list')) {
+    const dl = document.createElement('datalist'); dl.id='prev-prest-list';
+    [...TR_ATTUALE,...TR_PIANO].forEach(t=>{ const o=document.createElement('option'); o.value=t.label; dl.appendChild(o); });
+    document.body.appendChild(dl);
+  }
+  updatePrevTotals();
+}
+
+function calcTotRow(r) {
+  const lordo = (parseFloat(r.qta)||1) * (parseFloat(r.prezzo)||0);
+  return lordo * (1 - (parseFloat(r.sconto)||0)/100);
+}
+
+function updatePrevRow(i, field, val) {
+  prevRows[i][field] = val;
+  renderPrevRows();
+}
+
+function removePrevRow(i) { prevRows.splice(i,1); renderPrevRows(); }
+
+function applyGlobalDiscount() {
+  const sc = parseFloat(document.getElementById('prev-sconto-glob').value)||0;
+  prevRows.forEach(r => r.sconto = sc);
+  renderPrevRows();
+}
+
+function updatePrevTotals() {
+  let lordo = 0, netto = 0;
+  prevRows.forEach(r => {
+    const l = (parseFloat(r.qta)||1) * (parseFloat(r.prezzo)||0);
+    lordo += l;
+    netto += calcTotRow(r);
+  });
+  const sconto = lordo - netto;
+  const fmt = v => '€ ' + v.toFixed(2).replace('.',',');
+  const el1=document.getElementById('prev-tot-lordo');
+  const el2=document.getElementById('prev-tot-sconto');
+  const el3=document.getElementById('prev-tot-netto');
+  if(el1) el1.textContent = fmt(lordo);
+  if(el2) el2.textContent = '- '+fmt(sconto);
+  if(el3) el3.textContent = fmt(netto);
+}
+
+function stampaPrev() {
+  const pazNome    = (gv('f-nome')+' '+gv('f-cognome')).trim() || gv('f-codice');
+  const pazCf      = gv('f-cf');
+  const pazTel     = gv('f-telefono');
+  const pazVia     = [gv('f-via'), gv('f-civico')].filter(Boolean).join(' ');
+  const pazCap     = gv('f-cap');
+  const pazCitta   = gv('f-citta');
+  const pazProv    = gv('f-prov');
+  const pazIndirizzo = [pazVia, [pazCap,pazCitta,pazProv].filter(Boolean).join(' ')].filter(Boolean).join(', ');
+  const prevNum    = document.getElementById('prev-num').textContent;
+  const prevData   = document.getElementById('prev-data').textContent;
+  const prevScad   = document.getElementById('prev-scad').textContent;
+  const prevNote   = gv('prev-note');
+
+  let lordo=0, netto=0;
+  prevRows.forEach(r=>{ const l=(parseFloat(r.qta)||1)*(parseFloat(r.prezzo)||0); lordo+=l; netto+=calcTotRow(r); });
+  const sconto=lordo-netto;
+  const fmt = v => v.toFixed(2).replace('.',',');
+
+  const righeHTML = prevRows.map(r => {
+    const l=(parseFloat(r.qta)||1)*(parseFloat(r.prezzo)||0);
+    const t=calcTotRow(r);
+    return `<tr>
+      <td style="padding:7px 10px;border-bottom:1px solid #E8E8E8;font-family:monospace;font-size:12px">${r.dente||'—'}</td>
+      <td style="padding:7px 10px;border-bottom:1px solid #E8E8E8;font-size:13px">${esc(r.label||'')}</td>
+      <td style="padding:7px 10px;border-bottom:1px solid #E8E8E8;text-align:right;font-size:13px">${r.qta||1}</td>
+      <td style="padding:7px 10px;border-bottom:1px solid #E8E8E8;text-align:right;font-size:13px">€ ${fmt(parseFloat(r.prezzo)||0)}</td>
+      <td style="padding:7px 10px;border-bottom:1px solid #E8E8E8;text-align:right;font-size:13px">${r.sconto||0}%</td>
+      <td style="padding:7px 10px;border-bottom:1px solid #E8E8E8;text-align:right;font-weight:700;font-size:13px;color:#0F6E56">€ ${fmt(t)}</td>
+    </tr>`;
+  }).join('');
+
+  const html = `<!DOCTYPE html>
+<html lang="it"><head><meta charset="UTF-8">
+<title>Preventivo ${prevNum}</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Helvetica Neue',Arial,sans-serif;color:#1A1A18;background:white;font-size:14px}
+  @media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+  .page{max-width:800px;margin:0 auto;padding:40px}
+  .header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:32px;padding-bottom:24px;border-bottom:2px solid #0F6E56}
+  .studio-name{font-size:22px;font-weight:700;color:#0F6E56;margin-bottom:4px}
+  .studio-info{font-size:12px;color:#686864;line-height:1.7}
+  .prev-label{text-align:right}
+  .prev-title{font-size:28px;font-weight:700;color:#1A1A18;letter-spacing:-0.02em}
+  .prev-num{font-size:13px;font-weight:600;color:#0F6E56;margin-top:4px;font-family:monospace}
+  .prev-meta{font-size:12px;color:#686864;margin-top:2px}
+  .section{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:28px}
+  .box{background:#F7F6F2;border-radius:8px;padding:16px}
+  .box-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#686864;margin-bottom:8px}
+  .box-line{font-size:13px;margin-bottom:3px;line-height:1.5}
+  .box-line strong{font-weight:600}
+  table{width:100%;border-collapse:collapse;margin-bottom:16px}
+  thead tr{background:#0F6E56;color:white}
+  thead th{padding:9px 10px;font-size:11px;font-weight:600;text-align:left;letter-spacing:.04em}
+  thead th:nth-child(n+3){text-align:right}
+  .totals{margin-left:auto;width:280px}
+  .tot-row{display:flex;justify-content:space-between;font-size:13px;padding:5px 0;border-bottom:1px solid #E8E8E8}
+  .tot-row.final{font-size:16px;font-weight:700;padding-top:10px;border-bottom:none;color:#0F6E56}
+  .note-box{background:#FEF3E2;border-left:3px solid #B7651A;padding:12px 16px;border-radius:0 6px 6px 0;margin-top:20px;font-size:12px;color:#686864;line-height:1.6}
+  .footer{margin-top:40px;padding-top:20px;border-top:1px solid #E5E3DC;display:flex;justify-content:space-between;align-items:flex-end}
+  .footer-note{font-size:11px;color:#C4C2BA;line-height:1.6}
+  .firma-box{text-align:center;min-width:200px}
+  .firma-line{border-top:1px solid #1A1A18;margin-top:40px;padding-top:6px;font-size:11px;color:#686864}
+  @media print{.no-print{display:none}}
+</style>
+</head>
+<body>
+<div style="text-align:center;padding:12px;background:#E1F5EE;margin-bottom:0" class="no-print">
+  <button onclick="window.print()" style="background:#0F6E56;color:white;border:none;padding:10px 28px;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer;margin-right:8px">🖨 Stampa / Salva PDF</button>
+  <button onclick="window.close()" style="background:none;border:1px solid #C4C2BA;padding:10px 18px;border-radius:6px;font-size:13px;cursor:pointer">✕ Chiudi</button>
+</div>
+<div class="page">
+  <div class="header">
+    <div>
+      <div class="studio-name">${STUDIO.nome}</div>
+      <div class="studio-info">
+        ${STUDIO.via}, ${STUDIO.cap} ${STUDIO.citta} (${STUDIO.prov})<br>
+        Tel: ${STUDIO.tel} · ${STUDIO.email}<br>
+        P.IVA: ${STUDIO.piva}
+      </div>
+    </div>
+    <div class="prev-label">
+      <div class="prev-title">PREVENTIVO</div>
+      <div class="prev-num">${prevNum}</div>
+      <div class="prev-meta">Data: ${prevData} · Valido fino al: ${prevScad}</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="box">
+      <div class="box-title">Paziente</div>
+      <div class="box-line"><strong>${pazNome}</strong></div>
+      ${pazIndirizzo ? `<div class="box-line">${pazIndirizzo}</div>`:''}
+      ${pazCf ? `<div class="box-line">C.F.: <strong>${pazCf}</strong></div>`:''}
+      ${pazTel ? `<div class="box-line">Tel: ${pazTel}</div>`:''}
+      <div class="box-line" style="color:#686864;margin-top:4px">Cod.: ${gv('f-codice')}</div>
+    </div>
+    <div class="box">
+      <div class="box-title">Dettagli preventivo</div>
+      <div class="box-line">Numero: <strong>${prevNum}</strong></div>
+      <div class="box-line">Emesso il: <strong>${prevData}</strong></div>
+      <div class="box-line">Valido fino al: <strong>${prevScad}</strong></div>
+      ${gv('f-op') ? `<div class="box-line">Medico: <strong>${gv('f-op')}</strong></div>` : ''}
+    </div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th style="width:55px">Dente</th>
+        <th>Prestazione</th>
+        <th style="width:55px;text-align:right">Q.tà</th>
+        <th style="width:90px;text-align:right">€ Unit.</th>
+        <th style="width:70px;text-align:right">Sc. %</th>
+        <th style="width:100px;text-align:right">Totale €</th>
+      </tr>
+    </thead>
+    <tbody>${righeHTML}</tbody>
+  </table>
+
+  <div class="totals">
+    <div class="tot-row"><span>Totale imponibile</span><span>€ ${fmt(lordo)}</span></div>
+    <div class="tot-row"><span>Sconto totale</span><span style="color:#B7651A">- € ${fmt(sconto)}</span></div>
+    <div class="tot-row final"><span>TOTALE PREVENTIVO</span><span>€ ${fmt(netto)}</span></div>
+  </div>
+
+  ${prevNote ? `<div class="note-box">⚠ ${prevNote}</div>` : ''}
+
+  <div class="footer">
+    <div class="footer-note">
+      Preventivo n° ${prevNum} emesso da ${STUDIO.nome}<br>
+      I prezzi sono indicativi e soggetti a conferma dopo visita clinica.<br>
+      Valido fino al ${prevScad}.
+    </div>
+    <div class="firma-box">
+      <div class="firma-line">Firma del medico</div>
+    </div>
+  </div>
+</div>
+</body></html>`;
+
+  const w = window.open('','_blank');
+  w.document.write(html);
+  w.document.close();
+}
+
+// ════════════════════════════════════════════════════════════
+// APRI IN EDITOR
+// ════════════════════════════════════════════════════════════
+function apriInEditor() {
+  if (!currentId) return;
+  // Salva prima
+  savePatient();
+  // Costruisci payload
+  const payload = {
+    codice: gv('f-codice'),
+    attuale: teethAttuale,
+    piano: teethPiano
+  };
+  const encoded = encodeURIComponent(JSON.stringify(payload));
+  // Apre l'editor con i dati nell'URL
+  // L'editor deve trovarsi nella stessa cartella con nome HealthySmile-Editor.html
+  const editorPath = 'HealthySmile-Editor.html';
+  const url = `${editorPath}?hs=${encoded}`;
+  window.open(url, '_blank');
+  notify('Apertura editor con dati paziente...', 'ok');
+}
+
+// ════════════════════════════════════════════════════════════
+// DEMO
+// ════════════════════════════════════════════════════════════
+function demoPatients() {
+  return [
+    {id:'d1',codice:'HS-2025-001',anno:'1978',rischio:'medio',prima_visita:'2025-01-10'},
+    {id:'d2',codice:'HS-2025-002',anno:'1992',rischio:'alto', prima_visita:'2025-02-14'},
+  ];
+}
+const DS = {};
+function demoApi(action,data) {
+  if (action==='getPatients') return {patients};
+  if (action==='getPrestazioni') return {attuale: TR_ATTUALE, piano: TR_PIANO};
+  if (action==='savePrestazioni') { if(data.attuale) TR_ATTUALE=data.attuale; if(data.piano) TR_PIANO=data.piano; return {ok:true}; }
+  if (action==='getPatient') {
+    const p=patients.find(x=>x.id===data.id)||{};
+    return {patient:{...p,...(DS[data.id]||{id:data.id,odontogramma:'{}',arcate:'{}',piano:'{}',arcate_piano:'{}',preventivi:'[]',diario:'[]',documenti:'[]'})}};
+  }
+  if (action==='savePatient') {
+    const idx=patients.findIndex(x=>x.id===data.id);
+    if(idx>=0) patients[idx]={...patients[idx],...data}; else patients.push(data);
+    DS[data.id]=data; return {ok:true};
+  }
+  if (action==='deletePatient') { patients=patients.filter(x=>x.id!==data.id); return {ok:true}; }
+  if (action==='getNextPrevNum') { const y=new Date().getFullYear(); const n=String(patients.length*7+Math.floor(Math.random()*5)+1).padStart(3,'0'); return {num:`PREV-${y}-${n}`}; }
+  if (action==='uploadFile') return {ok:true,url:'demo://'+data.fileName};
+  return {ok:true};
+}
+
+// ════════════════════════════════════════════════════════════
+// UTILS
+// ════════════════════════════════════════════════════════════
+function gv(id){return(document.getElementById(id)||{}).value||''}
+function sv(id,v){const e=document.getElementById(id);if(e)e.value=v}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function safeJson(s,def){try{return s?JSON.parse(s):def}catch{return def}}
+function setSyncPill(s){
+  const b=document.getElementById('sync-pill');
+  if(s==='ok'){b.textContent='● sync';b.className='sync-pill s-ok'}
+  else if(s==='sy'){b.textContent='● …';b.className='sync-pill s-sy'}
+  else{b.textContent='● err';b.className='sync-pill s-er'}
+}
+function notify(msg,type='i'){
+  const e=document.getElementById('notif');
+  e.textContent=msg;e.className=`notif show ${type}`;
+  setTimeout(()=>e.classList.remove('show'),2800);
+}
+
+// Drag & drop
+const dz=document.querySelector('.doc-zone');
+if(dz){
+  dz.addEventListener('dragover',e=>{e.preventDefault();dz.style.borderColor='var(--teal)'});
+  dz.addEventListener('dragleave',()=>{dz.style.borderColor=''});
+  dz.addEventListener('drop',e=>{e.preventDefault();dz.style.borderColor='';handleUpload(e.dataTransfer.files)});
+}
+
+// Autosave 3min
+setInterval(()=>{if(currentId)savePatient()},3*60*1000);
+
+// ── MOBILE SIDEBAR TOGGLE ──
+function toggleSidebar() {
+  const sb = document.getElementById('sidebar');
+  const ov = document.getElementById('sidebar-overlay');
+  const isOpen = sb.classList.contains('open');
+  sb.classList.toggle('open', !isOpen);
+  ov.classList.toggle('open', !isOpen);
+  document.body.style.overflow = isOpen ? '' : 'hidden';
+}
+
+function closeSidebar() {
+  const sb = document.getElementById('sidebar');
+  const ov = document.getElementById('sidebar-overlay');
+  sb.classList.remove('open');
+  ov.classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+// Close sidebar when a patient is selected on mobile — handled in renderList
 </script>
 </body>
 </html>
