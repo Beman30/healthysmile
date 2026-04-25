@@ -144,6 +144,26 @@
     .fg input:focus,.fg select:focus,.fg textarea:focus{border-color:#1a73e8;box-shadow:0 0 0 2px rgba(26,115,232,.1)}
     .fg select optgroup{font-weight:700;color:#1a73e8;background:#f0f4ff;font-size:11px;letter-spacing:.5px}
     .fg select option{font-weight:400;color:#333;padding-left:8px}
+
+    /* ── MULTI-CALENDAR SELECT ── */
+    .multi-cal-wrap{position:relative}
+    .multi-cal-display{border:1px solid #ddd;border-radius:6px;padding:5px 9px;font-size:13px;cursor:pointer;min-height:36px;display:flex;align-items:flex-start;justify-content:space-between;gap:6px;background:white;transition:border-color .15s}
+    .multi-cal-display:hover{border-color:#1a73e8}
+    .multi-cal-display.open{border-color:#1a73e8;box-shadow:0 0 0 2px rgba(26,115,232,.1)}
+    .multi-cal-pills{display:flex;flex-wrap:wrap;gap:4px;flex:1;padding-top:1px}
+    .multi-cal-pill{display:flex;align-items:center;gap:4px;border-radius:12px;padding:2px 7px 2px 6px;font-size:11px;color:white;white-space:nowrap}
+    .multi-cal-pill-dot{width:7px;height:7px;border-radius:1px;flex-shrink:0;background:rgba(255,255,255,.4)}
+    .multi-cal-pill-x{background:none;border:none;cursor:pointer;color:rgba(255,255,255,.8);font-size:13px;line-height:1;padding:0;margin-left:1px;flex-shrink:0}
+    .multi-cal-pill-x:hover{color:white}
+    .multi-cal-placeholder{color:#aaa;font-size:13px;padding:2px 0}
+    .multi-cal-arrow{color:#aaa;font-size:11px;flex-shrink:0;margin-top:4px}
+    .multi-cal-dropdown{position:absolute;top:calc(100% + 4px);left:0;right:0;background:white;border:1px solid #ddd;border-radius:8px;box-shadow:0 6px 20px rgba(0,0,0,.15);z-index:300;max-height:260px;overflow-y:auto}
+    .multi-cal-group-hd{padding:5px 10px;font-size:10px;font-weight:700;color:#1a73e8;text-transform:uppercase;letter-spacing:.5px;background:#f8f8f8;border-bottom:1px solid #eee;position:sticky;top:0}
+    .multi-cal-option{display:flex;align-items:center;gap:8px;padding:6px 10px;cursor:pointer;font-size:12px;border-bottom:1px solid #f5f5f5}
+    .multi-cal-option:hover{background:#f5f5f5}
+    .multi-cal-option:last-child{border-bottom:none}
+    .multi-cal-option input[type=checkbox]{width:13px;height:13px;flex-shrink:0;cursor:pointer;accent-color:#1a73e8}
+    .multi-cal-option-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
     .fg textarea{resize:vertical;min-height:64px}
     .form-div{border:none;border-top:1px solid #f0f0f0;margin:2px 0}
     .form-sec{font-size:11px;font-weight:600;color:#999;text-transform:uppercase;letter-spacing:.5px}
@@ -372,7 +392,13 @@
         </div>
         <div class="fg">
           <label>Calendario</label>
-          <select id="f-calendar" onchange="updateModalColor()"></select>
+          <div class="multi-cal-wrap" id="f-calendar-wrap">
+            <div class="multi-cal-display" id="f-calendar-display" onclick="toggleCalDropdown(event)">
+              <div class="multi-cal-pills" id="f-calendar-pills"><span class="multi-cal-placeholder">Seleziona...</span></div>
+              <span class="multi-cal-arrow">▾</span>
+            </div>
+            <div class="multi-cal-dropdown hidden" id="f-calendar-dropdown"></div>
+          </div>
         </div>
       </div>
 
@@ -552,6 +578,7 @@ let editId = null;
 let activeCals = new Set(CALS.map(c=>c.id));
 let collapsedGroups = new Set();
 let popupEventId = null;
+let selectedCalendars = new Set(['dott_palmia']); // calendari selezionati nel form
 
 // ════════════════════════════════════════════
 //  UTILS
@@ -581,7 +608,91 @@ function fmtDate(ds){
   const d=new Date(ds+'T12:00:00');
   return `${IT_DAYS[d.getDay()]} ${d.getDate()} ${IT_MONTHS[d.getMonth()]} ${d.getFullYear()}`;
 }
-function getEventsForDay(ds){ return events.filter(e=>e.date===ds && activeCals.has(e.calendar)) }
+function getEventsForDay(ds){
+  return events.filter(e=>{
+    if(e.date!==ds) return false;
+    const cals=e.calendars||[e.calendar];
+    return cals.some(id=>activeCals.has(id));
+  });
+}
+
+// ── MULTI-CALENDAR SELECT ──
+function buildCalDropdown(){
+  const dd=document.getElementById('f-calendar-dropdown');
+  dd.innerHTML='';
+  // Ungrouped (Caduti)
+  CALS.filter(c=>c.group===null).forEach(c=>dd.appendChild(mkCalOption(c)));
+  // Groups
+  const groupIcons={'Laboratori':'🔬','Medici':'👨‍⚕️','Prestazioni':'🦷'};
+  GROUPS.forEach(g=>{
+    const items=CALS.filter(c=>c.group===g);
+    if(!items.length) return;
+    const hd=document.createElement('div'); hd.className='multi-cal-group-hd';
+    hd.textContent=(groupIcons[g]||'')+' '+g;
+    dd.appendChild(hd);
+    items.forEach(c=>dd.appendChild(mkCalOption(c)));
+  });
+}
+
+function mkCalOption(c){
+  const div=document.createElement('div'); div.className='multi-cal-option';
+  const chk=document.createElement('input'); chk.type='checkbox';
+  chk.checked=selectedCalendars.has(c.id);
+  chk.addEventListener('change',e=>{
+    e.stopPropagation();
+    e.target.checked?selectedCalendars.add(c.id):selectedCalendars.delete(c.id);
+    updateCalDisplay(); updateModalColor();
+  });
+  const dot=document.createElement('div'); dot.className='multi-cal-option-dot';
+  dot.style.background=c.color;
+  const lbl=document.createElement('span'); lbl.textContent=c.name;
+  div.appendChild(chk); div.appendChild(dot); div.appendChild(lbl);
+  div.addEventListener('click',e=>{
+    if(e.target===chk) return;
+    chk.checked=!chk.checked; chk.dispatchEvent(new Event('change'));
+  });
+  return div;
+}
+
+function toggleCalDropdown(e){
+  e.stopPropagation();
+  buildCalDropdown();
+  const dd=document.getElementById('f-calendar-dropdown');
+  const disp=document.getElementById('f-calendar-display');
+  const isOpen=!dd.classList.contains('hidden');
+  dd.classList.toggle('hidden',isOpen);
+  disp.classList.toggle('open',!isOpen);
+}
+
+function closeCalDropdown(){
+  document.getElementById('f-calendar-dropdown')?.classList.add('hidden');
+  document.getElementById('f-calendar-display')?.classList.remove('open');
+}
+
+function updateCalDisplay(){
+  const pills=document.getElementById('f-calendar-pills');
+  if(!pills) return;
+  pills.innerHTML='';
+  if(!selectedCalendars.size){
+    pills.innerHTML='<span class="multi-cal-placeholder">Seleziona...</span>';
+    return;
+  }
+  selectedCalendars.forEach(id=>{
+    const cal=getCal(id);
+    const pill=document.createElement('div');
+    pill.className='multi-cal-pill';
+    pill.style.background=cal.color;
+    pill.innerHTML=`<div class="multi-cal-pill-dot"></div><span>${cal.name}</span>
+      <button class="multi-cal-pill-x" onclick="removeCalSel('${id}',event)">×</button>`;
+    pills.appendChild(pill);
+  });
+}
+
+function removeCalSel(id,e){
+  e.stopPropagation();
+  selectedCalendars.delete(id);
+  updateCalDisplay(); updateModalColor();
+}
 
 function toast(msg){
   const t=document.getElementById('toast');
@@ -650,26 +761,7 @@ function renderSidebar(){
     if(!closed) items.forEach(c=>wrap.appendChild(mkCalItem(c,false)));
     list.appendChild(wrap);
   });
-  // Populate modal select
-  const sel=document.getElementById('f-calendar');
-  sel.innerHTML='';
-  const cadutiOpts=CALS.filter(c=>c.group===null);
-  cadutiOpts.forEach(c=>{
-    const o=document.createElement('option');
-    o.value=c.id; o.textContent='⬛ '+c.name; sel.appendChild(o);
-  });
-  const groupIcons={'Laboratori':'🔬','Medici':'👨‍⚕️','Prestazioni':'🦷'};
-  GROUPS.forEach(g=>{
-    const items=CALS.filter(c=>c.group===g);
-    if(!items.length) return;
-    const og=document.createElement('optgroup');
-    og.label=(groupIcons[g]||'')+'  '+g.toUpperCase();
-    items.forEach(c=>{
-      const o=document.createElement('option');
-      o.value=c.id; o.textContent='  '+c.name; og.appendChild(o);
-    });
-    sel.appendChild(og);
-  });
+  // Modal calendar dropdown is built dynamically via buildCalDropdown()
 }
 
 function mkCalItem(cal,ungrouped){
@@ -833,9 +925,10 @@ function layoutEvents(evs){
 }
 
 function mkEvent(ev,laneIdx,laneCount){
-  const cal=getCal(ev.calendar);
+  const cals=ev.calendars||[ev.calendar||'dott_palmia'];
+  const primaryCal=getCal(cals[0]);
   const el=document.createElement('div'); el.className='ev';
-  el.style.background=cal.color;
+  el.style.background=calGradient(cals);
   const startM=t2m(ev.start);
   const endM=ev.end?t2m(ev.end):startM+30;
   const top=(startM-H_START*60)/60*PX_HOUR;
@@ -862,13 +955,17 @@ function mkEvent(ev,laneIdx,laneCount){
 // ════════════════════════════════════════════
 function showPopup(evId, e){
   const ev=events.find(x=>x.id===evId); if(!ev) return;
-  const cal=getCal(ev.calendar);
+  const evCals=ev.calendars||[ev.calendar||'dott_palmia'];
+  const primaryCal=getCal(evCals[0]);
   popupEventId=evId;
   const pp=document.getElementById('popup');
-  document.getElementById('pp-dot').style.background=cal.color;
+  const dotEl=document.getElementById('pp-dot');
+  dotEl.style.background=calGradient(evCals);
+  if(evCals.length>1) dotEl.style.width='36px';
+  else dotEl.style.width='12px';
   document.getElementById('pp-title').textContent=`${ev.type?ev.type+'/ ':''}${ev.patient||'Appuntamento'}${ev.card?' ('+ev.card+')':''}`;
   document.getElementById('pp-dt').textContent=`${fmtDate(ev.date)} · ${fmtTime(ev.start)}${ev.end?' – '+fmtTime(ev.end):''}`;
-  document.getElementById('pp-doc').textContent=cal.name;
+  document.getElementById('pp-doc').textContent=evCals.map(id=>getCal(id).name).join(' · ');
   const treat=ev.treatment||'';
   document.getElementById('pp-treat').textContent=treat;
   document.getElementById('pp-treat-row').classList.toggle('hidden',!treat);
@@ -912,9 +1009,23 @@ function hidePopup(){ document.getElementById('popup').classList.add('hidden'); 
 //  MODAL
 // ════════════════════════════════════════════
 function updateModalColor(){
-  const calId=document.getElementById('f-calendar').value;
-  const cal=getCal(calId);
-  document.getElementById('m-color-dot').style.background=cal.color;
+  const dot=document.getElementById('m-color-dot');
+  if(!selectedCalendars.size){ dot.style.background='#ccc'; return; }
+  const ids=[...selectedCalendars];
+  if(ids.length===1){ dot.style.background=getCal(ids[0]).color; return; }
+  const colors=ids.map(id=>getCal(id).color);
+  const step=100/colors.length;
+  const stops=colors.map((c,i)=>`${c} ${i*step}%, ${c} ${(i+1)*step}%`).join(', ');
+  dot.style.background=`linear-gradient(90deg, ${stops})`;
+}
+
+function calGradient(calendars){
+  if(!calendars||!calendars.length) return '#9e9e9e';
+  if(calendars.length===1) return getCal(calendars[0]).color;
+  const colors=calendars.map(id=>getCal(id).color);
+  const step=100/colors.length;
+  const stops=colors.map((c,i)=>`${c} ${i*step}%, ${c} ${(i+1)*step}%`).join(', ');
+  return`linear-gradient(135deg, ${stops})`;
 }
 
 function openModal(evId, defDate, defStart, defEnd){
@@ -929,7 +1040,9 @@ function openModal(evId, defDate, defStart, defEnd){
     title.textContent='Modifica Appuntamento';
     delBtn.classList.remove('hidden');
     document.getElementById('f-type').value=ev.type||'cc';
-    document.getElementById('f-calendar').value=ev.calendar||'dott_palmia';
+    // Ripristina multi-selezione
+    selectedCalendars=new Set(Array.isArray(ev.calendars)?ev.calendars:[ev.calendar||'dott_palmia']);
+    updateCalDisplay(); updateModalColor();
     document.getElementById('f-patient').value=ev.patient||'';
     document.getElementById('f-card').value=ev.card||'';
     document.getElementById('f-year').value=ev.year||'';
@@ -948,7 +1061,8 @@ function openModal(evId, defDate, defStart, defEnd){
     title.textContent='Nuovo Appuntamento';
     delBtn.classList.add('hidden');
     document.getElementById('f-type').value='cc';
-    document.getElementById('f-calendar').value='dott_palmia';
+    selectedCalendars=new Set(['dott_palmia']);
+    updateCalDisplay(); updateModalColor();
     document.getElementById('f-patient').value='';
     document.getElementById('f-card').value='';
     document.getElementById('f-year').value='';
@@ -969,7 +1083,7 @@ function openModal(evId, defDate, defStart, defEnd){
   setTimeout(()=>document.getElementById('f-patient').focus(),100);
 }
 
-function closeModal(){ document.getElementById('overlay').classList.add('hidden'); editId=null; hideAcDropdown(); }
+function closeModal(){ document.getElementById('overlay').classList.add('hidden'); editId=null; hideAcDropdown(); closeCalDropdown(); }
 
 // ════════════════════════════════════════════
 //  SAVE / DELETE  (Firestore)
@@ -1013,10 +1127,12 @@ async function saveEvent(){
       }
     }
 
+    const calArr=[...selectedCalendars];
     const ev = {
       id: evId,
       type: document.getElementById('f-type').value,
-      calendar: document.getElementById('f-calendar').value,
+      calendars: calArr,
+      calendar: calArr[0]||'dott_palmia', // campo legacy per compatibilità
       patient,
       card: document.getElementById('f-card').value.trim(),
       year: document.getElementById('f-year').value.trim(),
@@ -1264,7 +1380,8 @@ document.getElementById('pp-wa').addEventListener('click',()=>{
   sendWA(ev, ev.phone);
 });
 
-document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ closeModal(); hidePopup(); } });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ closeModal(); hidePopup(); closeCalDropdown(); } });
+document.addEventListener('click',e=>{ if(!e.target.closest('#f-calendar-wrap')) closeCalDropdown(); });
 document.getElementById('cal-scroll').addEventListener('click',e=>{
   if(!e.target.closest('.popup')&&!e.target.closest('.ev')) hidePopup();
 });
