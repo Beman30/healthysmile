@@ -929,9 +929,12 @@ function layoutEvents(evs){
 
 function mkEvent(ev,laneIdx,laneCount){
   const cals=ev.calendars||[ev.calendar||'dott_palmia'];
-  const primaryCal=getCal(cals[0]);
+  // Mostra solo i colori dei calendari attivi (tick spuntato)
+  const visibleCals=cals.filter(id=>activeCals.has(id));
+  const displayCals=visibleCals.length?visibleCals:cals;
+  const primaryCal=getCal(displayCals[0]);
   const el=document.createElement('div'); el.className='ev';
-  el.style.background=calGradient(cals);
+  el.style.background=calGradient(displayCals);
   const startM=t2m(ev.start);
   const endM=ev.end?t2m(ev.end):startM+30;
   const top=(startM-H_START*60)/60*PX_HOUR;
