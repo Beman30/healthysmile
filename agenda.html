@@ -164,6 +164,14 @@
     .multi-cal-option:last-child{border-bottom:none}
     .multi-cal-option input[type=checkbox]{width:13px;height:13px;flex-shrink:0;cursor:pointer;accent-color:#1a73e8}
     .multi-cal-option-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+
+    /* ── GESTIONE CALENDARI ── */
+    .cal-mgmt-row{display:flex;align-items:flex-end;gap:8px;padding:7px 0;border-bottom:1px solid #f0f0f0}
+    .cal-mgmt-row:last-child{border-bottom:none}
+    .cal-color-preview{width:24px;height:24px;border-radius:4px;flex-shrink:0;cursor:pointer;border:2px solid rgba(0,0,0,.1);margin-bottom:2px}
+    .cal-mgmt-del{background:none;border:1px solid #d93025;color:#d93025;border-radius:6px;padding:7px 9px;cursor:pointer;font-size:13px;flex-shrink:0;transition:background .15s}
+    .cal-mgmt-del:hover{background:#fce8e6}
+    .cal-group-tag{display:inline-block;font-size:10px;font-weight:600;padding:2px 6px;border-radius:3px;background:#f0f4ff;color:#1a73e8;margin-top:3px}
     .fg textarea{resize:vertical;min-height:64px}
     .form-div{border:none;border-top:1px solid #f0f0f0;margin:2px 0}
     .form-sec{font-size:11px;font-weight:600;color:#999;text-transform:uppercase;letter-spacing:.5px}
@@ -307,7 +315,7 @@
         <span class="sb-section-toggle" id="sb-cal-arrow">▲</span>
       </div>
       <div id="cal-list"></div>
-      <div class="sb-add">+ Aggiungi / Modifica</div>
+      <div class="sb-add" onclick="openCalMgmt()">+ Aggiungi / Modifica</div>
     </div>
 
     <div class="sb-section">
@@ -506,6 +514,21 @@
   </div>
 </div>
 
+<!-- MODAL GESTIONE CALENDARI -->
+<div class="overlay hidden" id="cal-mgmt-overlay">
+  <div class="modal" style="width:660px">
+    <div class="modal-hd">
+      <span class="modal-title">🎨 Gestisci Calendari</span>
+      <button class="modal-x" onclick="document.getElementById('cal-mgmt-overlay').classList.add('hidden')">×</button>
+    </div>
+    <div class="modal-body" id="cal-mgmt-body" style="gap:0;padding:12px 20px"></div>
+    <div class="modal-ft" style="justify-content:flex-end">
+      <button class="btn btn-sec" onclick="document.getElementById('cal-mgmt-overlay').classList.add('hidden')">Annulla</button>
+      <button class="btn btn-primary" onclick="saveCalMgmt()">💾 Salva tutto</button>
+    </div>
+  </div>
+</div>
+
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
 
@@ -534,7 +557,7 @@ function setSyncStatus(status){
 // ════════════════════════════════════════════
 //  CONFIGURAZIONE CALENDARI
 // ════════════════════════════════════════════
-const CALS = [
+let CALS = [
   // ── Caduti ──
   { id:'caduti',               name:'Caduti',                                color:'#5d4037', group:null },
   // ── Laboratori ──
@@ -1397,6 +1420,162 @@ document.getElementById('hd-menu').addEventListener('click',openSidebar);
 document.getElementById('sb-overlay').addEventListener('click',closeSidebar);
 
 // ════════════════════════════════════════════
+//  GESTIONE CALENDARI
+// ════════════════════════════════════════════
+// Mappa temporanea modifiche in corso (id→{name,color,group})
+let calEdits = {};
+
+function openCalMgmt(){
+  calEdits = {};
+  renderCalMgmtBody();
+  document.getElementById('cal-mgmt-overlay').classList.remove('hidden');
+}
+
+function renderCalMgmtBody(){
+  const body = document.getElementById('cal-mgmt-body');
+  body.innerHTML = '';
+
+  // ── Lista calendari esistenti ──
+  const listDiv = document.createElement('div');
+  listDiv.id = 'cal-mgmt-list';
+
+  // Raggruppa per gruppo
+  const all = [
+    ...CALS.filter(c=>!c.group),
+    ...GROUPS.flatMap(g=>CALS.filter(c=>c.group===g))
+  ];
+
+  let currentGroup = '__none__';
+  all.forEach(cal => {
+    const grpKey = cal.group||'';
+    if(grpKey !== currentGroup){
+      currentGroup = grpKey;
+      if(grpKey){
+        const ghd = document.createElement('div');
+        ghd.style.cssText='font-size:10px;font-weight:700;color:#1a73e8;text-transform:uppercase;letter-spacing:.5px;padding:10px 0 4px;border-top:1px solid #f0f0f0;margin-top:4px';
+        const icons={'Laboratori':'🔬','Medici':'👨‍⚕️','Prestazioni':'🦷'};
+        ghd.textContent=(icons[grpKey]||'')+' '+grpKey;
+        listDiv.appendChild(ghd);
+      }
+    }
+    listDiv.appendChild(mkCalMgmtRow(cal));
+  });
+
+  body.appendChild(listDiv);
+
+  // ── Form aggiungi nuovo ──
+  const addDiv = document.createElement('div');
+  addDiv.style.cssText='margin-top:14px;padding-top:12px;border-top:2px solid #f0f0f0';
+  addDiv.innerHTML=`
+    <div style="font-size:11px;font-weight:600;color:#999;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">➕ Aggiungi nuovo calendario</div>
+    <div class="form-row" style="align-items:flex-end;gap:8px">
+      <div class="fg" style="flex:0 0 44px">
+        <label>Colore</label>
+        <input type="color" id="new-cal-color" value="#1a73e8" style="height:36px;padding:2px;cursor:pointer;border:1px solid #ddd;border-radius:6px;width:100%">
+      </div>
+      <div class="fg">
+        <label>Nome calendario</label>
+        <input type="text" id="new-cal-name" placeholder="es. Ortodonzia adulti">
+      </div>
+      <div class="fg" style="flex:0 0 150px">
+        <label>Gruppo</label>
+        <select id="new-cal-group">
+          <option value="">— Nessun gruppo</option>
+          <option value="Laboratori">🔬 Laboratori</option>
+          <option value="Medici">👨‍⚕️ Medici</option>
+          <option value="Prestazioni">🦷 Prestazioni</option>
+        </select>
+      </div>
+      <div style="flex:0 0 auto;padding-bottom:0">
+        <button class="btn btn-primary" onclick="addNewCal()" style="white-space:nowrap">+ Aggiungi</button>
+      </div>
+    </div>`;
+  body.appendChild(addDiv);
+}
+
+function mkCalMgmtRow(cal){
+  const row = document.createElement('div');
+  row.className = 'cal-mgmt-row';
+  row.dataset.id = cal.id;
+  row.innerHTML = `
+    <div style="display:flex;flex-direction:column;gap:3px;flex:0 0 44px">
+      <label style="font-size:11.5px;color:#666;font-weight:500">Colore</label>
+      <input type="color" class="cm-color" value="${cal.color}"
+        style="height:36px;padding:2px;cursor:pointer;border:1px solid #ddd;border-radius:6px;width:44px">
+    </div>
+    <div class="fg">
+      <label>Nome</label>
+      <input type="text" class="cm-name" value="${cal.name}" placeholder="Nome calendario">
+    </div>
+    <div class="fg" style="flex:0 0 150px">
+      <label>Gruppo</label>
+      <select class="cm-group">
+        <option value="" ${!cal.group?'selected':''}>— Nessun gruppo</option>
+        <option value="Laboratori" ${cal.group==='Laboratori'?'selected':''}>🔬 Laboratori</option>
+        <option value="Medici" ${cal.group==='Medici'?'selected':''}>👨‍⚕️ Medici</option>
+        <option value="Prestazioni" ${cal.group==='Prestazioni'?'selected':''}>🦷 Prestazioni</option>
+      </select>
+    </div>
+    <button class="cal-mgmt-del" onclick="deleteCalEntry('${cal.id}')" title="Elimina">🗑</button>`;
+  return row;
+}
+
+function deleteCalEntry(calId){
+  if(!confirm('Eliminare questo calendario?\nGli appuntamenti esistenti non verranno modificati.')) return;
+  const idx = CALS.findIndex(c=>c.id===calId);
+  if(idx>=0) CALS.splice(idx,1);
+  activeCals.delete(calId);
+  renderCalMgmtBody();
+}
+
+function addNewCal(){
+  const name = document.getElementById('new-cal-name').value.trim();
+  if(!name){ toast('⚠️ Inserisci il nome'); return; }
+  const color = document.getElementById('new-cal-color').value;
+  const group = document.getElementById('new-cal-group').value || null;
+  const id = 'cal_' + Date.now().toString(36);
+  CALS.push({id, name, color, group});
+  activeCals.add(id);
+  document.getElementById('new-cal-name').value = '';
+  renderCalMgmtBody();
+  toast('✅ Calendario aggiunto');
+}
+
+async function saveCalMgmt(){
+  // Leggi tutti i valori dal form
+  const rows = document.querySelectorAll('#cal-mgmt-list .cal-mgmt-row');
+  rows.forEach(row=>{
+    const id = row.dataset.id;
+    const idx = CALS.findIndex(c=>c.id===id);
+    if(idx<0) return;
+    const name = row.querySelector('.cm-name').value.trim();
+    const color = row.querySelector('.cm-color').value;
+    const group = row.querySelector('.cm-group').value || null;
+    if(name) CALS[idx].name = name;
+    CALS[idx].color = color;
+    CALS[idx].group = group;
+  });
+
+  // Salva su Firestore
+  const saveBtn = document.querySelector('#cal-mgmt-overlay .btn-primary');
+  saveBtn.disabled=true; saveBtn.textContent='⏳ Salvataggio...';
+  try {
+    await db.collection('config').doc('calendari').set({cals: CALS, updatedAt: firebase.firestore.FieldValue.serverTimestamp()});
+    toast('✅ Calendari salvati su Firebase');
+  } catch(e){
+    console.warn('Firestore save failed:', e);
+    toast('✅ Salvato localmente');
+  } finally {
+    saveBtn.disabled=false; saveBtn.textContent='💾 Salva tutto';
+  }
+
+  activeCals = new Set(CALS.map(c=>c.id));
+  renderSidebar();
+  renderCal();
+  document.getElementById('cal-mgmt-overlay').classList.add('hidden');
+}
+
+// ════════════════════════════════════════════
 //  FIRESTORE REAL-TIME LISTENER
 // ════════════════════════════════════════════
 setSyncStatus('syncing');
@@ -1421,6 +1600,17 @@ renderMini();
 renderSidebar();
 renderCal();
 updateLabel();
+
+// Carica calendari personalizzati da Firestore
+db.collection('config').doc('calendari').get().then(doc=>{
+  if(doc.exists && doc.data().cals && doc.data().cals.length){
+    CALS.length=0;
+    doc.data().cals.forEach(c=>CALS.push(c));
+    activeCals=new Set(CALS.map(c=>c.id));
+    renderSidebar();
+    renderCal();
+  }
+}).catch(()=>{/* Ignora se non esiste ancora */});
 
 // Update now-line every minute
 setInterval(renderCal, 60000);
