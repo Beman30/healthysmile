@@ -772,7 +772,10 @@ function mkCalItem(cal,ungrouped){
     <span class="cal-name">${cal.name}</span>
     <input type="checkbox" class="cal-chk" ${on?'checked':''}>`;
   el.querySelector('.cal-chk').addEventListener('change',e=>{
-    e.target.checked?activeCals.add(cal.id):activeCals.delete(cal.id);
+    const on=e.target.checked;
+    on?activeCals.add(cal.id):activeCals.delete(cal.id);
+    el.querySelector('.cal-dot').style.opacity=on?1:0.25;
+    el.querySelector('.cal-name').style.opacity=on?1:0.4;
     renderCal();
   });
   return el;
