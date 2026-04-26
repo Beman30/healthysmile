@@ -1735,7 +1735,7 @@ renderWaBanner();
 document.getElementById('m-cartella').addEventListener('click', ()=>{
   const nome = document.getElementById('f-patient').value.trim();
   if(!nome){ toast('⚠️ Inserisci prima il nome del paziente'); return; }
-  window.open(`cartellaclinica.html?cerca=${encodeURIComponent(nome)}`, '_blank');
+  window.open(`https://healthysmile.it/cartellaclinica.html?cerca=${encodeURIComponent(nome)}`, '_blank');
 });
 // Aggiorna visibilità del pulsante al cambiare del nome paziente
 document.getElementById('f-patient').addEventListener('input', updateCartellaBtn);
