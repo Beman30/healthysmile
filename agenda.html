@@ -1218,6 +1218,8 @@ async function saveEvent(){
     };
 
     await db.collection('appuntamenti').doc(evId).set(ev);
+    // Auto-crea paziente in Cartella Clinica se non esiste già
+    if(patient) autoCreatePaziente(patient, ev.card, ev.phone);
     setSyncStatus('ok');
     closeModal();
     toast(editId?'✅ Appuntamento aggiornato':'✅ Appuntamento salvato');
@@ -1701,6 +1703,54 @@ function renderWaBanner(){
     `;
     list.appendChild(item);
   });
+}
+
+// ════════════════════════════════════════════
+//  AUTO-CREA PAZIENTE IN CARTELLA CLINICA
+// ════════════════════════════════════════════
+async function autoCreatePaziente(nomeCompleto, codice, telefono){
+  try {
+    // Carica tutti i pazienti e cerca corrispondenza per nome o codice cartella
+    const snap = await db.collection('pazienti').get();
+    const q = nomeCompleto.toLowerCase().trim();
+    const esiste = snap.docs.some(d => {
+      const p = d.data();
+      const nome1 = ((p.nome||'')+' '+(p.cognome||'')).toLowerCase().trim();
+      const nome2 = ((p.cognome||'')+' '+(p.nome||'')).toLowerCase().trim();
+      const codiceMatch = codice && p.codice && p.codice.trim() === codice.trim();
+      return nome1 === q || nome2 === q || codiceMatch;
+    });
+    if(esiste) return; // già presente, non fare nulla
+
+    // Suddivide "Mario Rossi" → nome: "Mario", cognome: "Rossi"
+    const parti = nomeCompleto.trim().split(/\s+/);
+    const cognome = parti.length > 1 ? parti[parti.length-1] : '';
+    const nome    = parti.length > 1 ? parti.slice(0,-1).join(' ') : parti[0];
+
+    // Genera codice automatico se non fornito
+    const y = new Date().getFullYear();
+    const codiceFinale = codice || ('HS-'+y+'-'+String(snap.docs.length+1).padStart(3,'0'));
+
+    const id = 'pt_'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+    await db.collection('pazienti').doc(id).set({
+      id,
+      codice:  codiceFinale,
+      nome,
+      cognome,
+      telefono: telefono || '',
+      prima_visita: new Date().toISOString().split('T')[0],
+      rischio: 'basso',
+      anno: '', operatore: '', note_generali: '',
+      dob: '', cf: '', via: '', civico: '', cap: '', citta: '', prov: '', nazione: 'Italia',
+      odontogramma: '{}', arcate: '{}', piano: '{}', arcate_piano: '{}',
+      preventivi: '[]', diario: '[]', documenti: '[]',
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    console.log('✅ Paziente creato in CC:', nomeCompleto);
+  } catch(e){
+    // Silenzioso — non blocca il salvataggio dell'appuntamento
+    console.warn('autoCreatePaziente failed:', e);
+  }
 }
 
 // ════════════════════════════════════════════
