@@ -1013,7 +1013,8 @@ async function createPatient() {
       prima_visita: today,
       operatore: '', note_generali: '',
       dob: '', cf: '', via: '', civico: '', cap: '', citta: '', prov: '', nazione: 'Italia',
-      odontogramma: '{}', arcate: '{}', piano: '{}', arcate_piano: '{}',
+      odontogramma: JSON.stringify(Object.fromEntries([...UPPER,...LOWER].map(n=>[n,['sano']]))),
+      arcate: '{}', piano: '{}', arcate_piano: '{}',
       preventivi: '[]', diario: '[]', documenti: '[]',
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
