@@ -5,13 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Healthy Smile By N — Cartella Clinica</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&family=Great+Vibes&display=swap');
 
 :root {
-  --teal:        #0F6E56;
-  --teal-mid:    #1D9E75;
-  --teal-light:  #E1F5EE;
-  --teal-pale:   #F2FBF7;
+  --pink:        #C91865;
+  --pink-mid:    #E0408A;
+  --pink-light:  #FAE0EE;
+  --pink-pale:   #FEF2F8;
   --red:         #C0392B;
   --red-light:   #FDECEA;
   --amber:       #B7651A;
@@ -41,64 +41,69 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--gray-50);color:
 #setup-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem}
 .setup-card{background:var(--white);border-radius:14px;border:var(--border);padding:2.5rem;width:100%;max-width:500px;box-shadow:0 2px 16px rgba(0,0,0,.07)}
 .brand{display:flex;align-items:center;gap:10px;margin-bottom:2rem}
-.brand-icon{width:36px;height:36px;background:var(--teal);border-radius:8px;display:flex;align-items:center;justify-content:center}
+.brand-icon{width:36px;height:36px;background:var(--pink);border-radius:8px;display:flex;align-items:center;justify-content:center}
 .brand-icon svg{width:20px;height:20px;fill:white}
 .brand-name{font-size:15px;font-weight:600}
 .brand-sub{font-size:12px;color:var(--gray-500)}
 .setup-card h2{font-size:18px;font-weight:600;margin-bottom:.3rem}
 .setup-card p{color:var(--gray-500);font-size:13px;margin-bottom:1.5rem;line-height:1.6}
 .step{display:flex;gap:10px;margin-bottom:.7rem;align-items:flex-start}
-.step-n{min-width:20px;height:20px;background:var(--teal);color:white;border-radius:50%;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:1px}
+.step-n{min-width:20px;height:20px;background:var(--pink);color:white;border-radius:50%;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:1px}
 .step-t{font-size:13px;color:var(--gray-500);line-height:1.5}
 .step-t strong{color:var(--gray-900)}
-.step-t a{color:var(--teal);text-decoration:none}
+.step-t a{color:var(--pink);text-decoration:none}
 .ig{margin-top:1.2rem}
 .ig label{display:block;font-size:11px;font-weight:600;color:var(--gray-500);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px}
 .ig input{width:100%;padding:10px 12px;border:var(--border);border-radius:var(--r-sm);font-size:13px;font-family:'DM Mono',monospace;outline:none;transition:border-color .15s}
-.ig input:focus{border-color:var(--teal)}
+.ig input:focus{border-color:var(--pink)}
 .ig .hint{font-size:11px;color:var(--gray-300);margin-top:4px}
-.btn-main{width:100%;background:var(--teal);color:white;border:none;border-radius:var(--r-sm);padding:11px;font-size:14px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;margin-top:1.2rem;transition:background .15s}
+.btn-main{width:100%;background:var(--pink);color:white;border:none;border-radius:var(--r-sm);padding:11px;font-size:14px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;margin-top:1.2rem;transition:background .15s}
 .btn-main:hover{background:#0a5040}
 .demo-lnk{text-align:center;margin-top:.8rem;font-size:12px;color:var(--gray-500)}
-.demo-lnk a{color:var(--teal);cursor:pointer}
+.demo-lnk a{color:var(--pink);cursor:pointer}
 
 /* ── APP ── */
 #app{display:flex;flex-direction:column;min-height:100vh}
 
 /* ── HEADER ── */
-.hdr{background:var(--white);border-bottom:var(--border);height:52px;padding:0 1.2rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200}
-.hdr-l{display:flex;align-items:center;gap:10px}
-.hdr-icon{width:28px;height:28px;background:var(--teal);border-radius:6px;display:flex;align-items:center;justify-content:center}
-.hdr-icon svg{width:16px;height:16px;fill:white}
-.hdr-name{font-size:14px;font-weight:600}
-.sync-pill{font-size:10px;font-weight:600;padding:2px 7px;border-radius:3px;font-family:'DM Mono',monospace}
-.s-ok{background:var(--teal-light);color:var(--teal)}
+.hdr{background:linear-gradient(135deg,#1A0A12 0%,#2D1020 60%,#1A0A12 100%);border-bottom:2px solid var(--pink);height:64px;padding:0 1.4rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;box-shadow:0 3px 20px rgba(201,24,101,.35)}
+.hdr-l{display:flex;align-items:center;gap:14px}
+.brand-wrap{display:flex;align-items:center;gap:12px}
+.brand-lips{flex-shrink:0}
+.brand-text{display:flex;flex-direction:column;line-height:1}
+.brand-main{font-family:'Great Vibes',cursive;font-size:26px;color:#fff;letter-spacing:.5px;text-shadow:0 0 20px rgba(224,64,138,.6)}
+.brand-sub-label{font-size:9px;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:2.5px;margin-top:1px}
+.hdr-divider{width:1px;height:28px;background:rgba(255,255,255,.15)}
+.page-label{font-size:11px;font-weight:600;color:rgba(255,255,255,.55);text-transform:uppercase;letter-spacing:1.5px}
+.sync-pill{font-size:10px;font-weight:600;padding:2px 8px;border-radius:3px;font-family:'DM Mono',monospace}
+.s-ok{background:rgba(201,24,101,.2);color:#F06EA0;border:1px solid rgba(201,24,101,.3)}
 .s-sy{background:var(--amber-light);color:var(--amber)}
 .s-er{background:var(--red-light);color:var(--red)}
 .hdr-r{display:flex;gap:6px}
-.btn-s{background:none;border:var(--border);border-radius:var(--r-sm);padding:5px 10px;font-size:12px;font-weight:500;cursor:pointer;color:var(--gray-700);font-family:'DM Sans',sans-serif;transition:all .15s}
-.btn-s:hover{background:var(--gray-100)}
-.btn-s.c{background:var(--teal);color:white;border-color:var(--teal)}
+.btn-s{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);border-radius:var(--r-sm);padding:5px 12px;font-size:12px;font-weight:500;cursor:pointer;color:rgba(255,255,255,.8);font-family:'DM Sans',sans-serif;transition:all .15s}
+.btn-s:hover{background:rgba(201,24,101,.3);border-color:var(--pink);color:white}
+.btn-s.c{background:linear-gradient(135deg,var(--pink),var(--pink-mid));color:white;border-color:transparent;box-shadow:0 2px 8px rgba(201,24,101,.4)}
 
 /* ── LAYOUT ── */
 .app-body{display:flex;flex:1}
 .sidebar{width:260px;min-width:260px;background:var(--white);border-right:var(--border);height:calc(100vh - 52px);position:sticky;top:52px;display:flex;flex-direction:column;overflow:hidden}
 .sb-search{padding:10px}
 .sb-search input{width:100%;padding:7px 10px;border:var(--border);border-radius:var(--r-sm);font-size:12px;background:var(--gray-50);outline:none;transition:border-color .15s;font-family:'DM Sans',sans-serif}
-.sb-search input:focus{border-color:var(--teal);background:var(--white)}
-.sb-hdr{padding:6px 10px;display:flex;justify-content:space-between;align-items:center;border-bottom:var(--border)}
-.sb-hdr span{font-size:10px;font-weight:600;color:var(--gray-500);text-transform:uppercase;letter-spacing:.05em}
-.btn-new{background:var(--teal);color:white;border:none;border-radius:4px;padding:4px 9px;font-size:11px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif}
+.sb-search input:focus{border-color:var(--pink);background:var(--white)}
+.sb-hdr{padding:8px 10px;display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid var(--pink-light);background:linear-gradient(135deg,var(--pink-light),#fff)}
+.sb-hdr span{font-size:10px;font-weight:700;color:var(--pink);text-transform:uppercase;letter-spacing:.08em}
+.btn-new{background:linear-gradient(135deg,var(--pink),var(--pink-mid));color:white;border:none;border-radius:4px;padding:5px 11px;font-size:11px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;box-shadow:0 2px 8px rgba(201,24,101,.3);transition:opacity .15s}
+.btn-new:hover{opacity:.88}
 .pat-list{overflow-y:auto;flex:1}
 .pat-item{padding:9px 10px;border-bottom:var(--border);cursor:pointer;transition:background .1s}
 .pat-item:hover{background:var(--gray-50)}
-.pat-item.active{background:var(--teal-light);border-left:3px solid var(--teal)}
+.pat-item.active{background:var(--pink-light);border-left:3px solid var(--pink)}
 .pat-code{font-size:13px;font-weight:600;font-family:'DM Mono',monospace}
 .pat-meta{font-size:11px;color:var(--gray-500);margin-top:1px}
 .risk-pill{display:inline-block;font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px;margin-top:3px}
 .r-alto{background:var(--red-light);color:var(--red)}
 .r-medio{background:var(--amber-light);color:var(--amber)}
-.r-basso{background:var(--teal-light);color:var(--teal)}
+.r-basso{background:var(--pink-light);color:var(--pink)}
 .empty-list{padding:2rem;text-align:center;color:var(--gray-300);font-size:13px}
 
 /* ── MAIN ── */
@@ -112,7 +117,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--gray-50);color:
 .rec-code{font-size:22px;font-weight:700;font-family:'DM Mono',monospace}
 .rec-sub{font-size:12px;color:var(--gray-500);margin-top:2px}
 .rec-actions{display:flex;gap:6px}
-.btn-save{background:var(--teal);color:white;border:none;border-radius:var(--r-sm);padding:8px 18px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif}
+.btn-save{background:var(--pink);color:white;border:none;border-radius:var(--r-sm);padding:8px 18px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif}
 .btn-save:hover{background:#0a5040}
 .btn-danger{background:none;border:1px solid var(--red);color:var(--red);border-radius:var(--r-sm);padding:8px 16px;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif}
 .btn-danger:hover{background:var(--red-light)}
@@ -121,7 +126,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--gray-50);color:
 .tabs{display:flex;border-bottom:var(--border);margin-bottom:1rem}
 .tab{padding:7px 14px;font-size:13px;font-weight:500;color:var(--gray-500);cursor:pointer;border:none;background:none;border-bottom:2px solid transparent;margin-bottom:-1px;font-family:'DM Sans',sans-serif;transition:all .15s}
 .tab:hover{color:var(--gray-900)}
-.tab.on{color:var(--teal);border-bottom-color:var(--teal)}
+.tab.on{color:var(--pink);border-bottom-color:var(--pink)}
 
 /* ── CARD ── */
 .card{background:var(--white);border:var(--border);border-radius:var(--r);padding:1.1rem;margin-bottom:.9rem}
@@ -131,7 +136,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--gray-50);color:
 .fg{display:flex;flex-direction:column;gap:4px}
 .fg label{font-size:11px;font-weight:600;color:var(--gray-500);text-transform:uppercase;letter-spacing:.04em}
 .fg input,.fg select,.fg textarea{border:var(--border);border-radius:var(--r-sm);padding:8px 10px;font-size:13px;font-family:'DM Sans',sans-serif;outline:none;transition:border-color .15s;background:var(--white);color:var(--gray-900);resize:vertical}
-.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--teal)}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--pink)}
 .fg textarea{min-height:60px}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
@@ -166,7 +171,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--gray-50);color:
 .stato-wrap{display:flex;gap:3px;flex-wrap:wrap;margin-top:.3rem}
 .stato-badge{font-size:9px;font-weight:700;padding:1px 4px;border-radius:2px;white-space:nowrap}
 .sb-dafare{background:var(--red-light);color:var(--red);border:1px solid #f5c0bb}
-.sb-eseguito{background:var(--teal-light);color:var(--teal);border:1px solid #9ee0c8}
+.sb-eseguito{background:var(--pink-light);color:var(--pink);border:1px solid #9ee0c8}
 .sb-incorso{background:var(--amber-light);color:var(--amber);border:1px solid #f5d8a0}
 
 /* Tooth popup */
@@ -190,13 +195,13 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--gray-50);color:
 .stato-opt.on{color:white;border-color:transparent}
 .so-dafare.on{background:var(--red)}
 .so-incorso.on{background:var(--amber)}
-.so-eseguito.on{background:var(--teal)}
+.so-eseguito.on{background:var(--pink)}
 
 /* Arcate */
 .arcate-row{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:.8rem}
 .arcata-btn{display:flex;align-items:center;gap:5px;padding:5px 11px;border-radius:var(--r-sm);border:var(--border);font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .12s;background:var(--white)}
-.arcata-btn:hover{border-color:var(--teal)}
-.arcata-btn.has{border-color:var(--teal);background:var(--teal-pale);color:var(--teal)}
+.arcata-btn:hover{border-color:var(--pink)}
+.arcata-btn.has{border-color:var(--pink);background:var(--pink-pale);color:var(--pink)}
 .arcata-popup{display:none;background:var(--white);border:var(--border);border-radius:var(--r);padding:.9rem;margin-top:.5rem;box-shadow:0 4px 16px rgba(0,0,0,.09)}
 .arcata-popup.open{display:block}
 
@@ -205,24 +210,24 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--gray-50);color:
 .odonto-divider::after{content:'▼ Piano trattamenti';position:absolute;left:50%;transform:translateX(-50%) translateY(-50%);background:var(--amber-light);color:var(--amber);font-size:10px;font-weight:700;padding:2px 10px;border-radius:10px;white-space:nowrap;letter-spacing:.04em}
 
 /* ── DIARIO ── */
-.diary-entry{border-left:3px solid var(--teal);background:var(--gray-50);border-radius:0 var(--r-sm) var(--r-sm) 0;padding:.7rem 1rem;margin-bottom:.6rem}
+.diary-entry{border-left:3px solid var(--pink);background:var(--gray-50);border-radius:0 var(--r-sm) var(--r-sm) 0;padding:.7rem 1rem;margin-bottom:.6rem}
 .diary-meta{font-size:11px;color:var(--gray-500);font-family:'DM Mono',monospace;margin-bottom:.3rem;display:flex;gap:.8rem}
-.diary-author{font-weight:600;color:var(--teal)}
+.diary-author{font-weight:600;color:var(--pink)}
 .diary-text{font-size:13px;line-height:1.6;white-space:pre-wrap}
 .diary-add{display:flex;flex-direction:column;gap:8px;margin-top:.9rem;padding-top:.9rem;border-top:var(--border)}
 .diary-add-row{display:flex;gap:8px}
 .diary-add-row input{flex:1;border:var(--border);border-radius:var(--r-sm);padding:7px 10px;font-size:12px;font-family:'DM Sans',sans-serif;outline:none;max-width:220px}
-.diary-add-row input:focus{border-color:var(--teal)}
+.diary-add-row input:focus{border-color:var(--pink)}
 .diary-add textarea{border:var(--border);border-radius:var(--r-sm);padding:9px 10px;font-size:13px;font-family:'DM Sans',sans-serif;outline:none;resize:vertical;min-height:68px}
-.diary-add textarea:focus{border-color:var(--teal)}
-.btn-diary{background:var(--teal);color:white;border:none;border-radius:var(--r-sm);padding:8px 16px;font-size:13px;font-weight:600;cursor:pointer;align-self:flex-end;font-family:'DM Sans',sans-serif}
+.diary-add textarea:focus{border-color:var(--pink)}
+.btn-diary{background:var(--pink);color:white;border:none;border-radius:var(--r-sm);padding:8px 16px;font-size:13px;font-weight:600;cursor:pointer;align-self:flex-end;font-family:'DM Sans',sans-serif}
 
 /* ── DOCUMENTI ── */
 .doc-zone{border:2px dashed var(--gray-300);border-radius:var(--r);padding:1.5rem;text-align:center;cursor:pointer;font-size:13px;color:var(--gray-500);transition:all .15s}
-.doc-zone:hover{border-color:var(--teal);background:var(--teal-pale);color:var(--teal)}
+.doc-zone:hover{border-color:var(--pink);background:var(--pink-pale);color:var(--pink)}
 .doc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px;margin-top:.8rem}
 .doc-item{background:var(--gray-50);border:var(--border);border-radius:var(--r-sm);padding:.7rem;text-align:center;cursor:pointer;font-size:11px;color:var(--gray-700);transition:all .15s}
-.doc-item:hover{border-color:var(--teal);background:var(--teal-pale)}
+.doc-item:hover{border-color:var(--pink);background:var(--pink-pale)}
 
 /* ── MODAL ── */
 .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:500;align-items:center;justify-content:center}
@@ -235,7 +240,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--gray-50);color:
 /* ── NOTIF ── */
 .notif{position:fixed;bottom:1.2rem;right:1.2rem;padding:9px 14px;border-radius:var(--r-sm);font-size:13px;font-weight:500;z-index:9999;opacity:0;transition:opacity .2s;pointer-events:none;font-family:'DM Sans',sans-serif}
 .notif.show{opacity:1}
-.notif.ok{background:var(--teal);color:white}
+.notif.ok{background:var(--pink);color:white}
 .notif.err{background:var(--red);color:white}
 .notif.i{background:var(--gray-900);color:white}
 
@@ -353,15 +358,28 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--gray-50);color:
 <div id="app">
   <header class="hdr">
     <div class="hdr-l">
-      <button class="mob-menu-btn" onclick="toggleSidebar()" aria-label="Menu pazienti">☰</button>
-      <div class="hdr-icon"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg></div>
-      <span class="hdr-name">Healthy Smile By N</span>
+      <button class="mob-menu-btn" onclick="toggleSidebar()" aria-label="Menu pazienti" style="color:white;background:none;border:none;font-size:22px;cursor:pointer;padding:2px 6px">☰</button>
+      <div class="brand-wrap">
+        <svg class="brand-lips" width="52" height="34" viewBox="0 0 52 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M2,14 Q10,2 26,7 Q42,2 50,14 Q42,28 26,30 Q10,28 2,14Z" fill="#E0408A" opacity="0.25"/>
+          <path d="M2,14 Q10,3 26,8 Q42,3 50,14" stroke="#C91865" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+          <path d="M6,17 Q14,5 26,9 Q38,5 46,17" stroke="#E0408A" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.6"/>
+          <path d="M7,19 Q17,30 26,30 Q35,30 45,19" stroke="#C91865" stroke-width="3" stroke-linecap="round" fill="none"/>
+          <path d="M12,22 Q20,28 26,28 Q32,28 40,22" stroke="#E0408A" stroke-width="1.5" stroke-linecap="round" fill="none" opacity="0.5"/>
+          <circle cx="26" cy="8" r="2" fill="#E0408A" opacity="0.7"/>
+        </svg>
+        <div class="brand-text">
+          <span class="brand-main">Healthy Smile</span>
+          <span class="brand-sub-label">By N — Cartella Clinica</span>
+        </div>
+      </div>
+      <div class="hdr-divider"></div>
       <span class="sync-pill s-ok" id="sync-pill">● sync</span>
     </div>
     <div class="hdr-r">
       <button class="btn-s" onclick="syncAll()">↻ Aggiorna</button>
-      <button class="btn-s" onclick="openPrestazioniModal()" title="Gestisci prestazioni">🦷 Prestazioni</button>
-      <button class="btn-s" onclick="window.open('https://healthysmile.it/agenda.html','_blank')" title="Apri calendario">📅 Calendario</button>
+      <button class="btn-s" onclick="openPrestazioniModal()">🦷 Prestazioni</button>
+      <button class="btn-s" onclick="window.open('https://healthysmile.it/agenda.html','_blank')">📅 Calendario</button>
     </div>
   </header>
 
@@ -390,7 +408,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--gray-50);color:
             <div class="rec-sub" id="rec-sub">—</div>
           </div>
           <div class="rec-actions">
-            <button class="btn-s" onclick="apriInEditor()" style="background:var(--teal-light);color:var(--teal);border-color:var(--teal);font-weight:600">↗ Apri in Editor</button>
+            <button class="btn-s" onclick="apriInEditor()" style="background:var(--pink-light);color:var(--pink);border-color:var(--pink);font-weight:600">↗ Apri in Editor</button>
             <button class="btn-save" onclick="savePatient()">💾 Salva</button>
             <button class="btn-danger" onclick="confirmDelete()">Elimina</button>
           </div>
@@ -454,7 +472,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--gray-50);color:
                 Da fare
               </div>
               <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--gray-700)">
-                <div style="width:18px;height:18px;border-radius:3px;border:2.5px solid var(--teal)"></div>
+                <div style="width:18px;height:18px;border-radius:3px;border:2.5px solid var(--pink)"></div>
                 Eseguito
               </div>
               <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--gray-700)">
@@ -492,7 +510,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--gray-50);color:
               <div class="dot" style="background:var(--amber)"></div>
               Piano trattamenti
             </div>
-            <div style="font-size:11px;color:var(--gray-500);margin-bottom:.6rem">Clicca un dente per assegnare trattamenti da eseguire. Il bordo indica lo stato: <span style="color:var(--red);font-weight:600">rosso = da fare</span> · <span style="color:var(--amber);font-weight:600">giallo = in corso</span> · <span style="color:var(--teal);font-weight:600">verde = eseguito</span></div>
+            <div style="font-size:11px;color:var(--gray-500);margin-bottom:.6rem">Clicca un dente per assegnare trattamenti da eseguire. Il bordo indica lo stato: <span style="color:var(--red);font-weight:600">rosso = da fare</span> · <span style="color:var(--amber);font-weight:600">giallo = in corso</span> · <span style="color:var(--pink);font-weight:600">verde = eseguito</span></div>
 
             <!-- Arcate piano -->
             <div style="font-size:10px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.04em;margin-bottom:.4rem">Arcate complete</div>
@@ -517,7 +535,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--gray-50);color:
             <div style="padding:.8rem 1.2rem;border-bottom:var(--border);display:flex;justify-content:space-between;align-items:center">
               <div>
                 <div style="font-size:13px;font-weight:600">Preventivo</div>
-                <div style="font-size:11px;color:var(--gray-500);margin-top:1px">N° <span id="prev-num" style="font-family:'DM Mono',monospace;font-weight:600;color:var(--teal)">—</span> · Data <span id="prev-data">—</span> · Scade il <span id="prev-scad">—</span></div>
+                <div style="font-size:11px;color:var(--gray-500);margin-top:1px">N° <span id="prev-num" style="font-family:'DM Mono',monospace;font-weight:600;color:var(--pink)">—</span> · Data <span id="prev-data">—</span> · Scade il <span id="prev-scad">—</span></div>
               </div>
               <div style="display:flex;gap:6px">
                 <button class="btn-s" onclick="importDaOdonto()">⟳ Da odontogramma</button>
@@ -560,7 +578,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--gray-50);color:
                 </div>
                 <div style="display:flex;justify-content:space-between;font-size:15px;font-weight:700;padding-top:8px;border-top:var(--border)">
                   <span>Totale preventivo</span>
-                  <span id="prev-tot-netto" style="font-family:'DM Mono',monospace;color:var(--teal)">€ 0,00</span>
+                  <span id="prev-tot-netto" style="font-family:'DM Mono',monospace;color:var(--pink)">€ 0,00</span>
                 </div>
               </div>
             </div>
@@ -647,7 +665,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--gray-50);color:
     </div>
 
     <!-- Form modifica/aggiungi -->
-    <div id="prest-form" style="display:none;background:var(--teal-pale);border:1px solid var(--teal-light);border-radius:var(--r-sm);padding:1rem;margin-bottom:1rem">
+    <div id="prest-form" style="display:none;background:var(--pink-pale);border:1px solid var(--pink-light);border-radius:var(--r-sm);padding:1rem;margin-bottom:1rem">
       <div style="font-size:12px;font-weight:600;margin-bottom:.7rem" id="prest-form-title">Nuova prestazione</div>
       <input type="hidden" id="pe-tipo">
       <input type="hidden" id="pe-idx">
@@ -666,7 +684,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--gray-50);color:
 
     <!-- Lista ATTUALE -->
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
-      <div style="font-size:11px;font-weight:700;color:var(--teal);text-transform:uppercase;letter-spacing:.05em">Situazione attuale</div>
+      <div style="font-size:11px;font-weight:700;color:var(--pink);text-transform:uppercase;letter-spacing:.05em">Situazione attuale</div>
       <button class="btn-s c" onclick="newPrestazione('attuale')" style="font-size:11px;padding:4px 8px">+ Aggiungi</button>
     </div>
     <div id="prest-list-attuale" style="margin-bottom:1rem"></div>
@@ -746,10 +764,10 @@ function handleUrlParams() {
 // ════════════════════════════════════════════════════════════
 
 const TR_ATTUALE_DEFAULT = [
-  {id:'sano',        label:'Sano',               color:'#1D9E75', sym:'✓',  bg:'#E1F5EE', tipo:'attuale'},
+  {id:'sano',        label:'Sano',               color:'#E0408A', sym:'✓',  bg:'#FAE0EE', tipo:'attuale'},
   {id:'otturato',    label:'Otturato',            color:'#1A5EA8', sym:'O',  bg:'#E8F1FD', tipo:'attuale'},
   {id:'devitaliz',   label:'Devitalizzato',       color:'#B7651A', sym:'D',  bg:'#FEF3E2', tipo:'attuale'},
-  {id:'impianto',    label:'Impianto',            color:'#0F6E56', sym:'I',  bg:'#D0F0E6', tipo:'attuale'},
+  {id:'impianto',    label:'Impianto',            color:'#C91865', sym:'I',  bg:'#D0F0E6', tipo:'attuale'},
   {id:'corona',      label:'Corona',              color:'#5B4BBF', sym:'K',  bg:'#EEEDFB', tipo:'attuale'},
   {id:'ponte',       label:'Ponte',               color:'#1A5EA8', sym:'▬',  bg:'#E8F1FD', tipo:'attuale'},
   {id:'provvisorio', label:'Provvisorio',         color:'#B7651A', sym:'PR', bg:'#FEF3E2', tipo:'attuale'},
@@ -758,20 +776,20 @@ const TR_ATTUALE_DEFAULT = [
   {id:'frattura',    label:'Frattura',            color:'#C0392B', sym:'//', bg:'#FDECEA', tipo:'attuale'},
   {id:'erosione',    label:'Erosione/abrasione',  color:'#686864', sym:'~',  bg:'#EFEDE7', tipo:'attuale'},
   {id:'bite_att',    label:'Bite presente',       color:'#5B4BBF', sym:'B',  bg:'#EEEDFB', tipo:'attuale'},
-  {id:'igiene_att',  label:'Igiene eseguita',     color:'#1D9E75', sym:'IG', bg:'#E1F5EE', tipo:'attuale'},
-  {id:'sbianc_att',  label:'Sbiancamento fatto',  color:'#1D9E75', sym:'SB', bg:'#E1F5EE', tipo:'attuale'},
+  {id:'igiene_att',  label:'Igiene eseguita',     color:'#E0408A', sym:'IG', bg:'#FAE0EE', tipo:'attuale'},
+  {id:'sbianc_att',  label:'Sbiancamento fatto',  color:'#E0408A', sym:'SB', bg:'#FAE0EE', tipo:'attuale'},
 ];
 
 const TR_PIANO_DEFAULT = [
   {id:'da_otturare', label:'Da otturare',          color:'#C0392B', sym:'C',  bg:'#FDECEA', tipo:'piano'},
   {id:'endo_fare',   label:'Endodonzia',            color:'#B7651A', sym:'E',  bg:'#FEF3E2', tipo:'piano'},
   {id:'da_estrarre', label:'Da estrarre',           color:'#C0392B', sym:'†',  bg:'#FDECEA', tipo:'piano'},
-  {id:'imp_fare',    label:'Impianto',              color:'#0F6E56', sym:'I+', bg:'#D0F0E6', tipo:'piano'},
+  {id:'imp_fare',    label:'Impianto',              color:'#C91865', sym:'I+', bg:'#D0F0E6', tipo:'piano'},
   {id:'corona_fare', label:'Corona',                color:'#5B4BBF', sym:'K+', bg:'#EEEDFB', tipo:'piano'},
   {id:'ponte_fare',  label:'Ponte',                 color:'#1A5EA8', sym:'▬+', bg:'#E8F1FD', tipo:'piano'},
-  {id:'igiene_fare', label:'Igiene',                color:'#1D9E75', sym:'IG', bg:'#E1F5EE', tipo:'piano'},
+  {id:'igiene_fare', label:'Igiene',                color:'#E0408A', sym:'IG', bg:'#FAE0EE', tipo:'piano'},
   {id:'bite_fare',   label:'Bite',                  color:'#5B4BBF', sym:'B+', bg:'#EEEDFB', tipo:'piano'},
-  {id:'sbianc_fare', label:'Sbiancamento',          color:'#1D9E75', sym:'SB', bg:'#E1F5EE', tipo:'piano'},
+  {id:'sbianc_fare', label:'Sbiancamento',          color:'#E0408A', sym:'SB', bg:'#FAE0EE', tipo:'piano'},
   {id:'controllo',   label:'Controllo',             color:'#686864', sym:'CC', bg:'#EFEDE7', tipo:'piano'},
   {id:'altro_piano', label:'Altro',                 color:'#686864', sym:'?',  bg:'#EFEDE7', tipo:'piano'},
 ];
@@ -785,7 +803,7 @@ function findTR(id) {
 
 const ARCH_TR = [
   {id:'tot_rimov',  label:'Protesi totale rimovibile',     color:'#C05621', sym:'TR'},
-  {id:'tot_fissa',  label:'Protesi totale fissa/All-on-4', color:'#0F6E56', sym:'TF'},
+  {id:'tot_fissa',  label:'Protesi totale fissa/All-on-4', color:'#C91865', sym:'TF'},
   {id:'parz_rimov', label:'Protesi parziale rimovibile',   color:'#B7651A', sym:'PR'},
   {id:'ortodonzia', label:'Apparecchio ortodontico',       color:'#1A5EA8', sym:'OR'},
 ];
@@ -1127,7 +1145,7 @@ function refreshOdonto(type) {
       // Stato dominante: se tutti eseguiti → verde, se almeno uno dafare → rosso, altrimenti giallo
       const stati = items.map(x=>x.stato||'dafare');
       let strokeColor = '#C0392B'; // dafare = rosso
-      if (stati.every(s=>s==='eseguito')) strokeColor = '#1D9E75';
+      if (stati.every(s=>s==='eseguito')) strokeColor = '#E0408A';
       else if (!stati.includes('dafare') && stati.includes('incorso')) strokeColor = '#B7651A';
 
       const primary = findTR(items[0].tid);
@@ -1138,7 +1156,7 @@ function refreshOdonto(type) {
       sg.innerHTML = items.slice(0,3).map((item,i) => {
         const t = findTR(item.tid); if(!t) return '';
         const xo = (i - Math.min(items.length-1,2)/2)*13;
-        const statoColor = item.stato==='eseguito' ? '#1D9E75' : item.stato==='incorso' ? '#B7651A' : '#C0392B';
+        const statoColor = item.stato==='eseguito' ? '#E0408A' : item.stato==='incorso' ? '#B7651A' : '#C0392B';
         return `<rect x="${xo-7}" y="-6" width="14" height="12" rx="2" fill="${t.bg}" stroke="${statoColor}" stroke-width="1.5"/>
                 <text x="${xo}" y="4" text-anchor="middle" font-size="7" font-weight="700" fill="${t.color}" font-family="DM Mono,monospace">${t.sym}</text>`;
       }).join('') + (items.length>3?`<rect x="17" y="-6" width="12" height="12" rx="2" fill="#686864"/><text x="23" y="4" text-anchor="middle" font-size="6" font-weight="700" fill="white" font-family="DM Mono,monospace">+${items.length-3}</text>`:'');
@@ -1646,7 +1664,7 @@ function renderPrevRows() {
         style="width:80px;border:1px solid transparent;border-radius:4px;padding:4px 5px;font-size:12px;text-align:right;background:transparent;outline:none" onfocus="this.style.borderColor='var(--gray-300)'" onblur="this.style.borderColor='transparent'"></td>
       <td style="padding:6px 8px;text-align:right"><input type="number" value="${r.sconto||0}" min="0" max="100" onchange="updatePrevRow(${i},'sconto',this.value)"
         style="width:55px;border:1px solid transparent;border-radius:4px;padding:4px 5px;font-size:12px;text-align:right;background:transparent;outline:none" onfocus="this.style.borderColor='var(--gray-300)'" onblur="this.style.borderColor='transparent'"></td>
-      <td style="padding:6px 8px;text-align:right;font-weight:600;font-family:'DM Mono',monospace;font-size:12px;color:var(--teal)">€ ${tot.toFixed(2).replace('.',',')}</td>
+      <td style="padding:6px 8px;text-align:right;font-weight:600;font-family:'DM Mono',monospace;font-size:12px;color:var(--pink)">€ ${tot.toFixed(2).replace('.',',')}</td>
       <td style="padding:6px 4px;text-align:center"><button onclick="removePrevRow(${i})" style="background:none;border:none;cursor:pointer;color:var(--gray-300);font-size:13px">✕</button></td>
     </tr>`;
   }).join('') || `<tr><td colspan="7" style="padding:1.5rem;text-align:center;color:var(--gray-300);font-size:13px">Nessuna voce — clicca Da odontogramma o + Riga</td></tr>`;
@@ -1722,7 +1740,7 @@ function stampaPrev() {
       <td style="padding:7px 10px;border-bottom:1px solid #E8E8E8;text-align:right;font-size:13px">${r.qta||1}</td>
       <td style="padding:7px 10px;border-bottom:1px solid #E8E8E8;text-align:right;font-size:13px">€ ${fmt(parseFloat(r.prezzo)||0)}</td>
       <td style="padding:7px 10px;border-bottom:1px solid #E8E8E8;text-align:right;font-size:13px">${r.sconto||0}%</td>
-      <td style="padding:7px 10px;border-bottom:1px solid #E8E8E8;text-align:right;font-weight:700;font-size:13px;color:#0F6E56">€ ${fmt(t)}</td>
+      <td style="padding:7px 10px;border-bottom:1px solid #E8E8E8;text-align:right;font-weight:700;font-size:13px;color:#C91865">€ ${fmt(t)}</td>
     </tr>`;
   }).join('');
 
@@ -1734,12 +1752,12 @@ function stampaPrev() {
   body{font-family:'Helvetica Neue',Arial,sans-serif;color:#1A1A18;background:white;font-size:14px}
   @media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
   .page{max-width:800px;margin:0 auto;padding:40px}
-  .header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:32px;padding-bottom:24px;border-bottom:2px solid #0F6E56}
-  .studio-name{font-size:22px;font-weight:700;color:#0F6E56;margin-bottom:4px}
+  .header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:32px;padding-bottom:24px;border-bottom:2px solid #C91865}
+  .studio-name{font-size:22px;font-weight:700;color:#C91865;margin-bottom:4px}
   .studio-info{font-size:12px;color:#686864;line-height:1.7}
   .prev-label{text-align:right}
   .prev-title{font-size:28px;font-weight:700;color:#1A1A18;letter-spacing:-0.02em}
-  .prev-num{font-size:13px;font-weight:600;color:#0F6E56;margin-top:4px;font-family:monospace}
+  .prev-num{font-size:13px;font-weight:600;color:#C91865;margin-top:4px;font-family:monospace}
   .prev-meta{font-size:12px;color:#686864;margin-top:2px}
   .section{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:28px}
   .box{background:#F7F6F2;border-radius:8px;padding:16px}
@@ -1747,12 +1765,12 @@ function stampaPrev() {
   .box-line{font-size:13px;margin-bottom:3px;line-height:1.5}
   .box-line strong{font-weight:600}
   table{width:100%;border-collapse:collapse;margin-bottom:16px}
-  thead tr{background:#0F6E56;color:white}
+  thead tr{background:#C91865;color:white}
   thead th{padding:9px 10px;font-size:11px;font-weight:600;text-align:left;letter-spacing:.04em}
   thead th:nth-child(n+3){text-align:right}
   .totals{margin-left:auto;width:280px}
   .tot-row{display:flex;justify-content:space-between;font-size:13px;padding:5px 0;border-bottom:1px solid #E8E8E8}
-  .tot-row.final{font-size:16px;font-weight:700;padding-top:10px;border-bottom:none;color:#0F6E56}
+  .tot-row.final{font-size:16px;font-weight:700;padding-top:10px;border-bottom:none;color:#C91865}
   .note-box{background:#FEF3E2;border-left:3px solid #B7651A;padding:12px 16px;border-radius:0 6px 6px 0;margin-top:20px;font-size:12px;color:#686864;line-height:1.6}
   .footer{margin-top:40px;padding-top:20px;border-top:1px solid #E5E3DC;display:flex;justify-content:space-between;align-items:flex-end}
   .footer-note{font-size:11px;color:#C4C2BA;line-height:1.6}
@@ -1762,8 +1780,8 @@ function stampaPrev() {
 </style>
 </head>
 <body>
-<div style="text-align:center;padding:12px;background:#E1F5EE;margin-bottom:0" class="no-print">
-  <button onclick="window.print()" style="background:#0F6E56;color:white;border:none;padding:10px 28px;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer;margin-right:8px">🖨 Stampa / Salva PDF</button>
+<div style="text-align:center;padding:12px;background:#FAE0EE;margin-bottom:0" class="no-print">
+  <button onclick="window.print()" style="background:#C91865;color:white;border:none;padding:10px 28px;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer;margin-right:8px">🖨 Stampa / Salva PDF</button>
   <button onclick="window.close()" style="background:none;border:1px solid #C4C2BA;padding:10px 18px;border-radius:6px;font-size:13px;cursor:pointer">✕ Chiudi</button>
 </div>
 <div class="page">
@@ -1879,41 +1897,3 @@ function setSyncPill(s){
   else{b.textContent='● err';b.className='sync-pill s-er'}
 }
 function notify(msg,type='i'){
-  const e=document.getElementById('notif');
-  e.textContent=msg;e.className=`notif show ${type}`;
-  setTimeout(()=>e.classList.remove('show'),2800);
-}
-
-// Drag & drop
-const dz=document.querySelector('.doc-zone');
-if(dz){
-  dz.addEventListener('dragover',e=>{e.preventDefault();dz.style.borderColor='var(--teal)'});
-  dz.addEventListener('dragleave',()=>{dz.style.borderColor=''});
-  dz.addEventListener('drop',e=>{e.preventDefault();dz.style.borderColor='';handleUpload(e.dataTransfer.files)});
-}
-
-// Autosave ogni 3 minuti
-setInterval(()=>{ if(currentId) savePatient(); }, 3*60*1000);
-
-// ── MOBILE SIDEBAR TOGGLE ──
-function toggleSidebar() {
-  const sb = document.getElementById('sidebar');
-  const ov = document.getElementById('sidebar-overlay');
-  const isOpen = sb.classList.contains('open');
-  sb.classList.toggle('open', !isOpen);
-  ov.classList.toggle('open', !isOpen);
-  document.body.style.overflow = isOpen ? '' : 'hidden';
-}
-
-function closeSidebar() {
-  const sb = document.getElementById('sidebar');
-  const ov = document.getElementById('sidebar-overlay');
-  sb.classList.remove('open');
-  ov.classList.remove('open');
-  document.body.style.overflow = '';
-}
-
-// Close sidebar when a patient is selected on mobile — handled in renderList
-</script>
-</body>
-</html>
