@@ -1,0 +1,1810 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Torino | Calendario Studio</title>
+
+  <!-- Firebase SDK (compat) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:13px;color:#333;background:#f0f0f0;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+    .hidden{display:none!important}
+
+    /* ── HEADER ── */
+    .header{display:flex;align-items:center;padding:0 12px;height:48px;background:white;border-bottom:1px solid #ddd;flex-shrink:0;gap:10px;z-index:20}
+    .hd-logo{display:flex;align-items:center;gap:6px;color:#1a73e8;font-size:14px;font-weight:600;letter-spacing:-.3px}
+    .hd-logo svg{width:22px;height:22px;fill:currentColor}
+    .hd-title{font-size:18px;font-weight:400;color:#333;flex:1}
+    .view-tabs{display:flex;background:#e8e8e8;border-radius:4px;padding:2px;gap:1px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+    .view-tabs::-webkit-scrollbar{height:0}
+    .view-tab{padding:4px 9px;border-radius:3px;cursor:pointer;font-size:11.5px;color:#555;white-space:nowrap;user-select:none;flex-shrink:0}
+    .view-tab.active{background:white;color:#1a73e8;font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.15)}
+    .view-tab:hover:not(.active){background:rgba(255,255,255,.6)}
+    .hd-icons{display:flex;gap:10px;color:#666;font-size:18px;margin-left:4px;cursor:pointer}
+    .hd-menu-btn{display:none;background:none;border:none;font-size:22px;cursor:pointer;color:#555;padding:2px 6px}
+
+    /* ── SYNC STATUS ── */
+    .sync-dot{width:8px;height:8px;border-radius:50%;background:#4caf50;flex-shrink:0;transition:background .3s}
+    .sync-dot.syncing{background:#ff9800;animation:pulse .8s infinite alternate}
+    .sync-dot.error{background:#f44336}
+    @keyframes pulse{from{opacity:.5}to{opacity:1}}
+
+    /* ── MAIN LAYOUT ── */
+    .main{display:flex;flex:1;overflow:hidden}
+
+    /* ── SIDEBAR ── */
+    .sidebar{width:196px;background:white;border-right:1px solid #ddd;overflow-y:auto;flex-shrink:0;font-size:12px;transition:transform .25s;z-index:15}
+    .mini-cal{padding:8px 6px 4px}
+    .mc-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+    .mc-title{font-size:12.5px;font-weight:500;color:#333}
+    .mc-nav{display:flex;gap:2px}
+    .mc-btn{background:none;border:none;cursor:pointer;padding:2px 5px;border-radius:4px;color:#666;font-size:16px;line-height:1}
+    .mc-btn:hover{background:#f0f0f0}
+    .mc-grid{display:grid;grid-template-columns:repeat(7,1fr);text-align:center;gap:1px}
+    .mc-dow{font-size:9.5px;color:#888;padding:2px 0}
+    .mc-day{font-size:10.5px;padding:2px;border-radius:50%;cursor:pointer;width:22px;height:22px;display:flex;align-items:center;justify-content:center;margin:0 auto}
+    .mc-day:hover{background:#f0f0f0}
+    .mc-day.today{background:#1a73e8;color:white}
+    .mc-day.selected:not(.today){background:#e8f0fe;color:#1a73e8;font-weight:600}
+    .mc-day.other-month{color:#ccc}
+
+    .sb-section{border-top:1px solid #eee;padding:6px 0}
+    .sb-section-hd{display:flex;align-items:center;justify-content:space-between;padding:4px 10px 4px;cursor:pointer}
+    .sb-section-title{font-size:11px;font-weight:600;color:#666;text-transform:uppercase;letter-spacing:.4px}
+    .sb-section-toggle{font-size:10px;color:#999;transition:transform .2s}
+    .sb-section-toggle.collapsed{transform:rotate(-180deg)}
+
+    .cal-list{padding:0 4px}
+    .cal-group{margin-bottom:2px}
+    .cal-group-hd{display:flex;align-items:center;gap:4px;padding:3px 6px;cursor:pointer;border-radius:4px}
+    .cal-group-hd:hover{background:#f5f5f5}
+    .cal-group-arrow{font-size:9px;color:#888;transition:transform .2s;display:inline-block}
+    .cal-group-arrow.closed{transform:rotate(-90deg)}
+    .cal-group-name{font-size:11.5px;color:#444;font-weight:500;flex:1}
+    .cal-item{display:flex;align-items:center;gap:6px;padding:3px 6px 3px 20px;border-radius:4px;cursor:pointer}
+    .cal-item:hover{background:#f5f5f5}
+    .cal-item.ungrouped{padding-left:6px}
+    .cal-dot{width:12px;height:12px;border-radius:2px;flex-shrink:0}
+    .cal-name{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:11.5px;color:#444}
+    .cal-chk{width:13px;height:13px;flex-shrink:0;cursor:pointer}
+    .sb-add{display:flex;align-items:center;gap:5px;padding:4px 10px;color:#1a73e8;font-size:11.5px;cursor:pointer;margin-top:2px}
+    .sb-add:hover{background:#f0f0f0;border-radius:4px;margin:2px 4px;padding:4px 6px}
+
+    /* ── NAV BAR ── */
+    .nav-bar{display:flex;align-items:center;padding:6px 12px;background:white;border-bottom:1px solid #ddd;flex-shrink:0;gap:6px}
+    .nb-btn{background:none;border:1px solid #ccc;border-radius:4px;padding:3px 8px;cursor:pointer;color:#555;font-size:15px;line-height:1}
+    .nb-btn:hover{background:#f5f5f5}
+    .nb-today{background:none;border:1px solid #ccc;border-radius:4px;padding:4px 10px;cursor:pointer;font-size:12px;color:#555;font-weight:500}
+    .nb-today:hover{background:#f5f5f5}
+    .nb-date{font-size:15px;font-weight:400;color:#222;cursor:pointer;display:flex;align-items:center;gap:4px}
+    .nb-date:hover{color:#1a73e8}
+
+    /* ── CAL AREA ── */
+    .cal-area{flex:1;overflow:hidden;display:flex;flex-direction:column}
+    .cal-scroll{flex:1;overflow-y:auto;overflow-x:auto;position:relative;-webkit-overflow-scrolling:touch}
+    ::-webkit-scrollbar{width:7px;height:7px}
+    ::-webkit-scrollbar-track{background:#f5f5f5}
+    ::-webkit-scrollbar-thumb{background:#ccc;border-radius:4px}
+    ::-webkit-scrollbar-thumb:hover{background:#aaa}
+
+    /* ── DAY / WEEK GRID ── */
+    .cal-view{display:flex;flex-direction:column;min-height:100%}
+    .cal-head{display:flex;background:white;border-bottom:2px solid #ddd;position:sticky;top:0;z-index:10}
+    .cal-head-time{width:56px;flex-shrink:0;border-right:1px solid #eee}
+    .cal-head-col{flex:1;text-align:center;padding:6px 4px;border-left:1px solid #e0e0e0;min-width:90px}
+    .cal-head-col.today-bg{background:#e8f3ff}
+    .col-dow{font-size:10.5px;color:#888;text-transform:uppercase;letter-spacing:.5px}
+    .col-num{font-size:22px;font-weight:300;color:#444;line-height:1.2;margin-top:2px}
+    .col-num.today-circle{background:#1a73e8;color:white;border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:500;margin:2px auto 0}
+
+    .cal-body{display:flex;flex:1}
+    .time-gutter{width:56px;flex-shrink:0;border-right:1px solid #eee}
+    .time-label{height:60px;display:flex;align-items:flex-start;justify-content:flex-end;padding:0 6px;font-size:10px;color:#999;margin-top:-6px}
+    .col-wrap{flex:1;display:flex}
+    .day-col{flex:1;border-left:1px solid #e0e0e0;position:relative;min-width:90px}
+    .day-col.today-bg{background:#fdfeff}
+    .hour-row{height:60px;border-top:1px solid #ebebeb;position:relative}
+    .hour-row:first-child{border-top:none}
+    .half-tick{position:absolute;left:0;right:0;top:50%;border-top:1px dashed #f0f0f0}
+
+    /* events */
+    .ev{position:absolute;left:2px;right:2px;border-radius:4px;padding:2px 5px;font-size:11px;color:white;overflow:hidden;cursor:pointer;z-index:5;border-left:3px solid rgba(0,0,0,.2)}
+    .ev:hover{box-shadow:0 2px 8px rgba(0,0,0,.3);z-index:6;opacity:.92}
+    .ev-time{font-size:10px;font-weight:700;white-space:nowrap;opacity:.95}
+    .ev-patient{font-size:11px;line-height:1.3;word-break:break-word}
+    .ev-detail{font-size:10px;opacity:.85;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+    /* now line */
+    .now-line{position:absolute;left:0;right:0;z-index:8;pointer-events:none}
+    .now-line::before{content:'';position:absolute;left:-5px;top:-4px;width:9px;height:9px;background:#ea4335;border-radius:50%}
+    .now-line::after{content:'';position:absolute;left:0;right:0;top:0;border-top:2px solid #ea4335}
+
+    /* click zone */
+    .hour-row{cursor:crosshair}
+    .hour-row:hover{background:rgba(26,115,232,.03)}
+
+    /* ── MODAL ── */
+    .overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;display:flex;align-items:center;justify-content:center}
+    .modal{background:white;border-radius:10px;width:600px;max-width:96vw;max-height:92vh;overflow-y:auto;box-shadow:0 10px 40px rgba(0,0,0,.25)}
+    .modal-hd{display:flex;align-items:center;padding:16px 20px 12px;border-bottom:1px solid #eee;gap:8px}
+    .modal-hd-color{width:14px;height:14px;border-radius:3px;flex-shrink:0}
+    .modal-title{font-size:16px;font-weight:500;flex:1}
+    .modal-x{background:none;border:none;font-size:22px;cursor:pointer;color:#aaa;line-height:1;padding:0}
+    .modal-x:hover{color:#333}
+    .modal-body{padding:16px 20px;display:flex;flex-direction:column;gap:13px}
+    .form-row{display:flex;gap:10px}
+    .fg{display:flex;flex-direction:column;gap:4px;flex:1;position:relative}
+    .fg label{font-size:11.5px;color:#666;font-weight:500}
+    .fg input,.fg select,.fg textarea{border:1px solid #ddd;border-radius:6px;padding:7px 9px;font-size:13px;color:#333;transition:border-color .15s;outline:none;font-family:inherit;background:white}
+    .fg input:focus,.fg select:focus,.fg textarea:focus{border-color:#1a73e8;box-shadow:0 0 0 2px rgba(26,115,232,.1)}
+    .fg select optgroup{font-weight:700;color:#1a73e8;background:#f0f4ff;font-size:11px;letter-spacing:.5px}
+    .fg select option{font-weight:400;color:#333;padding-left:8px}
+
+    /* ── MULTI-CALENDAR SELECT ── */
+    .multi-cal-wrap{position:relative}
+    .multi-cal-display{border:1px solid #ddd;border-radius:6px;padding:5px 9px;font-size:13px;cursor:pointer;min-height:36px;display:flex;align-items:flex-start;justify-content:space-between;gap:6px;background:white;transition:border-color .15s}
+    .multi-cal-display:hover{border-color:#1a73e8}
+    .multi-cal-display.open{border-color:#1a73e8;box-shadow:0 0 0 2px rgba(26,115,232,.1)}
+    .multi-cal-pills{display:flex;flex-wrap:wrap;gap:4px;flex:1;padding-top:1px}
+    .multi-cal-pill{display:flex;align-items:center;gap:4px;border-radius:12px;padding:2px 7px 2px 6px;font-size:11px;color:white;white-space:nowrap}
+    .multi-cal-pill-dot{width:7px;height:7px;border-radius:1px;flex-shrink:0;background:rgba(255,255,255,.4)}
+    .multi-cal-pill-x{background:none;border:none;cursor:pointer;color:rgba(255,255,255,.8);font-size:13px;line-height:1;padding:0;margin-left:1px;flex-shrink:0}
+    .multi-cal-pill-x:hover{color:white}
+    .multi-cal-placeholder{color:#aaa;font-size:13px;padding:2px 0}
+    .multi-cal-arrow{color:#aaa;font-size:11px;flex-shrink:0;margin-top:4px}
+    .multi-cal-dropdown{position:absolute;top:calc(100% + 4px);left:0;right:0;background:white;border:1px solid #ddd;border-radius:8px;box-shadow:0 6px 20px rgba(0,0,0,.15);z-index:300;max-height:260px;overflow-y:auto}
+    .multi-cal-group-hd{padding:5px 10px;font-size:10px;font-weight:700;color:#1a73e8;text-transform:uppercase;letter-spacing:.5px;background:#f8f8f8;border-bottom:1px solid #eee;position:sticky;top:0}
+    .multi-cal-option{display:flex;align-items:center;gap:8px;padding:6px 10px;cursor:pointer;font-size:12px;border-bottom:1px solid #f5f5f5}
+    .multi-cal-option:hover{background:#f5f5f5}
+    .multi-cal-option:last-child{border-bottom:none}
+    .multi-cal-option input[type=checkbox]{width:13px;height:13px;flex-shrink:0;cursor:pointer;accent-color:#1a73e8}
+    .multi-cal-option-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+
+    /* ── GESTIONE CALENDARI ── */
+    .cal-mgmt-row{display:flex;align-items:flex-end;gap:8px;padding:7px 0;border-bottom:1px solid #f0f0f0}
+    .cal-mgmt-row:last-child{border-bottom:none}
+    .cal-color-preview{width:24px;height:24px;border-radius:4px;flex-shrink:0;cursor:pointer;border:2px solid rgba(0,0,0,.1);margin-bottom:2px}
+    .cal-mgmt-del{background:none;border:1px solid #d93025;color:#d93025;border-radius:6px;padding:7px 9px;cursor:pointer;font-size:13px;flex-shrink:0;transition:background .15s}
+    .cal-mgmt-del:hover{background:#fce8e6}
+    .cal-group-tag{display:inline-block;font-size:10px;font-weight:600;padding:2px 6px;border-radius:3px;background:#f0f4ff;color:#1a73e8;margin-top:3px}
+    .fg textarea{resize:vertical;min-height:64px}
+    .form-div{border:none;border-top:1px solid #f0f0f0;margin:2px 0}
+    .form-sec{font-size:11px;font-weight:600;color:#999;text-transform:uppercase;letter-spacing:.5px}
+    .modal-ft{display:flex;align-items:center;padding:12px 20px;border-top:1px solid #eee;gap:8px;flex-wrap:wrap}
+    .btn{padding:8px 16px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;border:none;transition:all .15s;white-space:nowrap}
+    .btn:disabled{opacity:.6;cursor:not-allowed}
+    .btn-primary{background:#1a73e8;color:white}
+    .btn-primary:hover:not(:disabled){background:#1557b0}
+    .btn-sec{background:none;border:1px solid #ccc;color:#555}
+    .btn-sec:hover{background:#f5f5f5}
+    .btn-del{background:none;border:1px solid #d93025;color:#d93025}
+    .btn-del:hover{background:#fce8e6}
+    .btn-wa{background:#25D366;color:white;display:flex;align-items:center;gap:6px;margin-left:auto;padding:9px 16px;font-size:13px}
+    .btn-wa:hover{background:#1dba57}
+    .btn-wa svg{width:16px;height:16px;fill:white;flex-shrink:0}
+
+    /* ── PATIENT AUTOCOMPLETE ── */
+    .ac-dropdown{position:absolute;top:100%;left:0;right:0;background:white;border:1px solid #ddd;border-radius:6px;box-shadow:0 4px 12px rgba(0,0,0,.15);z-index:200;max-height:200px;overflow-y:auto;margin-top:2px}
+    .ac-item{padding:8px 12px;cursor:pointer;font-size:12.5px;border-bottom:1px solid #f5f5f5}
+    .ac-item:hover{background:#e8f0fe}
+    .ac-item:last-child{border-bottom:none}
+    .ac-name{font-weight:500;color:#333}
+    .ac-sub{font-size:11px;color:#888;margin-top:1px}
+
+    /* ── EVENT POPUP ── */
+    .popup{position:fixed;background:white;border-radius:8px;padding:14px;max-width:320px;min-width:240px;z-index:90;box-shadow:0 4px 20px rgba(0,0,0,.18);border:1px solid #e0e0e0;font-size:12px;line-height:1.5}
+    .popup-hd{display:flex;align-items:flex-start;gap:8px;margin-bottom:10px}
+    .popup-dot{width:12px;height:12px;border-radius:3px;flex-shrink:0;margin-top:2px}
+    .popup-title{font-weight:600;font-size:13px;flex:1}
+    .popup-x{background:none;border:none;cursor:pointer;color:#aaa;font-size:16px;line-height:1;padding:0;margin-left:4px}
+    .popup-row{display:flex;gap:6px;margin:3px 0}
+    .popup-lbl{color:#888;min-width:76px;flex-shrink:0}
+    .popup-val{color:#333;word-break:break-word}
+    .popup-actions{display:flex;gap:6px;margin-top:10px}
+    .popup-btn{padding:5px 10px;border-radius:5px;font-size:11.5px;border:none;cursor:pointer;font-weight:500}
+    .popup-edit{background:#e8f0fe;color:#1a73e8}
+    .popup-wa{background:#25D366;color:white;display:flex;align-items:center;gap:4px}
+
+    /* ── ALLEGATI ── */
+    .attach-area{display:flex;flex-direction:column;gap:6px}
+    .btn-attach{background:#f0f4ff;border:1px dashed #1a73e8;border-radius:6px;padding:7px 14px;color:#1a73e8;font-size:12.5px;cursor:pointer;font-weight:500;text-align:left;transition:background .15s}
+    .btn-attach:hover{background:#e3ecff}
+    .attach-list{display:flex;flex-wrap:wrap;gap:6px}
+    .attach-chip{display:flex;align-items:center;gap:5px;background:#f5f5f5;border:1px solid #ddd;border-radius:20px;padding:3px 10px 3px 8px;font-size:11.5px;color:#444;max-width:200px}
+    .attach-chip span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+    .attach-chip.uploading{opacity:.6}
+    .attach-del{background:none;border:none;cursor:pointer;color:#999;font-size:14px;line-height:1;padding:0;flex-shrink:0}
+    .attach-del:hover{color:#d93025}
+    /* popup allegati */
+    .popup-attach{margin-top:8px;padding-top:8px;border-top:1px solid #eee}
+    .popup-attach-title{font-size:11px;color:#888;margin-bottom:4px}
+    .popup-attach-chip{display:inline-flex;align-items:center;gap:4px;background:#f0f4ff;border:1px solid #c5d8ff;border-radius:12px;padding:2px 8px;font-size:11px;color:#1a73e8;cursor:pointer;margin:2px 2px 0 0;text-decoration:none}
+    .popup-attach-chip:hover{background:#ddeaff}
+
+    /* ── WHATSAPP REMINDER BANNER ── */
+    .wa-banner{background:#e7f8ee;border-bottom:2px solid #25D366;padding:8px 14px;flex-shrink:0;max-height:260px;overflow-y:auto}
+    .wa-banner-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+    .wa-banner-title{font-size:12px;font-weight:700;color:#1a7a40;display:flex;align-items:center;gap:6px}
+    .wa-banner-close{background:none;border:1px solid #25D366;border-radius:5px;cursor:pointer;color:#1a7a40;font-size:11.5px;padding:2px 9px;font-weight:500}
+    .wa-banner-close:hover{background:#c8efd6}
+    .wa-banner-item{display:flex;align-items:center;gap:8px;padding:5px 0;border-top:1px solid #c8efd6;font-size:12px}
+    .wa-banner-info{flex:1;min-width:0}
+    .wa-banner-name{font-weight:600;color:#222;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .wa-banner-time{color:#555;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .wa-banner-btn{background:#25D366;color:white;border:none;border-radius:5px;padding:5px 10px;cursor:pointer;font-size:11.5px;display:flex;align-items:center;gap:4px;white-space:nowrap;text-decoration:none;flex-shrink:0}
+    .wa-banner-btn:hover{background:#1dba57}
+    .wa-banner-dismiss{background:none;border:1px solid #ccc;border-radius:5px;cursor:pointer;color:#888;font-size:13px;padding:3px 7px;flex-shrink:0;transition:all .15s}
+    .wa-banner-dismiss:hover{background:#e0e0e0;color:#333;border-color:#aaa}
+
+    /* ── TOAST ── */
+    .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#333;color:white;padding:8px 18px;border-radius:20px;font-size:12.5px;z-index:200;opacity:0;transition:opacity .3s;pointer-events:none}
+    .toast.show{opacity:1}
+
+    /* ── MOBILE OVERLAY SIDEBAR ── */
+    .sb-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:14}
+
+    /* ── MOBILE RESPONSIVE ── */
+    @media (max-width: 768px) {
+      .hd-menu-btn{display:block}
+      .hd-title{font-size:15px}
+      .view-tabs{max-width:200px}
+      .hd-icons span:not(:last-child){display:none}
+
+      .sidebar{position:fixed;top:0;left:0;bottom:0;width:240px;transform:translateX(-100%);z-index:15;box-shadow:4px 0 20px rgba(0,0,0,.2)}
+      .sidebar.open{transform:translateX(0)}
+      .sb-overlay.show{display:block}
+
+      .modal{width:100%;max-width:100%;max-height:100vh;border-radius:0;margin:0;position:fixed;top:0;left:0;right:0;bottom:0}
+      .overlay{align-items:flex-start}
+      .form-row{flex-direction:column}
+      .modal-ft{flex-wrap:wrap}
+      .btn-wa{margin-left:0;width:100%;justify-content:center}
+
+      .nb-btn{padding:5px 10px;font-size:17px}
+      .nb-today{padding:5px 12px}
+
+      .cal-head-col{min-width:60px}
+      .day-col{min-width:60px}
+      .time-gutter{width:40px}
+      .cal-head-time{width:40px}
+      .time-label{font-size:9px;padding:0 3px}
+    }
+
+    @media (max-width: 480px) {
+      .view-tabs{max-width:140px}
+      .hd-title{display:none}
+    }
+  </style>
+</head>
+<body>
+
+<!-- SIDEBAR OVERLAY (mobile) -->
+<div class="sb-overlay" id="sb-overlay"></div>
+
+<!-- HEADER -->
+<header class="header">
+  <button class="hd-menu-btn" id="hd-menu">☰</button>
+  <div class="hd-logo">
+    <svg viewBox="0 0 24 24"><rect x="2" y="2" width="4" height="4" rx="1"/><rect x="10" y="2" width="4" height="4" rx="1"/><rect x="18" y="2" width="4" height="4" rx="1"/><rect x="2" y="10" width="4" height="4" rx="1"/><rect x="10" y="10" width="4" height="4" rx="1"/><rect x="18" y="10" width="4" height="4" rx="1"/><rect x="2" y="18" width="4" height="4" rx="1"/><rect x="10" y="18" width="4" height="4" rx="1"/><rect x="18" y="18" width="4" height="4" rx="1"/></svg>
+    teamup
+  </div>
+  <span class="hd-title">Torino</span>
+  <div class="view-tabs">
+    <span class="view-tab" data-view="pianificatore">Pianificatore</span>
+    <span class="view-tab active" data-view="giorno">Giorno</span>
+    <span class="view-tab" data-view="3giorni">3 giorni</span>
+    <span class="view-tab" data-view="settimana">Settimana</span>
+    <span class="view-tab" data-view="4settimane">4 settimane</span>
+    <span class="view-tab" data-view="mese">Mese</span>
+    <span class="view-tab" data-view="anno">Anno</span>
+    <span class="view-tab" data-view="agenda">Agenda</span>
+  </div>
+  <div class="hd-icons">
+    <div class="sync-dot" id="sync-dot" title="Sincronizzazione"></div>
+    <span title="Cerca">🔍</span>
+    <span title="Impostazioni">⚙️</span>
+    <span title="Nicola" style="font-size:14px;font-weight:500;color:#555">Nicola</span>
+  </div>
+</header>
+
+<div class="main">
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="mini-cal">
+      <div class="mc-header">
+        <button class="mc-btn" id="mc-prev">‹</button>
+        <span class="mc-title" id="mc-title">aprile 2026</span>
+        <button class="mc-btn" id="mc-next">›</button>
+      </div>
+      <div class="mc-grid" id="mc-grid"></div>
+    </div>
+
+    <div class="sb-section">
+      <div class="sb-section-hd" id="sb-cal-toggle">
+        <span class="sb-section-title">Calendari</span>
+        <span class="sb-section-toggle" id="sb-cal-arrow">▲</span>
+      </div>
+      <div id="cal-list"></div>
+      <div class="sb-add" onclick="openCalMgmt()">+ Aggiungi / Modifica</div>
+    </div>
+
+    <div class="sb-section">
+      <div class="sb-section-hd" id="sb-filter-toggle">
+        <span class="sb-section-title">Filtro</span>
+        <span class="sb-section-toggle">▼</span>
+      </div>
+    </div>
+
+    <div class="sb-section" style="padding:8px 12px;font-size:11px;color:#888">
+      <div style="font-weight:600;color:#555;margin-bottom:4px">About</div>
+      <div>Studio Dentistico Palmia</div>
+      <div>Healthy Smile By N</div>
+      <div>Via Madama Cristina 2, Torino</div>
+    </div>
+  </aside>
+
+  <!-- CALENDAR AREA -->
+  <div class="cal-area">
+    <div class="nav-bar">
+      <button class="nb-btn" id="nb-first" title="Prima">«</button>
+      <button class="nb-btn" id="nb-refresh" title="Aggiorna">↻</button>
+      <button class="nb-btn" id="nb-prev">‹</button>
+      <button class="nb-today" id="nb-today">Oggi</button>
+      <button class="nb-btn" id="nb-next">›</button>
+      <span class="nb-date" id="nb-label">▾</span>
+    </div>
+
+    <!-- WHATSAPP REMINDER BANNER -->
+    <div class="wa-banner hidden" id="wa-banner">
+      <div class="wa-banner-hd">
+        <div class="wa-banner-title">
+          <svg viewBox="0 0 24 24" fill="#25D366" width="15" height="15"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+          Promemoria WhatsApp per domani
+        </div>
+        <button class="wa-banner-close" onclick="dismissAllReminders()">✓ Chiudi tutti</button>
+      </div>
+      <div id="wa-banner-list"></div>
+    </div>
+
+    <div class="cal-scroll" id="cal-scroll">
+      <div id="cal-grid"></div>
+    </div>
+  </div>
+</div>
+
+<!-- EVENT POPUP -->
+<div class="popup hidden" id="popup">
+  <div class="popup-hd">
+    <div class="popup-dot" id="pp-dot"></div>
+    <div class="popup-title" id="pp-title"></div>
+    <button class="popup-x" id="pp-close">×</button>
+  </div>
+  <div class="popup-row"><span class="popup-lbl">📅 Data/Ora</span><span class="popup-val" id="pp-dt"></span></div>
+  <div class="popup-row" id="pp-doc-row"><span class="popup-lbl">📋 Calendario</span><span class="popup-val" id="pp-doc"></span></div>
+  <div class="popup-row" id="pp-treat-row"><span class="popup-lbl">🔧 Trattamento</span><span class="popup-val" id="pp-treat"></span></div>
+  <div class="popup-row" id="pp-card-row"><span class="popup-lbl">📋 Cartella</span><span class="popup-val" id="pp-card"></span></div>
+  <div class="popup-row" id="pp-amt-row"><span class="popup-lbl">💶 Importo</span><span class="popup-val" id="pp-amt"></span></div>
+  <div class="popup-row" id="pp-note-row"><span class="popup-lbl">📝 Note</span><span class="popup-val" id="pp-note"></span></div>
+  <div class="popup-actions">
+    <button class="popup-btn popup-edit" id="pp-edit">✏️ Modifica</button>
+    <button class="popup-btn popup-wa" id="pp-wa">
+      <svg viewBox="0 0 24 24" fill="white" width="13" height="13"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+      WhatsApp
+    </button>
+  </div>
+</div>
+
+<!-- APPOINTMENT MODAL -->
+<div class="overlay hidden" id="overlay">
+  <div class="modal">
+    <div class="modal-hd">
+      <div class="modal-hd-color" id="m-color-dot"></div>
+      <span class="modal-title" id="m-title">Nuovo Appuntamento</span>
+      <button class="modal-x" id="m-close">×</button>
+    </div>
+    <div class="modal-body">
+
+      <!-- Tipo + Calendario -->
+      <div class="form-row">
+        <div class="fg" style="flex:0 0 130px">
+          <label>Tipo visita</label>
+          <select id="f-type">
+            <option value="cc">cc – controllo</option>
+            <option value="nb">nb – nuovo paz.</option>
+            <option value="CC">CC – controllo</option>
+            <option value="NB">NB – nuovo paz.</option>
+            <option value="jg">jg – igiene</option>
+            <option value="pv">pv – prima visita</option>
+            <option value="rp">rp – ripresa</option>
+            <option value="oc">oc – ortodonzia</option>
+            <option value="GG">GG</option>
+            <option value="altro">altro</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label>Calendario</label>
+          <div class="multi-cal-wrap" id="f-calendar-wrap">
+            <div class="multi-cal-display" id="f-calendar-display" onclick="toggleCalDropdown(event)">
+              <div class="multi-cal-pills" id="f-calendar-pills"><span class="multi-cal-placeholder">Seleziona...</span></div>
+              <span class="multi-cal-arrow">▾</span>
+            </div>
+            <div class="multi-cal-dropdown hidden" id="f-calendar-dropdown"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Paziente con autocomplete -->
+      <div class="fg" id="fg-patient">
+        <label>👤 Paziente – Nome e Cognome</label>
+        <input type="text" id="f-patient" placeholder="es. Mario Rossi" autocomplete="off">
+        <div class="ac-dropdown hidden" id="ac-dropdown"></div>
+      </div>
+
+      <!-- Cartella + Telefono -->
+      <div class="form-row">
+        <div class="fg" style="flex:0 0 160px">
+          <label>N° Cartella</label>
+          <input type="text" id="f-card" placeholder="es. 573">
+        </div>
+        <div class="fg">
+          <label>📱 Numero WhatsApp</label>
+          <input type="tel" id="f-phone" placeholder="+39 333 1234567">
+        </div>
+      </div>
+
+      <hr class="form-div">
+
+      <!-- Data + Orari -->
+      <div class="form-row">
+        <div class="fg">
+          <label>📅 Data</label>
+          <input type="date" id="f-date">
+        </div>
+        <div class="fg">
+          <label>⏰ Ora inizio</label>
+          <input type="time" id="f-start" step="900">
+        </div>
+        <div class="fg">
+          <label>⏰ Ora fine</label>
+          <input type="time" id="f-end" step="900">
+        </div>
+      </div>
+
+      <hr class="form-div">
+
+      <!-- Trattamento -->
+      <div class="fg">
+        <label>🔧 Trattamento / Descrizione</label>
+        <textarea id="f-treatment" placeholder="es. impronta scanner per allineatore, rps + exo 35-36, cnt orto 4, consegna corona…"></textarea>
+      </div>
+
+      <hr class="form-div">
+      <span class="form-sec">Contatto &amp; Conferma</span>
+
+      <div class="form-row">
+        <div class="fg">
+          <label>Modalità contatto</label>
+          <select id="f-contact">
+            <option value="cc-wa">cc-wa – chiamata + WhatsApp</option>
+            <option value="Cc-wa">Cc-wa – conf. chiamata + WA</option>
+            <option value="Co-wa">Co-wa – solo WhatsApp</option>
+            <option value="wa">wa – WhatsApp</option>
+            <option value="cc">cc – solo chiamata</option>
+            <option value="no">— nessuno</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label>💶 Importo (€)</label>
+          <input type="text" id="f-amount" placeholder="es. 200">
+        </div>
+      </div>
+
+      <div class="fg">
+        <label>📝 Note aggiuntive</label>
+        <input type="text" id="f-notes" placeholder="Annotazioni extra, promemoria…">
+      </div>
+
+      <!-- campi nascosti per compatibilità -->
+      <input type="hidden" id="f-confirm" value="no">
+      <input type="hidden" id="f-year" value="">
+      <input type="hidden" id="f-age" value="">
+
+      <hr class="form-div">
+
+      <!-- Allegati -->
+      <div class="fg">
+        <label>📎 Allegati</label>
+        <div class="attach-area" id="attach-area">
+          <input type="file" id="f-file" multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt" style="display:none">
+          <button type="button" class="btn-attach" id="btn-attach-pick">
+            📎 Aggiungi file
+          </button>
+          <div class="attach-list" id="attach-list"></div>
+        </div>
+      </div>
+
+    </div><!-- /modal-body -->
+
+    <div class="modal-ft">
+      <button class="btn btn-sec" id="m-cancel">Annulla</button>
+      <button class="btn btn-del hidden" id="m-delete">🗑 Elimina</button>
+      <button class="btn btn-primary" id="m-save">💾 Salva</button>
+      <button class="btn btn-cartella hidden" id="m-cartella" style="background:#e8f0fe;color:#1a73e8;border:1px solid #c5d8ff;display:flex;align-items:center;gap:5px" title="Apri cartella clinica del paziente">
+        📋 Cartella
+      </button>
+      <button class="btn btn-wa" id="m-wa">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+        Invia WhatsApp
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL GESTIONE CALENDARI -->
+<div class="overlay hidden" id="cal-mgmt-overlay">
+  <div class="modal" style="width:660px">
+    <div class="modal-hd">
+      <span class="modal-title">🎨 Gestisci Calendari</span>
+      <button class="modal-x" onclick="document.getElementById('cal-mgmt-overlay').classList.add('hidden')">×</button>
+    </div>
+    <div class="modal-body" id="cal-mgmt-body" style="gap:0;padding:12px 20px"></div>
+    <div class="modal-ft" style="justify-content:flex-end">
+      <button class="btn btn-sec" onclick="document.getElementById('cal-mgmt-overlay').classList.add('hidden')">Annulla</button>
+      <button class="btn btn-primary" onclick="saveCalMgmt()">💾 Salva tutto</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ════════════════════════════════════════════
+//  FIREBASE INIT
+// ════════════════════════════════════════════
+const firebaseConfig = {
+  apiKey: "AIzaSyB9BXoJQLCx_Y9pwoXmxtVj1CLULohaUsw",
+  authDomain: "healthysmile-d2b52.firebaseapp.com",
+  projectId: "healthysmile-d2b52",
+  storageBucket: "healthysmile-d2b52.firebasestorage.app",
+  messagingSenderId: "984573798131",
+  appId: "1:984573798131:web:e96e695fb86b90a2413986"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const storage = firebase.storage();
+
+function setSyncStatus(status){
+  // status: 'ok' | 'syncing' | 'error'
+  const dot = document.getElementById('sync-dot');
+  dot.className = 'sync-dot' + (status!=='ok' ? ' '+status : '');
+}
+
+// ════════════════════════════════════════════
+//  CONFIGURAZIONE CALENDARI
+// ════════════════════════════════════════════
+let CALS = [
+  // ── Caduti ──
+  { id:'caduti',               name:'Caduti',                                color:'#5d4037', group:null },
+  // ── Laboratori ──
+  { id:'barra_rinforzo',       name:'Barra di rinforzo',                     color:'#2e7d32', group:'Laboratori' },
+  { id:'loreni_arturo',        name:'Loreni Arturo',                         color:'#26a69a', group:'Laboratori' },
+  { id:'palmia_lab',           name:'Palmia',                                color:'#546e7a', group:'Laboratori' },
+  { id:'wisildent',            name:'Wisildent',                             color:'#558b2f', group:'Laboratori' },
+  // ── Medici ──
+  { id:'dott_palmia',          name:'Dott. Palmia',                          color:'#9e9e9e', group:'Medici' },
+  { id:'dott_ladelia',         name:'Dott. ssa La Delia',                    color:'#795548', group:'Medici' },
+  { id:'dottssa_arduino',      name:'Dott.ssa Arduino',                      color:'#ff8f00', group:'Medici' },
+  // ── Prestazioni ──
+  { id:'ablazione',            name:'Ablazione/ Igiene pt',                  color:'#fdd835', group:'Prestazioni' },
+  { id:'cad',                  name:'Cad',                                   color:'#ff8a65', group:'Prestazioni' },
+  { id:'chirurgia',            name:'Chirurgia',                             color:'#e53935', group:'Prestazioni' },
+  { id:'consegna_corone',      name:'Consegna corone definitive',            color:'#d81b60', group:'Prestazioni' },
+  { id:'consegna_protesi',     name:'Consegna Protesi Definitiva intera arcata', color:'#f06292', group:'Prestazioni' },
+  { id:'endodonzia',           name:'Endodonzia/Conservativa',               color:'#3f51b5', group:'Prestazioni' },
+  { id:'implantologia',        name:'Implantologia',                         color:'#212121', group:'Prestazioni' },
+  { id:'impronte_scanner',     name:'Impronte con scanner',                  color:'#e91e63', group:'Prestazioni' },
+  { id:'impronte_alginato',    name:'Impronte in alginato',                  color:'#7b1fa2', group:'Prestazioni' },
+  { id:'itto',                 name:'Itto',                                  color:'#00bcd4', group:'Prestazioni' },
+  { id:'ortodonzia',           name:'Ortodonzia',                            color:'#9c27b0', group:'Prestazioni' },
+  { id:'prime_visite',         name:'Prime Visite',                          color:'#e65100', group:'Prestazioni' },
+  { id:'protesi_provvisori',   name:'Protesi generica e Consegna provvisori',color:'#afb42b', group:'Prestazioni' },
+  { id:'ribasatura',           name:'Ribasatura',                            color:'#f50057', group:'Prestazioni' },
+  { id:'sbiancamento',         name:'Sbiancamento/brillantino',              color:'#ab47bc', group:'Prestazioni' },
+  { id:'urgenze',              name:'Urgenze',                               color:'#00838f', group:'Prestazioni' },
+  { id:'varie',                name:'Varie',                                 color:'#6d4c41', group:'Prestazioni' },
+];
+const GROUPS = ['Laboratori','Medici','Prestazioni'];
+
+// ════════════════════════════════════════════
+//  STATO
+// ════════════════════════════════════════════
+let view = 'giorno';
+let curDate = new Date();
+let miniMonth = new Date();
+let events = [];           // popolato da Firestore onSnapshot
+let editId = null;
+let activeCals = new Set(CALS.map(c=>c.id));
+let collapsedGroups = new Set();
+let popupEventId = null;
+let selectedCalendars = new Set(['dott_palmia']); // calendari selezionati nel form
+
+// ════════════════════════════════════════════
+//  UTILS
+// ════════════════════════════════════════════
+const IT_DAYS  = ['dom','lun','mar','mer','gio','ven','sab'];
+const IT_DAYS_LONG = ['Domenica','Lunedì','Martedì','Mercoledì','Giovedì','Venerdì','Sabato'];
+const IT_MONTHS = ['gennaio','febbraio','marzo','aprile','maggio','giugno','luglio','agosto','settembre','ottobre','novembre','dicembre'];
+const IT_MONTHS_S = ['gen','feb','mar','apr','mag','giu','lug','ago','set','ott','nov','dic'];
+
+const H_START = 7, H_END = 23, PX_HOUR = 60;
+
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2) }
+function d2s(d){ return d.toISOString().split('T')[0] }
+function sameDay(a,b){ return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate() }
+function addDays(d,n){ const r=new Date(d); r.setDate(r.getDate()+n); return r }
+function getCal(id){ return CALS.find(c=>c.id===id)||CALS[5] }
+function t2m(t){ const[h,m]=t.split(':').map(Number); return h*60+m }
+function m2t(m){ return String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0') }
+function fmtTime(t){
+  if(!t) return '';
+  const[h,m]=t.split(':').map(Number);
+  const p=h>=12?'pm':'am', hh=h>12?h-12:(h===0?12:h);
+  return m===0?`${hh}${p}`:`${hh}:${String(m).padStart(2,'0')}${p}`;
+}
+function fmtDate(ds){
+  if(!ds) return '';
+  const d=new Date(ds+'T12:00:00');
+  return `${IT_DAYS[d.getDay()]} ${d.getDate()} ${IT_MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+}
+function getEventsForDay(ds){
+  return events.filter(e=>{
+    if(e.date!==ds) return false;
+    const cals=e.calendars||[e.calendar];
+    return cals.some(id=>activeCals.has(id));
+  });
+}
+
+// ── MULTI-CALENDAR SELECT ──
+function buildCalDropdown(){
+  const dd=document.getElementById('f-calendar-dropdown');
+  dd.innerHTML='';
+  // Ungrouped (Caduti)
+  CALS.filter(c=>c.group===null).forEach(c=>dd.appendChild(mkCalOption(c)));
+  // Groups
+  const groupIcons={'Laboratori':'🔬','Medici':'👨‍⚕️','Prestazioni':'🦷'};
+  GROUPS.forEach(g=>{
+    const items=CALS.filter(c=>c.group===g);
+    if(!items.length) return;
+    const hd=document.createElement('div'); hd.className='multi-cal-group-hd';
+    hd.textContent=(groupIcons[g]||'')+' '+g;
+    dd.appendChild(hd);
+    items.forEach(c=>dd.appendChild(mkCalOption(c)));
+  });
+}
+
+function mkCalOption(c){
+  const div=document.createElement('div'); div.className='multi-cal-option';
+  const chk=document.createElement('input'); chk.type='checkbox';
+  chk.checked=selectedCalendars.has(c.id);
+  chk.addEventListener('change',e=>{
+    e.stopPropagation();
+    e.target.checked?selectedCalendars.add(c.id):selectedCalendars.delete(c.id);
+    updateCalDisplay(); updateModalColor();
+  });
+  const dot=document.createElement('div'); dot.className='multi-cal-option-dot';
+  dot.style.background=c.color;
+  const lbl=document.createElement('span'); lbl.textContent=c.name;
+  div.appendChild(chk); div.appendChild(dot); div.appendChild(lbl);
+  div.addEventListener('click',e=>{
+    if(e.target===chk) return;
+    chk.checked=!chk.checked; chk.dispatchEvent(new Event('change'));
+  });
+  return div;
+}
+
+function toggleCalDropdown(e){
+  e.stopPropagation();
+  buildCalDropdown();
+  const dd=document.getElementById('f-calendar-dropdown');
+  const disp=document.getElementById('f-calendar-display');
+  const isOpen=!dd.classList.contains('hidden');
+  dd.classList.toggle('hidden',isOpen);
+  disp.classList.toggle('open',!isOpen);
+}
+
+function closeCalDropdown(){
+  document.getElementById('f-calendar-dropdown')?.classList.add('hidden');
+  document.getElementById('f-calendar-display')?.classList.remove('open');
+}
+
+function updateCalDisplay(){
+  const pills=document.getElementById('f-calendar-pills');
+  if(!pills) return;
+  pills.innerHTML='';
+  if(!selectedCalendars.size){
+    pills.innerHTML='<span class="multi-cal-placeholder">Seleziona...</span>';
+    return;
+  }
+  selectedCalendars.forEach(id=>{
+    const cal=getCal(id);
+    const pill=document.createElement('div');
+    pill.className='multi-cal-pill';
+    pill.style.background=cal.color;
+    pill.innerHTML=`<div class="multi-cal-pill-dot"></div><span>${cal.name}</span>
+      <button class="multi-cal-pill-x" onclick="removeCalSel('${id}',event)">×</button>`;
+    pills.appendChild(pill);
+  });
+}
+
+function removeCalSel(id,e){
+  e.stopPropagation();
+  selectedCalendars.delete(id);
+  updateCalDisplay(); updateModalColor();
+}
+
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+function getWeekMon(d){
+  const dow=d.getDay(), diff=dow===0?-6:1-dow;
+  return addDays(d,diff);
+}
+
+// ════════════════════════════════════════════
+//  MINI CALENDAR
+// ════════════════════════════════════════════
+function renderMini(){
+  const y=miniMonth.getFullYear(), m=miniMonth.getMonth();
+  document.getElementById('mc-title').textContent=`${IT_MONTHS[m]} ${y}`;
+  const grid=document.getElementById('mc-grid');
+  grid.innerHTML='';
+  ['L','M','M','G','V','S','D'].forEach(d=>{
+    const el=document.createElement('div'); el.className='mc-dow'; el.textContent=d; grid.appendChild(el);
+  });
+  const first=new Date(y,m,1);
+  let dow=first.getDay(); dow=dow===0?6:dow-1;
+  const prevLast=new Date(y,m,0).getDate();
+  const last=new Date(y,m+1,0).getDate();
+  const today=new Date();
+  for(let i=dow-1;i>=0;i--){
+    const el=document.createElement('div'); el.className='mc-day other-month';
+    el.textContent=prevLast-i; grid.appendChild(el);
+  }
+  for(let d2=1;d2<=last;d2++){
+    const el=document.createElement('div'); el.className='mc-day';
+    el.textContent=d2;
+    const td=new Date(y,m,d2);
+    if(sameDay(td,today)) el.classList.add('today');
+    if(sameDay(td,curDate)) el.classList.add('selected');
+    el.addEventListener('click',()=>{ curDate=new Date(y,m,d2); miniMonth=new Date(curDate); renderMini(); renderCal(); updateLabel(); closeSidebar(); });
+    grid.appendChild(el);
+  }
+  const total=dow+last, rem=total%7===0?0:7-total%7;
+  for(let d2=1;d2<=rem;d2++){
+    const el=document.createElement('div'); el.className='mc-day other-month';
+    el.textContent=d2; grid.appendChild(el);
+  }
+}
+
+// ════════════════════════════════════════════
+//  SIDEBAR CALENDARS
+// ════════════════════════════════════════════
+function renderSidebar(){
+  const list=document.getElementById('cal-list');
+  list.innerHTML='';
+  const caduti=CALS.find(c=>c.group===null);
+  if(caduti) list.appendChild(mkCalItem(caduti,true));
+  GROUPS.forEach(g=>{
+    const items=CALS.filter(c=>c.group===g);
+    if(!items.length) return;
+    const wrap=document.createElement('div'); wrap.className='cal-group';
+    const hd=document.createElement('div'); hd.className='cal-group-hd';
+    const closed=collapsedGroups.has(g);
+    hd.innerHTML=`<span class="cal-group-arrow ${closed?'closed':''}">▼</span><span class="cal-group-name">${g}</span>`;
+    hd.addEventListener('click',()=>{ closed?collapsedGroups.delete(g):collapsedGroups.add(g); renderSidebar(); });
+    wrap.appendChild(hd);
+    if(!closed) items.forEach(c=>wrap.appendChild(mkCalItem(c,false)));
+    list.appendChild(wrap);
+  });
+  // Modal calendar dropdown is built dynamically via buildCalDropdown()
+}
+
+function mkCalItem(cal,ungrouped){
+  const el=document.createElement('div');
+  el.className=`cal-item ${ungrouped?'ungrouped':''}`;
+  const on=activeCals.has(cal.id);
+  el.innerHTML=`<div class="cal-dot" style="background:${cal.color};opacity:${on?1:.3}"></div>
+    <span class="cal-name">${cal.name}</span>
+    <input type="checkbox" class="cal-chk" ${on?'checked':''}>`;
+  el.querySelector('.cal-chk').addEventListener('change',e=>{
+    const on=e.target.checked;
+    on?activeCals.add(cal.id):activeCals.delete(cal.id);
+    el.querySelector('.cal-dot').style.opacity=on?1:0.25;
+    el.querySelector('.cal-name').style.opacity=on?1:0.4;
+    renderCal();
+  });
+  return el;
+}
+
+// ════════════════════════════════════════════
+//  MOBILE SIDEBAR
+// ════════════════════════════════════════════
+function openSidebar(){
+  document.getElementById('sidebar').classList.add('open');
+  document.getElementById('sb-overlay').classList.add('show');
+}
+function closeSidebar(){
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sb-overlay').classList.remove('show');
+}
+
+// ════════════════════════════════════════════
+//  NAV LABEL
+// ════════════════════════════════════════════
+function updateLabel(){
+  const lbl=document.getElementById('nb-label');
+  if(view==='giorno'){
+    lbl.textContent=`${IT_DAYS[curDate.getDay()]} ${curDate.getDate()} ${IT_MONTHS_S[curDate.getMonth()]} ${curDate.getFullYear()} ▾`;
+  } else if(view==='settimana'){
+    const mon=getWeekMon(curDate), sun=addDays(mon,6);
+    lbl.textContent=`${mon.getDate()} – ${sun.getDate()} ${IT_MONTHS_S[mon.getMonth()]} ${mon.getFullYear()} ▾`;
+  } else if(view==='3giorni'){
+    const end=addDays(curDate,2);
+    lbl.textContent=`${curDate.getDate()} – ${end.getDate()} ${IT_MONTHS_S[curDate.getMonth()]} ${curDate.getFullYear()} ▾`;
+  } else {
+    lbl.textContent=`${IT_MONTHS[curDate.getMonth()]} ${curDate.getFullYear()} ▾`;
+  }
+}
+
+// ════════════════════════════════════════════
+//  CALENDAR RENDER
+// ════════════════════════════════════════════
+function renderCal(){
+  const grid=document.getElementById('cal-grid');
+  grid.innerHTML='';
+  hidePopup();
+  if(view==='giorno') renderDayView(grid,[curDate]);
+  else if(view==='3giorni') renderDayView(grid,[curDate,addDays(curDate,1),addDays(curDate,2)]);
+  else if(view==='settimana'){
+    const mon=getWeekMon(curDate);
+    renderDayView(grid,Array.from({length:7},(_,i)=>addDays(mon,i)));
+  } else {
+    renderDayView(grid,[curDate]);
+  }
+  const scroll=document.getElementById('cal-scroll');
+  const now=new Date();
+  let scrollTo=0;
+  if(view==='giorno'&&sameDay(now,curDate)){
+    scrollTo=Math.max(0,(now.getHours()-H_START-1)*PX_HOUR);
+  }
+  setTimeout(()=>{ scroll.scrollTop=scrollTo; },40);
+}
+
+function renderDayView(container, dates){
+  const today=new Date();
+  const view_el=document.createElement('div'); view_el.className='cal-view';
+
+  // HEADER
+  const head=document.createElement('div'); head.className='cal-head';
+  const htCell=document.createElement('div'); htCell.className='cal-head-time'; head.appendChild(htCell);
+  dates.forEach(d=>{
+    const col=document.createElement('div');
+    col.className=`cal-head-col ${sameDay(d,today)?'today-bg':''}`;
+    const num=document.createElement('div');
+    num.className=`col-num ${sameDay(d,today)?'today-circle':''}`;
+    num.textContent=d.getDate();
+    col.innerHTML=`<div class="col-dow">${IT_DAYS[d.getDay()].toUpperCase()}</div>`;
+    col.appendChild(num);
+    head.appendChild(col);
+  });
+  view_el.appendChild(head);
+
+  // BODY
+  const body=document.createElement('div'); body.className='cal-body';
+  const gutter=document.createElement('div'); gutter.className='time-gutter';
+  for(let h=H_START;h<=H_END;h++){
+    const lbl=document.createElement('div'); lbl.className='time-label';
+    if(h>H_START){ const p=h>=12?(h===12?'12pm':`${h-12}pm`):`${h}am`; lbl.textContent=p; }
+    gutter.appendChild(lbl);
+  }
+  body.appendChild(gutter);
+
+  const colWrap=document.createElement('div'); colWrap.className='col-wrap';
+  dates.forEach(d=>{
+    const dateStr=d2s(d);
+    const col=document.createElement('div');
+    col.className=`day-col ${sameDay(d,today)?'today-bg':''}`;
+    col.style.position='relative';
+
+    for(let h=H_START;h<=H_END;h++){
+      const row=document.createElement('div'); row.className='hour-row';
+      const half=document.createElement('div'); half.className='half-tick'; row.appendChild(half);
+      row.addEventListener('click',e=>{
+        if(e.target.closest('.ev')) return;
+        const rect=row.getBoundingClientRect();
+        const relY=e.clientY-rect.top;
+        const mins=h*60+Math.round(relY/PX_HOUR*60/15)*15;
+        openModal(null,dateStr,m2t(mins),m2t(mins+30));
+      });
+      col.appendChild(row);
+    }
+
+    const dayEvs=getEventsForDay(dateStr);
+    const lanes=layoutEvents(dayEvs);
+    dayEvs.forEach(ev=>{
+      const {laneIdx,laneCount}=lanes.get(ev.id)||{laneIdx:0,laneCount:1};
+      const el=mkEvent(ev,laneIdx,laneCount);
+      col.appendChild(el);
+    });
+
+    if(sameDay(d,today)){
+      const now=new Date();
+      const nm=now.getHours()*60+now.getMinutes();
+      if(nm>=H_START*60&&nm<=H_END*60){
+        const nl=document.createElement('div'); nl.className='now-line';
+        nl.style.top=((nm-H_START*60)/60*PX_HOUR)+'px';
+        col.appendChild(nl);
+      }
+    }
+
+    colWrap.appendChild(col);
+  });
+
+  body.appendChild(colWrap);
+  view_el.appendChild(body);
+  container.appendChild(view_el);
+}
+
+function layoutEvents(evs){
+  const map=new Map();
+  const sorted=[...evs].sort((a,b)=>t2m(a.start)-t2m(b.start));
+  const lanes=[];
+  sorted.forEach(ev=>{
+    const start=t2m(ev.start), end=t2m(ev.end)||start+30;
+    let placed=false;
+    for(let i=0;i<lanes.length;i++){
+      if(lanes[i]<=start){ lanes[i]=end; map.set(ev.id,{laneIdx:i,laneCount:0}); placed=true; break; }
+    }
+    if(!placed){ lanes.push(end); map.set(ev.id,{laneIdx:lanes.length-1,laneCount:0}); }
+  });
+  const total=lanes.length||1;
+  map.forEach(v=>{ v.laneCount=total; });
+  return map;
+}
+
+function mkEvent(ev,laneIdx,laneCount){
+  const cals=ev.calendars||[ev.calendar||'dott_palmia'];
+  // Mostra solo i colori dei calendari attivi (tick spuntato)
+  const visibleCals=cals.filter(id=>activeCals.has(id));
+  const displayCals=visibleCals.length?visibleCals:cals;
+  const primaryCal=getCal(displayCals[0]);
+  const el=document.createElement('div'); el.className='ev';
+  el.style.background=calGradient(displayCals);
+  const startM=t2m(ev.start);
+  const endM=ev.end?t2m(ev.end):startM+30;
+  const top=(startM-H_START*60)/60*PX_HOUR;
+  const height=Math.max(18,(endM-startM)/60*PX_HOUR-2);
+  const laneW=100/laneCount;
+  el.style.top=top+'px';
+  el.style.height=height+'px';
+  el.style.left=`calc(${laneIdx*laneW}% + 2px)`;
+  el.style.right=`calc(${(laneCount-laneIdx-1)*laneW}% + 2px)`;
+  el.style.width='';
+  const cardPart=ev.card?` (${ev.card})`:''
+  const typePart=ev.type?`${ev.type}/ `:'';
+  el.innerHTML=`
+    <div class="ev-time">${fmtTime(ev.start)}</div>
+    <div class="ev-patient">${typePart}${ev.patient||''}${cardPart}</div>
+    ${ev.treatment?`<div class="ev-detail">${ev.treatment}</div>`:''}
+  `;
+  el.addEventListener('click',e=>{ e.stopPropagation(); showPopup(ev.id,e); });
+  return el;
+}
+
+// ════════════════════════════════════════════
+//  POPUP
+// ════════════════════════════════════════════
+function showPopup(evId, e){
+  const ev=events.find(x=>x.id===evId); if(!ev) return;
+  const evCals=ev.calendars||[ev.calendar||'dott_palmia'];
+  const primaryCal=getCal(evCals[0]);
+  popupEventId=evId;
+  const pp=document.getElementById('popup');
+  const dotEl=document.getElementById('pp-dot');
+  dotEl.style.background=calGradient(evCals);
+  if(evCals.length>1) dotEl.style.width='36px';
+  else dotEl.style.width='12px';
+  document.getElementById('pp-title').textContent=`${ev.type?ev.type+'/ ':''}${ev.patient||'Appuntamento'}${ev.card?' ('+ev.card+')':''}`;
+  document.getElementById('pp-dt').textContent=`${fmtDate(ev.date)} · ${fmtTime(ev.start)}${ev.end?' – '+fmtTime(ev.end):''}`;
+  document.getElementById('pp-doc').textContent=evCals.map(id=>getCal(id).name).join(' · ');
+  const treat=ev.treatment||'';
+  document.getElementById('pp-treat').textContent=treat;
+  document.getElementById('pp-treat-row').classList.toggle('hidden',!treat);
+  const card=ev.card||'';
+  document.getElementById('pp-card').textContent=card;
+  document.getElementById('pp-card-row').classList.toggle('hidden',!card);
+  document.getElementById('pp-amt').textContent=ev.amount?`€${ev.amount}`:'';
+  document.getElementById('pp-amt-row').classList.toggle('hidden',!ev.amount);
+  document.getElementById('pp-note').textContent=ev.notes||'';
+  document.getElementById('pp-note-row').classList.toggle('hidden',!ev.notes);
+  // allegati nel popup
+  let ppAttach=pp.querySelector('.popup-attach');
+  if(ppAttach) ppAttach.remove();
+  if(ev.attachments&&ev.attachments.length){
+    const div=document.createElement('div'); div.className='popup-attach';
+    div.innerHTML=`<div class="popup-attach-title">📎 Allegati (${ev.attachments.length})</div>`;
+    ev.attachments.forEach(a=>{
+      const chip=document.createElement('a'); chip.className='popup-attach-chip';
+      chip.href=a.url||a.data; chip.target='_blank';
+      let icon='📄';
+      if(a.type&&a.type.startsWith('image/')) icon='🖼️';
+      else if(a.type==='application/pdf') icon='📕';
+      chip.textContent=icon+' '+a.name;
+      div.appendChild(chip);
+    });
+    document.getElementById('pp-close').closest('.popup-hd').after(div);
+  }
+  // position
+  const vw=window.innerWidth, vh=window.innerHeight;
+  let x=e.clientX+10, y=e.clientY+10;
+  pp.classList.remove('hidden');
+  const pw=pp.offsetWidth, ph=pp.offsetHeight;
+  if(x+pw>vw-10) x=Math.max(10,e.clientX-pw-10);
+  if(y+ph>vh-10) y=Math.max(10,e.clientY-ph-10);
+  pp.style.left=x+'px'; pp.style.top=y+'px';
+}
+
+function hidePopup(){ document.getElementById('popup').classList.add('hidden'); popupEventId=null; }
+
+// ════════════════════════════════════════════
+//  MODAL
+// ════════════════════════════════════════════
+function updateModalColor(){
+  const dot=document.getElementById('m-color-dot');
+  if(!selectedCalendars.size){ dot.style.background='#ccc'; return; }
+  const ids=[...selectedCalendars];
+  if(ids.length===1){ dot.style.background=getCal(ids[0]).color; return; }
+  const colors=ids.map(id=>getCal(id).color);
+  const step=100/colors.length;
+  const stops=colors.map((c,i)=>`${c} ${i*step}%, ${c} ${(i+1)*step}%`).join(', ');
+  dot.style.background=`linear-gradient(90deg, ${stops})`;
+}
+
+function calGradient(calendars){
+  if(!calendars||!calendars.length) return '#9e9e9e';
+  if(calendars.length===1) return getCal(calendars[0]).color;
+  const colors=calendars.map(id=>getCal(id).color);
+  const step=100/colors.length;
+  const stops=colors.map((c,i)=>`${c} ${i*step}%, ${c} ${(i+1)*step}%`).join(', ');
+  return`linear-gradient(135deg, ${stops})`;
+}
+
+function openModal(evId, defDate, defStart, defEnd){
+  editId=evId;
+  const overlay=document.getElementById('overlay');
+  const title=document.getElementById('m-title');
+  const delBtn=document.getElementById('m-delete');
+  hidePopup();
+
+  if(evId){
+    const ev=events.find(e=>e.id===evId); if(!ev) return;
+    title.textContent='Modifica Appuntamento';
+    delBtn.classList.remove('hidden');
+    document.getElementById('f-type').value=ev.type||'cc';
+    // Ripristina multi-selezione
+    selectedCalendars=new Set(Array.isArray(ev.calendars)?ev.calendars:[ev.calendar||'dott_palmia']);
+    updateCalDisplay(); updateModalColor();
+    document.getElementById('f-patient').value=ev.patient||'';
+    document.getElementById('f-card').value=ev.card||'';
+    document.getElementById('f-year').value=ev.year||'';
+    document.getElementById('f-age').value=ev.age||'';
+    document.getElementById('f-date').value=ev.date||'';
+    document.getElementById('f-start').value=ev.start||'';
+    document.getElementById('f-end').value=ev.end||'';
+    document.getElementById('f-treatment').value=ev.treatment||'';
+    document.getElementById('f-contact').value=ev.contact||'cc-wa';
+    document.getElementById('f-confirm').value=ev.confirm||'no';
+    document.getElementById('f-phone').value=ev.phone||'';
+    document.getElementById('f-amount').value=ev.amount||'';
+    document.getElementById('f-notes').value=ev.notes||'';
+    initAttachments(ev.attachments||[]);
+  } else {
+    title.textContent='Nuovo Appuntamento';
+    delBtn.classList.add('hidden');
+    document.getElementById('f-type').value='cc';
+    selectedCalendars=new Set(['dott_palmia']);
+    updateCalDisplay(); updateModalColor();
+    document.getElementById('f-patient').value='';
+    document.getElementById('f-card').value='';
+    document.getElementById('f-year').value='';
+    document.getElementById('f-age').value='';
+    document.getElementById('f-date').value=defDate||d2s(curDate);
+    document.getElementById('f-start').value=defStart||'09:00';
+    document.getElementById('f-end').value=defEnd||'09:30';
+    document.getElementById('f-treatment').value='';
+    document.getElementById('f-contact').value='cc-wa';
+    document.getElementById('f-confirm').value='no';
+    document.getElementById('f-phone').value='';
+    document.getElementById('f-amount').value='';
+    document.getElementById('f-notes').value='';
+    initAttachments([]);
+  }
+  updateModalColor();
+  updateCartellaBtn();
+  overlay.classList.remove('hidden');
+  setTimeout(()=>document.getElementById('f-patient').focus(),100);
+}
+
+function updateCartellaBtn(){
+  const nome = document.getElementById('f-patient').value.trim();
+  const btn  = document.getElementById('m-cartella');
+  if(!btn) return;
+  nome ? btn.classList.remove('hidden') : btn.classList.add('hidden');
+}
+
+function closeModal(){ document.getElementById('overlay').classList.add('hidden'); editId=null; hideAcDropdown(); closeCalDropdown(); }
+
+// ════════════════════════════════════════════
+//  SAVE / DELETE  (Firestore)
+// ════════════════════════════════════════════
+async function saveEvent(){
+  const patient=document.getElementById('f-patient').value.trim();
+  const treatment=document.getElementById('f-treatment').value.trim();
+  if(!patient&&!treatment){ toast('⚠️ Inserisci il nome del paziente o la descrizione.'); return; }
+  const date=document.getElementById('f-date').value;
+  const start=document.getElementById('f-start').value;
+  if(!date||!start){ toast('⚠️ Inserisci data e ora di inizio.'); return; }
+
+  const saveBtn=document.getElementById('m-save');
+  saveBtn.disabled=true; saveBtn.textContent='⏳ Salvataggio...';
+  setSyncStatus('syncing');
+
+  try {
+    // Use pre-generated ID so we can reference it for Storage uploads
+    const evId = editId || db.collection('appuntamenti').doc().id;
+
+    // Upload any pending attachments to Firebase Storage
+    const finalAttachments = [];
+    for(const att of currentAttachments){
+      if(att.pending && att.localData){
+        try {
+          const path = `attachments/${evId}/${Date.now()}_${att.name}`;
+          const ref = storage.ref(path);
+          // Convert base64 data URL to blob
+          const res = await fetch(att.localData);
+          const blob = await res.blob();
+          const snap = await ref.put(blob);
+          const url = await snap.ref.getDownloadURL();
+          finalAttachments.push({ name:att.name, type:att.type, url, storagePath:path });
+        } catch(e){
+          console.warn('Upload allegato fallito:', e);
+          // Keep local base64 as fallback
+          finalAttachments.push({ name:att.name, type:att.type, url: att.localData });
+        }
+      } else {
+        finalAttachments.push(att);
+      }
+    }
+
+    const calArr=[...selectedCalendars];
+    const ev = {
+      id: evId,
+      type: document.getElementById('f-type').value,
+      calendars: calArr,
+      calendar: calArr[0]||'dott_palmia', // campo legacy per compatibilità
+      patient,
+      card: document.getElementById('f-card').value.trim(),
+      year: document.getElementById('f-year').value.trim(),
+      age: document.getElementById('f-age').value.trim(),
+      date, start,
+      end: document.getElementById('f-end').value,
+      treatment,
+      contact: document.getElementById('f-contact').value,
+      confirm: document.getElementById('f-confirm').value,
+      phone: document.getElementById('f-phone').value.trim(),
+      amount: document.getElementById('f-amount').value.trim(),
+      notes: document.getElementById('f-notes').value.trim(),
+      attachments: finalAttachments,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    };
+
+    await db.collection('appuntamenti').doc(evId).set(ev);
+    // Auto-crea paziente in Cartella Clinica se non esiste già
+    if(patient) autoCreatePaziente(patient, ev.card, ev.phone);
+    setSyncStatus('ok');
+    closeModal();
+    toast(editId?'✅ Appuntamento aggiornato':'✅ Appuntamento salvato');
+  } catch(err){
+    console.error('Errore salvataggio:', err);
+    setSyncStatus('error');
+    toast('❌ Errore: '+err.message);
+  } finally {
+    saveBtn.disabled=false; saveBtn.textContent='💾 Salva';
+  }
+}
+
+async function deleteEvent(){
+  if(!editId) return;
+  if(!confirm('Eliminare questo appuntamento?')) return;
+  setSyncStatus('syncing');
+  try {
+    await db.collection('appuntamenti').doc(editId).delete();
+    setSyncStatus('ok');
+    closeModal();
+    toast('🗑 Appuntamento eliminato');
+  } catch(err){
+    setSyncStatus('error');
+    toast('❌ Errore eliminazione: '+err.message);
+  }
+}
+
+// ════════════════════════════════════════════
+//  WHATSAPP
+// ════════════════════════════════════════════
+function buildWAMsg(evOrForm){
+  let dayName='', dateDDMMYYYY='';
+  if(evOrForm.date){
+    const d=new Date(evOrForm.date+'T12:00:00');
+    dayName=IT_DAYS_LONG[d.getDay()];
+    dateDDMMYYYY=String(d.getDate()).padStart(2,'0')+'/'
+                +String(d.getMonth()+1).padStart(2,'0')+'/'
+                +d.getFullYear();
+  }
+  let oraFmt='';
+  if(evOrForm.start){
+    const[h,m]=evOrForm.start.split(':');
+    oraFmt=h+':'+m;
+  }
+  let msg='Buongiorno, Studio Dentistico Healthy Smile.\n';
+  msg+=`Ha effettuato una prenotazione per il *${dayName} ${dateDDMMYYYY} alle ore ${oraFmt}:*\n`;
+  msg+=`presso il nostro Studio sito in *Via Madama Cristina 2, Torino*,\n`;
+  msg+='Buona giornata.';
+  return msg;
+}
+
+function sendWA(evOrForm, phone){
+  const msg=buildWAMsg(evOrForm);
+  const ph=(phone||'').replace(/[\s\-\(\)]/g,'').replace(/^\+/,'');
+  const url=ph?`https://wa.me/${ph}?text=${encodeURIComponent(msg)}`:`https://wa.me/?text=${encodeURIComponent(msg)}`;
+  const a=document.createElement('a');
+  a.href=url; a.target='_blank'; a.rel='noopener';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+}
+
+function formToObj(){
+  return {
+    patient: document.getElementById('f-patient').value.trim(),
+    calendar: document.getElementById('f-calendar').value,
+    treatment: document.getElementById('f-treatment').value.trim(),
+    date: document.getElementById('f-date').value,
+    start: document.getElementById('f-start').value,
+    end: document.getElementById('f-end').value,
+    card: document.getElementById('f-card').value.trim(),
+    amount: document.getElementById('f-amount').value.trim(),
+    phone: document.getElementById('f-phone').value.trim(),
+  };
+}
+
+// ════════════════════════════════════════════
+//  ALLEGATI
+// ════════════════════════════════════════════
+let currentAttachments = [];
+
+function renderAttachList(){
+  const list=document.getElementById('attach-list');
+  if(!list) return;
+  list.innerHTML='';
+  currentAttachments.forEach((a,i)=>{
+    const chip=document.createElement('div'); chip.className='attach-chip'+(a.pending?' uploading':'');
+    let icon='📄';
+    if(a.type&&a.type.startsWith('image/')) icon='🖼️';
+    else if(a.type==='application/pdf') icon='📕';
+    else if(a.type&&a.type.includes('word')) icon='📝';
+    else if(a.type&&(a.type.includes('excel')||a.type.includes('sheet'))) icon='📊';
+    chip.innerHTML=`<span title="${a.name}">${icon} ${a.name}${a.pending?' ⏳':''}</span>
+      <button class="attach-del" data-i="${i}" title="Rimuovi">×</button>`;
+    chip.querySelector('.attach-del').addEventListener('click',()=>{
+      currentAttachments.splice(i,1); renderAttachList();
+    });
+    list.appendChild(chip);
+  });
+}
+
+function initAttachments(savedAttachments){
+  currentAttachments = savedAttachments ? [...savedAttachments] : [];
+  renderAttachList();
+}
+
+document.addEventListener('DOMContentLoaded', ()=>{
+  const inp=document.getElementById('f-file');
+  const btn=document.getElementById('btn-attach-pick');
+  if(btn) btn.addEventListener('click',()=>inp.click());
+  if(inp) inp.addEventListener('change',()=>{
+    const files=Array.from(inp.files);
+    if(!files.length) return;
+    // Size check: warn if any file > 10MB
+    for(const file of files){
+      if(file.size > 10*1024*1024){ toast('⚠️ File troppo grande (max 10MB): '+file.name); continue; }
+      const reader=new FileReader();
+      reader.onload=e=>{
+        currentAttachments.push({name:file.name, type:file.type, localData:e.target.result, pending:true});
+        renderAttachList();
+      };
+      reader.readAsDataURL(file);
+    }
+    inp.value='';
+  });
+});
+
+// ════════════════════════════════════════════
+//  PATIENT AUTOCOMPLETE (da Firestore "pazienti")
+// ════════════════════════════════════════════
+let acTimeout = null;
+
+function showAcDropdown(items){
+  const dd=document.getElementById('ac-dropdown');
+  dd.innerHTML='';
+  if(!items.length){ dd.classList.add('hidden'); return; }
+  items.forEach(p=>{
+    const el=document.createElement('div'); el.className='ac-item';
+    el.innerHTML=`<div class="ac-name">${p.nome||''} ${p.cognome||''}</div>
+      <div class="ac-sub">Cartella: ${p.codice||'—'} · Tel: ${p.telefono||'—'}</div>`;
+    el.addEventListener('mousedown', e=>{
+      e.preventDefault(); // prevent blur before click
+      document.getElementById('f-patient').value=`${p.nome||''} ${p.cognome||''}`.trim();
+      document.getElementById('f-card').value=p.codice||'';
+      document.getElementById('f-phone').value=p.telefono||'';
+      dd.classList.add('hidden');
+    });
+    dd.appendChild(el);
+  });
+  dd.classList.remove('hidden');
+}
+
+function hideAcDropdown(){
+  document.getElementById('ac-dropdown').classList.add('hidden');
+}
+
+document.addEventListener('DOMContentLoaded', ()=>{
+  const inp=document.getElementById('f-patient');
+  if(!inp) return;
+  inp.addEventListener('input', ()=>{
+    clearTimeout(acTimeout);
+    const q=inp.value.trim().toLowerCase();
+    if(q.length < 2){ hideAcDropdown(); return; }
+    acTimeout=setTimeout(async ()=>{
+      try {
+        // Search in "pazienti" collection (will be populated by Cartella Clinica app)
+        const snap = await db.collection('pazienti')
+          .orderBy('cognome')
+          .limit(50)
+          .get();
+        const results = snap.docs
+          .map(d=>d.data())
+          .filter(p=>{
+            const full=`${p.nome||''} ${p.cognome||''} ${p.codice||''}`.toLowerCase();
+            return full.includes(q);
+          })
+          .slice(0,8);
+        showAcDropdown(results);
+      } catch(e){
+        // Collection doesn't exist yet — silently ignore
+        hideAcDropdown();
+      }
+    }, 250);
+  });
+  inp.addEventListener('blur', ()=>{ setTimeout(hideAcDropdown, 200); });
+});
+
+// ════════════════════════════════════════════
+//  NAVIGATION
+// ════════════════════════════════════════════
+function navigate(dir){
+  const steps={giorno:1,'3giorni':3,settimana:7,'4settimane':28,mese:30,anno:365,agenda:1,pianificatore:1};
+  const step=steps[view]||1;
+  curDate=addDays(curDate,dir*step);
+  miniMonth=new Date(curDate);
+  renderMini(); renderCal(); updateLabel();
+}
+
+// ════════════════════════════════════════════
+//  EVENT LISTENERS
+// ════════════════════════════════════════════
+document.getElementById('mc-prev').addEventListener('click',()=>{ miniMonth.setMonth(miniMonth.getMonth()-1); renderMini(); });
+document.getElementById('mc-next').addEventListener('click',()=>{ miniMonth.setMonth(miniMonth.getMonth()+1); renderMini(); });
+
+document.getElementById('nb-prev').addEventListener('click',()=>navigate(-1));
+document.getElementById('nb-next').addEventListener('click',()=>navigate(1));
+document.getElementById('nb-first').addEventListener('click',()=>{ curDate=new Date(); miniMonth=new Date(); renderMini(); renderCal(); updateLabel(); });
+document.getElementById('nb-refresh').addEventListener('click',()=>{ renderCal(); toast('↻ Aggiornato'); });
+document.getElementById('nb-today').addEventListener('click',()=>{ curDate=new Date(); miniMonth=new Date(); renderMini(); renderCal(); updateLabel(); });
+
+document.querySelectorAll('.view-tab').forEach(tab=>{
+  tab.addEventListener('click',()=>{
+    document.querySelectorAll('.view-tab').forEach(t=>t.classList.remove('active'));
+    tab.classList.add('active');
+    view=tab.dataset.view;
+    renderCal(); updateLabel();
+  });
+});
+
+document.getElementById('m-close').addEventListener('click',closeModal);
+document.getElementById('m-cancel').addEventListener('click',closeModal);
+document.getElementById('m-save').addEventListener('click',saveEvent);
+document.getElementById('m-delete').addEventListener('click',deleteEvent);
+document.getElementById('m-wa').addEventListener('click',()=>sendWA(formToObj(),document.getElementById('f-phone').value));
+document.getElementById('overlay').addEventListener('click',e=>{ if(e.target===e.currentTarget) closeModal(); });
+
+document.getElementById('pp-close').addEventListener('click',hidePopup);
+document.getElementById('pp-edit').addEventListener('click',()=>{ if(popupEventId) openModal(popupEventId); });
+document.getElementById('pp-wa').addEventListener('click',()=>{
+  if(!popupEventId) return;
+  const ev=events.find(e=>e.id===popupEventId); if(!ev) return;
+  sendWA(ev, ev.phone);
+});
+
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ closeModal(); hidePopup(); closeCalDropdown(); } });
+document.addEventListener('click',e=>{ if(!e.target.closest('#f-calendar-wrap')) closeCalDropdown(); });
+document.getElementById('cal-scroll').addEventListener('click',e=>{
+  if(!e.target.closest('.popup')&&!e.target.closest('.ev')) hidePopup();
+});
+
+// Mobile sidebar
+document.getElementById('hd-menu').addEventListener('click',openSidebar);
+document.getElementById('sb-overlay').addEventListener('click',closeSidebar);
+
+// ════════════════════════════════════════════
+//  GESTIONE CALENDARI
+// ════════════════════════════════════════════
+// Mappa temporanea modifiche in corso (id→{name,color,group})
+let calEdits = {};
+
+function openCalMgmt(){
+  calEdits = {};
+  renderCalMgmtBody();
+  document.getElementById('cal-mgmt-overlay').classList.remove('hidden');
+}
+
+function renderCalMgmtBody(){
+  const body = document.getElementById('cal-mgmt-body');
+  body.innerHTML = '';
+
+  // ── Lista calendari esistenti ──
+  const listDiv = document.createElement('div');
+  listDiv.id = 'cal-mgmt-list';
+
+  // Raggruppa per gruppo
+  const all = [
+    ...CALS.filter(c=>!c.group),
+    ...GROUPS.flatMap(g=>CALS.filter(c=>c.group===g))
+  ];
+
+  let currentGroup = '__none__';
+  all.forEach(cal => {
+    const grpKey = cal.group||'';
+    if(grpKey !== currentGroup){
+      currentGroup = grpKey;
+      if(grpKey){
+        const ghd = document.createElement('div');
+        ghd.style.cssText='font-size:10px;font-weight:700;color:#1a73e8;text-transform:uppercase;letter-spacing:.5px;padding:10px 0 4px;border-top:1px solid #f0f0f0;margin-top:4px';
+        const icons={'Laboratori':'🔬','Medici':'👨‍⚕️','Prestazioni':'🦷'};
+        ghd.textContent=(icons[grpKey]||'')+' '+grpKey;
+        listDiv.appendChild(ghd);
+      }
+    }
+    listDiv.appendChild(mkCalMgmtRow(cal));
+  });
+
+  body.appendChild(listDiv);
+
+  // ── Form aggiungi nuovo ──
+  const addDiv = document.createElement('div');
+  addDiv.style.cssText='margin-top:14px;padding-top:12px;border-top:2px solid #f0f0f0';
+  addDiv.innerHTML=`
+    <div style="font-size:11px;font-weight:600;color:#999;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">➕ Aggiungi nuovo calendario</div>
+    <div class="form-row" style="align-items:flex-end;gap:8px">
+      <div class="fg" style="flex:0 0 44px">
+        <label>Colore</label>
+        <input type="color" id="new-cal-color" value="#1a73e8" style="height:36px;padding:2px;cursor:pointer;border:1px solid #ddd;border-radius:6px;width:100%">
+      </div>
+      <div class="fg">
+        <label>Nome calendario</label>
+        <input type="text" id="new-cal-name" placeholder="es. Ortodonzia adulti">
+      </div>
+      <div class="fg" style="flex:0 0 150px">
+        <label>Gruppo</label>
+        <select id="new-cal-group">
+          <option value="">— Nessun gruppo</option>
+          <option value="Laboratori">🔬 Laboratori</option>
+          <option value="Medici">👨‍⚕️ Medici</option>
+          <option value="Prestazioni">🦷 Prestazioni</option>
+        </select>
+      </div>
+      <div style="flex:0 0 auto;padding-bottom:0">
+        <button class="btn btn-primary" onclick="addNewCal()" style="white-space:nowrap">+ Aggiungi</button>
+      </div>
+    </div>`;
+  body.appendChild(addDiv);
+}
+
+function mkCalMgmtRow(cal){
+  const row = document.createElement('div');
+  row.className = 'cal-mgmt-row';
+  row.dataset.id = cal.id;
+  row.innerHTML = `
+    <div style="display:flex;flex-direction:column;gap:3px;flex:0 0 44px">
+      <label style="font-size:11.5px;color:#666;font-weight:500">Colore</label>
+      <input type="color" class="cm-color" value="${cal.color}"
+        style="height:36px;padding:2px;cursor:pointer;border:1px solid #ddd;border-radius:6px;width:44px">
+    </div>
+    <div class="fg">
+      <label>Nome</label>
+      <input type="text" class="cm-name" value="${cal.name}" placeholder="Nome calendario">
+    </div>
+    <div class="fg" style="flex:0 0 150px">
+      <label>Gruppo</label>
+      <select class="cm-group">
+        <option value="" ${!cal.group?'selected':''}>— Nessun gruppo</option>
+        <option value="Laboratori" ${cal.group==='Laboratori'?'selected':''}>🔬 Laboratori</option>
+        <option value="Medici" ${cal.group==='Medici'?'selected':''}>👨‍⚕️ Medici</option>
+        <option value="Prestazioni" ${cal.group==='Prestazioni'?'selected':''}>🦷 Prestazioni</option>
+      </select>
+    </div>
+    <button class="cal-mgmt-del" onclick="deleteCalEntry('${cal.id}')" title="Elimina">🗑</button>`;
+  return row;
+}
+
+function deleteCalEntry(calId){
+  if(!confirm('Eliminare questo calendario?\nGli appuntamenti esistenti non verranno modificati.')) return;
+  const idx = CALS.findIndex(c=>c.id===calId);
+  if(idx>=0) CALS.splice(idx,1);
+  activeCals.delete(calId);
+  renderCalMgmtBody();
+}
+
+function addNewCal(){
+  const name = document.getElementById('new-cal-name').value.trim();
+  if(!name){ toast('⚠️ Inserisci il nome'); return; }
+  const color = document.getElementById('new-cal-color').value;
+  const group = document.getElementById('new-cal-group').value || null;
+  const id = 'cal_' + Date.now().toString(36);
+  CALS.push({id, name, color, group});
+  activeCals.add(id);
+  document.getElementById('new-cal-name').value = '';
+  renderCalMgmtBody();
+  toast('✅ Calendario aggiunto');
+}
+
+async function saveCalMgmt(){
+  // Leggi tutti i valori dal form
+  const rows = document.querySelectorAll('#cal-mgmt-list .cal-mgmt-row');
+  rows.forEach(row=>{
+    const id = row.dataset.id;
+    const idx = CALS.findIndex(c=>c.id===id);
+    if(idx<0) return;
+    const name = row.querySelector('.cm-name').value.trim();
+    const color = row.querySelector('.cm-color').value;
+    const group = row.querySelector('.cm-group').value || null;
+    if(name) CALS[idx].name = name;
+    CALS[idx].color = color;
+    CALS[idx].group = group;
+  });
+
+  // Salva su Firestore
+  const saveBtn = document.querySelector('#cal-mgmt-overlay .btn-primary');
+  saveBtn.disabled=true; saveBtn.textContent='⏳ Salvataggio...';
+  try {
+    await db.collection('config').doc('calendari').set({cals: CALS, updatedAt: firebase.firestore.FieldValue.serverTimestamp()});
+    toast('✅ Calendari salvati su Firebase');
+  } catch(e){
+    console.warn('Firestore save failed:', e);
+    toast('✅ Salvato localmente');
+  } finally {
+    saveBtn.disabled=false; saveBtn.textContent='💾 Salva tutto';
+  }
+
+  activeCals = new Set(CALS.map(c=>c.id));
+  renderSidebar();
+  renderCal();
+  document.getElementById('cal-mgmt-overlay').classList.add('hidden');
+}
+
+// ════════════════════════════════════════════
+//  WHATSAPP REMINDER BANNER
+// ════════════════════════════════════════════
+function getTomorrowStr(){
+  const t = new Date();
+  t.setDate(t.getDate()+1);
+  return d2s(t);
+}
+
+function getDismissedKey(){ return 'wa_dismissed_'+getTomorrowStr(); }
+
+function getDismissed(){
+  try { return new Set(JSON.parse(localStorage.getItem(getDismissedKey())||'[]')); }
+  catch(e){ return new Set(); }
+}
+
+function dismissReminder(evId){
+  try {
+    const dis = getDismissed();
+    dis.add(evId);
+    localStorage.setItem(getDismissedKey(), JSON.stringify([...dis]));
+  } catch(e){}
+  renderWaBanner();
+}
+
+function dismissAllReminders(){
+  const tomorrowStr = getTomorrowStr();
+  const ids = events.filter(e=>e.date===tomorrowStr && (e.phone||'').trim()).map(e=>e.id);
+  try { localStorage.setItem(getDismissedKey(), JSON.stringify(ids)); } catch(e){}
+  document.getElementById('wa-banner').classList.add('hidden');
+}
+
+function buildWaReminderMsg(ev){
+  const name = (ev.patient||'paziente').split(' ')[0]; // solo nome
+  const ds = ev.date ? fmtDate(ev.date) : '';
+  const ora = ev.start ? ` alle ${ev.start}` : '';
+  const treat = ev.treatment ? `\nTrattamento: ${ev.treatment}` : '';
+  return encodeURIComponent(
+    `Gentile ${name},\n`+
+    `la ricordiamo del Suo appuntamento di domani ${ds}${ora}.${treat}\n\n`+
+    `Studio Dentistico Healthy Smile By N\n`+
+    `Via Madama Cristina 2, Torino\n\n`+
+    `Per disdire o spostare risponda a questo messaggio.\n`+
+    `Grazie e a domani! 😊`
+  );
+}
+
+function renderWaBanner(){
+  const tomorrowStr = getTomorrowStr();
+  const dismissed = getDismissed();
+  const pending = events
+    .filter(e => e.date === tomorrowStr && (e.phone||'').replace(/\s/g,'').length > 4)
+    .filter(e => !dismissed.has(e.id))
+    .sort((a,b)=>(a.start||'').localeCompare(b.start||''));
+
+  const banner = document.getElementById('wa-banner');
+  const list   = document.getElementById('wa-banner-list');
+  if(!banner || !list) return;
+
+  if(!pending.length){ banner.classList.add('hidden'); return; }
+  banner.classList.remove('hidden');
+  list.innerHTML='';
+
+  pending.forEach(ev=>{
+    const cals = ev.calendars||[ev.calendar||'dott_palmia'];
+    const cal  = getCal(cals[0]);
+    const timeStr = [ev.start, ev.end].filter(Boolean).join(' – ');
+    const phone   = (ev.phone||'').replace(/[\s\-\(\)]/g,'').replace(/^\+/,'');
+    const waMsg   = buildWaReminderMsg(ev);
+    const treat   = ev.treatment ? ' · '+(ev.treatment.length>45?ev.treatment.substring(0,42)+'…':ev.treatment) : '';
+
+    const item = document.createElement('div');
+    item.className = 'wa-banner-item';
+    item.innerHTML = `
+      <div style="width:10px;height:10px;border-radius:2px;background:${cal.color};flex-shrink:0"></div>
+      <div class="wa-banner-info">
+        <div class="wa-banner-name">${ev.patient||'Paziente senza nome'}</div>
+        <div class="wa-banner-time">${timeStr}${treat}</div>
+      </div>
+      <a class="wa-banner-btn" href="https://wa.me/${phone}?text=${waMsg}" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="white" width="13" height="13"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+        Invia WA
+      </a>
+      <button class="wa-banner-dismiss" onclick="dismissReminder('${ev.id}')" title="Segna come inviato">✓</button>
+    `;
+    list.appendChild(item);
+  });
+}
+
+// ════════════════════════════════════════════
+//  AUTO-CREA PAZIENTE IN CARTELLA CLINICA
+// ════════════════════════════════════════════
+async function autoCreatePaziente(nomeCompleto, codice, telefono){
+  try {
+    // Carica tutti i pazienti e cerca corrispondenza per nome o codice cartella
+    const snap = await db.collection('pazienti').get();
+    const q = nomeCompleto.toLowerCase().trim();
+    const esiste = snap.docs.some(d => {
+      const p = d.data();
+      const nome1 = ((p.nome||'')+' '+(p.cognome||'')).toLowerCase().trim();
+      const nome2 = ((p.cognome||'')+' '+(p.nome||'')).toLowerCase().trim();
+      const codiceMatch = codice && p.codice && p.codice.trim() === codice.trim();
+      return nome1 === q || nome2 === q || codiceMatch;
+    });
+    if(esiste) return; // già presente, non fare nulla
+
+    // Suddivide "Mario Rossi" → nome: "Mario", cognome: "Rossi"
+    const parti = nomeCompleto.trim().split(/\s+/);
+    const cognome = parti.length > 1 ? parti[parti.length-1] : '';
+    const nome    = parti.length > 1 ? parti.slice(0,-1).join(' ') : parti[0];
+
+    // Genera codice automatico se non fornito
+    const y = new Date().getFullYear();
+    const codiceFinale = codice || ('HS-'+y+'-'+String(snap.docs.length+1).padStart(3,'0'));
+
+    const id = 'pt_'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+    await db.collection('pazienti').doc(id).set({
+      id,
+      codice:  codiceFinale,
+      nome,
+      cognome,
+      telefono: telefono || '',
+      prima_visita: new Date().toISOString().split('T')[0],
+      rischio: 'basso',
+      anno: '', operatore: '', note_generali: '',
+      dob: '', cf: '', via: '', civico: '', cap: '', citta: '', prov: '', nazione: 'Italia',
+      odontogramma: '{}', arcate: '{}', piano: '{}', arcate_piano: '{}',
+      preventivi: '[]', diario: '[]', documenti: '[]',
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    console.log('✅ Paziente creato in CC:', nomeCompleto);
+  } catch(e){
+    // Silenzioso — non blocca il salvataggio dell'appuntamento
+    console.warn('autoCreatePaziente failed:', e);
+  }
+}
+
+// ════════════════════════════════════════════
+//  FIRESTORE REAL-TIME LISTENER
+// ════════════════════════════════════════════
+setSyncStatus('syncing');
+db.collection('appuntamenti')
+  .onSnapshot(snapshot => {
+    events = snapshot.docs.map(doc => {
+      const d = doc.data();
+      return { ...d, id: doc.id };
+    });
+    setSyncStatus('ok');
+    renderCal();
+    renderWaBanner();
+  }, err => {
+    console.error('Firestore error:', err);
+    setSyncStatus('error');
+    toast('⚠️ Connessione persa. Riprovo...');
+  });
+
+// ════════════════════════════════════════════
+//  INIT
+// ════════════════════════════════════════════
+renderMini();
+renderSidebar();
+renderCal();
+updateLabel();
+renderWaBanner();
+
+// ── Pulsante "Cartella Paziente" nel modal ──
+document.getElementById('m-cartella').addEventListener('click', ()=>{
+  const nome = document.getElementById('f-patient').value.trim();
+  if(!nome){ toast('⚠️ Inserisci prima il nome del paziente'); return; }
+  window.open(`https://healthysmile.it/cartellaclinica.html?cerca=${encodeURIComponent(nome)}`, '_blank');
+});
+// Aggiorna visibilità del pulsante al cambiare del nome paziente
+document.getElementById('f-patient').addEventListener('input', updateCartellaBtn);
+
+// Carica calendari personalizzati da Firestore
+db.collection('config').doc('calendari').get().then(doc=>{
+  if(doc.exists && doc.data().cals && doc.data().cals.length){
+    CALS.length=0;
+    doc.data().cals.forEach(c=>CALS.push(c));
+    activeCals=new Set(CALS.map(c=>c.id));
+    renderSidebar();
+    renderCal();
+  }
+}).catch(()=>{/* Ignora se non esiste ancora */});
+
+// Update now-line every minute
+setInterval(renderCal, 60000);
+</script>
+</body>
+</html>
