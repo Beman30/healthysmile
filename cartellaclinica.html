@@ -63,7 +63,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--gray-50);color:
 .demo-lnk a{color:var(--teal);cursor:pointer}
 
 /* ── APP ── */
-#app{display:none;flex-direction:column;min-height:100vh}
+#app{display:flex;flex-direction:column;min-height:100vh}
 
 /* ── HEADER ── */
 .hdr{background:var(--white);border-bottom:var(--border);height:52px;padding:0 1.2rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200}
@@ -342,14 +342,13 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--gray-50);color:
 }
 
 </style>
+  <\!-- Firebase SDK (compat) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
 </head>
 <body>
 
-<!-- SETUP -->
-<div id="setup-screen">
-  <div class="setup-card">
-    <div class="brand">
-      <div class="brand-icon"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg></div>
       <div><div class="brand-name">Healthy Smile By N</div><div class="brand-sub">Cartella Clinica v4</div></div>
     </div>
     <h2>Configurazione</h2>
@@ -363,7 +362,6 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--gray-50);color:
     </div>
     <div id="setup-err" style="display:none;color:#C0392B;font-size:12px;margin-top:8px;padding:8px 10px;background:#FDECEA;border-radius:6px"></div>
     <button class="btn-main" onclick="doSetup()">Accedi →</button>
-    <div class="demo-lnk"><a onclick="startDemo()">Modalità demo</a></div>
   </div>
 </div>
 
@@ -379,7 +377,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--gray-50);color:
     <div class="hdr-r">
       <button class="btn-s" onclick="syncAll()">↻ Aggiorna</button>
       <button class="btn-s" onclick="openPrestazioniModal()" title="Gestisci prestazioni">🦷 Prestazioni</button>
-      <button class="btn-s" onclick="resetSetup()">⚙</button>
+      <button class="btn-s" onclick="window.open('calendario_torino.html','_blank')" title="Apri calendario">📅 Calendario</button>
     </div>
   </header>
 
@@ -697,8 +695,61 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--gray-50);color:
 
 <script>
 // ════════════════════════════════════════════════════════════
+// FIREBASE INIT
+// ════════════════════════════════════════════════════════════
+const firebaseConfig = {
+  apiKey: "AIzaSyB9BXoJQLCx_Y9pwoXmxtVj1CLULohaUsw",
+  authDomain: "healthysmile-d2b52.firebaseapp.com",
+  projectId: "healthysmile-d2b52",
+  storageBucket: "healthysmile-d2b52.firebasestorage.app",
+  messagingSenderId: "984573798131",
+  appId: "1:984573798131:web:e96e695fb86b90a2413986"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const storage = firebase.storage();
+
+function startApp() {
+  loadPrestazioni()
+    .then(() => loadPatients())
+    .then(() => handleUrlParams())
+    .catch(err => {
+      console.error('Errore avvio:', err);
+      notify('Errore connessione Firebase','err');
+    });
+}
+
+// Gestisce parametri URL: ?cerca=NomePaziente  o  ?id=pt_xxx
+function handleUrlParams() {
+  const params = new URLSearchParams(window.location.search);
+  const cerca  = params.get('cerca');
+  const patId  = params.get('id');
+  if (patId) {
+    openPatient(patId);
+  } else if (cerca) {
+    const q = cerca.toLowerCase().trim();
+    const found = patients.find(p => {
+      const nome    = ((p.nome||'')+' '+(p.cognome||'')).toLowerCase().trim();
+      const nomeRev = ((p.cognome||'')+' '+(p.nome||'')).toLowerCase().trim();
+      const codice  = (p.codice||'').toLowerCase();
+      return nome.includes(q) || nomeRev.includes(q) || codice.includes(q);
+    });
+    if (found) {
+      openPatient(found.id);
+      if (window.innerWidth <= 768) closeSidebar();
+      notify('Paziente trovato ✓','ok');
+    } else {
+      // Not found: prefill search so user can see
+      notify('Paziente "'+cerca+'" non trovato — puoi crearlo','err');
+      const s = document.getElementById('search');
+      if (s) { s.value = cerca; filterList(cerca); }
+    }
+  }
+}
+
+// ════════════════════════════════════════════════════════════
 // TRATTAMENTI — due set separati: ATTUALE e PIANO
-// Salvati su Google Sheet foglio "Prestazioni"
+// Gestione trattamenti
 // ════════════════════════════════════════════════════════════
 
 const TR_ATTUALE_DEFAULT = [
@@ -758,8 +809,6 @@ const LOWER = [48,47,46,45,44,43,42,41,31,32,33,34,35,36,37,38];
 // ════════════════════════════════════════════════════════════
 // STATE
 // ════════════════════════════════════════════════════════════
-let API_URL = localStorage.getItem('hs_api_url') || '';
-let DEMO = false;
 let patients = [];
 let currentId = null;
 
@@ -783,78 +832,54 @@ window.addEventListener('load', () => {
   buildSVG('odonto-piano');
   buildArcateBtns('arcate-attuali-btns', 'arcata-attuale-popup', 'attuale');
   buildArcateBtns('arcate-piano-btns',   'arcata-piano-popup',   'piano');
-  if (API_URL) {
-    startApp();
-  } else {
-    document.getElementById('setup-screen').style.display = 'flex';
-  }
-});
-
-// ════════════════════════════════════════════════════════════
-// SETUP / API
-// ════════════════════════════════════════════════════════════
-function doSetup() {
-  const u = document.getElementById('api-url-input').value.trim();
-  if (!u) { 
-    document.getElementById('setup-err').style.display='block';
-    document.getElementById('setup-err').textContent='Inserisci un URL prima di continuare.';
-    return; 
-  }
-  if (!u.includes('script.google.com')) { 
-    document.getElementById('setup-err').style.display='block';
-    document.getElementById('setup-err').textContent='URL non valido. Deve contenere script.google.com';
-    return; 
-  }
-  document.getElementById('setup-err').style.display='none';
-  API_URL = u; 
-  localStorage.setItem('hs_api_url', u); 
   startApp();
-}
-function startDemo() {
-  DEMO = true; API_URL = 'demo'; localStorage.setItem('hs_api_url','demo');
-  patients = demoPatients(); startApp();
-}
-function resetSetup() { localStorage.removeItem('hs_api_url'); location.reload(); }
-function startApp() {
-  document.getElementById('setup-screen').style.display = 'none';
-  document.getElementById('app').style.display = 'flex';
-  loadPrestazioni().then(() => loadPatients()).catch(err => {
-    console.error('Errore avvio:', err);
-    notify('Errore connessione — controlla URL e distribuzione','err');
-  });
-}
-
-async function api(action, data={}) {
-  if (DEMO) return demoApi(action, data);
-  setSyncPill('sy');
-  try {
-    const r = await fetch(`${API_URL}?action=${action}`,{method:'POST',body:JSON.stringify(data)});
-    const j = await r.json(); setSyncPill('ok'); return j;
-  } catch(e) { setSyncPill('er'); notify('Errore connessione','err'); return null; }
-}
+});
 
 // ════════════════════════════════════════════════════════════
 // PATIENTS
 // ════════════════════════════════════════════════════════════
 async function loadPatients() {
-  const r = await api('getPatients');
-  if (r) { patients = r.patients||[]; renderList(patients); }
+  setSyncPill('sy');
+  try {
+    const snap = await db.collection('pazienti').get();
+    patients = snap.docs.map(d => ({...d.data(), id: d.id}));
+    // Sort by codice
+    patients.sort((a,b)=>(a.codice||'').localeCompare(b.codice||''));
+    renderList(patients);
+    setSyncPill('ok');
+  } catch(e) {
+    setSyncPill('er');
+    console.error('Firestore loadPatients error:', e.code, e.message);
+    if(e.code === 'permission-denied') {
+      notify('⛔ Accesso negato — aggiorna le Firestore Rules su Firebase Console','err');
+      document.getElementById('pat-list').innerHTML = '<div class="empty-list" style="color:#C0392B;font-size:12px;padding:1rem">⛔ Permesso negato.<br>Aggiorna le regole Firestore<br>su Firebase Console.</div>';
+    } else {
+      notify('Errore connessione Firebase: '+e.message,'err');
+    }
+  }
 }
 
 function renderList(list) {
   document.getElementById('pat-count').textContent = list.length+' pazienti';
   const el = document.getElementById('pat-list');
   if (!list.length) { el.innerHTML='<div class="empty-list">Nessun paziente</div>'; return; }
-  el.innerHTML = list.map(p=>`
-    <div class="pat-item ${p.id===currentId?'active':''}" onclick="openPatient('${p.id}');if(window.innerWidth<=768)closeSidebar()">
+  el.innerHTML = list.map(p=>{
+    const nome = [p.nome,p.cognome].filter(Boolean).join(' ');
+    return `<div class="pat-item ${p.id===currentId?'active':''}" onclick="openPatient('${p.id}');if(window.innerWidth<=768)closeSidebar()">
       <div class="pat-code">${p.codice||p.id}</div>
+      ${nome?`<div class="pat-meta" style="font-weight:500;color:var(--gray-700)">${nome}</div>`:''}
       <div class="pat-meta">Nato ${p.anno||'—'} · ${p.prima_visita||'—'}</div>
       ${p.rischio?`<span class="risk-pill r-${p.rischio}">${p.rischio.toUpperCase()}</span>`:''}
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 
 function filterList(q) {
-  renderList(patients.filter(p=>(p.codice||'').toLowerCase().includes(q.toLowerCase())));
+  const ql = q.toLowerCase();
+  renderList(patients.filter(p => {
+    const nome = ((p.nome||'')+' '+(p.cognome||'')).toLowerCase();
+    return (p.codice||'').toLowerCase().includes(ql) || nome.includes(ql);
+  }));
 }
 
 async function openPatient(id) {
@@ -942,7 +967,18 @@ function openNewModal() {
   const y = new Date().getFullYear();
   const n = String(patients.length+1).padStart(3,'0');
   document.getElementById('new-code').value = `HS-${y}-${n}`;
+  document.getElementById('new-anno').value = '';
+  document.getElementById('new-rischio').value = 'basso';
   document.getElementById('new-modal').classList.add('open');
+  // Also pre-fill nome from URL param or search box
+  const cerca = new URLSearchParams(window.location.search).get('cerca') || '';
+  if (cerca && cerca.includes(' ')) {
+    // looks like "Nome Cognome" from calendar
+    const parts = cerca.trim().split(/\s+/);
+    // store in sessionStorage for prefilling after creation
+    sessionStorage.setItem('hs_new_nome', parts.slice(0,-1).join(' '));
+    sessionStorage.setItem('hs_new_cognome', parts[parts.length-1]);
+  }
 }
 function closeModal() { document.getElementById('new-modal').classList.remove('open'); }
 
@@ -975,7 +1011,7 @@ async function confirmDelete() {
 async function syncAll() {
   await loadPatients();
   if (currentId) await openPatient(currentId);
-  notify('Aggiornato','ok');
+  notify('Aggiornato ✓','ok');
 }
 
 // ════════════════════════════════════════════════════════════
@@ -1337,15 +1373,22 @@ function renderDocs() {
 
 async function handleUpload(files) {
   for (const file of files) {
-    if (file.size>10*1024*1024) { notify(file.name+' supera 10MB','err'); continue; }
+    if (file.size > 10*1024*1024) { notify(file.name+' supera 10MB','err'); continue; }
     notify('Caricamento '+file.name+'...','i');
-    const reader = new FileReader();
-    reader.onload = async e => {
-      const b64 = e.target.result.split(',')[1];
-      const r = await api('uploadFile',{patientId:currentId,fileName:file.name,mimeType:file.type,data:b64});
-      if (r&&r.url) { docs.push({nome:file.name,url:r.url,type:file.type.includes('pdf')?'pdf':'img',data:new Date().toLocaleDateString('it-IT')}); renderDocs(); notify('Caricato!','ok'); }
-    };
-    reader.readAsDataURL(file);
+    try {
+      const path = `pazienti/${currentId}/${Date.now()}_${file.name}`;
+      const ref  = storage.ref(path);
+      await ref.put(file);
+      const url  = await ref.getDownloadURL();
+      docs.push({ nome: file.name, url, storagePath: path,
+        type: file.type.includes('pdf')?'pdf':'img',
+        data: new Date().toLocaleDateString('it-IT') });
+      renderDocs();
+      notify('Caricato\!','ok');
+    } catch(e) {
+      console.error('Upload error:', e);
+      notify('Errore caricamento '+file.name,'err');
+    }
   }
 }
 
@@ -1365,14 +1408,23 @@ function switchTab(name) {
 // PRESTAZIONI — carica/salva su Google Sheet
 // ════════════════════════════════════════════════════════════
 async function loadPrestazioni() {
-  const r = await api('getPrestazioni');
-  if (r && r.attuale && r.attuale.length) TR_ATTUALE = r.attuale;
-  if (r && r.piano && r.piano.length)   TR_PIANO   = r.piano;
+  try {
+    const doc = await db.collection('config').doc('prestazioni').get();
+    if (doc.exists) {
+      const d = doc.data();
+      if (d.attuale && d.attuale.length) TR_ATTUALE = d.attuale;
+      if (d.piano && d.piano.length)     TR_PIANO   = d.piano;
+    }
+  } catch(e) { /* usa default */ }
   buildLegend();
 }
 
 async function savePrestazioni() {
-  await api('savePrestazioni', {attuale: TR_ATTUALE, piano: TR_PIANO});
+  await db.collection('config').doc('prestazioni').set({
+    attuale: TR_ATTUALE,
+    piano: TR_PIANO,
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+  });
 }
 
 function openPrestazioniModal() {
@@ -1457,13 +1509,13 @@ async function saveAndClosePrestazioni() {
 // Dati studio (modificabili qui)
 const STUDIO = {
   nome:     'Healthy Smile By N',
-  via:      'Via della Salute, 1',
+  via:      'Via Madama Cristina 2',
   cap:      '10100',
   citta:    'Torino',
   prov:     'TO',
-  piva:     '12345678901',
+  piva:     '— ',  // aggiorna con P.IVA reale
   tel:      '+39 346 182 4965',
-  email:    'info@healthysmilebyn.it'
+  email:    'info@healthysmilebyn.it'  // aggiorna con email reale
 };
 
 function initPrevHeader() {
@@ -1474,12 +1526,21 @@ function initPrevHeader() {
 }
 
 async function getNextPrevNum() {
-  const r = await api('getNextPrevNum', {});
-  if (r && r.num) return r.num;
-  // fallback locale
-  const y = new Date().getFullYear();
-  const n = Math.floor(Math.random()*900+100);
-  return `PREV-${y}-${String(n).padStart(3,'0')}`;
+  try {
+    const ref = db.collection('config').doc('prev_counter');
+    return await db.runTransaction(async t => {
+      const doc = await t.get(ref);
+      const y = new Date().getFullYear();
+      const lastYear = doc.exists ? (doc.data().year || 0) : 0;
+      const lastNum  = (doc.exists && doc.data().year === y) ? (doc.data().num || 0) : 0;
+      const newNum   = lastNum + 1;
+      t.set(ref, { year: y, num: newNum });
+      return `PREV-${y}-${String(newNum).padStart(3,'0')}`;
+    });
+  } catch(e) {
+    const y = new Date().getFullYear();
+    return `PREV-${y}-${String(Math.floor(Math.random()*900+100)).padStart(3,'0')}`;
+  }
 }
 
 async function openPreventivoTab() {
@@ -1764,34 +1825,7 @@ function apriInEditor() {
   notify('Apertura editor con dati paziente...', 'ok');
 }
 
-// ════════════════════════════════════════════════════════════
-// DEMO
-// ════════════════════════════════════════════════════════════
-function demoPatients() {
-  return [
-    {id:'d1',codice:'HS-2025-001',anno:'1978',rischio:'medio',prima_visita:'2025-01-10'},
-    {id:'d2',codice:'HS-2025-002',anno:'1992',rischio:'alto', prima_visita:'2025-02-14'},
-  ];
-}
-const DS = {};
-function demoApi(action,data) {
-  if (action==='getPatients') return {patients};
-  if (action==='getPrestazioni') return {attuale: TR_ATTUALE, piano: TR_PIANO};
-  if (action==='savePrestazioni') { if(data.attuale) TR_ATTUALE=data.attuale; if(data.piano) TR_PIANO=data.piano; return {ok:true}; }
-  if (action==='getPatient') {
-    const p=patients.find(x=>x.id===data.id)||{};
-    return {patient:{...p,...(DS[data.id]||{id:data.id,odontogramma:'{}',arcate:'{}',piano:'{}',arcate_piano:'{}',preventivi:'[]',diario:'[]',documenti:'[]'})}};
-  }
-  if (action==='savePatient') {
-    const idx=patients.findIndex(x=>x.id===data.id);
-    if(idx>=0) patients[idx]={...patients[idx],...data}; else patients.push(data);
-    DS[data.id]=data; return {ok:true};
-  }
-  if (action==='deletePatient') { patients=patients.filter(x=>x.id!==data.id); return {ok:true}; }
-  if (action==='getNextPrevNum') { const y=new Date().getFullYear(); const n=String(patients.length*7+Math.floor(Math.random()*5)+1).padStart(3,'0'); return {num:`PREV-${y}-${n}`}; }
-  if (action==='uploadFile') return {ok:true,url:'demo://'+data.fileName};
-  return {ok:true};
-}
+// (demo mode rimosso — Firebase attivo)
 
 // ════════════════════════════════════════════════════════════
 // UTILS
@@ -1820,8 +1854,8 @@ if(dz){
   dz.addEventListener('drop',e=>{e.preventDefault();dz.style.borderColor='';handleUpload(e.dataTransfer.files)});
 }
 
-// Autosave 3min
-setInterval(()=>{if(currentId)savePatient()},3*60*1000);
+// Autosave ogni 3 minuti
+setInterval(()=>{ if(currentId) savePatient(); }, 3*60*1000);
 
 // ── MOBILE SIDEBAR TOGGLE ──
 function toggleSidebar() {
