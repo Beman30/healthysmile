@@ -604,14 +604,23 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--gray-50);color:
 
 <!-- MODAL NUOVO PAZIENTE -->
 <div class="modal-bg" id="new-modal">
-  <div class="modal">
+  <div class="modal" style="max-width:480px">
     <h3>Nuovo paziente</h3>
-    <div class="fg" style="margin-bottom:10px">
-      <label>Codice paziente</label>
-      <input id="new-code" placeholder="es. HS-2025-042" style="font-family:'DM Mono',monospace">
-      <div style="font-size:11px;color:var(--gray-300);margin-top:3px">Codice anonimo — non inserire dati personali.</div>
+    <div class="grid2" style="margin-bottom:10px">
+      <div class="fg"><label>Nome</label><input id="new-nome" placeholder="Mario" autocomplete="off"></div>
+      <div class="fg"><label>Cognome</label><input id="new-cognome" placeholder="Rossi" autocomplete="off"></div>
     </div>
-    <div class="grid2">
+    <div class="grid2" style="margin-bottom:10px">
+      <div class="fg">
+        <label>N° Cartella</label>
+        <input id="new-code" placeholder="es. 573" style="font-family:'DM Mono',monospace">
+      </div>
+      <div class="fg">
+        <label>Telefono / WhatsApp</label>
+        <input id="new-tel" type="tel" placeholder="+39 333 1234567">
+      </div>
+    </div>
+    <div class="grid2" style="margin-bottom:10px">
       <div class="fg"><label>Anno nascita</label><input id="new-anno" type="number" placeholder="1985"></div>
       <div class="fg"><label>Rischio carie</label>
         <select id="new-rischio">
@@ -948,37 +957,59 @@ async function savePatient() {
 }
 
 function openNewModal() {
-  const y = new Date().getFullYear();
-  const n = String(patients.length+1).padStart(3,'0');
-  document.getElementById('new-code').value = `HS-${y}-${n}`;
-  document.getElementById('new-anno').value = '';
+  // Pre-compila nome/cognome se arriva dall'agenda (?cerca=Mario Rossi)
+  const cerca = new URLSearchParams(window.location.search).get('cerca') || '';
+  const parts = cerca.trim().split(/\s+/);
+  document.getElementById('new-nome').value    = parts.length > 1 ? parts.slice(0,-1).join(' ') : (cerca || '');
+  document.getElementById('new-cognome').value = parts.length > 1 ? parts[parts.length-1] : '';
+  document.getElementById('new-code').value    = '';
+  document.getElementById('new-tel').value     = '';
+  document.getElementById('new-anno').value    = '';
   document.getElementById('new-rischio').value = 'basso';
   document.getElementById('new-modal').classList.add('open');
-  // Also pre-fill nome from URL param or search box
-  const cerca = new URLSearchParams(window.location.search).get('cerca') || '';
-  if (cerca && cerca.includes(' ')) {
-    // looks like "Nome Cognome" from calendar
-    const parts = cerca.trim().split(/\s+/);
-    // store in sessionStorage for prefilling after creation
-    sessionStorage.setItem('hs_new_nome', parts.slice(0,-1).join(' '));
-    sessionStorage.setItem('hs_new_cognome', parts[parts.length-1]);
-  }
+  setTimeout(()=>document.getElementById('new-nome').focus(), 100);
 }
 function closeModal() { document.getElementById('new-modal').classList.remove('open'); }
 
 async function createPatient() {
-  const code = document.getElementById('new-code').value.trim();
-  if (!code) { notify('Inserisci codice','err'); return; }
-  const id = 'pt_'+Date.now();
+  const nome    = document.getElementById('new-nome').value.trim();
+  const cognome = document.getElementById('new-cognome').value.trim();
+  const codice  = document.getElementById('new-code').value.trim();
+  const tel     = document.getElementById('new-tel').value.trim();
+  if (!nome && !cognome) { notify('Inserisci almeno nome o cognome','err'); return; }
+
+  // Codice auto se non inserito
+  const y = new Date().getFullYear();
+  const codiceFinale = codice || ('HS-'+y+'-'+String(patients.length+1).padStart(3,'0'));
+
+  const id = 'pt_'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
   const today = new Date().toISOString().split('T')[0];
-  const r = await api('savePatient',{
-    id, codice:code,
-    anno: document.getElementById('new-anno').value,
-    rischio: document.getElementById('new-rischio').value,
-    prima_visita: today,
-    odontogramma:'{}',arcate:'{}',piano:'{}',arcate_piano:'{}',diario:'[]',documenti:'[]'
-  });
-  if (r && r.ok) { closeModal(); await loadPatients(); openPatient(id); notify('Paziente creato!','ok'); }
+  setSyncPill('sy');
+  try {
+    await db.collection('pazienti').doc(id).set({
+      id,
+      codice:  codiceFinale,
+      nome,
+      cognome,
+      telefono: tel,
+      anno:    document.getElementById('new-anno').value || '',
+      rischio: document.getElementById('new-rischio').value || 'basso',
+      prima_visita: today,
+      operatore: '', note_generali: '',
+      dob: '', cf: '', via: '', civico: '', cap: '', citta: '', prov: '', nazione: 'Italia',
+      odontogramma: '{}', arcate: '{}', piano: '{}', arcate_piano: '{}',
+      preventivi: '[]', diario: '[]', documenti: '[]',
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    setSyncPill('ok');
+    closeModal();
+    await loadPatients();
+    openPatient(id);
+    notify('Paziente creato!','ok');
+  } catch(e) {
+    setSyncPill('er');
+    notify('Errore creazione: '+e.message,'err');
+  }
 }
 
 async function confirmDelete() {
