@@ -878,9 +878,12 @@ function filterList(q) {
 async function openPatient(id) {
   currentId = id;
   renderList(patients);
-  const r = await api('getPatient',{id});
-  if (!r||!r.patient) return;
-  const p = r.patient;
+  setSyncPill('sy');
+  try {
+    const doc = await db.collection('pazienti').doc(id).get();
+    if (!doc.exists) { notify('Paziente non trovato','err'); setSyncPill('er'); return; }
+    const p = doc.data();
+    setSyncPill('ok');
   sv('f-codice',   p.codice||'');
   sv('f-anno',     p.anno||'');
   sv('f-rischio',  p.rischio||'');
@@ -918,6 +921,10 @@ async function openPatient(id) {
   document.getElementById('record').style.display = 'block';
   document.getElementById('rec-code').textContent = p.codice||id;
   document.getElementById('rec-sub').textContent = `Anno: ${p.anno||'—'} · Rischio: ${p.rischio||'—'} · Prima visita: ${p.prima_visita||'—'}`;
+  } catch(e) {
+    setSyncPill('er');
+    notify('Errore caricamento paziente: '+e.message,'err');
+  }
 }
 
 function collectData() {
@@ -952,8 +959,17 @@ function collectData() {
 
 async function savePatient() {
   if (!currentId) return;
-  const r = await api('savePatient', collectData());
-  if (r && r.ok) { notify('Salvato!','ok'); await loadPatients(); }
+  setSyncPill('sy');
+  try {
+    const data = collectData();
+    await db.collection('pazienti').doc(currentId).set(data);
+    setSyncPill('ok');
+    notify('Salvato!','ok');
+    await loadPatients();
+  } catch(e) {
+    setSyncPill('er');
+    notify('Errore salvataggio: '+e.message,'err');
+  }
 }
 
 function openNewModal() {
@@ -1014,12 +1030,18 @@ async function createPatient() {
 
 async function confirmDelete() {
   if (!confirm('Eliminare questa cartella?')) return;
-  const r = await api('deletePatient',{id:currentId});
-  if (r && r.ok) {
+  setSyncPill('sy');
+  try {
+    await db.collection('pazienti').doc(currentId).delete();
     currentId = null;
     document.getElementById('record').style.display = 'none';
     document.getElementById('welcome').style.display = 'flex';
-    await loadPatients(); notify('Eliminato');
+    setSyncPill('ok');
+    await loadPatients();
+    notify('Eliminato');
+  } catch(e) {
+    setSyncPill('er');
+    notify('Errore eliminazione: '+e.message,'err');
   }
 }
 
