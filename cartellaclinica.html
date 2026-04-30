@@ -620,16 +620,6 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--gray-50);color:
         <input id="new-tel" type="tel" placeholder="+39 333 1234567">
       </div>
     </div>
-    <div class="grid2" style="margin-bottom:10px">
-      <div class="fg"><label>Anno nascita</label><input id="new-anno" type="number" placeholder="1985"></div>
-      <div class="fg"><label>Rischio carie</label>
-        <select id="new-rischio">
-          <option value="basso">Basso</option>
-          <option value="medio">Medio</option>
-          <option value="alto">Alto</option>
-        </select>
-      </div>
-    </div>
     <div class="modal-foot">
       <button class="btn-sec" onclick="closeModal()">Annulla</button>
       <button class="btn-save" onclick="createPatient()">Crea cartella</button>
@@ -1010,8 +1000,8 @@ async function createPatient() {
       nome,
       cognome,
       telefono: tel,
-      anno:    document.getElementById('new-anno').value || '',
-      rischio: document.getElementById('new-rischio').value || 'basso',
+      anno:    '',
+      rischio: 'basso',
       prima_visita: today,
       operatore: '', note_generali: '',
       dob: '', cf: '', via: '', civico: '', cap: '', citta: '', prov: '', nazione: 'Italia',
