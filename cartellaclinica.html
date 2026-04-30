@@ -972,8 +972,6 @@ function openNewModal() {
   document.getElementById('new-cognome').value = parts.length > 1 ? parts[parts.length-1] : '';
   document.getElementById('new-code').value    = '';
   document.getElementById('new-tel').value     = '';
-  document.getElementById('new-anno').value    = '';
-  document.getElementById('new-rischio').value = 'basso';
   document.getElementById('new-modal').classList.add('open');
   setTimeout(()=>document.getElementById('new-nome').focus(), 100);
 }
