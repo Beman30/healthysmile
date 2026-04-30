@@ -645,7 +645,7 @@ const IT_MONTHS_S = ['gen','feb','mar','apr','mag','giu','lug','ago','set','ott'
 const H_START = 7, H_END = 23, PX_HOUR = 60;
 
 function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2) }
-function d2s(d){ return d.toISOString().split('T')[0] }
+function d2s(d){ const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),dd=String(d.getDate()).padStart(2,'0'); return `${y}-${m}-${dd}`; }
 function sameDay(a,b){ return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate() }
 function addDays(d,n){ const r=new Date(d); r.setDate(r.getDate()+n); return r }
 function getCal(id){ return CALS.find(c=>c.id===id)||CALS[5] }
