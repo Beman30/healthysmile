@@ -669,6 +669,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--gray-50);color:
     <div id="prest-list-piano" style="margin-bottom:1rem"></div>
 
     <div style="display:flex;justify-content:flex-end;gap:8px;padding-top:.8rem;border-top:var(--border)">
+      <button class="btn-sec" onclick="resetPrestazioniDefault()" style="color:var(--amber);border-color:var(--amber)" title="Ripristina lista predefinita dal programma">↺ Ripristina predefiniti</button>
       <button class="btn-sec" onclick="document.getElementById('prest-modal').classList.remove('open')">Chiudi senza salvare</button>
       <button class="btn-save" onclick="saveAndClosePrestazioni()">💾 Salva su tutti i PC</button>
     </div>
@@ -1569,6 +1570,16 @@ async function saveAndClosePrestazioni() {
   await savePrestazioni();
   document.getElementById('prest-modal').classList.remove('open');
   notify('Prestazioni salvate su tutti i PC!','ok');
+}
+
+async function resetPrestazioniDefault() {
+  if (!confirm('Ripristinare la lista predefinita? Le personalizzazioni attuali verranno perse.')) return;
+  TR_PIANO   = TR_PIANO_DEFAULT.map(t=>({...t}));
+  TR_ATTUALE = TR_ATTUALE_DEFAULT.map(t=>({...t}));
+  renderPrestazioniModal();
+  buildLegend();
+  await savePrestazioni();
+  notify('Lista ripristinata ai predefiniti ✓','ok');
 }
 
 
