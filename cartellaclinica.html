@@ -526,7 +526,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--gray-50);color:
               </div>
             </div>
             <div style="padding:.8rem 1.2rem;border-bottom:var(--border);background:var(--gray-50);display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-              <div class="fg" style="flex:1;min-width:140px"><label>Validità (giorni)</label><div style="display:flex;gap:6px;align-items:center"><input type="number" id="prev-validita" value="30" style="width:70px"><button onclick="initPrevHeader()" style="padding:4px 10px;background:var(--teal);color:#fff;border:none;border-radius:var(--r-sm);cursor:pointer;font-size:12px;white-space:nowrap">↻ Aggiorna</button></div></div>
+              <div class="fg" style="flex:1;min-width:140px"><label>Validità (giorni)</label><input type="number" id="prev-validita" value="30" style="width:80px"></div>
               <div class="fg" style="flex:2;min-width:200px"><label>Note preventivo</label><input id="prev-note" placeholder="es. Prezzi validi salvo variazioni cliniche..."></div>
               <div class="fg"><label>Sconto globale %</label><input type="number" id="prev-sconto-glob" value="0" min="0" max="100" style="width:70px" oninput="applyGlobalDiscount()"></div>
             </div>
@@ -620,6 +620,16 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--gray-50);color:
         <input id="new-tel" type="tel" placeholder="+39 333 1234567">
       </div>
     </div>
+    <div class="grid2" style="margin-bottom:10px">
+      <div class="fg"><label>Anno nascita</label><input id="new-anno" type="number" placeholder="1985"></div>
+      <div class="fg"><label>Rischio carie</label>
+        <select id="new-rischio">
+          <option value="basso">Basso</option>
+          <option value="medio">Medio</option>
+          <option value="alto">Alto</option>
+        </select>
+      </div>
+    </div>
     <div class="modal-foot">
       <button class="btn-sec" onclick="closeModal()">Annulla</button>
       <button class="btn-save" onclick="createPatient()">Crea cartella</button>
@@ -669,7 +679,6 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--gray-50);color:
     <div id="prest-list-piano" style="margin-bottom:1rem"></div>
 
     <div style="display:flex;justify-content:flex-end;gap:8px;padding-top:.8rem;border-top:var(--border)">
-      <button class="btn-sec" onclick="resetPrestazioniDefault()" style="color:var(--amber);border-color:var(--amber)" title="Ripristina lista predefinita dal programma">↺ Ripristina predefiniti</button>
       <button class="btn-sec" onclick="document.getElementById('prest-modal').classList.remove('open')">Chiudi senza salvare</button>
       <button class="btn-save" onclick="saveAndClosePrestazioni()">💾 Salva su tutti i PC</button>
     </div>
@@ -754,71 +763,31 @@ const TR_ATTUALE_DEFAULT = [
 ];
 
 const TR_PIANO_DEFAULT = [
-  {id:'ott1', label:'Otturazione I classe', color:'#1A5EA8', sym:'O1', bg:'#E8F1FD', tipo:'piano', prezzo:120},
-  {id:'ott2', label:'Otturazione II classe', color:'#1A5EA8', sym:'O2', bg:'#E8F1FD', tipo:'piano', prezzo:170},
-  {id:'ott5', label:'Otturazione V classe', color:'#1A5EA8', sym:'O5', bg:'#E8F1FD', tipo:'piano', prezzo:90},
-  {id:'ottl', label:'Otturazione dente da latte', color:'#1A5EA8', sym:'OL', bg:'#E8F1FD', tipo:'piano', prezzo:80},
-  {id:'ottr', label:'Otturazione a rischio devitaliz.', color:'#1A5EA8', sym:'OR', bg:'#E8F1FD', tipo:'piano', prezzo:170},
-  {id:'intarsio', label:'Intarsio in ceramica', color:'#1A5EA8', sym:'IN', bg:'#E8F1FD', tipo:'piano', prezzo:400},
-  {id:'sigill', label:'Sigillatura', color:'#1D9E75', sym:'SG', bg:'#E1F5EE', tipo:'piano', prezzo:100},
-  {id:'endo1', label:'Endodonzia monocanalare', color:'#5B4BBF', sym:'E1', bg:'#EEEDFB', tipo:'piano', prezzo:150},
-  {id:'endo2', label:'Endodonzia bicanalare', color:'#5B4BBF', sym:'E2', bg:'#EEEDFB', tipo:'piano', prezzo:180},
-  {id:'endo3', label:'Endodonzia pluricanalare', color:'#5B4BBF', sym:'E3', bg:'#EEEDFB', tipo:'piano', prezzo:290},
-  {id:'ritratt1', label:'Ritrattamento monocanalare', color:'#5B4BBF', sym:'R1', bg:'#EEEDFB', tipo:'piano', prezzo:280},
-  {id:'ritratt3', label:'Ritrattamento pluricanalare', color:'#5B4BBF', sym:'R3', bg:'#EEEDFB', tipo:'piano', prezzo:400},
-  {id:'apic', label:'Apicectomia', color:'#5B4BBF', sym:'AP', bg:'#EEEDFB', tipo:'piano', prezzo:300},
-  {id:'cist', label:'Cistectomia', color:'#5B4BBF', sym:'CI', bg:'#EEEDFB', tipo:'piano', prezzo:300},
-  {id:'exs', label:'Estrazione semplice', color:'#C0392B', sym:'ES', bg:'#FDECEA', tipo:'piano', prezzo:100},
-  {id:'exc', label:'Estrazione complessa', color:'#C0392B', sym:'EC', bg:'#FDECEA', tipo:'piano', prezzo:130},
-  {id:'exg', label:'Estrazione dente del giudizio', color:'#C0392B', sym:'EG', bg:'#FDECEA', tipo:'piano', prezzo:200},
-  {id:'exi', label:'Estrazione elemento incluso', color:'#C0392B', sym:'EI', bg:'#FDECEA', tipo:'piano', prezzo:600},
-  {id:'exsi', label:'Estrazione semi incluso', color:'#C0392B', sym:'eI', bg:'#FDECEA', tipo:'piano', prezzo:300},
-  {id:'exd', label:'Estrazione dente deciduo', color:'#C0392B', sym:'ED', bg:'#FDECEA', tipo:'piano', prezzo:80},
-  {id:'impl', label:'Impianto osteointegrabile', color:'#C05621', sym:'I+', bg:'#FEF0E7', tipo:'piano', prezzo:550},
-  {id:'abut', label:'Abutment', color:'#C05621', sym:'A', bg:'#FEF0E7', tipo:'piano', prezzo:190},
-  {id:'abut_zig', label:'Abutment zigomatico', color:'#C05621', sym:'AZ', bg:'#FEF0E7', tipo:'piano', prezzo:250},
-  {id:'kzr', label:'Corona zirconio', color:'#0F6E56', sym:'Kz', bg:'#E1F5EE', tipo:'piano', prezzo:700},
-  {id:'kzi', label:'Corona zirconio su impianto', color:'#0F6E56', sym:'Ki', bg:'#E1F5EE', tipo:'piano', prezzo:700},
-  {id:'kprov', label:'Corona provvisoria in resina', color:'#0F6E56', sym:'KP', bg:'#E1F5EE', tipo:'piano', prezzo:90},
-  {id:'kci', label:'Corona provvisoria carico immediato', color:'#0F6E56', sym:'KC', bg:'#E1F5EE', tipo:'piano', prezzo:300},
-  {id:'rfk', label:'Rifacimento corona in zirconia', color:'#0F6E56', sym:'RK', bg:'#E1F5EE', tipo:'piano', prezzo:200},
-  {id:'facc_cer', label:'Faccetta in ceramica', color:'#0F6E56', sym:'FC', bg:'#E1F5EE', tipo:'piano', prezzo:600},
-  {id:'facc_comp', label:'Faccetta in composito', color:'#0F6E56', sym:'FO', bg:'#E1F5EE', tipo:'piano', prezzo:400},
-  {id:'maryland', label:'Maryland', color:'#0F6E56', sym:'MA', bg:'#E1F5EE', tipo:'piano', prezzo:370},
-  {id:'perno', label:'Perno in fibra', color:'#0F6E56', sym:'PF', bg:'#E1F5EE', tipo:'piano', prezzo:200},
-  {id:'monc', label:'Ricostruzione moncone composito', color:'#0F6E56', sym:'MC', bg:'#E1F5EE', tipo:'piano', prezzo:120},
-  {id:'ricim', label:'Ricementazione ponte', color:'#0F6E56', sym:'RP', bg:'#E1F5EE', tipo:'piano', prezzo:250},
-  {id:'rm_cor', label:'Rimozione corona', color:'#686864', sym:'RC', bg:'#EFEDE7', tipo:'piano', prezzo:40},
-  {id:'levrad', label:'Levigature radicolari', color:'#1D9E75', sym:'LR', bg:'#E1F5EE', tipo:'piano', prezzo:130},
-  {id:'levrs', label:'Levigatura radicolare singolo el.', color:'#1D9E75', sym:'LS', bg:'#E1F5EE', tipo:'piano', prezzo:22},
-  {id:'sondagg', label:'Sondaggio', color:'#1D9E75', sym:'SO', bg:'#E1F5EE', tipo:'piano', prezzo:150},
-  {id:'splint', label:'Splintaggio', color:'#686864', sym:'SP', bg:'#EFEDE7', tipo:'piano', prezzo:220},
-  {id:'tac', label:'TAC', color:'#686864', sym:'TC', bg:'#EFEDE7', tipo:'piano', prezzo:100},
-  {id:'opt', label:'Ortopanoramica (OPT)', color:'#686864', sym:'OP', bg:'#EFEDE7', tipo:'piano', prezzo:10},
-  {id:'ctrl', label:'Controllo', color:'#686864', sym:'CC', bg:'#EFEDE7', tipo:'piano', prezzo:0},
-  {id:'altro_piano', label:'Altro', color:'#686864', sym:'?', bg:'#EFEDE7', tipo:'piano', prezzo:0}
+  {id:'da_otturare', label:'Da otturare',          color:'#C0392B', sym:'C',  bg:'#FDECEA', tipo:'piano'},
+  {id:'endo_fare',   label:'Endodonzia',            color:'#B7651A', sym:'E',  bg:'#FEF3E2', tipo:'piano'},
+  {id:'da_estrarre', label:'Da estrarre',           color:'#C0392B', sym:'†',  bg:'#FDECEA', tipo:'piano'},
+  {id:'imp_fare',    label:'Impianto',              color:'#0F6E56', sym:'I+', bg:'#D0F0E6', tipo:'piano'},
+  {id:'corona_fare', label:'Corona',                color:'#5B4BBF', sym:'K+', bg:'#EEEDFB', tipo:'piano'},
+  {id:'ponte_fare',  label:'Ponte',                 color:'#1A5EA8', sym:'▬+', bg:'#E8F1FD', tipo:'piano'},
+  {id:'igiene_fare', label:'Igiene',                color:'#1D9E75', sym:'IG', bg:'#E1F5EE', tipo:'piano'},
+  {id:'bite_fare',   label:'Bite',                  color:'#5B4BBF', sym:'B+', bg:'#EEEDFB', tipo:'piano'},
+  {id:'sbianc_fare', label:'Sbiancamento',          color:'#1D9E75', sym:'SB', bg:'#E1F5EE', tipo:'piano'},
+  {id:'controllo',   label:'Controllo',             color:'#686864', sym:'CC', bg:'#EFEDE7', tipo:'piano'},
+  {id:'altro_piano', label:'Altro',                 color:'#686864', sym:'?',  bg:'#EFEDE7', tipo:'piano'},
 ];
 
 let TR_ATTUALE = [...TR_ATTUALE_DEFAULT];
 let TR_PIANO   = [...TR_PIANO_DEFAULT];
 
 function findTR(id) {
-  return TR_ATTUALE.find(t=>t.id===id) || TR_PIANO.find(t=>t.id===id) || null;
+  return TR_ATTUALE.find(t=>t.id===id) || TR_PIANO.find(t=>t.id===id) || {id,label:id,color:'#686864',sym:'?',bg:'#EFEDE7'};
 }
 
 const ARCH_TR = [
-  {id:'igiene_fare', label:'Igiene', color:'#1D9E75', sym:'IG', prezzo:90},
-  {id:'ablaz_adult', label:'Ablazione tartaro', color:'#1D9E75', sym:'AT', prezzo:90},
-  {id:'ablaz_ped', label:'Ablazione pediatrica', color:'#1D9E75', sym:'AP', prezzo:70},
-  {id:'sbianc', label:'Sbiancamento con lampada', color:'#B7651A', sym:'SB', prezzo:250},
-  {id:'bite', label:'Bite', color:'#B7651A', sym:'B+', prezzo:250},
-  {id:'tot_rimov', label:'Protesi totale rimovibile', color:'#C05621', sym:'TR', prezzo:1200},
-  {id:'tot_fissa', label:'Protesi totale fissa/All-on-4', color:'#0F6E56', sym:'TF', prezzo:0},
-  {id:'parz_rimov', label:'Protesi parziale rimovibile', color:'#B7651A', sym:'PR', prezzo:0},
-  {id:'ortodonzia', label:'Apparecchio ortodontico', color:'#1A5EA8', sym:'OR', prezzo:3500},
-  {id:'rialzo_grande', label:'Grande rialzo seno mascellare', color:'#C05621', sym:'RG', prezzo:1600},
-  {id:'rialzo_mini', label:'Mini rialzo seno mascellare', color:'#C05621', sym:'RM', prezzo:800},
-  {id:'bonifica', label:'Bonifica arcata', color:'#C0392B', sym:'BA', prezzo:550}
+  {id:'tot_rimov',  label:'Protesi totale rimovibile',     color:'#C05621', sym:'TR'},
+  {id:'tot_fissa',  label:'Protesi totale fissa/All-on-4', color:'#0F6E56', sym:'TF'},
+  {id:'parz_rimov', label:'Protesi parziale rimovibile',   color:'#B7651A', sym:'PR'},
+  {id:'ortodonzia', label:'Apparecchio ortodontico',       color:'#1A5EA8', sym:'OR'},
 ];
 
 const ARCATE = [
@@ -850,6 +819,10 @@ function scheduleOdoSave() {
   clearTimeout(_odSaveTimer);
   _odSaveTimer = setTimeout(() => { if(currentId) savePatient(); }, 800);
 }
+
+// Real-time listener per aggiornamenti da altri PC
+let _patListener = null;
+let _lastSaveTime = 0;
 
 let diary    = [];
 let docs     = [];
@@ -939,7 +912,6 @@ async function openPatient(id) {
   sv('f-citta',    p.citta||'');
   sv('f-prov',     p.prov||'');
   sv('f-nazione',  p.nazione||'Italia');
-  sv('prev-validita', p.prev_validita || 30);
   teethAttuale  = safeJson(p.odontogramma, {});
   arcateAttuale = safeJson(p.arcate, {});
   teethPiano    = safeJson(p.piano, {});
@@ -960,6 +932,26 @@ async function openPatient(id) {
   document.getElementById('record').style.display = 'block';
   document.getElementById('rec-code').textContent = p.codice||id;
   document.getElementById('rec-sub').textContent = `Anno: ${p.anno||'—'} · Rischio: ${p.rischio||'—'} · Prima visita: ${p.prima_visita||'—'}`;
+
+  // Listener real-time: aggiorna odontogramma se un altro PC salva
+  if (_patListener) { _patListener(); _patListener = null; }
+  _patListener = db.collection('pazienti').doc(id).onSnapshot(snap => {
+    if (!snap.exists) return;
+    if (snap.metadata.hasPendingWrites) return;
+    if (Date.now() - _lastSaveTime < 4000) return;
+    const d = snap.data();
+    teethAttuale  = safeJson(d.odontogramma, {});
+    arcateAttuale = safeJson(d.arcate, {});
+    teethPiano    = safeJson(d.piano, {});
+    arcatePiano   = safeJson(d.arcate_piano, {});
+    refreshOdonto('attuale');
+    refreshOdonto('piano');
+    refreshArcate('attuale');
+    refreshArcate('piano');
+    renderPianoRiepilogo();
+    setSyncPill('ok');
+  });
+
   } catch(e) {
     setSyncPill('er');
     notify('Errore caricamento paziente: '+e.message,'err');
@@ -990,7 +982,6 @@ function collectData() {
     arcate:        JSON.stringify(arcateAttuale),
     piano:         JSON.stringify(teethPiano),
     arcate_piano:  JSON.stringify(arcatePiano),
-    prev_validita: parseInt(document.getElementById('prev-validita')?.value||30),
     preventivi:    JSON.stringify(prevRows),
     diario:        JSON.stringify(diary),
     documenti:     JSON.stringify(docs)
@@ -1001,6 +992,7 @@ async function savePatient() {
   if (!currentId) return;
   setSyncPill('sy');
   try {
+    _lastSaveTime = Date.now();
     const data = collectData();
     await db.collection('pazienti').doc(currentId).set(data);
     setSyncPill('ok');
@@ -1020,6 +1012,8 @@ function openNewModal() {
   document.getElementById('new-cognome').value = parts.length > 1 ? parts[parts.length-1] : '';
   document.getElementById('new-code').value    = '';
   document.getElementById('new-tel').value     = '';
+  document.getElementById('new-anno').value    = '';
+  document.getElementById('new-rischio').value = 'basso';
   document.getElementById('new-modal').classList.add('open');
   setTimeout(()=>document.getElementById('new-nome').focus(), 100);
 }
@@ -1046,8 +1040,8 @@ async function createPatient() {
       nome,
       cognome,
       telefono: tel,
-      anno:    '',
-      rischio: 'basso',
+      anno:    document.getElementById('new-anno').value || '',
+      rischio: document.getElementById('new-rischio').value || 'basso',
       prima_visita: today,
       operatore: '', note_generali: '',
       dob: '', cf: '', via: '', civico: '', cap: '', citta: '', prov: '', nazione: 'Italia',
@@ -1147,7 +1141,6 @@ function refreshOdonto(type) {
       // entry = array di tid
       const treats = Array.isArray(entry) ? entry : [entry];
       const primary = TR_ATTUALE.find(t=>t.id===treats[0]);
-      if (!primary) { el.setAttribute('fill','#FFFFFF'); el.setAttribute('stroke','#C4C2BA'); el.setAttribute('stroke-width','1.5'); }
       if (primary) {
         el.setAttribute('fill', primary.bg);
         el.setAttribute('stroke', primary.color);
@@ -1564,7 +1557,6 @@ function savePrestazioneLine() {
   document.getElementById('prest-form').style.display = 'none';
   renderPrestazioniModal();
   buildLegend();
-  setTimeout(() => savePrestazioni().catch(e => notify('Errore salvataggio: '+e.message,'err')), 300);
 }
 
 function deletePrestazione(tipo, idx) {
@@ -1573,23 +1565,12 @@ function deletePrestazione(tipo, idx) {
   arr.splice(idx,1);
   renderPrestazioniModal();
   buildLegend();
-  setTimeout(() => savePrestazioni().catch(e => notify('Errore salvataggio: '+e.message,'err')), 300);
 }
 
 async function saveAndClosePrestazioni() {
   await savePrestazioni();
   document.getElementById('prest-modal').classList.remove('open');
   notify('Prestazioni salvate su tutti i PC!','ok');
-}
-
-async function resetPrestazioniDefault() {
-  if (!confirm('Ripristinare la lista predefinita? Le personalizzazioni attuali verranno perse.')) return;
-  TR_PIANO   = TR_PIANO_DEFAULT.map(t=>({...t}));
-  TR_ATTUALE = TR_ATTUALE_DEFAULT.map(t=>({...t}));
-  renderPrestazioniModal();
-  buildLegend();
-  await savePrestazioni();
-  notify('Lista ripristinata ai predefiniti ✓','ok');
 }
 
 
@@ -1959,17 +1940,6 @@ function toggleSidebar() {
 }
 
 function closeSidebar() {
-  const sb = document.getElementById('sidebar');
-  const ov = document.getElementById('sidebar-overlay');
-  sb.classList.remove('open');
-  ov.classList.remove('open');
-  document.body.style.overflow = '';
-}
-
-// Close sidebar when a patient is selected on mobile — handled in renderList
-</script>
-</body>
-</html>
   const sb = document.getElementById('sidebar');
   const ov = document.getElementById('sidebar-overlay');
   sb.classList.remove('open');
