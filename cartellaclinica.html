@@ -844,6 +844,13 @@ let arcateAttuale = {};  // {sup: ['tot_rimov']}
 let teethPiano = {};     // {16: [{tid:'estrazione', stato:'dafare'}]}
 let arcatePiano = {};
 
+// Autosave debounced per odontogramma
+let _odSaveTimer = null;
+function scheduleOdoSave() {
+  clearTimeout(_odSaveTimer);
+  _odSaveTimer = setTimeout(() => { if(currentId) savePatient(); }, 800);
+}
+
 let diary    = [];
 let docs     = [];
 let prevRows = [];   // righe preventivo corrente
@@ -1250,6 +1257,7 @@ function toggleAttuale(num, tid) {
   if (!arr.length) delete teethAttuale[num];
   refreshOdonto('attuale');
   selectTooth(num,'attuale');
+  scheduleOdoSave();
 }
 
 function togglePiano(num, tid) {
@@ -1261,11 +1269,12 @@ function togglePiano(num, tid) {
   refreshOdonto('piano');
   selectTooth(num,'piano');
   renderPianoRiepilogo();
+  scheduleOdoSave();
 }
 
 function setStato(num, tid, stato) {
   const item = (teethPiano[num]||[]).find(x=>x.tid===tid);
-  if (item) { item.stato = stato; refreshOdonto('piano'); selectTooth(num,'piano'); renderPianoRiepilogo(); }
+  if (item) { item.stato = stato; refreshOdonto('piano'); selectTooth(num,'piano'); renderPianoRiepilogo(); scheduleOdoSave(); }
 }
 
 // ════════════════════════════════════════════════════════════
@@ -1355,12 +1364,13 @@ function toggleArcata(aid, tid, type, rowId, popupId) {
   }
   refreshArcate(type);
   selectArcata(aid, type, rowId, popupId);
+  scheduleOdoSave();
 }
 
 function setStatoArcata(aid, tid, stato, type, rowId, popupId) {
   const data = type==='attuale' ? arcateAttuale : arcatePiano;
   const item = (data[aid]||[]).find(x=>(x.tid||x)===tid);
-  if (item && typeof item==='object') { item.stato=stato; refreshArcate(type); selectArcata(aid,type,rowId,popupId); }
+  if (item && typeof item==='object') { item.stato=stato; refreshArcate(type); selectArcata(aid,type,rowId,popupId); scheduleOdoSave(); }
 }
 
 // ════════════════════════════════════════════════════════════
@@ -1949,6 +1959,17 @@ function toggleSidebar() {
 }
 
 function closeSidebar() {
+  const sb = document.getElementById('sidebar');
+  const ov = document.getElementById('sidebar-overlay');
+  sb.classList.remove('open');
+  ov.classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+// Close sidebar when a patient is selected on mobile — handled in renderList
+</script>
+</body>
+</html>
   const sb = document.getElementById('sidebar');
   const ov = document.getElementById('sidebar-overlay');
   sb.classList.remove('open');
