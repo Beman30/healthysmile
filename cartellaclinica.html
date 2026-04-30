@@ -342,12 +342,29 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--gray-50);color:
 }
 
 </style>
-  <\!-- Firebase SDK (compat) -->
+  <!-- Firebase SDK (compat) -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
 </head>
 <body>
+
+      <div><div class="brand-name">Healthy Smile By N</div><div class="brand-sub">Cartella Clinica v4</div></div>
+    </div>
+    <h2>Configurazione</h2>
+    <p>Inserisci l'URL del tuo Google Apps Script per sincronizzare i dati.</p>
+    <div class="step"><div class="step-n">1</div><div class="step-t">Google Sheet → <strong>Estensioni → Apps Script</strong> → incolla script v4 → esegui <strong>setup()</strong></div></div>
+    <div class="step"><div class="step-n">2</div><div class="step-t"><strong>Distribuisci → Nuova distribuzione → App web → Chiunque</strong> → copia URL</div></div>
+    <div class="ig">
+      <label>URL Apps Script</label>
+      <input type="url" id="api-url-input" placeholder="https://script.google.com/macros/s/.../exec">
+      <div class="hint">Stesso URL per tutti i PC dello studio.</div>
+    </div>
+    <div id="setup-err" style="display:none;color:#C0392B;font-size:12px;margin-top:8px;padding:8px 10px;background:#FDECEA;border-radius:6px"></div>
+    <button class="btn-main" onclick="doSetup()">Accedi →</button>
+    <div class="demo-lnk"><a onclick="startDemo()">Modalità demo</a></div>
+  </div>
+</div>
 
 <!-- APP -->
 <div id="app">
@@ -361,7 +378,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--gray-50);color:
     <div class="hdr-r">
       <button class="btn-s" onclick="syncAll()">↻ Aggiorna</button>
       <button class="btn-s" onclick="openPrestazioniModal()" title="Gestisci prestazioni">🦷 Prestazioni</button>
-      <button class="btn-s" onclick="window.open('https://healthysmile.it/agenda.html','_blank')" title="Apri calendario">📅 Calendario</button>
+      <button class="btn-s" onclick="window.open('calendario_torino.html','_blank')" title="Apri calendario">📅 Calendario</button>
     </div>
   </header>
 
@@ -604,23 +621,14 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--gray-50);color:
 
 <!-- MODAL NUOVO PAZIENTE -->
 <div class="modal-bg" id="new-modal">
-  <div class="modal" style="max-width:480px">
+  <div class="modal">
     <h3>Nuovo paziente</h3>
-    <div class="grid2" style="margin-bottom:10px">
-      <div class="fg"><label>Nome</label><input id="new-nome" placeholder="Mario" autocomplete="off"></div>
-      <div class="fg"><label>Cognome</label><input id="new-cognome" placeholder="Rossi" autocomplete="off"></div>
+    <div class="fg" style="margin-bottom:10px">
+      <label>Codice paziente</label>
+      <input id="new-code" placeholder="es. HS-2025-042" style="font-family:'DM Mono',monospace">
+      <div style="font-size:11px;color:var(--gray-300);margin-top:3px">Codice anonimo — non inserire dati personali.</div>
     </div>
-    <div class="grid2" style="margin-bottom:10px">
-      <div class="fg">
-        <label>N° Cartella</label>
-        <input id="new-code" placeholder="es. 573" style="font-family:'DM Mono',monospace">
-      </div>
-      <div class="fg">
-        <label>Telefono / WhatsApp</label>
-        <input id="new-tel" type="tel" placeholder="+39 333 1234567">
-      </div>
-    </div>
-    <div class="grid2" style="margin-bottom:10px">
+    <div class="grid2">
       <div class="fg"><label>Anno nascita</label><input id="new-anno" type="number" placeholder="1985"></div>
       <div class="fg"><label>Rischio carie</label>
         <select id="new-rischio">
@@ -688,61 +696,8 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--gray-50);color:
 
 <script>
 // ════════════════════════════════════════════════════════════
-// FIREBASE INIT
-// ════════════════════════════════════════════════════════════
-const firebaseConfig = {
-  apiKey: "AIzaSyB9BXoJQLCx_Y9pwoXmxtVj1CLULohaUsw",
-  authDomain: "healthysmile-d2b52.firebaseapp.com",
-  projectId: "healthysmile-d2b52",
-  storageBucket: "healthysmile-d2b52.firebasestorage.app",
-  messagingSenderId: "984573798131",
-  appId: "1:984573798131:web:e96e695fb86b90a2413986"
-};
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-const storage = firebase.storage();
-
-function startApp() {
-  loadPrestazioni()
-    .then(() => loadPatients())
-    .then(() => handleUrlParams())
-    .catch(err => {
-      console.error('Errore avvio:', err);
-      notify('Errore connessione Firebase','err');
-    });
-}
-
-// Gestisce parametri URL: ?cerca=NomePaziente  o  ?id=pt_xxx
-function handleUrlParams() {
-  const params = new URLSearchParams(window.location.search);
-  const cerca  = params.get('cerca');
-  const patId  = params.get('id');
-  if (patId) {
-    openPatient(patId);
-  } else if (cerca) {
-    const q = cerca.toLowerCase().trim();
-    const found = patients.find(p => {
-      const nome    = ((p.nome||'')+' '+(p.cognome||'')).toLowerCase().trim();
-      const nomeRev = ((p.cognome||'')+' '+(p.nome||'')).toLowerCase().trim();
-      const codice  = (p.codice||'').toLowerCase();
-      return nome.includes(q) || nomeRev.includes(q) || codice.includes(q);
-    });
-    if (found) {
-      openPatient(found.id);
-      if (window.innerWidth <= 768) closeSidebar();
-      notify('Paziente trovato ✓','ok');
-    } else {
-      // Not found: prefill search so user can see
-      notify('Paziente "'+cerca+'" non trovato — puoi crearlo','err');
-      const s = document.getElementById('search');
-      if (s) { s.value = cerca; filterList(cerca); }
-    }
-  }
-}
-
-// ════════════════════════════════════════════════════════════
 // TRATTAMENTI — due set separati: ATTUALE e PIANO
-// Gestione trattamenti
+// Salvati su Google Sheet foglio "Prestazioni"
 // ════════════════════════════════════════════════════════════
 
 const TR_ATTUALE_DEFAULT = [
@@ -829,6 +784,58 @@ window.addEventListener('load', () => {
 });
 
 // ════════════════════════════════════════════════════════════
+// FIREBASE INIT
+// ════════════════════════════════════════════════════════════
+const firebaseConfig = {
+  apiKey: "AIzaSyB9BXoJQLCx_Y9pwoXmxtVj1CLULohaUsw",
+  authDomain: "healthysmile-d2b52.firebaseapp.com",
+  projectId: "healthysmile-d2b52",
+  storageBucket: "healthysmile-d2b52.firebasestorage.app",
+  messagingSenderId: "984573798131",
+  appId: "1:984573798131:web:e96e695fb86b90a2413986"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const storage = firebase.storage();
+
+function startApp() {
+  loadPrestazioni()
+    .then(() => loadPatients())
+    .then(() => handleUrlParams())
+    .catch(err => {
+      console.error('Errore avvio:', err);
+      notify('Errore connessione Firebase','err');
+    });
+}
+
+// Gestisce parametri URL: ?cerca=NomePaziente o ?id=pt_xxx
+function handleUrlParams() {
+  const params = new URLSearchParams(window.location.search);
+  const cerca = params.get('cerca');
+  const patId = params.get('id');
+  if (patId) {
+    openPatient(patId);
+  } else if (cerca) {
+    const q = cerca.toLowerCase().trim();
+    const found = patients.find(p => {
+      const nome = ((p.nome||'')+' '+(p.cognome||'')).toLowerCase().trim();
+      const nomeRev = ((p.cognome||'')+' '+(p.nome||'')).toLowerCase().trim();
+      const codice = (p.codice||'').toLowerCase();
+      return nome.includes(q) || nomeRev.includes(q) || codice.includes(q) || q.includes(nome.split(' ')[0]);
+    });
+    if (found) {
+      openPatient(found.id);
+      if (window.innerWidth <= 768) closeSidebar();
+      notify('Paziente trovato ✓','ok');
+    } else {
+      notify('Paziente "'+cerca+'" non trovato — cercalo manualmente','err');
+      const s = document.getElementById('search');
+      if (s) { s.value = cerca; filterList(cerca); }
+    }
+  }
+}
+
+// ════════════════════════════════════════════════════════════
 // PATIENTS
 // ════════════════════════════════════════════════════════════
 async function loadPatients() {
@@ -836,19 +843,12 @@ async function loadPatients() {
   try {
     const snap = await db.collection('pazienti').get();
     patients = snap.docs.map(d => ({...d.data(), id: d.id}));
-    // Sort by codice
     patients.sort((a,b)=>(a.codice||'').localeCompare(b.codice||''));
     renderList(patients);
     setSyncPill('ok');
   } catch(e) {
     setSyncPill('er');
-    console.error('Firestore loadPatients error:', e.code, e.message);
-    if(e.code === 'permission-denied') {
-      notify('⛔ Accesso negato — aggiorna le Firestore Rules su Firebase Console','err');
-      document.getElementById('pat-list').innerHTML = '<div class="empty-list" style="color:#C0392B;font-size:12px;padding:1rem">⛔ Permesso negato.<br>Aggiorna le regole Firestore<br>su Firebase Console.</div>';
-    } else {
-      notify('Errore connessione Firebase: '+e.message,'err');
-    }
+    notify('Errore caricamento pazienti','err');
   }
 }
 
@@ -879,11 +879,17 @@ async function openPatient(id) {
   currentId = id;
   renderList(patients);
   setSyncPill('sy');
+  let p;
   try {
     const doc = await db.collection('pazienti').doc(id).get();
-    if (!doc.exists) { notify('Paziente non trovato','err'); setSyncPill('er'); return; }
-    const p = doc.data();
+    if (!doc.exists) { notify('Paziente non trovato','err'); return; }
+    p = {...doc.data(), id: doc.id};
     setSyncPill('ok');
+  } catch(e) {
+    setSyncPill('er');
+    notify('Errore caricamento paziente','err');
+    return;
+  }
   sv('f-codice',   p.codice||'');
   sv('f-anno',     p.anno||'');
   sv('f-rischio',  p.rischio||'');
@@ -921,10 +927,6 @@ async function openPatient(id) {
   document.getElementById('record').style.display = 'block';
   document.getElementById('rec-code').textContent = p.codice||id;
   document.getElementById('rec-sub').textContent = `Anno: ${p.anno||'—'} · Rischio: ${p.rischio||'—'} · Prima visita: ${p.prima_visita||'—'}`;
-  } catch(e) {
-    setSyncPill('er');
-    notify('Errore caricamento paziente: '+e.message,'err');
-  }
 }
 
 function collectData() {
@@ -962,59 +964,47 @@ async function savePatient() {
   setSyncPill('sy');
   try {
     const data = collectData();
-    await db.collection('pazienti').doc(currentId).set(data);
+    await db.collection('pazienti').doc(currentId).set({
+      ...data,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
     setSyncPill('ok');
     notify('Salvato!','ok');
     await loadPatients();
   } catch(e) {
     setSyncPill('er');
-    notify('Errore salvataggio: '+e.message,'err');
+    notify('Errore salvataggio','err');
   }
 }
 
 function openNewModal() {
-  // Pre-compila nome/cognome se arriva dall'agenda (?cerca=Mario Rossi)
-  const cerca = new URLSearchParams(window.location.search).get('cerca') || '';
-  const parts = cerca.trim().split(/\s+/);
-  document.getElementById('new-nome').value    = parts.length > 1 ? parts.slice(0,-1).join(' ') : (cerca || '');
-  document.getElementById('new-cognome').value = parts.length > 1 ? parts[parts.length-1] : '';
-  document.getElementById('new-code').value    = '';
-  document.getElementById('new-tel').value     = '';
-  document.getElementById('new-anno').value    = '';
+  const y = new Date().getFullYear();
+  const n = String(patients.length+1).padStart(3,'0');
+  document.getElementById('new-code').value = `HS-${y}-${n}`;
+  document.getElementById('new-anno').value = '';
   document.getElementById('new-rischio').value = 'basso';
   document.getElementById('new-modal').classList.add('open');
-  setTimeout(()=>document.getElementById('new-nome').focus(), 100);
 }
 function closeModal() { document.getElementById('new-modal').classList.remove('open'); }
 
 async function createPatient() {
-  const nome    = document.getElementById('new-nome').value.trim();
-  const cognome = document.getElementById('new-cognome').value.trim();
-  const codice  = document.getElementById('new-code').value.trim();
-  const tel     = document.getElementById('new-tel').value.trim();
-  if (!nome && !cognome) { notify('Inserisci almeno nome o cognome','err'); return; }
-
-  // Codice auto se non inserito
-  const y = new Date().getFullYear();
-  const codiceFinale = codice || ('HS-'+y+'-'+String(patients.length+1).padStart(3,'0'));
-
+  const code = document.getElementById('new-code').value.trim();
+  if (!code) { notify('Inserisci codice','err'); return; }
   const id = 'pt_'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
   const today = new Date().toISOString().split('T')[0];
   setSyncPill('sy');
   try {
     await db.collection('pazienti').doc(id).set({
-      id,
-      codice:  codiceFinale,
-      nome,
-      cognome,
-      telefono: tel,
-      anno:    document.getElementById('new-anno').value || '',
+      id, codice: code,
+      anno: document.getElementById('new-anno').value || '',
       rischio: document.getElementById('new-rischio').value || 'basso',
       prima_visita: today,
-      operatore: '', note_generali: '',
-      dob: '', cf: '', via: '', civico: '', cap: '', citta: '', prov: '', nazione: 'Italia',
-      odontogramma: '{}', arcate: '{}', piano: '{}', arcate_piano: '{}',
-      preventivi: '[]', diario: '[]', documenti: '[]',
+      nome:'', cognome:'', dob:'', cf:'', telefono:'',
+      via:'', civico:'', cap:'', citta:'', prov:'', nazione:'Italia',
+      note_generali:'', operatore:'',
+      odontogramma: JSON.stringify(Object.fromEntries([...UPPER,...LOWER].map(n=>[n,['sano']]))),
+      arcate:'{}', piano:'{}', arcate_piano:'{}',
+      preventivi:'[]', diario:'[]', documenti:'[]',
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
     setSyncPill('ok');
@@ -1024,24 +1014,24 @@ async function createPatient() {
     notify('Paziente creato!','ok');
   } catch(e) {
     setSyncPill('er');
-    notify('Errore creazione: '+e.message,'err');
+    notify('Errore creazione paziente','err');
   }
 }
 
 async function confirmDelete() {
-  if (!confirm('Eliminare questa cartella?')) return;
+  if (!confirm('Eliminare questa cartella? L'operazione non è reversibile.')) return;
   setSyncPill('sy');
   try {
     await db.collection('pazienti').doc(currentId).delete();
+    setSyncPill('ok');
     currentId = null;
     document.getElementById('record').style.display = 'none';
     document.getElementById('welcome').style.display = 'flex';
-    setSyncPill('ok');
     await loadPatients();
     notify('Eliminato');
   } catch(e) {
     setSyncPill('er');
-    notify('Errore eliminazione: '+e.message,'err');
+    notify('Errore eliminazione','err');
   }
 }
 
@@ -1417,11 +1407,15 @@ async function handleUpload(files) {
       const ref  = storage.ref(path);
       await ref.put(file);
       const url  = await ref.getDownloadURL();
-      docs.push({ nome: file.name, url, storagePath: path,
-        type: file.type.includes('pdf')?'pdf':'img',
-        data: new Date().toLocaleDateString('it-IT') });
+      docs.push({
+        nome: file.name,
+        url,
+        storagePath: path,
+        type: file.type.includes('pdf') ? 'pdf' : 'img',
+        data: new Date().toLocaleDateString('it-IT')
+      });
       renderDocs();
-      notify('Caricato\!','ok');
+      notify('Caricato!','ok');
     } catch(e) {
       console.error('Upload error:', e);
       notify('Errore caricamento '+file.name,'err');
@@ -1522,6 +1516,7 @@ function savePrestazioneLine() {
   document.getElementById('prest-form').style.display = 'none';
   renderPrestazioniModal();
   buildLegend();
+  savePrestazioni().catch(e => notify('Errore salvataggio: '+e.message,'err'));
 }
 
 function deletePrestazione(tipo, idx) {
@@ -1530,6 +1525,7 @@ function deletePrestazione(tipo, idx) {
   arr.splice(idx,1);
   renderPrestazioniModal();
   buildLegend();
+  savePrestazioni().catch(e => notify('Errore salvataggio: '+e.message,'err'));
 }
 
 async function saveAndClosePrestazioni() {
@@ -1546,13 +1542,13 @@ async function saveAndClosePrestazioni() {
 // Dati studio (modificabili qui)
 const STUDIO = {
   nome:     'Healthy Smile By N',
-  via:      'Via Madama Cristina 2',
+  via:      'Via della Salute, 1',
   cap:      '10100',
   citta:    'Torino',
   prov:     'TO',
-  piva:     '— ',  // aggiorna con P.IVA reale
+  piva:     '12345678901',
   tel:      '+39 346 182 4965',
-  email:    'info@healthysmilebyn.it'  // aggiorna con email reale
+  email:    'info@healthysmilebyn.it'
 };
 
 function initPrevHeader() {
@@ -1568,7 +1564,6 @@ async function getNextPrevNum() {
     return await db.runTransaction(async t => {
       const doc = await t.get(ref);
       const y = new Date().getFullYear();
-      const lastYear = doc.exists ? (doc.data().year || 0) : 0;
       const lastNum  = (doc.exists && doc.data().year === y) ? (doc.data().num || 0) : 0;
       const newNum   = lastNum + 1;
       t.set(ref, { year: y, num: newNum });
