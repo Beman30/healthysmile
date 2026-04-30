@@ -410,9 +410,6 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--gray-50);color:
             <div class="card-title">Identificazione</div>
             <div class="grid3" style="margin-bottom:10px">
               <div class="fg"><label>Codice paziente</label><input id="f-codice" readonly style="background:var(--gray-50);font-family:'DM Mono',monospace"></div>
-              <div class="fg"><label>Rischio carie</label>
-                <select id="f-rischio"><option value="">—</option><option value="basso">Basso</option><option value="medio">Medio</option><option value="alto">Alto</option></select>
-              </div>
               <div class="fg"><label>Prima visita</label><input id="f-prima" type="date"></div>
               <div class="fg"><label>Operatore ref.</label><input id="f-op" list="op-list" placeholder="Dott.ssa N."><datalist id="op-list"><option value="Dott.ssa N."><option value="Igienista"></datalist></div>
               <div class="fg" style="grid-column:1/-1"><label>Note generali</label><textarea id="f-note" style="min-height:46px"></textarea></div>
@@ -621,15 +618,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--gray-50);color:
       </div>
     </div>
     <div class="grid2" style="margin-bottom:10px">
-      <div class="fg"><label>Anno nascita</label><input id="new-anno" type="number" placeholder="1985"></div>
-      <div class="fg"><label>Rischio carie</label>
-        <select id="new-rischio">
-          <option value="basso">Basso</option>
-          <option value="medio">Medio</option>
-          <option value="alto">Alto</option>
-        </select>
       </div>
-    </div>
     <div class="modal-foot">
       <button class="btn-sec" onclick="closeModal()">Annulla</button>
       <button class="btn-save" onclick="createPatient()">Crea cartella</button>
@@ -679,6 +668,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--gray-50);color:
     <div id="prest-list-piano" style="margin-bottom:1rem"></div>
 
     <div style="display:flex;justify-content:flex-end;gap:8px;padding-top:.8rem;border-top:var(--border)">
+      <button class="btn-sec" onclick="resetPrestazioniDefault()" style="color:var(--amber);border-color:var(--amber)" title="Ripristina lista predefinita">↺ Ripristina predefiniti</button>
       <button class="btn-sec" onclick="document.getElementById('prest-modal').classList.remove('open')">Chiudi senza salvare</button>
       <button class="btn-save" onclick="saveAndClosePrestazioni()">💾 Salva su tutti i PC</button>
     </div>
@@ -763,31 +753,138 @@ const TR_ATTUALE_DEFAULT = [
 ];
 
 const TR_PIANO_DEFAULT = [
-  {id:'da_otturare', label:'Da otturare',          color:'#C0392B', sym:'C',  bg:'#FDECEA', tipo:'piano'},
-  {id:'endo_fare',   label:'Endodonzia',            color:'#B7651A', sym:'E',  bg:'#FEF3E2', tipo:'piano'},
-  {id:'da_estrarre', label:'Da estrarre',           color:'#C0392B', sym:'†',  bg:'#FDECEA', tipo:'piano'},
-  {id:'imp_fare',    label:'Impianto',              color:'#0F6E56', sym:'I+', bg:'#D0F0E6', tipo:'piano'},
-  {id:'corona_fare', label:'Corona',                color:'#5B4BBF', sym:'K+', bg:'#EEEDFB', tipo:'piano'},
-  {id:'ponte_fare',  label:'Ponte',                 color:'#1A5EA8', sym:'▬+', bg:'#E8F1FD', tipo:'piano'},
-  {id:'igiene_fare', label:'Igiene',                color:'#1D9E75', sym:'IG', bg:'#E1F5EE', tipo:'piano'},
-  {id:'bite_fare',   label:'Bite',                  color:'#5B4BBF', sym:'B+', bg:'#EEEDFB', tipo:'piano'},
-  {id:'sbianc_fare', label:'Sbiancamento',          color:'#1D9E75', sym:'SB', bg:'#E1F5EE', tipo:'piano'},
-  {id:'controllo',   label:'Controllo',             color:'#686864', sym:'CC', bg:'#EFEDE7', tipo:'piano'},
-  {id:'altro_piano', label:'Altro',                 color:'#686864', sym:'?',  bg:'#EFEDE7', tipo:'piano'},
+  {id:'ablazione_pediatrica_fino_agli', label:'Ablazione pediatrica(fino agli 11 anni compiuti)', color:'#1D9E75', sym:'ABP', bg:'#E1F5EE', tipo:'piano', prezzo:70},
+  {id:'abutment', label:'ABUTMENT', color:'#0F6E56', sym:'ABU', bg:'#D0F0E6', tipo:'piano', prezzo:190},
+  {id:'abutment_zigomatico', label:'ABUTMENT ZIGOMATICO', color:'#0F6E56', sym:'ABZ', bg:'#D0F0E6', tipo:'piano', prezzo:250},
+  {id:'aggiunta_dente_su_protesi', label:'AGGIUNTA DENTE SU PROTESI', color:'#C05621', sym:'AD', bg:'#FEF0E7', tipo:'piano', prezzo:130},
+  {id:'aggiunta_locator', label:'AGGIUNTA LOCATOR', color:'#C05621', sym:'AL', bg:'#FEF0E7', tipo:'piano', prezzo:120},
+  {id:'allineatori_ortodontici', label:'ALLINEATORI ORTODONTICI', color:'#1A5EA8', sym:'ALI', bg:'#E8F1FD', tipo:'piano', prezzo:150},
+  {id:'anestesista', label:'ANESTESISTA', color:'#686864', sym:'ANE', bg:'#EFEDE7', tipo:'piano', prezzo:1000},
+  {id:'apicectomia', label:'APICECTOMIA', color:'#5B4BBF', sym:'API', bg:'#EEEDFB', tipo:'piano', prezzo:300},
+  {id:'apparecchio_pcf', label:'Apparecchio PCF', color:'#1A5EA8', sym:'PCF', bg:'#E8F1FD', tipo:'piano', prezzo:1800},
+  {id:'barra_di_rinforzo_in_titanio', label:'Barra di rinforzo in titanio', color:'#686864', sym:'BAR', bg:'#EFEDE7', tipo:'piano', prezzo:190},
+  {id:'barra_per_trazionamento_ortodo', label:'Barra per trazionamento ortodontico', color:'#1A5EA8', sym:'BT', bg:'#E8F1FD', tipo:'piano', prezzo:600},
+  {id:'bite', label:'BITE', color:'#686864', sym:'BIT', bg:'#EFEDE7', tipo:'piano', prezzo:250},
+  {id:'bonifica_arcata', label:'BONIFICA ARCATA', color:'#1D9E75', sym:'BON', bg:'#E1F5EE', tipo:'piano', prezzo:550},
+  {id:'byte', label:'BYTE', color:'#686864', sym:'BYT', bg:'#EFEDE7', tipo:'piano', prezzo:300},
+  {id:'cambio_archi_ortodontici', label:'CAMBIO ARCHI ORTODONTICI', color:'#1A5EA8', sym:'ARC', bg:'#E8F1FD', tipo:'piano', prezzo:50},
+  {id:'cambio_gommini_e_cappette', label:'CAMBIO GOMMINI E CAPPETTE', color:'#1A5EA8', sym:'GOM', bg:'#E8F1FD', tipo:'piano', prezzo:25},
+  {id:'cambio_protesi_da_rimovibile_a', label:'CAMBIO PROTESI DA RIMOVIBILE A FISSA', color:'#C05621', sym:'CPF', bg:'#FEF0E7', tipo:'piano', prezzo:1200},
+  {id:'circolare_in_composito', label:'CIRCOLARE IN COMPOSITO', color:'#B7651A', sym:'CC', bg:'#FEF3E2', tipo:'piano', prezzo:1500},
+  {id:'circolare_provvisorio', label:'CIRCOLARE PROVVISORIO', color:'#B7651A', sym:'CP', bg:'#FEF3E2', tipo:'piano', prezzo:200},
+  {id:'circolare_provvisorio_digitale', label:'CIRCOLARE PROVVISORIO DIGITALE', color:'#B7651A', sym:'CPD', bg:'#FEF3E2', tipo:'piano', prezzo:200},
+  {id:'cistectomia', label:'CISTECTOMIA', color:'#C0392B', sym:'CIS', bg:'#FDECEA', tipo:'piano', prezzo:300},
+  {id:'componentistica_non_lookdental', label:'COMPONENTISTICA NON LOOKDENTAL', color:'#686864', sym:'COM', bg:'#EFEDE7', tipo:'piano', prezzo:300},
+  {id:'contenzione_ortodontica', label:'CONTENZIONE ORTODONTICA', color:'#1A5EA8', sym:'CON', bg:'#E8F1FD', tipo:'piano', prezzo:250},
+  {id:'copertura_elemento_in_composit', label:'Copertura elemento in composito', color:'#1A5EA8', sym:'COE', bg:'#E8F1FD', tipo:'piano', prezzo:70},
+  {id:'corona_provvisoria_a_carico_im', label:'CORONA PROVVISORIA A CARICO IMMEDIATO', color:'#5B4BBF', sym:'CCI', bg:'#EEEDFB', tipo:'piano', prezzo:300},
+  {id:'corona_provvisoria_in_resina', label:'CORONA PROVVISORIA IN RESINA', color:'#5B4BBF', sym:'CPR', bg:'#EEEDFB', tipo:'piano', prezzo:90},
+  {id:'corona_zirconio', label:'CORONA ZIRCONIO', color:'#5B4BBF', sym:'KZ', bg:'#EEEDFB', tipo:'piano', prezzo:700},
+  {id:'corona_zirconio_su_impianto', label:'CORONA ZIRCONIO SU IMPIANTO', color:'#0F6E56', sym:'KI', bg:'#D0F0E6', tipo:'piano', prezzo:700},
+  {id:'decementazione_ponte_a_quadran', label:'DECEMENTAZIONE PONTE A QUADRANTE', color:'#5B4BBF', sym:'DEC', bg:'#EEEDFB', tipo:'piano', prezzo:0},
+  {id:'dima_chirurgica_per_carico_imm', label:'Dima Chirurgica per carico immediato', color:'#0F6E56', sym:'DMC', bg:'#D0F0E6', tipo:'piano', prezzo:250},
+  {id:'dima_ortodontica', label:'Dima Ortodontica', color:'#1A5EA8', sym:'DMO', bg:'#E8F1FD', tipo:'piano', prezzo:250},
+  {id:'estrazione_complessa', label:'ESTRAZIONE COMPLESSA', color:'#C0392B', sym:'EC', bg:'#FDECEA', tipo:'piano', prezzo:130},
+  {id:'estrazione_dente_deciduo', label:'ESTRAZIONE DENTE DECIDUO', color:'#C0392B', sym:'EDD', bg:'#FDECEA', tipo:'piano', prezzo:80},
+  {id:'estrazione_dente_del_giudizio', label:'ESTRAZIONE DENTE DEL GIUDIZIO', color:'#C0392B', sym:'EG', bg:'#FDECEA', tipo:'piano', prezzo:200},
+  {id:'estrazione_elemento_incluso', label:'ESTRAZIONE ELEMENTO INCLUSO', color:'#C0392B', sym:'EI', bg:'#FDECEA', tipo:'piano', prezzo:600},
+  {id:'estrazione_elemento_semi_inclu', label:'ESTRAZIONE ELEMENTO SEMI INCLUSO', color:'#C0392B', sym:'ESI', bg:'#FDECEA', tipo:'piano', prezzo:300},
+  {id:'estrazione_semplice', label:'ESTRAZIONE SEMPLICE', color:'#C0392B', sym:'ES', bg:'#FDECEA', tipo:'piano', prezzo:100},
+  {id:'faccetta_in_ceramica', label:'FACCETTA IN CERAMICA', color:'#B7651A', sym:'FC', bg:'#FEF3E2', tipo:'piano', prezzo:600},
+  {id:'faccetta_in_composito', label:'FACCETTA IN COMPOSITO', color:'#B7651A', sym:'FCO', bg:'#FEF3E2', tipo:'piano', prezzo:400},
+  {id:'faccetta_provvisoria', label:'Faccetta provvisoria', color:'#B7651A', sym:'FPR', bg:'#FEF3E2', tipo:'piano', prezzo:100},
+  {id:'flexite', label:'FLEXITE', color:'#C05621', sym:'FLX', bg:'#FEF0E7', tipo:'piano', prezzo:1500},
+  {id:'frenulectomia', label:'FRENULECTOMIA', color:'#C0392B', sym:'FRE', bg:'#FDECEA', tipo:'piano', prezzo:250},
+  {id:'gancio_trasparente', label:'GANCIO TRASPARENTE', color:'#C05621', sym:'GAN', bg:'#FEF0E7', tipo:'piano', prezzo:150},
+  {id:'gbr', label:'GBR', color:'#0F6E56', sym:'GBR', bg:'#D0F0E6', tipo:'piano', prezzo:2000},
+  {id:'grande_rialzo_seno_mascellare', label:'GRANDE RIALZO SENO MASCELLARE', color:'#0F6E56', sym:'RGR', bg:'#D0F0E6', tipo:'piano', prezzo:1600},
+  {id:'griglia_ossea_in_titanio', label:'Griglia ossea in titanio', color:'#0F6E56', sym:'GRI', bg:'#D0F0E6', tipo:'piano', prezzo:2500},
+  {id:'ibrida_in_zirconia', label:'IBRIDA IN ZIRCONIA', color:'#C05621', sym:'IBZ', bg:'#FEF0E7', tipo:'piano', prezzo:5500},
+  {id:'igiene_arcata_protesica', label:'Igiene arcata protesica', color:'#C05621', sym:'IGA', bg:'#FEF0E7', tipo:'piano', prezzo:50},
+  {id:'impianto_osteointegrabile', label:'IMPIANTO OSTEOINTEGRABILE', color:'#0F6E56', sym:'IMP', bg:'#D0F0E6', tipo:'piano', prezzo:550},
+  {id:'impianto_zigomatico', label:'IMPIANTO ZIGOMATICO', color:'#0F6E56', sym:'IMZ', bg:'#D0F0E6', tipo:'piano', prezzo:2000},
+  {id:'intarsio_in_ceramica', label:'INTARSIO in ceramica', color:'#1A5EA8', sym:'INT', bg:'#E8F1FD', tipo:'piano', prezzo:400},
+  {id:'levigatura_radicolare_singolo_', label:'LEVIGATURA RADICOLARE SINGOLO ELEMENTO', color:'#1D9E75', sym:'LRS', bg:'#E1F5EE', tipo:'piano', prezzo:22},
+  {id:'levigature_radicolari', label:'LEVIGATURE RADICOLARI', color:'#686864', sym:'LR', bg:'#EFEDE7', tipo:'piano', prezzo:130},
+  {id:'maryland', label:'MARYLAND', color:'#5B4BBF', sym:'MAR', bg:'#EEEDFB', tipo:'piano', prezzo:370},
+  {id:'mascherina_contenzione', label:'MASCHERINA CONTENZIONE', color:'#1A5EA8', sym:'MSC', bg:'#E8F1FD', tipo:'piano', prezzo:180},
+  {id:'mascherine_ortodontiche', label:'MASCHERINE ORTODONTICHE', color:'#1A5EA8', sym:'MSO', bg:'#E8F1FD', tipo:'piano', prezzo:250},
+  {id:'meryland', label:'Meryland', color:'#5B4BBF', sym:'MER', bg:'#EEEDFB', tipo:'piano', prezzo:750},
+  {id:'mini_rialzo_seno_mascellare', label:'MINI RIALZO SENO MASCELLARE', color:'#0F6E56', sym:'RMI', bg:'#D0F0E6', tipo:'piano', prezzo:800},
+  {id:'ortodonzia_all_inclusive', label:'ORTODONZIA ALL INCLUSIVE', color:'#1A5EA8', sym:'OAI', bg:'#E8F1FD', tipo:'piano', prezzo:4800},
+  {id:'otturazione_a_rischio_devitali', label:'OTTURAZIONE A RISCHIO DEVITALIZZAZIONE', color:'#1A5EA8', sym:'OR', bg:'#E8F1FD', tipo:'piano', prezzo:170},
+  {id:'otturazione_dente_da_latte', label:'OTTURAZIONE DENTE DA LATTE', color:'#1A5EA8', sym:'OL', bg:'#E8F1FD', tipo:'piano', prezzo:80},
+  {id:'otturazione_i_classe', label:'OTTURAZIONE I CLASSE', color:'#1A5EA8', sym:'O1', bg:'#E8F1FD', tipo:'piano', prezzo:120},
+  {id:'otturazione_ii_classe', label:'OTTURAZIONE II CLASSE', color:'#1A5EA8', sym:'O2', bg:'#E8F1FD', tipo:'piano', prezzo:170},
+  {id:'otturazione_v_classe', label:'OTTURAZIONE V CLASSE', color:'#1A5EA8', sym:'O5', bg:'#E8F1FD', tipo:'piano', prezzo:90},
+  {id:'overdenture', label:'OVERDENTURE', color:'#C05621', sym:'OVD', bg:'#FEF0E7', tipo:'piano', prezzo:2600},
+  {id:'prestazioni_odontoiatriche_pre', label:'Prestazioni odontoiatriche presso vostra sede di Via Servais 125 ', color:'#686864', sym:'PRE', bg:'#EFEDE7', tipo:'piano', prezzo:0},
+  {id:'protesi_ibrida', label:'PROTESI IBRIDA', color:'#C05621', sym:'IBR', bg:'#FEF0E7', tipo:'piano', prezzo:3800},
+  {id:'protesi_ibrida_su_4_impianti', label:'PROTESI IBRIDA SU 4 IMPIANTI', color:'#C05621', sym:'IH4', bg:'#FEF0E7', tipo:'piano', prezzo:3000},
+  {id:'protesi_ibrida_su_locator', label:'PROTESI IBRIDA SU LOCATOR', color:'#C05621', sym:'IHL', bg:'#FEF0E7', tipo:'piano', prezzo:3300},
+  {id:'protesi_mobile_provvisoria', label:'PROTESI MOBILE PROVVISORIA', color:'#C05621', sym:'PMP', bg:'#FEF0E7', tipo:'piano', prezzo:550},
+  {id:'protesi_overdenture_fissa_su_i', label:'Protesi overdenture fissa su impianti', color:'#C05621', sym:'OFI', bg:'#FEF0E7', tipo:'piano', prezzo:3100},
+  {id:'protesi_provvisoria_avvitata_a', label:'PROTESI PROVVISORIA AVVITATA A CARICO IMMEDIATO', color:'#C05621', sym:'PPA', bg:'#FEF0E7', tipo:'piano', prezzo:1500},
+  {id:'protesi_scheletrica_definitiva', label:'PROTESI SCHELETRICA DEFINITIVA', color:'#C05621', sym:'PSD', bg:'#FEF0E7', tipo:'piano', prezzo:1300},
+  {id:'protesi_scheletrica_provvisori', label:'PROTESI SCHELETRICA PROVVISORIA', color:'#C05621', sym:'PSP', bg:'#FEF0E7', tipo:'piano', prezzo:350},
+  {id:'protesi_totale_definitiva', label:'PROTESI TOTALE DEFINITIVA', color:'#C05621', sym:'PTD', bg:'#FEF0E7', tipo:'piano', prezzo:1200},
+  {id:'ragnetto', label:'RAGNETTO', color:'#C05621', sym:'RAG', bg:'#FEF0E7', tipo:'piano', prezzo:300},
+  {id:'reinserimento_impianto', label:'Reinserimento impianto', color:'#0F6E56', sym:'REI', bg:'#D0F0E6', tipo:'piano', prezzo:150},
+  {id:'ri_resinatura_protesi', label:'RI RESINATURA PROTESI', color:'#C05621', sym:'RIR', bg:'#FEF0E7', tipo:'piano', prezzo:650},
+  {id:'rialzo_occlusale', label:'RIALZO OCCLUSALE', color:'#686864', sym:'ROC', bg:'#EFEDE7', tipo:'piano', prezzo:1000},
+  {id:'ribasatura_diretta_protesi', label:'RIBASATURA DIRETTA PROTESI', color:'#C05621', sym:'RBD', bg:'#FEF0E7', tipo:'piano', prezzo:180},
+  {id:'ribasatura_in_laboratorio', label:'RIBASATURA IN LABORATORIO', color:'#C05621', sym:'RBL', bg:'#FEF0E7', tipo:'piano', prezzo:300},
+  {id:'ricementazione_ponte', label:'Ricementazione ponte', color:'#5B4BBF', sym:'RIC', bg:'#EEEDFB', tipo:'piano', prezzo:250},
+  {id:'richiamo_rapido_sbiancamento', label:'RICHIAMO RAPIDO SBIANCAMENTO', color:'#1D9E75', sym:'RRS', bg:'#E1F5EE', tipo:'piano', prezzo:100},
+  {id:'richiamo_sbiancamento', label:'RICHIAMO SBIANCAMENTO', color:'#1D9E75', sym:'RSB', bg:'#E1F5EE', tipo:'piano', prezzo:200},
+  {id:'ricostruzione_moncone_in_compo', label:'RICOSTRUZIONE MONCONE IN COMPOSITO', color:'#1A5EA8', sym:'RMC', bg:'#E8F1FD', tipo:'piano', prezzo:120},
+  {id:'ricostruzione_moncone_perno_in', label:'RICOSTRUZIONE MONCONE PERNO IN FIBRA', color:'#1A5EA8', sym:'PF', bg:'#E8F1FD', tipo:'piano', prezzo:200},
+  {id:'rifacimento_corona_in_zirconia', label:'RIFACIMENTO CORONA IN ZIRCONIA', color:'#5B4BBF', sym:'RFC', bg:'#EEEDFB', tipo:'piano', prezzo:200},
+  {id:'rifacimento_overdenture', label:'RIFACIMENTO OVERDENTURE', color:'#C05621', sym:'OVD', bg:'#FEF0E7', tipo:'piano', prezzo:500},
+  {id:'rifacimento_protesi_ibrida', label:'RIFACIMENTO PROTESI IBRIDA', color:'#C05621', sym:'IBR', bg:'#FEF0E7', tipo:'piano', prezzo:600},
+  {id:'rifacimento_protesi_totale', label:'RIFACIMENTO PROTESI TOTALE', color:'#C05621', sym:'RFT', bg:'#FEF0E7', tipo:'piano', prezzo:350},
+  {id:'rimozione_corona', label:'RIMOZIONE CORONA', color:'#5B4BBF', sym:'RMK', bg:'#EEEDFB', tipo:'piano', prezzo:40},
+  {id:'rimozione_impianto', label:'Rimozione impianto', color:'#0F6E56', sym:'RMI2', bg:'#D0F0E6', tipo:'piano', prezzo:150},
+  {id:'riparazione_circolare', label:'RIPARAZIONE CIRCOLARE', color:'#C05621', sym:'RPC', bg:'#FEF0E7', tipo:'piano', prezzo:400},
+  {id:'riparazione_protesi_indiretta', label:'RIPARAZIONE PROTESI INDIRETTA', color:'#C05621', sym:'RPI', bg:'#FEF0E7', tipo:'piano', prezzo:200},
+  {id:'riparazione_scheletrato_aggiun', label:'RIPARAZIONE SCHELETRATO+AGGIUNTA GANCIO+AGGIUNTA DENTE', color:'#C05621', sym:'AD', bg:'#FEF0E7', tipo:'piano', prezzo:300},
+  {id:'ritrattamento_monocanalare', label:'RITRATTAMENTO MONOCANALARE', color:'#5B4BBF', sym:'RT1', bg:'#EEEDFB', tipo:'piano', prezzo:280},
+  {id:'ritrattamento_pluricanalare', label:'RITRATTAMENTO PLURICANALARE', color:'#5B4BBF', sym:'RTP', bg:'#EEEDFB', tipo:'piano', prezzo:400},
+  {id:'sbiancamento_americano_con_lam', label:'SBIANCAMENTO AMERICANO CON LAMPADA', color:'#1D9E75', sym:'SBA', bg:'#E1F5EE', tipo:'piano', prezzo:250},
+  {id:'sbiancamento_domiciliare_2_sed', label:'SBIANCAMENTO DOMICILIARE: 2 sedute in poltrona', color:'#1D9E75', sym:'SBD', bg:'#E1F5EE', tipo:'piano', prezzo:140},
+  {id:'sbiancamento_domiciliare_dose_', label:'SBIANCAMENTO DOMICILIARE: dose iniziale liquido sbiancante', color:'#1D9E75', sym:'SBI', bg:'#E1F5EE', tipo:'piano', prezzo:100},
+  {id:'sbiancamento_domiciliare_masch', label:'SBIANCAMENTO DOMICILIARE: mascherine', color:'#1D9E75', sym:'SBM', bg:'#E1F5EE', tipo:'piano', prezzo:150},
+  {id:'sbiancamento_domiciliare_refil', label:'SBIANCAMENTO DOMICILIARE: refill', color:'#1D9E75', sym:'SBR', bg:'#E1F5EE', tipo:'piano', prezzo:45},
+  {id:'sbiancamento_rapido_post_igien', label:'SBIANCAMENTO RAPIDO POST IGIENE', color:'#1D9E75', sym:'SBP', bg:'#E1F5EE', tipo:'piano', prezzo:50},
+  {id:'scappucciamento_canino_incluso', label:'Scappucciamento canino incluso', color:'#1A5EA8', sym:'SCA', bg:'#E8F1FD', tipo:'piano', prezzo:500},
+  {id:'sigillatura', label:'Sigillatura', color:'#1A5EA8', sym:'SIG', bg:'#E8F1FD', tipo:'piano', prezzo:100},
+  {id:'sondaggio', label:'SONDAGGIO', color:'#1D9E75', sym:'SON', bg:'#E1F5EE', tipo:'piano', prezzo:150},
+  {id:'splintaggio', label:'SPLINTAGGIO', color:'#1D9E75', sym:'SPL', bg:'#E1F5EE', tipo:'piano', prezzo:220},
+  {id:'splintaggio_ortodontico', label:'SPLINTAGGIO ORTODONTICO', color:'#1A5EA8', sym:'SPO', bg:'#E8F1FD', tipo:'piano', prezzo:280},
+  {id:'stripping', label:'STRIPPING', color:'#1A5EA8', sym:'STR', bg:'#E8F1FD', tipo:'piano', prezzo:500},
+  {id:'studio_del_caso_ortodontico', label:'Studio del caso ortodontico', color:'#1A5EA8', sym:'STU', bg:'#E8F1FD', tipo:'piano', prezzo:350},
+  {id:'svuotamento_e_pulizia_protesi', label:'Svuotamento e pulizia protesi', color:'#C05621', sym:'SVU', bg:'#FEF0E7', tipo:'piano', prezzo:150},
+  {id:'terapia_endodontica_bicanalare', label:'TERAPIA ENDODONTICA BICANALARE', color:'#5B4BBF', sym:'E2', bg:'#EEEDFB', tipo:'piano', prezzo:180},
+  {id:'terapia_endodontica_monocanala', label:'TERAPIA ENDODONTICA MONOCANALARE', color:'#5B4BBF', sym:'E1', bg:'#EEEDFB', tipo:'piano', prezzo:150},
+  {id:'terapia_endodontica_pluricanal', label:'TERAPIA ENDODONTICA PLURICANALARE', color:'#5B4BBF', sym:'EP', bg:'#EEEDFB', tipo:'piano', prezzo:290},
+  {id:'trattamento_locale_per_algia', label:'Trattamento locale per algia', color:'#686864', sym:'TRA', bg:'#EFEDE7', tipo:'piano', prezzo:20},
+  {id:'trazionamento_canino_incluso', label:'Trazionamento Canino incluso', color:'#1A5EA8', sym:'TRA', bg:'#E8F1FD', tipo:'piano', prezzo:1000},
+  {id:'valutazione_paradontale', label:'VALUTAZIONE PARADONTALE', color:'#1D9E75', sym:'VAL', bg:'#E1F5EE', tipo:'piano', prezzo:150},
 ];
 
 let TR_ATTUALE = [...TR_ATTUALE_DEFAULT];
 let TR_PIANO   = [...TR_PIANO_DEFAULT];
 
 function findTR(id) {
-  return TR_ATTUALE.find(t=>t.id===id) || TR_PIANO.find(t=>t.id===id) || {id,label:id,color:'#686864',sym:'?',bg:'#EFEDE7'};
+  return TR_ATTUALE.find(t=>t.id===id) || TR_PIANO.find(t=>t.id===id) || null;
 }
 
 const ARCH_TR = [
-  {id:'tot_rimov',  label:'Protesi totale rimovibile',     color:'#C05621', sym:'TR'},
-  {id:'tot_fissa',  label:'Protesi totale fissa/All-on-4', color:'#0F6E56', sym:'TF'},
-  {id:'parz_rimov', label:'Protesi parziale rimovibile',   color:'#B7651A', sym:'PR'},
-  {id:'ortodonzia', label:'Apparecchio ortodontico',       color:'#1A5EA8', sym:'OR'},
+  {id:'igiene_fare',  label:'Igiene',                           color:'#1D9E75', sym:'IG',  prezzo:90},
+  {id:'tot_rimov',    label:'Protesi totale rimovibile',         color:'#C05621', sym:'TR'},
+  {id:'tot_fissa',    label:'Protesi totale fissa/All-on-4',     color:'#0F6E56', sym:'TF'},
+  {id:'parz_rimov',   label:'Protesi parziale rimovibile',       color:'#B7651A', sym:'PR'},
+  {id:'ortodonzia',   label:'Apparecchio ortodontico',           color:'#1A5EA8', sym:'OR'},
 ];
 
 const ARCATE = [
@@ -982,6 +1079,7 @@ function collectData() {
     arcate:        JSON.stringify(arcateAttuale),
     piano:         JSON.stringify(teethPiano),
     arcate_piano:  JSON.stringify(arcatePiano),
+    prev_validita: parseInt(document.getElementById('prev-validita')?.value||30),
     preventivi:    JSON.stringify(prevRows),
     diario:        JSON.stringify(diary),
     documenti:     JSON.stringify(docs)
@@ -1012,8 +1110,6 @@ function openNewModal() {
   document.getElementById('new-cognome').value = parts.length > 1 ? parts[parts.length-1] : '';
   document.getElementById('new-code').value    = '';
   document.getElementById('new-tel').value     = '';
-  document.getElementById('new-anno').value    = '';
-  document.getElementById('new-rischio').value = 'basso';
   document.getElementById('new-modal').classList.add('open');
   setTimeout(()=>document.getElementById('new-nome').focus(), 100);
 }
@@ -1040,14 +1136,11 @@ async function createPatient() {
       nome,
       cognome,
       telefono: tel,
-      anno:    document.getElementById('new-anno').value || '',
-      rischio: document.getElementById('new-rischio').value || 'basso',
-      prima_visita: today,
-      operatore: '', note_generali: '',
-      dob: '', cf: '', via: '', civico: '', cap: '', citta: '', prov: '', nazione: 'Italia',
+      anno:    '',
+      rischio: 'basso',
+      prima_visita: new Date().toISOString().split('T')[0],
       odontogramma: '{}', arcate: '{}', piano: '{}', arcate_piano: '{}',
-      preventivi: '[]', diario: '[]', documenti: '[]',
-      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      preventivi: '[]', diario: '[]', documenti: '[]'
     });
     setSyncPill('ok');
     closeModal();
@@ -1491,6 +1584,16 @@ async function loadPrestazioni() {
   buildLegend();
 }
 
+async function resetPrestazioniDefault() {
+  if (!confirm('Ripristinare la lista predefinita? Le personalizzazioni attuali verranno perse.')) return;
+  TR_PIANO   = TR_PIANO_DEFAULT.map(t=>({...t}));
+  TR_ATTUALE = TR_ATTUALE_DEFAULT.map(t=>({...t}));
+  renderPrestazioniModal();
+  buildLegend();
+  await savePrestazioni();
+  notify('Lista ripristinata ai predefiniti ✓','ok');
+}
+
 async function savePrestazioni() {
   await db.collection('config').doc('prestazioni').set({
     attuale: TR_ATTUALE,
@@ -1557,6 +1660,7 @@ function savePrestazioneLine() {
   document.getElementById('prest-form').style.display = 'none';
   renderPrestazioniModal();
   buildLegend();
+  setTimeout(() => savePrestazioni().catch(e => notify('Errore salvataggio: '+e.message,'err')), 300);
 }
 
 function deletePrestazione(tipo, idx) {
@@ -1565,6 +1669,7 @@ function deletePrestazione(tipo, idx) {
   arr.splice(idx,1);
   renderPrestazioniModal();
   buildLegend();
+  setTimeout(() => savePrestazioni().catch(e => notify('Errore salvataggio: '+e.message,'err')), 300);
 }
 
 async function saveAndClosePrestazioni() {
