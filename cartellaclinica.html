@@ -526,7 +526,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--gray-50);color:
               </div>
             </div>
             <div style="padding:.8rem 1.2rem;border-bottom:var(--border);background:var(--gray-50);display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-              <div class="fg" style="flex:1;min-width:140px"><label>Validità (giorni)</label><input type="number" id="prev-validita" value="30" style="width:80px"></div>
+              <div class="fg" style="flex:1;min-width:140px"><label>Validità (giorni)</label><div style="display:flex;gap:6px;align-items:center"><input type="number" id="prev-validita" value="30" style="width:70px"><button onclick="initPrevHeader()" style="padding:4px 10px;background:var(--teal);color:#fff;border:none;border-radius:var(--r-sm);cursor:pointer;font-size:12px;white-space:nowrap">↻ Aggiorna</button></div></div>
               <div class="fg" style="flex:2;min-width:200px"><label>Note preventivo</label><input id="prev-note" placeholder="es. Prezzi validi salvo variazioni cliniche..."></div>
               <div class="fg"><label>Sconto globale %</label><input type="number" id="prev-sconto-glob" value="0" min="0" max="100" style="width:70px" oninput="applyGlobalDiscount()"></div>
             </div>
@@ -901,6 +901,7 @@ async function openPatient(id) {
   sv('f-citta',    p.citta||'');
   sv('f-prov',     p.prov||'');
   sv('f-nazione',  p.nazione||'Italia');
+  sv('prev-validita', p.prev_validita || 30);
   teethAttuale  = safeJson(p.odontogramma, {});
   arcateAttuale = safeJson(p.arcate, {});
   teethPiano    = safeJson(p.piano, {});
@@ -951,6 +952,7 @@ function collectData() {
     arcate:        JSON.stringify(arcateAttuale),
     piano:         JSON.stringify(teethPiano),
     arcate_piano:  JSON.stringify(arcatePiano),
+    prev_validita: parseInt(document.getElementById('prev-validita')?.value||30),
     preventivi:    JSON.stringify(prevRows),
     diario:        JSON.stringify(diary),
     documenti:     JSON.stringify(docs)
@@ -1522,7 +1524,7 @@ function savePrestazioneLine() {
   document.getElementById('prest-form').style.display = 'none';
   renderPrestazioniModal();
   buildLegend();
-  savePrestazioni().catch(e => notify('Errore salvataggio: '+e.message,'err'));
+  setTimeout(() => savePrestazioni().catch(e => notify('Errore salvataggio: '+e.message,'err')), 300);
 }
 
 function deletePrestazione(tipo, idx) {
@@ -1531,7 +1533,7 @@ function deletePrestazione(tipo, idx) {
   arr.splice(idx,1);
   renderPrestazioniModal();
   buildLegend();
-  savePrestazioni().catch(e => notify('Errore salvataggio: '+e.message,'err'));
+  setTimeout(() => savePrestazioni().catch(e => notify('Errore salvataggio: '+e.message,'err')), 300);
 }
 
 async function saveAndClosePrestazioni() {
