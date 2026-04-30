@@ -753,16 +753,49 @@ const TR_ATTUALE_DEFAULT = [
 ];
 
 const TR_PIANO_DEFAULT = [
-  {id:'da_otturare', label:'Da otturare',          color:'#C0392B', sym:'C',  bg:'#FDECEA', tipo:'piano'},
-  {id:'endo_fare',   label:'Endodonzia',            color:'#B7651A', sym:'E',  bg:'#FEF3E2', tipo:'piano'},
-  {id:'da_estrarre', label:'Da estrarre',           color:'#C0392B', sym:'†',  bg:'#FDECEA', tipo:'piano'},
-  {id:'imp_fare',    label:'Impianto',              color:'#0F6E56', sym:'I+', bg:'#D0F0E6', tipo:'piano'},
-  {id:'corona_fare', label:'Corona',                color:'#5B4BBF', sym:'K+', bg:'#EEEDFB', tipo:'piano'},
-  {id:'ponte_fare',  label:'Ponte',                 color:'#1A5EA8', sym:'▬+', bg:'#E8F1FD', tipo:'piano'},
-  {id:'bite_fare',   label:'Bite',                  color:'#5B4BBF', sym:'B+', bg:'#EEEDFB', tipo:'piano'},
-  {id:'sbianc_fare', label:'Sbiancamento',          color:'#1D9E75', sym:'SB', bg:'#E1F5EE', tipo:'piano'},
-  {id:'controllo',   label:'Controllo',             color:'#686864', sym:'CC', bg:'#EFEDE7', tipo:'piano'},
-  {id:'altro_piano', label:'Altro',                 color:'#686864', sym:'?',  bg:'#EFEDE7', tipo:'piano'},
+  {id:'ott1', label:'Otturazione I classe', color:'#1A5EA8', sym:'O1', bg:'#E8F1FD', tipo:'piano', prezzo:120},
+  {id:'ott2', label:'Otturazione II classe', color:'#1A5EA8', sym:'O2', bg:'#E8F1FD', tipo:'piano', prezzo:170},
+  {id:'ott5', label:'Otturazione V classe', color:'#1A5EA8', sym:'O5', bg:'#E8F1FD', tipo:'piano', prezzo:90},
+  {id:'ottl', label:'Otturazione dente da latte', color:'#1A5EA8', sym:'OL', bg:'#E8F1FD', tipo:'piano', prezzo:80},
+  {id:'ottr', label:'Otturazione a rischio devitaliz.', color:'#1A5EA8', sym:'OR', bg:'#E8F1FD', tipo:'piano', prezzo:170},
+  {id:'intarsio', label:'Intarsio in ceramica', color:'#1A5EA8', sym:'IN', bg:'#E8F1FD', tipo:'piano', prezzo:400},
+  {id:'sigill', label:'Sigillatura', color:'#1D9E75', sym:'SG', bg:'#E1F5EE', tipo:'piano', prezzo:100},
+  {id:'endo1', label:'Endodonzia monocanalare', color:'#5B4BBF', sym:'E1', bg:'#EEEDFB', tipo:'piano', prezzo:150},
+  {id:'endo2', label:'Endodonzia bicanalare', color:'#5B4BBF', sym:'E2', bg:'#EEEDFB', tipo:'piano', prezzo:180},
+  {id:'endo3', label:'Endodonzia pluricanalare', color:'#5B4BBF', sym:'E3', bg:'#EEEDFB', tipo:'piano', prezzo:290},
+  {id:'ritratt1', label:'Ritrattamento monocanalare', color:'#5B4BBF', sym:'R1', bg:'#EEEDFB', tipo:'piano', prezzo:280},
+  {id:'ritratt3', label:'Ritrattamento pluricanalare', color:'#5B4BBF', sym:'R3', bg:'#EEEDFB', tipo:'piano', prezzo:400},
+  {id:'apic', label:'Apicectomia', color:'#5B4BBF', sym:'AP', bg:'#EEEDFB', tipo:'piano', prezzo:300},
+  {id:'cist', label:'Cistectomia', color:'#5B4BBF', sym:'CI', bg:'#EEEDFB', tipo:'piano', prezzo:300},
+  {id:'exs', label:'Estrazione semplice', color:'#C0392B', sym:'ES', bg:'#FDECEA', tipo:'piano', prezzo:100},
+  {id:'exc', label:'Estrazione complessa', color:'#C0392B', sym:'EC', bg:'#FDECEA', tipo:'piano', prezzo:130},
+  {id:'exg', label:'Estrazione dente del giudizio', color:'#C0392B', sym:'EG', bg:'#FDECEA', tipo:'piano', prezzo:200},
+  {id:'exi', label:'Estrazione elemento incluso', color:'#C0392B', sym:'EI', bg:'#FDECEA', tipo:'piano', prezzo:600},
+  {id:'exsi', label:'Estrazione semi incluso', color:'#C0392B', sym:'eI', bg:'#FDECEA', tipo:'piano', prezzo:300},
+  {id:'exd', label:'Estrazione dente deciduo', color:'#C0392B', sym:'ED', bg:'#FDECEA', tipo:'piano', prezzo:80},
+  {id:'impl', label:'Impianto osteointegrabile', color:'#C05621', sym:'I+', bg:'#FEF0E7', tipo:'piano', prezzo:550},
+  {id:'abut', label:'Abutment', color:'#C05621', sym:'A', bg:'#FEF0E7', tipo:'piano', prezzo:190},
+  {id:'abut_zig', label:'Abutment zigomatico', color:'#C05621', sym:'AZ', bg:'#FEF0E7', tipo:'piano', prezzo:250},
+  {id:'kzr', label:'Corona zirconio', color:'#0F6E56', sym:'Kz', bg:'#E1F5EE', tipo:'piano', prezzo:700},
+  {id:'kzi', label:'Corona zirconio su impianto', color:'#0F6E56', sym:'Ki', bg:'#E1F5EE', tipo:'piano', prezzo:700},
+  {id:'kprov', label:'Corona provvisoria in resina', color:'#0F6E56', sym:'KP', bg:'#E1F5EE', tipo:'piano', prezzo:90},
+  {id:'kci', label:'Corona provvisoria carico immediato', color:'#0F6E56', sym:'KC', bg:'#E1F5EE', tipo:'piano', prezzo:300},
+  {id:'rfk', label:'Rifacimento corona in zirconia', color:'#0F6E56', sym:'RK', bg:'#E1F5EE', tipo:'piano', prezzo:200},
+  {id:'facc_cer', label:'Faccetta in ceramica', color:'#0F6E56', sym:'FC', bg:'#E1F5EE', tipo:'piano', prezzo:600},
+  {id:'facc_comp', label:'Faccetta in composito', color:'#0F6E56', sym:'FO', bg:'#E1F5EE', tipo:'piano', prezzo:400},
+  {id:'maryland', label:'Maryland', color:'#0F6E56', sym:'MA', bg:'#E1F5EE', tipo:'piano', prezzo:370},
+  {id:'perno', label:'Perno in fibra', color:'#0F6E56', sym:'PF', bg:'#E1F5EE', tipo:'piano', prezzo:200},
+  {id:'monc', label:'Ricostruzione moncone composito', color:'#0F6E56', sym:'MC', bg:'#E1F5EE', tipo:'piano', prezzo:120},
+  {id:'ricim', label:'Ricementazione ponte', color:'#0F6E56', sym:'RP', bg:'#E1F5EE', tipo:'piano', prezzo:250},
+  {id:'rm_cor', label:'Rimozione corona', color:'#686864', sym:'RC', bg:'#EFEDE7', tipo:'piano', prezzo:40},
+  {id:'levrad', label:'Levigature radicolari', color:'#1D9E75', sym:'LR', bg:'#E1F5EE', tipo:'piano', prezzo:130},
+  {id:'levrs', label:'Levigatura radicolare singolo el.', color:'#1D9E75', sym:'LS', bg:'#E1F5EE', tipo:'piano', prezzo:22},
+  {id:'sondagg', label:'Sondaggio', color:'#1D9E75', sym:'SO', bg:'#E1F5EE', tipo:'piano', prezzo:150},
+  {id:'splint', label:'Splintaggio', color:'#686864', sym:'SP', bg:'#EFEDE7', tipo:'piano', prezzo:220},
+  {id:'tac', label:'TAC', color:'#686864', sym:'TC', bg:'#EFEDE7', tipo:'piano', prezzo:100},
+  {id:'opt', label:'Ortopanoramica (OPT)', color:'#686864', sym:'OP', bg:'#EFEDE7', tipo:'piano', prezzo:10},
+  {id:'ctrl', label:'Controllo', color:'#686864', sym:'CC', bg:'#EFEDE7', tipo:'piano', prezzo:0},
+  {id:'altro_piano', label:'Altro', color:'#686864', sym:'?', bg:'#EFEDE7', tipo:'piano', prezzo:0}
 ];
 
 let TR_ATTUALE = [...TR_ATTUALE_DEFAULT];
@@ -773,11 +806,18 @@ function findTR(id) {
 }
 
 const ARCH_TR = [
-  {id:'igiene_fare', label:'Igiene',                       color:'#1D9E75', sym:'IG'},
-  {id:'tot_rimov',  label:'Protesi totale rimovibile',     color:'#C05621', sym:'TR'},
-  {id:'tot_fissa',  label:'Protesi totale fissa/All-on-4', color:'#0F6E56', sym:'TF'},
-  {id:'parz_rimov', label:'Protesi parziale rimovibile',   color:'#B7651A', sym:'PR'},
-  {id:'ortodonzia', label:'Apparecchio ortodontico',       color:'#1A5EA8', sym:'OR'},
+  {id:'igiene_fare', label:'Igiene', color:'#1D9E75', sym:'IG', prezzo:90},
+  {id:'ablaz_adult', label:'Ablazione tartaro', color:'#1D9E75', sym:'AT', prezzo:90},
+  {id:'ablaz_ped', label:'Ablazione pediatrica', color:'#1D9E75', sym:'AP', prezzo:70},
+  {id:'sbianc', label:'Sbiancamento con lampada', color:'#B7651A', sym:'SB', prezzo:250},
+  {id:'bite', label:'Bite', color:'#B7651A', sym:'B+', prezzo:250},
+  {id:'tot_rimov', label:'Protesi totale rimovibile', color:'#C05621', sym:'TR', prezzo:1200},
+  {id:'tot_fissa', label:'Protesi totale fissa/All-on-4', color:'#0F6E56', sym:'TF', prezzo:0},
+  {id:'parz_rimov', label:'Protesi parziale rimovibile', color:'#B7651A', sym:'PR', prezzo:0},
+  {id:'ortodonzia', label:'Apparecchio ortodontico', color:'#1A5EA8', sym:'OR', prezzo:3500},
+  {id:'rialzo_grande', label:'Grande rialzo seno mascellare', color:'#C05621', sym:'RG', prezzo:1600},
+  {id:'rialzo_mini', label:'Mini rialzo seno mascellare', color:'#C05621', sym:'RM', prezzo:800},
+  {id:'bonifica', label:'Bonifica arcata', color:'#C0392B', sym:'BA', prezzo:550}
 ];
 
 const ARCATE = [
