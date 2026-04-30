@@ -770,7 +770,7 @@ let TR_ATTUALE = [...TR_ATTUALE_DEFAULT];
 let TR_PIANO   = [...TR_PIANO_DEFAULT];
 
 function findTR(id) {
-  return TR_ATTUALE.find(t=>t.id===id) || TR_PIANO.find(t=>t.id===id) || {id,label:id,color:'#686864',sym:'?',bg:'#EFEDE7'};
+  return TR_ATTUALE.find(t=>t.id===id) || TR_PIANO.find(t=>t.id===id) || null;
 }
 
 const ARCH_TR = [
@@ -1099,6 +1099,7 @@ function refreshOdonto(type) {
       // entry = array di tid
       const treats = Array.isArray(entry) ? entry : [entry];
       const primary = TR_ATTUALE.find(t=>t.id===treats[0]);
+      if (!primary) { el.setAttribute('fill','#FFFFFF'); el.setAttribute('stroke','#C4C2BA'); el.setAttribute('stroke-width','1.5'); }
       if (primary) {
         el.setAttribute('fill', primary.bg);
         el.setAttribute('stroke', primary.color);
