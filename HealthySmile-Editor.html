@@ -724,6 +724,175 @@ const TR_LABEL = {
   bite:'Bite/Ortodonzia',
 };
 
+
+// ─── MAPPA PREZZI (da listino) ───
+const TR_PRICE = {
+  // Igiene
+  ablazione_tartaro_igienista_in:90, ablazione_pediatrica_fino_agli:70,
+  igiene_fare:90, igiene_arcata_protesica:50,
+  levigature_radicolari:130, levigatura_radicolare_singolo:22,
+  bonifica_arcata:550, sondaggio:150, valutazione_parodontale:150,
+  // Otturazioni / restauri
+  da_otturare:170, ott1:120, ott2:170, ott5:90, ol:80, or:170,
+  otturazione_i_classe:120, otturazione_ii_classe:170, otturazione_v_classe:90,
+  otturazione_dente_da_latte:80, otturazione_a_rischio_devitaliz:170,
+  intarsio_in_ceramica:400, int:400, sigillatura:100, sig:100, copertura_elemento_in_composito:70,
+  ricostruzione_moncone_in_composito:120, ricostruzione_moncone_perno_in_fibra:200,
+  perno:200, monc:120,
+  // Endodonzia
+  endo_fare:180, e1:150, e2:180, ep:290,
+  terapia_endodontica_monocanalare:150, terapia_endodontica_bicanalare:180,
+  terapia_endodontica_pluricanalare:290, apicectomia:300, cistectomia:300,
+  ritratt1:280, ritratt2:350, ritratt3:400,
+  ritrattamento_monocanalare:280, ritrattamento_pluricanalare:400,
+  // Estrazioni
+  da_estrarre:100, exs:100, exc:130, exg:200, exi:600, esi:300, exd:80,
+  estrazione_semplice:100, estrazione_complessa:130,
+  estrazione_dente_del_giudizio:200, estrazione_elemento_incluso:600,
+  estrazione_elemento_semi_incluso:300, estrazione_dente_deciduo:80,
+  // Implantologia
+  imp_fare:550, impianto_osteointegrabile:550, impianto_zigomatico:2000,
+  abutment:190, abutment_zigomatico:250, grande_rialzo_seno_mascellare:1600,
+  mini_rialzo_seno:800, gbr:2000, griglia_ossea_in_titanio:2500,
+  dima_chirurgica_per_carico:250, reinserimento_impianto:150,
+  // Protesi fissa
+  corona_fare:700, kzr:700, kzi:700, kprov:90, kprovc:300,
+  corona_zirconio:700, corona_zirconio_su_impianto:700,
+  corona_provvisoria_in_resina:90, corona_provvisoria_a_carico:300,
+  rifacimento_corona_in_zirconia:200, rimozione_corona:40,
+  ponte_fare:700, faccetta_in_ceramica:600, faccetta_in_composito:400,
+  faccetta_provvisoria:100, maryland:370, meryland:750,
+  ricementazione_ponte:250, decementazione_ponte_a_quadrante:0,
+  // Protesi mobile
+  protesi_totale_definitiva:1200, protesi_scheletrica_definitiva:1300,
+  protesi_scheletrica_provvisoria:350, protesi_mobile_provvisoria:550,
+  overdenture:2600, protesi_ibrida:3800, protesi_ibrida_su_4_impianti:3000,
+  protesi_ibrida_su_locator:3300, ibrida_in_zirconia:5500,
+  flexite:1500, ragnetto:300, gancio_trasparente:150,
+  ribasatura_diretta_protesi:180, ribasatura_in_laboratorio:300,
+  // Ortodonzia
+  ortodonzia:3500, allineatori_ortodontici:150,
+  ortodonzia_fissa_durata_approssimativa_8:3000,
+  ortodonzia_fissa_durata_approssimativa_12:3500,
+  ortodonzia_fissa_durata_approssimativa_18:4000,
+  ortodonzia_fissa_durata_approssimativa_24:4800,
+  contenzione_ortodontica:250, mascherine_ortodontiche:250,
+  mascherina_contenzione:180, splintaggio_ortodontico:280, splintaggio:220,
+  studio_del_caso_ortodontico:350, stripping:500,
+  // Sbiancamento
+  sbianc_fare:140, sbiancamento_americano_con_lampada:250,
+  sbiancamento_domiciliare_2_sedute:140,
+  sbiancamento_rapido_post_igiene:50,
+  // Altro
+  bite_fare:250, bite:250, byte:300, rialzo_occlusale:1000,
+  circolare_in_composito:1500, circolare_provvisorio:200,
+  cambio_protesi_da_rimovibile:1200,
+};
+
+function prezzoTR(tid) {
+  if (!tid) return 0;
+  return TR_PRICE[tid] || 0;
+}
+
+// ─── TESTI CLINICI COINVOLGENTI ───
+function generaConsiglioClinico(num, pianoItems, attualeArr) {
+  const daFare = pianoItems.filter(x => x.stato === 'dafare');
+  if (!daFare.length) return null;
+
+  // Priorità trattamenti per testo principale
+  const hasTid = (tid) => daFare.some(x => x.tid === tid || TR_HIGH.concat(TR_MEDIUM).includes(x.tid));
+  const tids = daFare.map(x => x.tid);
+
+  // ── Estrazione ──
+  if (tids.some(t => ['da_estrarre','exs','exc','exg','exi','esi','exd',
+      'estrazione_semplice','estrazione_complessa','estrazione_dente_del_giudizio',
+      'estrazione_elemento_incluso','estrazione_elemento_semi_incluso'].includes(t))) {
+    const hasImpianto = tids.some(t => ['imp_fare','impianto_osteointegrabile'].includes(t));
+    return `Il dente ${num} non è più recuperabile nelle condizioni attuali e necessita di estrazione. ` +
+      `Prima si interviene, più semplice sarà la riabilitazione: l'osso si riassorbe nel tempo dopo la perdita del dente, ` +
+      `rendendo un futuro impianto più complesso e costoso. ` +
+      (hasImpianto ? `Abbiamo già pianificato il posizionamento dell'impianto per ripristinare la funzione masticatoria.` :
+        `Ti consigliamo di pianificare subito la riabilitazione dello spazio per evitare lo spostamento dei denti adiacenti.`);
+  }
+
+  // ── Endodonzia ──
+  if (tids.some(t => ['endo_fare','e1','e2','ep','terapia_endodontica_monocanalare',
+      'terapia_endodontica_bicanalare','terapia_endodontica_pluricanalare',
+      'ritratt1','ritratt2','ritratt3','ritrattamento_monocanalare','ritrattamento_pluricanalare'].includes(t))) {
+    const hasCorona = tids.some(t => ['corona_fare','kzr','kzi','corona_zirconio'].includes(t));
+    return `Il dente ${num} ha la polpa compromessa e necessita di terapia endodontica (devitalizzazione). ` +
+      `Il trattamento canalare elimina il tessuto infetto e salva il dente — senza intervento il rischio è un ascesso ` +
+      `o la perdita definitiva dell'elemento. ` +
+      (hasCorona ? `Dopo la devitalizzazione proteggeremo il dente con una corona in zirconio per dargli la massima resistenza.` :
+        `Una volta completato il trattamento, valuteremo insieme la protezione definitiva del dente.`);
+  }
+
+  // ── Otturazione ──
+  if (tids.some(t => ['da_otturare','ott1','ott2','ott5','ol','or',
+      'otturazione_i_classe','otturazione_ii_classe','otturazione_v_classe',
+      'otturazione_dente_da_latte','otturazione_a_rischio_devitaliz'].includes(t))) {
+    const isRischio = tids.some(t => ['or','otturazione_a_rischio_devitaliz'].includes(t));
+    if (isRischio) {
+      return `Sul dente ${num} è presente una carie profonda a rischio devitalizzazione. ` +
+        `Intervenire ora con un'otturazione mirata può ancora salvare la vitalità del nervo. ` +
+        `Se si aspetta, la probabilità di dover devitalizzare il dente aumenta significativamente — ` +
+        `con tempi e costi molto superiori. È un dente che va trattato in tempi brevi.`;
+    }
+    return `Sul dente ${num} è presente una lesione cariosa attiva. ` +
+      `Intervenire ora significa un'otturazione semplice e conservativa — il tessuto da rimuovere è ancora minimo. ` +
+      `Più si aspetta, più la carie si approfondisce verso il nervo, trasformando un'otturazione da pochi minuti ` +
+      `in un'endodonzia con costi e tempi ben superiori. È un'ottima situazione per intervenire subito.`;
+  }
+
+  // ── Impianto ──
+  if (tids.some(t => ['imp_fare','impianto_osteointegrabile','impianto_zigomatico'].includes(t))) {
+    return `Il dente ${num} è assente e il piano prevede il posizionamento di un impianto osteointegrato. ` +
+      `L'impianto è la soluzione più conservativa: non intacca i denti adiacenti, ` +
+      `mantiene l'osso in salute e dura decenni con la corretta igiene. ` +
+      `Abbiamo pianificato i tempi in base allo stato dell'osso rilevato in panoramica.`;
+  }
+
+  // ── Corona ──
+  if (tids.some(t => ['corona_fare','kzr','kzi','corona_zirconio','corona_zirconio_su_impianto',
+      'rifacimento_corona_in_zirconia'].includes(t))) {
+    const suImpianto = tids.some(t => ['kzi','corona_zirconio_su_impianto'].includes(t));
+    return `Il dente ${num} necessita di una corona in zirconio${suImpianto ? ' su impianto' : ''}. ` +
+      `Lo zirconio è il materiale più resistente e biocompatibile disponibile oggi — ` +
+      `estetica naturale e massima durata nel tempo. ` +
+      (suImpianto ? `Completa la riabilitazione dell'impianto e ripristina la piena funzione masticatoria.` :
+        `Protegge il dente da fratture e garantisce una tenuta a lungo termine.`);
+  }
+
+  // ── Igiene ──
+  if (tids.some(t => ['igiene_fare','ablazione_tartaro_igienista_in','ablazione_pediatrica_fino_agli',
+      'bonifica_arcata','levigature_radicolari'].includes(t))) {
+    return `Il dente ${num} ha accumulo di tartaro e necessita di una seduta di igiene professionale. ` +
+      `Il tartaro non si rimuove con lo spazzolino domestico e favorisce l'infiammazione gengivale (parodontite). ` +
+      `Una pulizia professionale regolare è il modo più efficace per prevenire perdita ossea e denti instabili nel lungo termine.`;
+  }
+
+  // ── Faccetta ──
+  if (tids.some(t => ['faccetta_in_ceramica','faccetta_in_composito','fc','fco'].includes(t))) {
+    return `Per il dente ${num} è prevista una faccetta estetica. ` +
+      `Le faccette sono lamine sottilissime che si applicano sulla superficie del dente — ` +
+      `correggono colore, forma e proporzioni con la massima conservazione della struttura naturale del dente. ` +
+      `Il risultato è un sorriso dall'aspetto completamente naturale.`;
+  }
+
+  // ── Default ──
+  const trattamenti = daFare.map(x => labelTR(x.tid)).join(', ');
+  return `Per il dente ${num} il piano di trattamento prevede: ${trattamenti}. ` +
+    `Ti illustreremo in dettaglio ogni fase durante la visita. ` +
+    `Il nostro obiettivo è completare le cure nel minor numero di sedute possibile.`;
+}
+
+// Calcola prezzo totale dei trattamenti da fare per un dente
+function calcolaPrezzo(pianoItems) {
+  return pianoItems
+    .filter(x => x.stato === 'dafare')
+    .reduce((sum, x) => sum + prezzoTR(x.tid), 0);
+}
+
 // Restituisce label leggibile per qualsiasi ID trattamento
 function labelTR(tid) {
   if (!tid) return '';
@@ -778,12 +947,23 @@ function importaDaURL() {
       const daFare    = items.filter(x=>x.stato==='dafare').map(x=>labelTR(x.tid));
       const inCorso   = items.filter(x=>x.stato==='incorso').map(x=>labelTR(x.tid));
       const eseguiti  = items.filter(x=>x.stato==='eseguito').map(x=>labelTR(x.tid));
-      let consiglio = '';
-      if (daFare.length)   consiglio += `⚠ Da eseguire: ${daFare.join(', ')}. `;
-      if (inCorso.length)  consiglio += `🔄 In corso: ${inCorso.join(', ')}. `;
-      if (eseguiti.length) consiglio += `✓ Completato: ${eseguiti.join(', ')}.`;
-      d.consiglio = consiglio.trim() || d.consiglio;
-      // Se ci sono estrazioni o endodonzie → high, altrimenti medium
+      // Testo clinico coinvolgente
+      const consClinico = generaConsiglioClinico(n, items, attuale[num]||[]);
+      if (consClinico) d.consiglio = consClinico;
+      else {
+        let consiglio = '';
+        if (daFare.length)   consiglio += `Da eseguire: ${daFare.join(', ')}. `;
+        if (inCorso.length)  consiglio += `In corso: ${inCorso.join(', ')}. `;
+        if (eseguiti.length) consiglio += `Completato: ${eseguiti.join(', ')}.`;
+        if (consiglio.trim()) d.consiglio = consiglio.trim();
+      }
+      // Prezzi: somma trattamenti da fare + Piano Protezione -70%
+      const totPrezzo = calcolaPrezzo(items);
+      if (totPrezzo > 0) {
+        d.prezzoMercato = totPrezzo;
+        d.prezzoConv    = Math.round(totPrezzo * 0.30);
+      }
+      // Rischio da piano
       const hasFare = daFare.length > 0;
       const highPiano = items.filter(x=>x.stato==='dafare').some(x=>TR_HIGH.includes(x.tid));
       if (hasFare && highPiano) d.rischio = 'high';
@@ -916,6 +1096,20 @@ function showDenteEditor(d) {
       <div class="toggle ${d.presente ? 'on' : ''}" id="toggle-presente" onclick="togglePresente()"></div>
     </div>
 
+    ${d.prezzoMercato ? `
+    <div class="section-divider"></div>
+    <div class="section-label">Investimento</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
+      <div style="background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:12px 16px">
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim);margin-bottom:4px">Prezzo terapia</div>
+        <div style="font-family:'DM Mono',monospace;font-size:18px;color:var(--text)">€${d.prezzoMercato}</div>
+      </div>
+      <div style="background:rgba(45,255,122,0.06);border:1px solid rgba(45,255,122,0.2);border-radius:10px;padding:12px 16px">
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--green);margin-bottom:4px">Con Piano Protezione</div>
+        <div style="font-family:'DM Mono',monospace;font-size:18px;color:var(--green)">€${d.prezzoConv}</div>
+        <div style="font-size:10px;color:var(--text-dim);margin-top:2px">risparmio €${d.prezzoMercato - d.prezzoConv} (–70%)</div>
+      </div>
+    </div>` : ''}
     <div class="section-divider"></div>
     <div class="section-label">Consiglio al paziente</div>
     <div class="field">
