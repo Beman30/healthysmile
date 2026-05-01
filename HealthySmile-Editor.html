@@ -677,20 +677,61 @@ let codice = '';
 
 // ─── MAPPATURA TRATTAMENTI v3 → rischio editor ───
 // Trattamenti che implicano "intervento necessario" (high)
-const TR_HIGH = ['cariato','da_estrarre','frattura'];
+const TR_HIGH = [
+  'cariato','da_estrarre','frattura','da_otturare',
+  'estrazione_semplice','estrazione_complessa','estrazione_dente_del_giudizio',
+  'estrazione_elemento_incluso','estrazione_elemento_semi_incluso','estrazione_dente_deciduo',
+  'apicectomia','cistectomia','exs','exc','exg','exi','esi','exd'
+];
 // Trattamenti che implicano "osservazione" (medium)
-const TR_MEDIUM = ['erosione','provvisorio'];
+const TR_MEDIUM = [
+  'erosione','provvisorio','endo_fare',
+  'terapia_endodontica_monocanalare','terapia_endodontica_bicanalare','terapia_endodontica_pluricanalare',
+  'ritrattamento_monocanalare','ritrattamento_pluricanalare','ritratt1','ritratt2','ritratt3',
+  'e1','e2','ep','devitaliz','ricostruzione_moncone_perno_in_fibra','perno'
+];
 // Trattamenti che = impianto
-const TR_IMPLANT = ['impianto'];
+const TR_IMPLANT = ['impianto','impianto_osteointegrabile','impianto_zigomatico','imp_fare'];
 // Trattamenti che = dente non presente
-const TR_ABSENT = ['estratto'];
+const TR_ABSENT = ['estratto','estratto_assente','exs','exc','exg','exi','esi','exd','da_estrarre'];
 // Label leggibili per il consiglio
 const TR_LABEL = {
-  sano:'Sano',cariato:'Cariato',otturato:'Otturato',devitaliz:'Devitalizzato',
-  estratto:'Estratto',impianto:'Impianto',corona:'Corona',da_estrarre:'Da estrarre',
-  parziale:'Protesi parziale',ponte:'Ponte',provvisorio:'Provvisorio',
-  frattura:'Frattura',erosione:'Erosione/abrasione',bite:'Bite/Ortodonzia'
+  // ── Situazione attuale ──
+  sano:'Sano', otturato:'Otturato', devitaliz:'Devitalizzato',
+  impianto:'Impianto', corona:'Corona', ponte:'Ponte',
+  provvisorio:'Provvisorio', parziale:'Protesi parziale',
+  estratto:'Estratto/assente', frattura:'Frattura', erosione:'Erosione/abrasione',
+  bite_att:'Bite presente', igiene_att:'Igiene eseguita', sbianc_att:'Sbiancamento fatto',
+  cariato:'Cariato',
+  // ── Piano (ID vecchi) ──
+  da_otturare:'Da otturare', endo_fare:'Endodonzia', da_estrarre:'Da estrarre',
+  imp_fare:'Impianto', corona_fare:'Corona', ponte_fare:'Ponte',
+  igiene_fare:'Igiene', bite_fare:'Bite', sbianc_fare:'Sbiancamento',
+  controllo:'Controllo', altro_piano:'Altro',
+  // ── Abbreviazioni legacy ──
+  exs:'Estrazione semplice', exc:'Estrazione complessa',
+  exg:'Estrazione giudizio', exi:'Estrazione incluso',
+  esi:'Estrazione semi-incluso', exd:'Estrazione deciduo',
+  kzr:'Corona in zirconio', kzi:'Corona zirconio su impianto',
+  kprov:'Corona provvisoria', kprovc:'Corona provvisoria a carico imm.',
+  perno:'Perno in fibra', monc:'Moncone in composito',
+  ritratt1:'Ritrattamento monocanalare', ritratt2:'Ritrattamento bicanalare',
+  ritratt3:'Ritrattamento pluricanalare',
+  e1:'Endodonzia monocanalare', e2:'Endodonzia bicanalare', ep:'Endodonzia pluricanalare',
+  o1:'Otturazione I cl.', o2:'Otturazione II cl.', o5:'Otturazione V cl.',
+  ol:'Otturazione dente latte', or:'Otturazione a rischio devitaliz.',
+  sig:'Sigillatura', int:'Intarsio ceramica',
+  bite:'Bite/Ortodonzia',
 };
+
+// Restituisce label leggibile per qualsiasi ID trattamento
+function labelTR(tid) {
+  if (!tid) return '';
+  if (TR_LABEL[tid]) return TR_LABEL[tid];
+  if (/^c_\d+$/.test(tid)) return 'Personalizzato';
+  // Prettify: underscore → spazio, prima lettera maiuscola
+  return tid.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()).replace(/\d+$/, '').trim();
+}
 
 function importaDaURL() {
   const params = new URLSearchParams(window.location.search);
@@ -719,7 +760,7 @@ function importaDaURL() {
       else if (arr.some(t => TR_MEDIUM.includes(t))) d.rischio = 'medium';
       else                                            d.rischio = 'low';
       // Nota breve automatica
-      const labels = arr.filter(t=>t!=='sano').map(t=>TR_LABEL[t]||t);
+      const labels = arr.filter(t=>t!=='sano').map(t=>labelTR(t));
       if (labels.length) d.note = labels.join(' + ');
     });
     // Piano trattamenti → consiglio automatico
@@ -728,16 +769,19 @@ function importaDaURL() {
       const n = parseInt(num);
       const d = denti.find(x => x.num === n);
       if (!d || !items.length) return;
-      const daFare    = items.filter(x=>x.stato==='dafare').map(x=>TR_LABEL[x.tid]||x.tid);
-      const inCorso   = items.filter(x=>x.stato==='incorso').map(x=>TR_LABEL[x.tid]||x.tid);
-      const eseguiti  = items.filter(x=>x.stato==='eseguito').map(x=>TR_LABEL[x.tid]||x.tid);
+      const daFare    = items.filter(x=>x.stato==='dafare').map(x=>labelTR(x.tid));
+      const inCorso   = items.filter(x=>x.stato==='incorso').map(x=>labelTR(x.tid));
+      const eseguiti  = items.filter(x=>x.stato==='eseguito').map(x=>labelTR(x.tid));
       let consiglio = '';
       if (daFare.length)   consiglio += `⚠ Da eseguire: ${daFare.join(', ')}. `;
       if (inCorso.length)  consiglio += `🔄 In corso: ${inCorso.join(', ')}. `;
       if (eseguiti.length) consiglio += `✓ Completato: ${eseguiti.join(', ')}.`;
       d.consiglio = consiglio.trim() || d.consiglio;
-      // Se ci sono lavori da fare → almeno medium
-      if (daFare.length && d.rischio === 'low') d.rischio = 'medium';
+      // Se ci sono estrazioni o endodonzie → high, altrimenti medium
+      const hasFare = daFare.length > 0;
+      const highPiano = items.filter(x=>x.stato==='dafare').some(x=>TR_HIGH.includes(x.tid));
+      if (hasFare && highPiano) d.rischio = 'high';
+      else if (hasFare && d.rischio === 'low') d.rischio = 'medium';
     });
     renderMappa();
     renderDenteList();
