@@ -972,6 +972,7 @@ function importaDaURL() {
     renderMappa();
     renderDenteList();
     updateStats();
+    generaTesti();
     document.getElementById('btn-import').style.display = 'inline-flex';
     showToast('✦ Dati importati dalla cartella clinica!');
   } catch(e) {
@@ -993,6 +994,68 @@ function init() {
 function setDataOggi() {
   const today = new Date().toISOString().split('T')[0];
   document.getElementById('data-visita').value = today;
+}
+
+function generaTesti() {
+  const nImpianti  = denti.filter(d => d.implant && d.presente).length;
+  const nSani      = denti.filter(d => d.rischio === 'low' && d.presente && !d.implant).length;
+  const nMedium    = denti.filter(d => d.rischio === 'medium').length;
+  const nHigh      = denti.filter(d => d.rischio === 'high').length;
+  const nAssenti   = denti.filter(d => !d.presente).length;
+  const dentiHigh  = denti.filter(d => d.rischio === 'high');
+  const dentiMed   = denti.filter(d => d.rischio === 'medium');
+
+  // ── TESTO INTRODUTTIVO ──
+  let intro = '';
+  if (nImpianti >= 6) {
+    intro = `La tua bocca presenta una riabilitazione implantare importante, con ${nImpianti} impianti osteointegrati distribuiti sulle arcate. `;
+    intro += `È un lavoro clinico significativo che richiede una manutenzione attenta e costante. `;
+  } else if (nImpianti > 0) {
+    intro = `La tua bocca ha ${nImpianti} impianto${nImpianti>1?'i':''} osteointegrato${nImpianti>1?'i':''}, che si affiancano ai denti naturali residui. `;
+  } else {
+    intro = `La tua bocca è composta interamente da denti naturali. `;
+  }
+  if (nHigh === 0 && nMedium === 0) {
+    intro += `Il quadro clinico complessivo è ottimo: nessun dente richiede intervento immediato. `;
+    intro += `Continua con l'igiene domiciliare corretta e i controlli periodici per mantenere questo risultato.`;
+  } else if (nHigh === 0) {
+    intro += `Il quadro complessivo è positivo: i denti naturali sono in buono stato, con alcune aree da monitorare nel tempo. `;
+    intro += `Nessun intervento urgente — ma è importante non ritardare le cure pianificate per evitare che le situazioni si aggravino.`;
+  } else {
+    intro += `Esistono ${nHigh} elemento${nHigh>1?'i':''} che richied${nHigh>1?'ono':'e'} intervento a breve termine`;
+    if (nMedium > 0) intro += ` e ${nMedium} sotto osservazione`;
+    intro += `. Intervenire tempestivamente permette cure più conservative e meno costose.`;
+  }
+
+  // ── PUNTI DI FORZA ──
+  const forza = [];
+  if (nImpianti >= 4) forza.push(`${nImpianti} impianti osteointegrati stabili su entrambe le arcate`);
+  else if (nImpianti > 0) forza.push(`${nImpianti} impianto${nImpianti>1?'i':''} osteointegrato${nImpianti>1?'i':''} in buono stato`);
+  if (nSani >= 20) forza.push('La maggior parte dei denti naturali è in condizioni stabili');
+  else if (nSani >= 10) forza.push(`${nSani} denti naturali in ottime condizioni`);
+  const saniAnt = denti.filter(d => d.rischio==='low' && d.presente && [11,12,13,21,22,23,31,32,33,41,42,43].includes(d.num));
+  if (saniAnt.length >= 4) forza.push('Settore anteriore in ottimo stato estetico e funzionale');
+  const dentiMedStab = dentiMed.filter(d => d.note && d.note.toLowerCase().includes('stabil'));
+  if (dentiMedStab.length) forza.push(`Elementi sotto osservazione al momento stabili (${dentiMedStab.map(d=>d.num).join(', ')})`);
+  if (nAssenti === 0) forza.push('Arcate complete — nessun elemento mancante');
+  if (!forza.length) forza.push('Denti in condizioni accettabili con piano di cura pianificato');
+
+  // ── AREE DA TRATTARE ──
+  const critici = [];
+  dentiHigh.forEach(d => {
+    const tratt = d.consiglio.match(/^[^.]+/)?.[0] || '';
+    const nota = d.note && d.note !== 'Sano' ? ` — ${d.note.toLowerCase()}` : '';
+    critici.push(`${d.num}${nota}`);
+  });
+  dentiMed.forEach(d => {
+    const nota = d.note && d.note !== 'Sano' ? ` — ${d.note.toLowerCase()}` : ' — sotto osservazione';
+    critici.push(`${d.num}${nota}`);
+  });
+  if (!critici.length) critici.push('Nessuna area critica rilevata — mantenimento e prevenzione');
+
+  document.getElementById('overview-text').value  = intro;
+  document.getElementById('punti-forza').value    = forza.join('\n');
+  document.getElementById('punti-critici').value  = critici.join('\n');
 }
 
 function setDefaultTexts() {
