@@ -1139,7 +1139,7 @@ async function createPatient() {
       anno:    '',
       rischio: 'basso',
       prima_visita: new Date().toISOString().split('T')[0],
-      odontogramma: '{}', arcate: '{}', piano: '{}', arcate_piano: '{}',
+      odontogramma: '{"18":["sano"],"17":["sano"],"16":["sano"],"15":["sano"],"14":["sano"],"13":["sano"],"12":["sano"],"11":["sano"],"21":["sano"],"22":["sano"],"23":["sano"],"24":["sano"],"25":["sano"],"26":["sano"],"27":["sano"],"28":["sano"],"48":["sano"],"47":["sano"],"46":["sano"],"45":["sano"],"44":["sano"],"43":["sano"],"42":["sano"],"41":["sano"],"31":["sano"],"32":["sano"],"33":["sano"],"34":["sano"],"35":["sano"],"36":["sano"],"37":["sano"],"38":["sano"]}', arcate: '{}', piano: '{}', arcate_piano: '{}',
       preventivi: '[]', diario: '[]', documenti: '[]'
     });
     setSyncPill('ok');
@@ -1325,7 +1325,10 @@ function selectTooth(num, type) {
 
     popup.innerHTML = `
       <div class="popup-hdr"><strong>Dente ${num} — piano trattamenti</strong>
-        <button class="popup-close" onclick="closePopup('${popupId}')">✕</button></div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <button onclick="clearPianoTooth(${num})" style="font-size:11px;padding:3px 10px;background:#FEF3E2;color:#B7651A;border:1px solid #B7651A;border-radius:6px;cursor:pointer;font-weight:600">Annulla</button>
+          <button class="popup-close" onclick="closePopup('${popupId}')">✕</button>
+        </div></div>
       <div class="treat-grid">${btns}</div>
       ${statoHtml}`;
   }
@@ -1334,6 +1337,14 @@ function selectTooth(num, type) {
 }
 
 function closePopup(id) { document.getElementById(id).classList.remove('open'); }
+
+function clearPianoTooth(num) {
+  delete teethPiano[num];
+  refreshOdonto('piano');
+  renderPianoRiepilogo();
+  closePopup('popup-piano');
+  scheduleOdoSave();
+}
 
 function toggleAttuale(num, tid) {
   if (!teethAttuale[num]) teethAttuale[num] = [];
