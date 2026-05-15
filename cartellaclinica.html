@@ -496,6 +496,11 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--gray-50);color:
             <div class="arcate-row" id="arcate-piano-btns"></div>
             <div id="arcata-piano-popup" class="arcata-popup"></div>
 
+            <!-- Quadranti piano -->
+            <div style="font-size:10px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.04em;margin-bottom:.4rem;margin-top:.7rem">Per quadrante</div>
+            <div class="arcate-row" id="quadranti-piano-btns"></div>
+            <div id="quadrante-piano-popup" class="arcata-popup"></div>
+
             <div class="odonto-wrap">
               <svg id="odonto-piano" viewBox="0 0 660 200" style="width:100%;min-width:580px"></svg>
             </div>
@@ -887,6 +892,19 @@ const ARCH_TR = [
   {id:'ortodonzia',   label:'Apparecchio ortodontico',           color:'#1A5EA8', sym:'OR'},
 ];
 
+const QUAD_TR = [
+  {id:'levigature_radicolari',          label:'Levigature radicolari',            color:'#686864', sym:'LR',  prezzo:130},
+  {id:'levigatura_radicolare_singolo_', label:'Lev. radicolare singolo',          color:'#1D9E75', sym:'LRS', prezzo:22},
+  {id:'decementazione_ponte_a_quadran', label:'Decementazione a quadrante',       color:'#5B4BBF', sym:'DEC', prezzo:0},
+];
+
+const QUADRANTI = [
+  {id:'q1', label:'Q1', desc:'Quadrante 1  (18–11)'},
+  {id:'q2', label:'Q2', desc:'Quadrante 2  (21–28)'},
+  {id:'q3', label:'Q3', desc:'Quadrante 3  (31–38)'},
+  {id:'q4', label:'Q4', desc:'Quadrante 4  (41–48)'},
+];
+
 const ARCATE = [
   {id:'sup',      label:'Arcata superiore'},
   {id:'inf',      label:'Arcata inferiore'},
@@ -909,6 +927,7 @@ let arcateAttuale = {};  // {sup: ['tot_rimov']}
 // Odontogramma piano (trattamenti da fare/eseguiti)
 let teethPiano = {};     // {16: [{tid:'estrazione', stato:'dafare'}]}
 let arcatePiano = {};
+let quadrantePiano = {};
 
 // Autosave debounced per odontogramma
 let _odSaveTimer = null;
@@ -933,6 +952,7 @@ window.addEventListener('load', () => {
   buildSVG('odonto-piano');
   buildArcateBtns('arcate-attuali-btns', 'arcata-attuale-popup', 'attuale');
   buildArcateBtns('arcate-piano-btns',   'arcata-piano-popup',   'piano');
+  buildQuadranteBtns();
   startApp();
 });
 
@@ -1012,7 +1032,8 @@ async function openPatient(id) {
   teethAttuale  = safeJson(p.odontogramma, {});
   arcateAttuale = safeJson(p.arcate, {});
   teethPiano    = safeJson(p.piano, {});
-  arcatePiano   = safeJson(p.arcate_piano, {});
+  arcatePiano    = safeJson(p.arcate_piano, {});
+  quadrantePiano = safeJson(p.quad_piano, {});
   diary         = safeJson(p.diario, []);
   docs          = safeJson(p.documenti, []);
   prevRows      = safeJson(p.preventivi, []);
@@ -1020,6 +1041,7 @@ async function openPatient(id) {
   refreshOdonto('piano');
   refreshArcate('attuale');
   refreshArcate('piano');
+  refreshQuadranti();
   renderPianoRiepilogo();
   renderPrevRows();
   initPrevHeader();
@@ -1040,11 +1062,13 @@ async function openPatient(id) {
     teethAttuale  = safeJson(d.odontogramma, {});
     arcateAttuale = safeJson(d.arcate, {});
     teethPiano    = safeJson(d.piano, {});
-    arcatePiano   = safeJson(d.arcate_piano, {});
+    arcatePiano    = safeJson(d.arcate_piano, {});
+    quadrantePiano = safeJson(d.quad_piano, {});
     refreshOdonto('attuale');
     refreshOdonto('piano');
     refreshArcate('attuale');
     refreshArcate('piano');
+    refreshQuadranti();
     renderPianoRiepilogo();
     setSyncPill('ok');
   });
@@ -1079,6 +1103,7 @@ function collectData() {
     arcate:        JSON.stringify(arcateAttuale),
     piano:         JSON.stringify(teethPiano),
     arcate_piano:  JSON.stringify(arcatePiano),
+    quad_piano:    JSON.stringify(quadrantePiano),
     prev_validita: parseInt(document.getElementById('prev-validita')?.value||30),
     preventivi:    JSON.stringify(prevRows),
     diario:        JSON.stringify(diary),
@@ -1470,18 +1495,133 @@ function setStatoArcata(aid, tid, stato, type, rowId, popupId) {
   if (item && typeof item==='object') { item.stato=stato; refreshArcate(type); selectArcata(aid,type,rowId,popupId); scheduleOdoSave(); }
 }
 
+
+// ════════════════════════════════════════════════════════════
+// QUADRANTI PIANO
+// ════════════════════════════════════════════════════════════
+function buildQuadranteBtns() {
+  const el = document.getElementById('quadranti-piano-btns');
+  if (!el) return;
+  el.innerHTML = QUADRANTI.map(q =>
+    `<button class="arcata-btn" id="quad-piano-${q.id}" onclick="selectQuadrante('${q.id}')">${q.label}<span style="font-size:9px;font-weight:400;color:var(--gray-400);display:block;line-height:1.2">${q.desc}</span></button>`
+  ).join('');
+}
+
+function refreshQuadranti() {
+  QUADRANTI.forEach(q => {
+    const btn = document.getElementById(`quad-piano-${q.id}`);
+    if (!btn) return;
+    const items = quadrantePiano[q.id] || [];
+    btn.classList.toggle('has', items.length > 0);
+    const syms = items.map(x => x.tid || x).map(tid => {
+      const t = QUAD_TR.find(x => x.id === tid);
+      return t ? `<span style="background:${t.color};color:white;font-size:9px;font-weight:700;padding:1px 4px;border-radius:3px;margin-left:3px">${t.sym}</span>` : '';
+    }).join('');
+    btn.innerHTML = `${q.label}<span style="font-size:9px;font-weight:400;color:var(--gray-400);display:block;line-height:1.2">${q.desc}</span>${syms}`;
+  });
+}
+
+function selectQuadrante(qid) {
+  const popup = document.getElementById('quadrante-piano-popup');
+  if (!quadrantePiano[qid]) quadrantePiano[qid] = [];
+  const items = quadrantePiano[qid];
+  const quad  = QUADRANTI.find(q => q.id === qid);
+
+  const btns = QUAD_TR.map(t => {
+    const on = items.some(x => (x.tid || x) === t.id);
+    return `<button class="treat-btn ${on?'on':''}"
+      style="color:${t.color};${on?'background:'+t.color+';':''}border-color:${on?t.color:'#E5E3DC'}"
+      onclick="toggleQuadrante('${qid}','${t.id}')">
+      <span class="treat-sym" style="background:${on?'rgba(255,255,255,.25)':t.color+'22'};color:${on?'white':t.color}">${t.sym}</span>
+      ${t.label}
+    </button>`;
+  }).join('');
+
+  let statoHtml = '';
+  if (items.length) {
+    statoHtml = `<div style="margin-top:.7rem;border-top:var(--border);padding-top:.7rem">
+      <div style="font-size:11px;font-weight:600;color:var(--gray-500);margin-bottom:.4rem">Stato:</div>
+      ${items.map(item => {
+        const tid   = item.tid || item;
+        const stato = item.stato || 'dafare';
+        const t     = QUAD_TR.find(x => x.id === tid);
+        return t ? `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px">
+          <span style="font-size:12px;font-weight:600;color:${t.color}">${t.sym} ${t.label}</span>
+          <div class="stato-selector">
+            <button class="stato-opt so-dafare ${stato==='dafare'?'on':''}"   onclick="setStatoQuadrante('${qid}','${tid}','dafare')">Da fare</button>
+            <button class="stato-opt so-incorso ${stato==='incorso'?'on':''}" onclick="setStatoQuadrante('${qid}','${tid}','incorso')">In corso</button>
+            <button class="stato-opt so-eseguito ${stato==='eseguito'?'on':''}" onclick="setStatoQuadrante('${qid}','${tid}','eseguito')">Eseguito</button>
+          </div>
+        </div>` : '';
+      }).join('')}
+    </div>`;
+  }
+
+  popup.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.8rem">
+      <strong style="font-size:13px">${quad.label} — ${quad.desc}</strong>
+      <button class="popup-close" onclick="document.getElementById('quadrante-piano-popup').classList.remove('open')">✕</button>
+    </div>
+    <div class="treat-grid">${btns}</div>
+    ${statoHtml}`;
+  popup.classList.add('open');
+}
+
+function toggleQuadrante(qid, tid) {
+  if (!quadrantePiano[qid]) quadrantePiano[qid] = [];
+  const idx = quadrantePiano[qid].findIndex(x => (x.tid || x) === tid);
+  if (idx >= 0) quadrantePiano[qid].splice(idx, 1);
+  else          quadrantePiano[qid].push({tid, stato:'dafare'});
+  refreshQuadranti();
+  selectQuadrante(qid);
+  scheduleOdoSave();
+}
+
+function setStatoQuadrante(qid, tid, stato) {
+  const item = (quadrantePiano[qid] || []).find(x => (x.tid || x) === tid);
+  if (item && typeof item === 'object') {
+    item.stato = stato;
+    refreshQuadranti();
+    selectQuadrante(qid);
+    scheduleOdoSave();
+  }
+}
+
 // ════════════════════════════════════════════════════════════
 // PIANO RIEPILOGO (sotto l'odontogramma piano)
 // ════════════════════════════════════════════════════════════
 function renderPianoRiepilogo() {
   const el = document.getElementById('piano-riepilogo');
   const entries = [];
+
+  // Trattamenti per dente
   Object.entries(teethPiano).forEach(([num, items]) => {
     (items||[]).forEach(item => {
       const t = findTR(item.tid);
-      if (t) entries.push({num, t, stato: item.stato||'dafare'});
+      if (t) entries.push({label: `Dente ${num}`, t, stato: item.stato||'dafare'});
     });
   });
+
+  // Trattamenti per arcata
+  Object.entries(arcatePiano).forEach(([aid, items]) => {
+    const arc = ARCATE.find(a=>a.id===aid);
+    (items||[]).forEach(item => {
+      const tid = item.tid||item;
+      const t   = ARCH_TR.find(x=>x.id===tid);
+      if (t) entries.push({label: arc ? arc.label : aid, t, stato: item.stato||'dafare'});
+    });
+  });
+
+  // Trattamenti per quadrante
+  Object.entries(quadrantePiano).forEach(([qid, items]) => {
+    const quad = QUADRANTI.find(q=>q.id===qid);
+    (items||[]).forEach(item => {
+      const tid = item.tid||item;
+      const t   = QUAD_TR.find(x=>x.id===tid);
+      if (t) entries.push({label: quad ? `${quad.label} (${quad.desc.match(/\((.+)\)/)?.[1]||''})` : qid, t, stato: item.stato||'dafare'});
+    });
+  });
+
   if (!entries.length) { el.innerHTML=''; return; }
 
   const statiLabel = {dafare:'Da fare', incorso:'In corso', eseguito:'Eseguito'};
@@ -1491,10 +1631,10 @@ function renderPianoRiepilogo() {
     <div style="font-size:10px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.04em;margin-bottom:.5rem">Riepilogo piano</div>
     <div style="display:flex;gap:6px;flex-wrap:wrap">
       ${entries.map(e=>`
-        <div style="display:flex;align-items:center;gap:5px;padding:4px 8px;border-radius:5px;border:var(--border);background:${e.t.bg};font-size:11px">
+        <div style="display:flex;align-items:center;gap:5px;padding:4px 8px;border-radius:5px;border:var(--border);background:${e.t.bg||'#f9f9f7'};font-size:11px">
           <span style="font-weight:700;color:${e.t.color}">${e.t.sym} ${e.t.label}</span>
           <span style="color:var(--gray-500)">·</span>
-          <span style="color:var(--gray-500)">Dente ${e.num}</span>
+          <span style="color:var(--gray-500)">${e.label}</span>
           <span class="stato-badge ${statiClass[e.stato]}">${statiLabel[e.stato]}</span>
         </div>`).join('')}
     </div>`;
