@@ -1883,6 +1883,8 @@ async function openPreventivoTab() {
 function importDaOdonto() {
   // Prende tutte le voci dal piano trattamenti
   const newRows = [];
+
+  // ── Trattamenti per dente ──────────────────────────────────────────────
   Object.entries(teethPiano).forEach(([num, items]) => {
     (items||[]).forEach(item => {
       const t = findTR(item.tid);
@@ -1890,17 +1892,64 @@ function importDaOdonto() {
       const existing = prevRows.find(r => r.dente==num && r.tid===item.tid);
       if (!existing) {
         newRows.push({
-          id:    'pr_'+Date.now()+'_'+Math.random().toString(36).slice(2,5),
-          dente: num,
-          tid:   item.tid,
-          label: t.label,
-          qta:   1,
+          id:     'pr_'+Date.now()+'_'+Math.random().toString(36).slice(2,5),
+          dente:  num,
+          tid:    item.tid,
+          label:  t.label,
+          qta:    1,
           prezzo: parseFloat(t.prezzo||0),
           sconto: 0
         });
       }
     });
   });
+
+  // ── Trattamenti per arcata ─────────────────────────────────────────────
+  Object.entries(arcatePiano).forEach(([aid, items]) => {
+    const arc = ARCATE.find(a=>a.id===aid);
+    const denteLabel = arc ? arc.label : aid;
+    (items||[]).forEach(item => {
+      const tid = item.tid||item;
+      const t   = ARCH_TR.find(x=>x.id===tid);
+      if (!t) return;
+      const existing = prevRows.find(r => r.dente===denteLabel && r.tid===tid);
+      if (!existing) {
+        newRows.push({
+          id:     'pr_'+Date.now()+'_'+Math.random().toString(36).slice(2,5),
+          dente:  denteLabel,
+          tid:    tid,
+          label:  t.label,
+          qta:    1,
+          prezzo: parseFloat(t.prezzo||0),
+          sconto: 0
+        });
+      }
+    });
+  });
+
+  // ── Trattamenti per quadrante ──────────────────────────────────────────
+  Object.entries(quadrantePiano).forEach(([qid, items]) => {
+    const quad = QUADRANTI.find(q=>q.id===qid);
+    const denteLabel = quad ? quad.label : qid;
+    (items||[]).forEach(item => {
+      const tid = item.tid||item;
+      const t   = QUAD_TR.find(x=>x.id===tid);
+      if (!t) return;
+      const existing = prevRows.find(r => r.dente===denteLabel && r.tid===tid);
+      if (!existing) {
+        newRows.push({
+          id:     'pr_'+Date.now()+'_'+Math.random().toString(36).slice(2,5),
+          dente:  denteLabel,
+          tid:    tid,
+          label:  t.label,
+          qta:    1,
+          prezzo: parseFloat(t.prezzo||0),
+          sconto: 0
+        });
+      }
+    });
+  });
+
   if (!newRows.length) { notify('Nessun trattamento nel piano','i'); return; }
   prevRows = [...prevRows, ...newRows];
   renderPrevRows();
