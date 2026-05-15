@@ -396,9 +396,373 @@ footer{background:#0a0a0a;padding:28px 24px;border-top:1px solid #1e1e1e;display
     <span class="section-tag">La nostra filosofia</span>
     <h2>In che fase sei con<br>la tua <em>salute orale?</em></h2>
     <div class="loop-wrap">
-      <iframe src="loop1-manifesto.html" title="Healthy Smile — Il manifesto" loading="lazy" allowfullscreen></iframe>
+      <iframe srcdoc="<!DOCTYPE html>
+<html lang=&quot;it&quot;>
+<head>
+<meta charset=&quot;UTF-8&quot;>
+<meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;>
+<title>HealthySmile — Loop Sala d'Attesa v2</title>
+<link rel=&quot;preconnect&quot; href=&quot;https://fonts.googleapis.com&quot;>
+<link rel=&quot;preconnect&quot; href=&quot;https://fonts.gstatic.com&quot; crossorigin>
+<link href=&quot;https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&amp;family=DM+Sans:wght@300;400;500&amp;family=Cormorant+Garamond:ital,wght@1,300;1,400&amp;display=swap&quot; rel=&quot;stylesheet&quot;>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:    #18181b;
+    --bg2:   #1f1f23;
+    --bg3:   #23181e;
+    --pink:  #e04a76;
+    --white: #f2f1ed;
+    --mid:   #8a8a96;
+    --muted: #58585f;
+    --dur:   22s;
+  }
+
+  html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); font-family:'DM Sans',sans-serif; -webkit-font-smoothing:antialiased; cursor:none; }
+
+  /* grain */
+  body::after { content:''; position:fixed; inset:0; background-image:url(&quot;data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.04'/%3E%3C/svg%3E&quot;); pointer-events:none; z-index:9999; mix-blend-mode:overlay; }
+
+  .stage { width:100vw; height:100vh; position:relative; overflow:hidden; }
+
+  /* glow */
+  .glow { position:absolute; width:60vw; height:60vh; border-radius:50%; background:radial-gradient(circle,rgba(224,74,118,.12),transparent 70%); top:15%; left:25%; filter:blur(90px); pointer-events:none; animation:gp var(--dur) linear infinite; }
+  @keyframes gp { 0%,100%{opacity:0;} 15%,85%{opacity:1;} 50%{opacity:.4;} }
+
+  /* logo */
+  .logo { position:fixed; top:28px; left:40px; font-family:'DM Serif Display',serif; font-size:17px; letter-spacing:.04em; color:var(--white); z-index:50; animation:lf var(--dur) linear infinite; }
+  .logo span { color:var(--pink); }
+  @keyframes lf { 0%,4%{opacity:0;} 8%,95%{opacity:1;} 100%{opacity:0;} }
+
+  /* progress */
+  .progress { position:fixed; bottom:0; left:0; right:0; height:2px; background:rgba(255,255,255,.06); z-index:100; }
+  .progress-fill { height:100%; background:var(--pink); width:0%; animation:pf var(--dur) linear infinite; }
+  @keyframes pf { 0%{width:0%} 100%{width:100%} }
+
+  /* slide base */
+  .slide { position:absolute; inset:0; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; padding:7vh 8vw; opacity:0; pointer-events:none; }
+
+  /* flash wipe */
+  .flash { position:fixed; inset:0; background:var(--bg); pointer-events:none; z-index:200; animation:fa var(--dur) linear infinite; opacity:0; }
+  @keyframes fa {
+    0%{opacity:1;} 3%{opacity:0;}
+    19%{opacity:0;} 22%{opacity:.7;} 24%{opacity:0;}
+    58%{opacity:0;} 61%{opacity:.6;} 63%{opacity:0;}
+    75%{opacity:0;} 78%{opacity:.6;} 80%{opacity:0;}
+    97%{opacity:0;} 100%{opacity:1;}
+  }
+
+  /* ─── S1: HOOK 0–22% ─── */
+  .s1 { animation: s1w var(--dur) linear infinite; }
+  @keyframes s1w { 0%{opacity:0;} 2%{opacity:1;} 19%{opacity:1;} 22%{opacity:0;} 100%{opacity:0;} }
+
+  .s1-q {
+    font-family:'DM Serif Display',serif;
+    font-size:clamp(28px,4.8vw,72px);
+    color:var(--mid);
+    line-height:1.15;
+    letter-spacing:-.02em;
+    max-width:800px;
+    animation:s1qa var(--dur) linear infinite;
+  }
+  @keyframes s1qa { 0%,2%{opacity:0;transform:translateY(16px);} 7%,19%{opacity:1;transform:none;} 22%{opacity:0;} 100%{opacity:0;} }
+
+  .s1-a {
+    font-family:'DM Serif Display',serif;
+    font-size:clamp(36px,6.2vw,92px);
+    color:var(--white);
+    font-style:italic;
+    line-height:1;
+    letter-spacing:-.025em;
+    margin-top:12px;
+    animation:s1aa var(--dur) linear infinite;
+  }
+  @keyframes s1aa { 0%,6%{opacity:0;transform:translateY(20px);} 11%,19%{opacity:1;transform:none;} 22%{opacity:0;} 100%{opacity:0;} }
+
+  .s1-sub {
+    margin-top:28px;
+    font-size:clamp(11px,1.3vw,17px);
+    color:var(--muted);
+    letter-spacing:.28em;
+    text-transform:uppercase;
+    animation:s1sa var(--dur) linear infinite;
+  }
+  @keyframes s1sa { 0%,10%{opacity:0;} 15%,19%{opacity:1;} 22%{opacity:0;} 100%{opacity:0;} }
+
+  /* ─── S2: TRE FASI 22–60% ─── */
+  .s2 { animation:s2w var(--dur) linear infinite; gap:10px; overflow:hidden; }
+  @keyframes s2w { 0%,21%{opacity:0;} 23%{opacity:1;} 59%{opacity:1;} 62%{opacity:0;} 100%{opacity:0;} }
+
+  .s2-ey {
+    font-size:clamp(9px,1vw,12px);
+    font-weight:500;
+    letter-spacing:.38em;
+    text-transform:uppercase;
+    color:var(--pink);
+    animation:s2ey var(--dur) linear infinite;
+  }
+  @keyframes s2ey { 0%,22%{opacity:0;transform:translateY(8px);} 27%,59%{opacity:1;transform:none;} 62%{opacity:0;} 100%{opacity:0;} }
+
+  /* connector */
+  .conn { display:flex; align-items:center; width:96vw; max-width:96vw; animation:s2ey var(--dur) linear infinite; }
+  .cd { width:9px;height:9px;border-radius:50%;flex-shrink:0; }
+  .cd.r{background:#c0392b;box-shadow:0 0 8px rgba(192,57,43,.7);}
+  .cd.a{background:#d4a017;box-shadow:0 0 8px rgba(212,160,23,.7);}
+  .cd.v{background:#1e7c3a;box-shadow:0 0 12px rgba(30,124,58,.8);}
+  .cl{flex:1;height:1px;max-width:140px;}
+  .cl.ra{background:linear-gradient(90deg,#c0392b,#d4a017);}
+  .cl.av{background:linear-gradient(90deg,#d4a017,#1e7c3a);}
+
+  /* cards — semaforo */
+  .cards {
+    display:flex;
+    gap:4px;
+    width:98vw;
+    max-width:98vw;
+    align-items:stretch;
+    box-sizing:border-box;
+  }
+
+  .card {
+    flex:1;
+    min-width:0;
+    padding:2.5vh 1.8vw;
+    position:relative;
+    display:flex; flex-direction:column; gap:8px;
+    text-align:left;
+    overflow:hidden;
+  }
+
+  /* ROSSO */
+  .card.r {
+    background:#c0392b;
+    animation:cR var(--dur) linear infinite;
+  }
+  /* GIALLO */
+  .card.a {
+    background:#d4a017;
+    animation:cA var(--dur) linear infinite;
+  }
+  /* VERDE */
+  .card.v {
+    background:#1e7c3a;
+    animation:cV var(--dur) linear infinite;
+    box-shadow:0 0 60px rgba(30,124,58,.35);
+  }
+
+  @keyframes cR { 0%,25%{opacity:0;transform:translateY(18px);} 31%,59%{opacity:1;transform:none;} 62%{opacity:0;} 100%{opacity:0;} }
+  @keyframes cA { 0%,28%{opacity:0;transform:translateY(18px);} 34%,59%{opacity:1;transform:none;} 62%{opacity:0;} 100%{opacity:0;} }
+  @keyframes cV { 0%,31%{opacity:0;transform:translateY(18px);} 38%,59%{opacity:1;transform:none;} 62%{opacity:0;} 100%{opacity:0;} }
+
+  /* testo bianco su tutti e tre i fondi colorati */
+  .card-num {
+    font-family:'Cormorant Garamond',serif;
+    font-size:clamp(13px,1.4vw,18px);
+    font-style:italic;
+    color:rgba(255,255,255,.55);
+  }
+
+  .card-name {
+    font-family:'DM Serif Display',serif;
+    font-size:clamp(24px,3vw,50px);
+    color:#fff;
+    line-height:1;
+    font-weight:400;
+    word-break:break-word;
+  }
+
+  .card-hook {
+    font-size:clamp(12px,1.3vw,18px);
+    font-style:italic;
+    color:rgba(255,255,255,.85);
+    line-height:1.4;
+    flex:1;
+    font-weight:300;
+  }
+
+  .card-phrase {
+    font-size:clamp(11px,1.1vw,15px);
+    color:rgba(255,255,255,.7);
+    border-top:1px solid rgba(255,255,255,.2);
+    padding-top:14px;
+    line-height:1.5;
+    font-style:italic;
+  }
+
+  /* pillole — card verde */
+  .card-pills {
+    display:flex;
+    flex-wrap:wrap;
+    gap:7px;
+    border-top:1px solid rgba(255,255,255,.2);
+    padding-top:14px;
+    animation:pillsIn var(--dur) linear infinite;
+  }
+  @keyframes pillsIn {
+    0%,42%  { opacity:0; transform:translateY(6px); }
+    48%,59% { opacity:1; transform:none; }
+    62%     { opacity:0; }
+    100%    { opacity:0; }
+  }
+  .pill {
+    font-size:clamp(10px,1vw,14px);
+    font-weight:500;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    color:#fff;
+    border:1px solid rgba(255,255,255,.45);
+    padding:6px 13px;
+    border-radius:2px;
+    white-space:nowrap;
+  }
+
+  /* ─── S3: MANIFESTO 61–77% ─── */
+  .s3 { animation:s3w var(--dur) linear infinite; }
+  @keyframes s3w { 0%,60%{opacity:0;} 63%{opacity:1;} 76%{opacity:1;} 79%{opacity:0;} 100%{opacity:0;} }
+
+  .s3-rule { width:0; height:1px; background:var(--pink); margin-bottom:30px; animation:rg var(--dur) linear infinite; }
+  @keyframes rg { 0%,62%{width:0;opacity:0;} 67%,76%{width:44px;opacity:.5;} 79%{opacity:0;} 100%{opacity:0;} }
+
+  .s3-body { font-family:'DM Serif Display',serif; font-size:clamp(22px,3.6vw,54px); line-height:1.3; color:var(--mid); max-width:820px; }
+  .s3-body .hl { color:var(--white); font-style:italic; }
+
+  .s3-l1 { animation:sl1 var(--dur) linear infinite; display:block; }
+  .s3-l2 { animation:sl2 var(--dur) linear infinite; display:block; }
+  .s3-l3 { animation:sl3 var(--dur) linear infinite; display:block; }
+  @keyframes sl1 { 0%,63%{opacity:0;transform:translateY(10px);} 67%,76%{opacity:1;transform:none;} 79%{opacity:0;} 100%{opacity:0;} }
+  @keyframes sl2 { 0%,65%{opacity:0;transform:translateY(10px);} 69%,76%{opacity:1;transform:none;} 79%{opacity:0;} 100%{opacity:0;} }
+  @keyframes sl3 { 0%,68%{opacity:0;transform:translateY(10px);} 72%,76%{opacity:1;transform:none;} 79%{opacity:0;} 100%{opacity:0;} }
+
+  /* ─── S4: CTA 78–96% ─── */
+  .s4 { animation:s4w var(--dur) linear infinite; }
+  @keyframes s4w { 0%,78%{opacity:0;} 80%{opacity:1;} 96%{opacity:1;} 99%{opacity:0;} 100%{opacity:0;} }
+
+  .s4-ey { font-size:clamp(11px,1.2vw,14px); font-weight:500; letter-spacing:.36em; text-transform:uppercase; color:var(--pink); margin-bottom:20px; animation:s4e var(--dur) linear infinite; }
+  @keyframes s4e { 0%,79%{opacity:0;transform:translateY(6px);} 83%,96%{opacity:1;transform:none;} 99%{opacity:0;} 100%{opacity:0;} }
+
+  .s4-h { font-family:'DM Serif Display',serif; font-size:clamp(34px,5.8vw,84px); line-height:1.02; letter-spacing:-.025em; margin-bottom:16px; animation:s4h var(--dur) linear infinite; color:var(--white); }
+  @keyframes s4h { 0%,80%{opacity:0;transform:translateY(14px);} 85%,96%{opacity:1;transform:none;} 99%{opacity:0;} 100%{opacity:0;} }
+  .s4-h em { color:var(--pink); font-style:italic; }
+
+  .s4-sub { font-size:clamp(13px,1.6vw,21px); color:rgba(255,255,255,.75); margin-bottom:40px; animation:s4s var(--dur) linear infinite; }
+  @keyframes s4s { 0%,82%{opacity:0;} 87%,96%{opacity:1;} 99%{opacity:0;} 100%{opacity:0;} }
+
+  /* CTA box — pink pieno, sempre visibile */
+  .s4-box {
+    display:inline-flex; align-items:center; gap:16px;
+    background:var(--pink);
+    padding:22px 56px;
+    position:relative;
+    animation:s4b var(--dur) linear infinite;
+  }
+  @keyframes s4b { 0%,84%{opacity:0;transform:translateY(10px);} 90%,96%{opacity:1;transform:none;} 99%{opacity:0;} 100%{opacity:0;} }
+
+  .s4-box-label {
+    font-size:clamp(13px,1.4vw,18px);
+    font-weight:500;
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    color:#fff;
+    position:relative; z-index:1;
+  }
+
+  .s4-box-arrow { font-size:22px; color:#fff; position:relative; z-index:1; }
+
+  /* pulse ring */
+  .s4-ring {
+    position:absolute; inset:-8px;
+    border:1px solid rgba(224,74,118,.2);
+    animation:s4r var(--dur) linear infinite;
+  }
+  @keyframes s4r { 0%,88%{opacity:0;transform:scale(.94);} 93%,96%{opacity:1;transform:scale(1);} 99%{opacity:0;} 100%{opacity:0;} }
+</style>
+</head>
+<body>
+<div class=&quot;stage&quot;>
+  <div class=&quot;glow&quot;></div>
+  <div class=&quot;logo&quot;>Healthy<span>Smile</span> By N</div>
+  <div class=&quot;progress&quot;><div class=&quot;progress-fill&quot;></div></div>
+  <div class=&quot;flash&quot;></div>
+
+  <!-- S1: HOOK -->
+  <div class=&quot;slide s1&quot;>
+    <p class=&quot;s1-q&quot;>Aspetti che qualcosa faccia male<br>prima di venire dal dentista?</p>
+    <p class=&quot;s1-a&quot;>C'è un altro modo.</p>
+    <p class=&quot;s1-sub&quot;>Scopri le tre fasi</p>
+  </div>
+
+  <!-- S2: TRE FASI -->
+  <div class=&quot;slide s2&quot;>
+    <p class=&quot;s2-ey&quot;>In che fase sei con la tua salute orale?</p>
+    <div class=&quot;conn&quot;>
+      <div class=&quot;cd r&quot;></div><div class=&quot;cl ra&quot;></div>
+      <div class=&quot;cd a&quot;></div><div class=&quot;cl av&quot;></div>
+      <div class=&quot;cd v&quot;></div>
     </div>
-    <p class="loop-caption">Reattivo · Attento · Visionario — scegli dove vuoi essere</p>
+    <div class=&quot;cards&quot;>
+
+      <div class=&quot;card r&quot;>
+        <p class=&quot;card-num&quot;>01</p>
+        <p class=&quot;card-name&quot;>Reattivo</p>
+        <p class=&quot;card-hook&quot;>&quot;Mi muovo quando compare il problema.&quot;</p>
+        <p class=&quot;card-phrase&quot;>Non evita il problema.<br>Lo affronta quando arriva.</p>
+      </div>
+
+      <div class=&quot;card a&quot;>
+        <p class=&quot;card-num&quot;>02</p>
+        <p class=&quot;card-name&quot;>Attento</p>
+        <p class=&quot;card-hook&quot;>&quot;Controllo, ma non ho ancora un sistema.&quot;</p>
+        <p class=&quot;card-phrase&quot;>Gestisce.<br>Ma non ha ancora una direzione.</p>
+      </div>
+
+      <div class=&quot;card v&quot;>
+        <p class=&quot;card-num&quot;>03 · Club</p>
+        <p class=&quot;card-name&quot;>Visionario</p>
+        <p class=&quot;card-hook&quot;>&quot;Non voglio rincorrere i problemi.<br>Voglio prevenirli.&quot;</p>
+        <p class=&quot;card-phrase&quot;>Il dentista lavora<br>per non rivederlo.</p>
+        <!-- NUOVO: elemento concreto -->
+        <div class=&quot;card-pills&quot;>
+          <span class=&quot;pill&quot;>Igiene programmata</span>
+          <span class=&quot;pill&quot;>Monitoraggio digitale</span>
+          <span class=&quot;pill&quot;>Richiami attivi</span>
+          <span class=&quot;pill&quot;>Piano prevenzione</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- S3: MANIFESTO -->
+  <div class=&quot;slide s3&quot;>
+    <div class=&quot;s3-rule&quot;></div>
+    <div class=&quot;s3-body&quot;>
+      <span class=&quot;s3-l1&quot;>Non esistono pazienti giusti o sbagliati.<br></span>
+      <span class=&quot;s3-l2&quot;>Esistono persone che aspettano, persone che controllano,<br></span>
+      <span class=&quot;s3-l3&quot;>e persone che <span class=&quot;hl&quot;>scelgono di prevenire.</span></span>
+    </div>
+  </div>
+
+  <!-- S4: CTA -->
+  <div class=&quot;slide s4&quot;>
+    <p class=&quot;s4-ey&quot;>Club Visionario · Healthy Smile By N</p>
+    <h2 class=&quot;s4-h&quot;>Vuoi sapere<br>come <em>funziona?</em></h2>
+    <p class=&quot;s4-sub&quot;>Chiedi alla reception — ti spieghiamo tutto.</p>
+    <div style=&quot;position:relative; display:inline-block;&quot;>
+      <div class=&quot;s4-ring&quot;></div>
+      <div class=&quot;s4-box&quot;>
+        <span class=&quot;s4-box-label&quot;>Chiedi alla reception</span>
+        <span class=&quot;s4-box-arrow&quot;>→</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
+" title="Healthy Smile — Il manifesto" loading="lazy"></iframe>
+    </div>
+    <p class="loop-caption">Reattivo &middot; Attento &middot; Visionario &mdash; scegli dove vuoi essere</p>
   </div>
 </section>
 
