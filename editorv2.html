@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Healthy Smile — Editor Clinico</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;700&family=DM+Mono&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0e0e0e; --surface:#181818; --surface2:#222;
+  --border:#2a2a2a; --border2:#333;
+  --pink:#C8005C; --pink-light:rgba(200,0,92,.12);
+  --purple:#7B2FBE; --purple-light:rgba(123,47,190,.12);
+  --white:#f4f4f2; --gray:#888; --gray2:#555;
+  --green:#1D9E75; --red:#C0392B; --amber:#B7651A;
+  --serif:'DM Serif Display',Georgia,serif;
+  --sans:'DM Sans',system-ui,sans-serif;
+  --mono:'DM Mono',monospace;
+}
+html{scroll-behavior:smooth}
+body{font-family:var(--sans);background:var(--bg);color:var(--white);font-size:14px;min-height:100vh;-webkit-font-smoothing:antialiased}
+
+/* ── NAV ── */
+nav{height:52px;background:#111;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;position:sticky;top:0;z-index:100}
+.nav-logo{font-family:var(--serif);font-size:18px;color:var(--white);letter-spacing:-.01em}
+.nav-logo em{color:var(--pink);font-style:italic}
+.nav-tag{font-size:10px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--purple);background:var(--purple-light);padding:3px 10px;border-radius:20px;border:1px solid rgba(123,47,190,.3)}
+
+/* ── IMPORT BAR ── */
+#import-bar{padding:32px 24px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap}
+.import-label{font-size:11px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--gray);margin-bottom:6px}
+#import-bar input{flex:1;min-width:260px;background:var(--bg);border:1px solid var(--border2);border-radius:8px;padding:10px 14px;font-size:13px;font-family:var(--mono);color:var(--white);outline:none;transition:border-color .15s}
+#import-bar input:focus{border-color:var(--pink)}
+#btn-load{background:var(--pink);color:#fff;font-family:var(--sans);font-weight:500;font-size:13px;padding:10px 22px;border:none;border-radius:8px;cursor:pointer;white-space:nowrap;transition:opacity .15s}
+#btn-load:hover{opacity:.85}
+#load-msg{font-size:12px;color:var(--gray);padding:4px 0}
+
+/* ── MAIN EDITOR ── */
+#editor{display:none;padding:24px;gap:24px;max-width:1400px;margin:0 auto}
+#editor.visible{display:grid;grid-template-columns:1fr 420px}
+
+/* ── LEFT: odontogrammi ── */
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px}
+.panel-title{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gray);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.panel-title::before{content:'';display:block;width:8px;height:8px;border-radius:50%;background:var(--pink)}
+.odo-label{font-size:10px;font-weight:600;color:var(--gray);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;margin-top:16px}
+.odo-label:first-child{margin-top:0}
+svg.odo{width:100%;min-width:320px;border-radius:8px;background:#111;border:1px solid var(--border)}
+.tooth-g{cursor:default}
+.tooth-num{font-family:var(--mono);fill:#555;font-size:7px;pointer-events:none;user-select:none}
+
+/* Treatment list */
+.tr-list{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px}
+.tr-chip{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:4px;font-size:10px;font-weight:600;border:1px solid}
+
+/* Pricing */
+.price-box{background:#111;border:1px solid var(--border);border-radius:10px;padding:16px;margin-top:16px}
+.price-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-size:13px}
+.price-label{color:var(--gray)}
+.price-val{font-family:var(--mono);font-weight:600}
+.price-val.market{color:var(--white);text-decoration:line-through;opacity:.5}
+.price-val.pp{color:var(--pink);font-size:18px}
+.price-saving{font-size:10px;font-weight:700;color:var(--purple);background:var(--purple-light);padding:2px 8px;border-radius:4px;letter-spacing:.06em}
+
+/* ── RIGHT: text editor ── */
+.right-panel{display:flex;flex-direction:column;gap:16px}
+.field-group{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px}
+.field-label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gray);margin-bottom:8px;display:flex;align-items:center;justify-content:space-between}
+.field-label button{font-size:10px;font-family:var(--sans);background:var(--pink-light);color:var(--pink);border:1px solid rgba(200,0,92,.3);border-radius:4px;padding:2px 8px;cursor:pointer;font-weight:500;letter-spacing:.04em}
+.field-label button:hover{background:var(--pink);color:#fff}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.field-row.single{grid-template-columns:1fr}
+input.fe,textarea.fe{width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:8px;padding:9px 12px;font-size:13px;font-family:var(--sans);color:var(--white);outline:none;transition:border-color .15s;resize:vertical}
+input.fe:focus,textarea.fe:focus{border-color:var(--pink)}
+textarea.fe{min-height:90px;line-height:1.6}
+textarea.fe.tall{min-height:130px}
+
+/* ── LINK BOX ── */
+.link-box{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px}
+.link-inner{display:flex;gap:8px;margin-top:8px}
+#link-out{flex:1;background:var(--bg);border:1px solid var(--border2);border-radius:8px;padding:9px 12px;font-size:12px;font-family:var(--mono);color:var(--gray2);outline:none}
+#btn-copy{background:var(--purple);color:#fff;font-family:var(--sans);font-weight:500;font-size:12px;padding:9px 16px;border:none;border-radius:8px;cursor:pointer;white-space:nowrap;transition:opacity .15s}
+#btn-copy:hover{opacity:.85}
+#btn-copy.copied{background:var(--green)}
+
+/* ── ACTION BAR ── */
+#action-bar{display:none;position:sticky;bottom:0;background:#111;border-top:1px solid var(--border);padding:12px 24px;display:none;gap:10px;align-items:center;justify-content:flex-end;z-index:50}
+#action-bar.visible{display:flex}
+#btn-save{background:var(--pink);color:#fff;font-family:var(--sans);font-weight:600;font-size:13px;padding:10px 24px;border:none;border-radius:8px;cursor:pointer;transition:opacity .15s}
+#btn-save:hover{opacity:.85}
+#save-msg{font-size:12px;color:var(--gray)}
+
+@media(max-width:900px){
+  #editor.visible{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <span class="nav-logo">Healthy <em>Smile</em> By N</span>
+  <span class="nav-tag">Editor Clinico</span>
+</nav>
+
+<!-- IMPORT -->
+<div id="import-bar">
+  <div style="flex:1;min-width:260px">
+    <div class="import-label">ID paziente (da cartella clinica)</div>
+    <input id="pat-id" type="text" placeholder="es. AbC123xYz  oppure incolla l'URL completo">
+  </div>
+  <button id="btn-load" onclick="loadPatient()">Carica ▶</button>
+  <div id="load-msg"></div>
+</div>
+
+<!-- EDITOR -->
+<div id="editor">
+
+  <!-- LEFT: odontogrammi + prezzi -->
+  <div style="display:flex;flex-direction:column;gap:16px">
+
+    <div class="panel">
+      <div class="panel-title">Odontogrammi</div>
+      <div class="odo-label">Situazione attuale</div>
+      <svg id="odo-att" class="odo" viewBox="0 0 660 200"></svg>
+      <div class="odo-label" style="margin-top:18px">Piano trattamenti</div>
+      <svg id="odo-pia" class="odo" viewBox="0 0 660 200"></svg>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">Trattamenti pianificati</div>
+      <div id="tr-list-wrap"></div>
+      <div class="price-box" id="price-box" style="display:none">
+        <div class="price-row">
+          <span class="price-label">Prezzo di mercato</span>
+          <span class="price-val market" id="pr-market">—</span>
+        </div>
+        <div class="price-row">
+          <span class="price-label" style="display:flex;align-items:center;gap:6px">Piano Protezione <span class="price-saving">–70%</span></span>
+          <span class="price-val pp" id="pr-pp">—</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- RIGHT: testi editabili + link -->
+  <div class="right-panel">
+
+    <div class="field-group">
+      <div class="field-label">Dati paziente</div>
+      <div class="field-row">
+        <div><input class="fe" id="f-nome" placeholder="Nome e Cognome"></div>
+        <div><input class="fe" id="f-data" placeholder="Data visita" type="date"></div>
+      </div>
+      <div class="field-row single">
+        <input class="fe" id="f-op" placeholder="Operatore / Dottore">
+      </div>
+    </div>
+
+    <div class="field-group">
+      <div class="field-label">
+        Testo introduttivo
+        <button onclick="genIntro()">↺ Auto-genera</button>
+      </div>
+      <textarea class="fe tall" id="f-intro" placeholder="Scrivi un testo personalizzato per il paziente..."></textarea>
+    </div>
+
+    <div class="field-group">
+      <div class="field-label">
+        Punti di forza
+        <button onclick="genPunti()">↺ Auto-genera</button>
+      </div>
+      <textarea class="fe" id="f-punti" placeholder="Cosa c'è di positivo nella bocca del paziente..."></textarea>
+    </div>
+
+    <div class="field-group">
+      <div class="field-label">
+        Aree da trattare
+        <button onclick="genAree()">↺ Auto-genera</button>
+      </div>
+      <textarea class="fe tall" id="f-aree" placeholder="Descrizione dei trattamenti consigliati..."></textarea>
+    </div>
+
+    <div class="field-group">
+      <div class="field-label">Note aggiuntive</div>
+      <textarea class="fe" id="f-note" placeholder="Informazioni extra, consigli, raccomandazioni..."></textarea>
+    </div>
+
+    <!-- LINK PAZIENTE -->
+    <div class="link-box">
+      <div class="field-label" style="margin-bottom:0">
+        Link per il paziente
+        <button onclick="saveAndGenLink()" style="background:var(--pink-light);color:var(--pink)">Salva e genera link ▶</button>
+      </div>
+      <div class="link-inner">
+        <input id="link-out" readonly placeholder="Salva prima per generare il link...">
+        <button id="btn-copy" onclick="copyLink()">Copia</button>
+      </div>
+      <div id="link-msg" style="font-size:11px;color:var(--gray);margin-top:6px"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ACTION BAR -->
+<div id="action-bar">
+  <span id="save-msg"></span>
+  <button id="btn-save" onclick="saveAndGenLink()">💾 Salva e genera link</button>
+</div>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+<script>
+// ── FIREBASE ──────────────────────────────────────────────────────────────
+firebase.initializeApp({
+  apiKey: "AIzaSyB9BXoJQLCx_Y9pwoXmxtVj1CLULohaUsw",
+  authDomain: "healthysmile-d2b52.firebaseapp.com",
+  projectId: "healthysmile-d2b52",
+  storageBucket: "healthysmile-d2b52.firebasestorage.app",
+  messagingSenderId: "984573798131",
+  appId: "1:984573798131:web:e96e695fb86b90a2413986"
+});
+const db = firebase.firestore();
+
+// ── TREATMENT DATA ────────────────────────────────────────────────────────
+const TR_ATTUALE = [
+  {id:'sano',        label:'Sano',               color:'#1D9E75', sym:'✓',  bg:'#0d2e22'},
+  {id:'otturato',    label:'Otturato',            color:'#1A5EA8', sym:'O',  bg:'#0d1e38'},
+  {id:'devitaliz',   label:'Devitalizzato',       color:'#B7651A', sym:'D',  bg:'#2e1e0a'},
+  {id:'impianto',    label:'Impianto',            color:'#0F6E56', sym:'I',  bg:'#0a2e22'},
+  {id:'corona',      label:'Corona',              color:'#7B2FBE', sym:'K',  bg:'#1e0e3a'},
+  {id:'ponte',       label:'Ponte',               color:'#1A5EA8', sym:'▬',  bg:'#0d1e38'},
+  {id:'provvisorio', label:'Provvisorio',         color:'#B7651A', sym:'PR', bg:'#2e1e0a'},
+  {id:'parziale',    label:'Prot. parziale',      color:'#C05621', sym:'P',  bg:'#2e130a'},
+  {id:'estratto',    label:'Estratto/assente',    color:'#555',    sym:'X',  bg:'#1a1a1a'},
+  {id:'frattura',    label:'Frattura',            color:'#C0392B', sym:'//', bg:'#2e0d0a'},
+  {id:'erosione',    label:'Erosione/abrasione',  color:'#686864', sym:'~',  bg:'#1e1e1c'},
+  {id:'bite_att',    label:'Bite presente',       color:'#7B2FBE', sym:'B',  bg:'#1e0e3a'},
+  {id:'igiene_att',  label:'Igiene eseguita',     color:'#1D9E75', sym:'IG', bg:'#0d2e22'},
+  {id:'sbianc_att',  label:'Sbiancamento fatto',  color:'#1D9E75', sym:'SB', bg:'#0d2e22'},
+  {id:'gengivite',   label:'Gengivite',           color:'#D4500A', sym:'GV', bg:'#2e1500'},
+  {id:'parodontite', label:'Parodontite',         color:'#A0001E', sym:'PD', bg:'#2e0009'},
+  {id:'recessione',  label:'Recessione',          color:'#B7651A', sym:'REC',bg:'#2e1e0a'},
+  {id:'mobilita',    label:'Mobilità',            color:'#7B2FBE', sym:'MOB',bg:'#1e0e3a'},
+  {id:'furcazione',  label:'Furcazione',          color:'#7B1E1E', sym:'FUR',bg:'#2e0909'},
+];
+
+const TR_PIANO = [
+  {id:'estrazione_semplice',           label:'Estrazione semplice',          color:'#C0392B', sym:'ES',  bg:'#2e0d0a', prezzo:100},
+  {id:'estrazione_complessa',          label:'Estrazione complessa',         color:'#C0392B', sym:'EC',  bg:'#2e0d0a', prezzo:130},
+  {id:'estrazione_dente_del_giudizio', label:'Estrazione giudizio',         color:'#C0392B', sym:'EG',  bg:'#2e0d0a', prezzo:200},
+  {id:'otturazione_i_classe',          label:'Otturazione I cl.',           color:'#1A5EA8', sym:'O1',  bg:'#0d1e38', prezzo:120},
+  {id:'otturazione_ii_classe',         label:'Otturazione II cl.',          color:'#1A5EA8', sym:'O2',  bg:'#0d1e38', prezzo:170},
+  {id:'otturazione_v_classe',          label:'Otturazione V cl.',           color:'#1A5EA8', sym:'O5',  bg:'#0d1e38', prezzo:90},
+  {id:'terapia_endodontica_monocanala',label:'Endodonzia mono',             color:'#7B2FBE', sym:'E1',  bg:'#1e0e3a', prezzo:150},
+  {id:'terapia_endodontica_bicanalare',label:'Endodonzia bi',               color:'#7B2FBE', sym:'E2',  bg:'#1e0e3a', prezzo:180},
+  {id:'terapia_endodontica_pluricanal',label:'Endodonzia multi',            color:'#7B2FBE', sym:'EP',  bg:'#1e0e3a', prezzo:290},
+  {id:'corona_zirconio',               label:'Corona zirconio',             color:'#7B2FBE', sym:'KZ',  bg:'#1e0e3a', prezzo:700},
+  {id:'corona_zirconio_su_impianto',   label:'Corona su impianto',          color:'#0F6E56', sym:'KI',  bg:'#0a2e22', prezzo:700},
+  {id:'impianto_osteointegrabile',     label:'Impianto',                    color:'#0F6E56', sym:'IMP', bg:'#0a2e22', prezzo:550},
+  {id:'levigature_radicolari',         label:'Levigature radicolari',       color:'#686864', sym:'LR',  bg:'#1e1e1c', prezzo:130},
+  {id:'levigatura_radicolare_singolo_',label:'Levigatura singolo',          color:'#1D9E75', sym:'LRS', bg:'#0d2e22', prezzo:22},
+  {id:'sondaggio',                     label:'Sondaggio',                   color:'#1D9E75', sym:'SON', bg:'#0d2e22', prezzo:150},
+  {id:'igiene_fare',                   label:'Igiene professionale',        color:'#1D9E75', sym:'IG',  bg:'#0d2e22', prezzo:90},
+  {id:'sbiancamento_americano_con_lam',label:'Sbiancamento',                color:'#1D9E75', sym:'SB',  bg:'#0d2e22', prezzo:250},
+  {id:'faccetta_in_ceramica',          label:'Faccetta ceramica',           color:'#B7651A', sym:'FC',  bg:'#2e1e0a', prezzo:600},
+  {id:'faccetta_in_composito',         label:'Faccetta composito',          color:'#B7651A', sym:'FCO', bg:'#2e1e0a', prezzo:400},
+  {id:'ricostruzione_moncone_perno_in',label:'Ricostruzione moncone',       color:'#1A5EA8', sym:'PF',  bg:'#0d1e38', prezzo:200},
+  {id:'gbr',                           label:'GBR',                         color:'#0F6E56', sym:'GBR', bg:'#0a2e22', prezzo:2000},
+  {id:'apicectomia',                   label:'Apicectomia',                 color:'#7B2FBE', sym:'API', bg:'#1e0e3a', prezzo:300},
+  {id:'bite',                          label:'Bite',                        color:'#686864', sym:'BIT', bg:'#1e1e1c', prezzo:250},
+  {id:'ortodonzia_all_inclusive',      label:'Ortodonzia',                  color:'#1A5EA8', sym:'OAI', bg:'#0d1e38', prezzo:4800},
+  {id:'protesi_totale_definitiva',     label:'Protesi totale',              color:'#C05621', sym:'PTD', bg:'#2e130a', prezzo:1200},
+  {id:'protesi_scheletrica_definitiva',label:'Protesi scheletrica',         color:'#C05621', sym:'PSD', bg:'#2e130a', prezzo:1300},
+  {id:'decementazione_ponte_a_quadran',label:'Decementazione quadrante',    color:'#7B2FBE', sym:'DEC', bg:'#1e0e3a', prezzo:0},
+  {id:'splintaggio',                   label:'Splintaggio',                 color:'#1D9E75', sym:'SPL', bg:'#0d2e22', prezzo:220},
+];
+
+const ARCH_TR = [
+  {id:'igiene_fare',  label:'Igiene',                      color:'#1D9E75', sym:'IG',  prezzo:90},
+  {id:'tot_rimov',    label:'Protesi totale rimovibile',   color:'#C05621', sym:'TR',  prezzo:0},
+  {id:'tot_fissa',    label:'Protesi totale fissa',        color:'#0F6E56', sym:'TF',  prezzo:0},
+  {id:'parz_rimov',   label:'Protesi parziale rimovibile', color:'#B7651A', sym:'PR',  prezzo:0},
+  {id:'ortodonzia',   label:'Apparecchio ortodontico',     color:'#1A5EA8', sym:'OR',  prezzo:0},
+];
+
+const QUAD_TR = [
+  {id:'levigature_radicolari',          label:'Levigature radicolari',    color:'#686864', sym:'LR',  prezzo:130},
+  {id:'levigatura_radicolare_singolo_', label:'Lev. radicolare singolo', color:'#1D9E75', sym:'LRS', prezzo:22},
+  {id:'decementazione_ponte_a_quadran', label:'Decementazione quadrante',color:'#7B2FBE', sym:'DEC', prezzo:0},
+];
+
+const UPPER = [18,17,16,15,14,13,12,11,21,22,23,24,25,26,27,28];
+const LOWER = [48,47,46,45,44,43,42,41,31,32,33,34,35,36,37,38];
+
+function findTR(id) {
+  return TR_ATTUALE.find(t=>t.id===id) || TR_PIANO.find(t=>t.id===id) || null;
+}
+function safeJson(s, def) { try{ return JSON.parse(s)||def; }catch{ return def; } }
+
+// ── STATE ─────────────────────────────────────────────────────────────────
+let currentId = null;
+let teethAtt = {}, teethPia = {}, arcatePia = {}, quadPia = {};
+
+// ── SVG BUILD ─────────────────────────────────────────────────────────────
+function buildSVG(svgEl) {
+  let h = '';
+  h += `<line x1="330" y1="0" x2="330" y2="200" stroke="#1e1e1e" stroke-width="1" stroke-dasharray="4,3"/>`;
+  h += `<line x1="0" y1="55" x2="660" y2="55" stroke="#1e1e1e" stroke-width=".5"/>`;
+  h += `<line x1="0" y1="145" x2="660" y2="145" stroke="#1e1e1e" stroke-width=".5"/>`;
+  const drawRow = (teeth, cy) => {
+    teeth.forEach((num, i) => {
+      const side = num < 30 ? 'upper' : 'lower';
+      const pos  = i < 16 ? (15-i) : (i-16);
+      const cx   = side === 'upper'
+        ? (num <= 18 ? 320 - pos*40 : 340 + (pos)*40)
+        : (num >= 41 ? 340 + pos*40 : 320 - (pos)*40);
+      const xs   = teeth.indexOf(num);
+      const cx2  = 330 - (7.5 - xs) * 40 + (xs >= 8 ? 40 : 0);
+      const finalCx = 16 + xs * 40 + 20;
+      const isMolar = num%10 >= 6;
+      const rx = isMolar ? 15 : 11, ry = 13;
+      h += `<g class="tooth-g" id="${svgEl.id}-g-${num}">
+        <ellipse id="${svgEl.id}-e-${num}" cx="${finalCx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="#111" stroke="#2a2a2a" stroke-width="1.5"/>
+        <text class="tooth-num" x="${finalCx}" y="${cy+4}" text-anchor="middle" font-size="8.5" font-family="DM Mono,monospace" fill="#444">${num}</text>
+        <g id="${svgEl.id}-s-${num}" transform="translate(${finalCx},${cy-18})"></g>
+      </g>`;
+    });
+  };
+  drawRow(UPPER, 32);
+  drawRow(LOWER, 168);
+  svgEl.innerHTML = h;
+}
+
+function refreshOdo(svgEl, data, type) {
+  [...UPPER,...LOWER].forEach(num => {
+    const el = document.getElementById(`${svgEl.id}-e-${num}`);
+    const sg = document.getElementById(`${svgEl.id}-s-${num}`);
+    if (!el||!sg) return;
+    const entry = data[num];
+    if (!entry || (Array.isArray(entry)&&!entry.length)) {
+      el.setAttribute('fill','#111'); el.setAttribute('stroke','#2a2a2a'); el.setAttribute('stroke-width','1.5');
+      sg.innerHTML=''; return;
+    }
+    if (type==='attuale') {
+      const treats = Array.isArray(entry)?entry:[entry];
+      const primary = TR_ATTUALE.find(t=>t.id===treats[0]);
+      if (primary) { el.setAttribute('fill',primary.bg); el.setAttribute('stroke',primary.color); el.setAttribute('stroke-width','2'); }
+      sg.innerHTML = treats.slice(0,2).map((tid,i)=>{
+        const t=findTR(tid)||TR_ATTUALE.find(x=>x.id===tid); if(!t)return'';
+        const xo=(i-Math.min(treats.length-1,1)/2)*13;
+        return `<rect x="${xo-6}" y="-5" width="12" height="10" rx="2" fill="${t.bg}" stroke="${t.color}" stroke-width="1"/>
+                <text x="${xo}" y="3" text-anchor="middle" font-size="6" font-weight="700" fill="${t.color}" font-family="DM Mono,monospace">${t.sym}</text>`;
+      }).join('');
+    } else {
+      const items = Array.isArray(entry)?entry:[entry];
+      const stati = items.map(x=>x.stato||'dafare');
+      let sc = '#C0392B';
+      if (stati.every(s=>s==='eseguito')) sc='#1D9E75';
+      else if (!stati.includes('dafare')&&stati.includes('incorso')) sc='#B7651A';
+      const fill = sc==='#1D9E75'?'#0d2e22':sc==='#B7651A'?'#2e1e0a':'#2e0d0a';
+      el.setAttribute('fill',fill); el.setAttribute('stroke',sc); el.setAttribute('stroke-width','3');
+      sg.innerHTML = items.slice(0,2).map((item,i)=>{
+        const t=findTR(item.tid); if(!t)return'';
+        const xo=(i-Math.min(items.length-1,1)/2)*13;
+        return `<rect x="${xo-6}" y="-5" width="12" height="10" rx="2" fill="${t.bg}" stroke="${sc}" stroke-width="1"/>
+                <text x="${xo}" y="3" text-anchor="middle" font-size="6" font-weight="700" fill="${t.color}" font-family="DM Mono,monospace">${t.sym}</text>`;
+      }).join('');
+    }
+  });
+}
+
+// ── LOAD PATIENT ──────────────────────────────────────────────────────────
+async function loadPatient() {
+  let raw = document.getElementById('pat-id').value.trim();
+  // extract ID from URL if pasted
+  const m = raw.match(/[?&]id=([^&]+)/)||raw.match(/pazienti\/([^/?&]+)/);
+  const id = m ? m[1] : raw;
+  if (!id) { msg('Inserisci un ID paziente','#C0392B'); return; }
+  msg('Caricamento...','#888');
+  try {
+    const snap = await db.collection('pazienti').doc(id).get();
+    if (!snap.exists) { msg('Paziente non trovato','#C0392B'); return; }
+    const p = snap.data();
+    currentId = id;
+
+    teethAtt  = safeJson(p.odontogramma,'{}');
+    teethPia  = safeJson(p.piano,'{}');
+    arcatePia = safeJson(p.arcate_piano,'{}');
+    quadPia   = safeJson(p.quad_piano,'{}');
+
+    // fill form
+    document.getElementById('f-nome').value = `${p.nome||''} ${p.cognome||''}`.trim();
+    document.getElementById('f-data').value = new Date().toISOString().slice(0,10);
+    document.getElementById('f-op').value   = p.operatore||'';
+
+    // restore saved editor texts
+    const ed = safeJson(p.editor_data,'{}');
+    document.getElementById('f-intro').value = ed.intro||'';
+    document.getElementById('f-punti').value = ed.punti||'';
+    document.getElementById('f-aree').value  = ed.aree||'';
+    document.getElementById('f-note').value  = ed.note||'';
+    if (ed.link) { document.getElementById('link-out').value=ed.link; }
+
+    // build SVGs
+    const svg1 = document.getElementById('odo-att');
+    const svg2 = document.getElementById('odo-pia');
+    buildSVG(svg1); buildSVG(svg2);
+    refreshOdo(svg1, teethAtt, 'attuale');
+    refreshOdo(svg2, teethPia, 'piano');
+
+    // treatment list + prices
+    renderTrList();
+    renderPrices();
+
+    // auto-gen texts if empty
+    if (!ed.intro) genIntro();
+    if (!ed.punti) genPunti();
+    if (!ed.aree)  genAree();
+
+    document.getElementById('editor').classList.add('visible');
+    document.getElementById('action-bar').classList.add('visible');
+    msg('Paziente caricato ✓','#1D9E75');
+  } catch(e) {
+    msg('Errore: '+e.message,'#C0392B');
+  }
+}
+
+function msg(t,c) {
+  const el=document.getElementById('load-msg');
+  el.textContent=t; el.style.color=c;
+}
+
+// ── TREATMENT LIST ────────────────────────────────────────────────────────
+function collectPianoItems() {
+  const all = [];
+  Object.entries(teethPia).forEach(([num,items])=>{
+    (items||[]).forEach(item=>{
+      const t=findTR(item.tid); if(t) all.push({t,label:`Dente ${num}`,stato:item.stato||'dafare'});
+    });
+  });
+  Object.entries(arcatePia).forEach(([aid,items])=>{
+    (items||[]).forEach(item=>{
+      const tid=item.tid||item; const t=ARCH_TR.find(x=>x.id===tid);
+      if(t) all.push({t,label:aid==='sup'?'Arcata sup.':aid==='inf'?'Arcata inf.':'Entrambe',stato:item.stato||'dafare'});
+    });
+  });
+  Object.entries(quadPia).forEach(([qid,items])=>{
+    (items||[]).forEach(item=>{
+      const tid=item.tid||item; const t=QUAD_TR.find(x=>x.id===tid);
+      if(t) all.push({t,label:qid.toUpperCase(),stato:item.stato||'dafare'});
+    });
+  });
+  return all;
+}
+
+function renderTrList() {
+  const items = collectPianoItems();
+  const el = document.getElementById('tr-list-wrap');
+  if (!items.length) { el.innerHTML='<div style="color:#555;font-size:12px">Nessun trattamento pianificato</div>'; return; }
+  el.innerHTML = `<div class="tr-list">${items.map(i=>`
+    <span class="tr-chip" style="color:${i.t.color};background:${i.t.bg};border-color:${i.t.color}33">
+      <span style="font-size:9px">${i.t.sym}</span> ${i.t.label}
+      <span style="font-size:9px;opacity:.6">· ${i.label}</span>
+    </span>`).join('')}</div>`;
+}
+
+function renderPrices() {
+  const items = collectPianoItems();
+  const total = items.reduce((s,i)=>s+(parseFloat(i.t.prezzo||0)),0);
+  if (!total) { document.getElementById('price-box').style.display='none'; return; }
+  const pp = Math.round(total*0.30);
+  document.getElementById('pr-market').textContent = `€${total.toLocaleString('it-IT')}`;
+  document.getElementById('pr-pp').textContent     = `€${pp.toLocaleString('it-IT')}`;
+  document.getElementById('price-box').style.display='block';
+}
+
+// ── AUTO-TEXT GENERATION ──────────────────────────────────────────────────
+function gruppiPiano() {
+  const items = collectPianoItems().filter(i=>i.stato==='dafare');
+  const groups = {};
+  items.forEach(i=>{ const k=i.t.id; if(!groups[k]) groups[k]={t:i.t,locations:[]}; groups[k].locations.push(i.label); });
+  return Object.values(groups);
+}
+
+function genIntro() {
+  const nome = document.getElementById('f-nome').value.split(' ')[0]||'paziente';
+  const n = collectPianoItems().filter(i=>i.stato==='dafare').length;
+  const sani = Object.entries(teethAtt).filter(([,v])=>(Array.isArray(v)?v:[v]).includes('sano')).length;
+  let t = `Gentile ${nome},\n\na seguito della visita di controllo effettuata presso il nostro studio, `;
+  if (n===0) t += `siamo lieti di comunicarle che la sua situazione orale è ottimale e non richiede interventi immediati.`;
+  else if (n<=3) t += `abbiamo riscontrato alcune aree che necessitano di attenzione. Il piano di trattamento proposto è mirato e può essere completato in poche sedute.`;
+  else t += `abbiamo elaborato un piano di trattamento personalizzato che le permetterà di ripristinare la piena salute orale in modo programmato e senza sorprese.`;
+  if (sani>20) t += `\n\nLa grande maggioranza dei suoi denti è in ottimo stato — questo ci permette di intervenire in modo mirato e conservativo.`;
+  document.getElementById('f-intro').value = t;
+}
+
+function genPunti() {
+  const punti = [];
+  const att = teethAtt;
+  const sani = Object.entries(att).filter(([,v])=>(Array.isArray(v)?v:[v]).includes('sano')).length;
+  const otturat = Object.entries(att).filter(([,v])=>(Array.isArray(v)?v:[v]).includes('otturato')).length;
+  const impl = Object.entries(att).filter(([,v])=>(Array.isArray(v)?v:[v]).includes('impianto')).length;
+  if (sani>=24) punti.push(`• Eccellente igiene orale: ${sani} denti in perfetta salute`);
+  else if (sani>=16) punti.push(`• Buona base di partenza: ${sani} denti integri e sani`);
+  if (otturat>0) punti.push(`• Trattamenti precedenti ben conservati (${otturat} otturazioni stabili)`);
+  if (impl>0) punti.push(`• Impianti presenti in buono stato di osteointegrazione`);
+  if (!Object.values(att).flat().includes('parodontite')) punti.push(`• Nessun segno di malattia parodontale attiva`);
+  if (!Object.values(att).flat().includes('frattura')) punti.push(`• Struttura dentale integra, nessuna frattura rilevata`);
+  if (!punti.length) punti.push(`• Paziente collaborativo e motivato alla prevenzione`);
+  document.getElementById('f-punti').value = punti.join('\n');
+}
+
+function genAree() {
+  const gruppi = gruppiPiano();
+  if (!gruppi.length) { document.getElementById('f-aree').value='Nessun trattamento necessario al momento.'; return; }
+  const cat = {
+    est: gruppi.filter(g=>g.t.id.startsWith('estraz')),
+    end: gruppi.filter(g=>g.t.id.startsWith('terapia_endo')||g.t.id.startsWith('ritratt')),
+    pro: gruppi.filter(g=>['corona_zirconio','corona_zirconio_su_impianto','maryland','ponte'].includes(g.t.id)),
+    imp: gruppi.filter(g=>g.t.id.startsWith('impianto')||g.t.id.startsWith('gbr')),
+    par: gruppi.filter(g=>['levigature_radicolari','levigatura_radicolare_singolo_','sondaggio','splintaggio'].includes(g.t.id)),
+    ig:  gruppi.filter(g=>g.t.id==='igiene_fare'||g.t.id.startsWith('sbianc')),
+    ott: gruppi.filter(g=>g.t.id.startsWith('ottur')||g.t.id.startsWith('ricost')),
+    est2:gruppi.filter(g=>g.t.id.startsWith('faccet')),
+    alt: gruppi.filter(g=>!['estraz','terapia_endo','ritratt','corona','impianto','gbr','levigat','sondagg','splint','igiene','sbianc','ottur','ricost','faccet'].some(p=>g.t.id.startsWith(p))),
+  };
+  let txt = '';
+  if (cat.ig.length) txt+=`IGIENE PROFESSIONALE\nSi consiglia una seduta di igiene professionale per rimuovere tartaro e biofilm. Una bocca pulita è il punto di partenza per qualsiasi trattamento.\n\n`;
+  if (cat.par.length) txt+=`TERAPIA PARODONTALE\nSono presenti aree che richiedono levigatura radicolare per il controllo dell'infezione batterica a livello del solco gengivale.\n\n`;
+  if (cat.ott.length) txt+=`RESTAURI CONSERVATIVI\nAlcune lesioni cariose richiedono un intervento conservativo con otturazione in composito per ripristinare la struttura dentale.\n\n`;
+  if (cat.end.length) txt+=`TERAPIA ENDODONTICA\nSono presenti denti che necessitano di trattamento canalare per eliminare l'infezione e preservare l'elemento dentale.\n\n`;
+  if (cat.pro.length) txt+=`PROTESI FISSA\nÈ prevista la realizzazione di corone protesiche in zirconio per ripristinare forma, funzione ed estetica degli elementi trattati.\n\n`;
+  if (cat.imp.length) txt+=`IMPLANTOLOGIA\nSi prevede il posizionamento di impianti osteointegrabili come soluzione definitiva per la sostituzione degli elementi mancanti.\n\n`;
+  if (cat.est.length) txt+=`ESTRAZIONI\nAlcuni elementi non recuperabili verranno estratti in modo programmato, con pianificazione della sostituzione.\n\n`;
+  if (cat.est2.length) txt+=`ESTETICA DENTALE\nÈ prevista la realizzazione di faccette per migliorare l'estetica del sorriso.\n\n`;
+  document.getElementById('f-aree').value = txt.trim();
+}
+
+// ── SAVE & LINK ───────────────────────────────────────────────────────────
+async function saveAndGenLink() {
+  if (!currentId) { alert('Carica prima un paziente'); return; }
+  const link = `https://healthysmile.it/paziente.html?id=${currentId}`;
+  const editorData = {
+    intro: document.getElementById('f-intro').value,
+    punti: document.getElementById('f-punti').value,
+    aree:  document.getElementById('f-aree').value,
+    note:  document.getElementById('f-note').value,
+    nome:  document.getElementById('f-nome').value,
+    data:  document.getElementById('f-data').value,
+    operatore: document.getElementById('f-op').value,
+    link,
+    updated: new Date().toISOString()
+  };
+  document.getElementById('save-msg').textContent = 'Salvataggio...';
+  try {
+    await db.collection('pazienti').doc(currentId).update({ editor_data: JSON.stringify(editorData) });
+    document.getElementById('link-out').value = link;
+    document.getElementById('save-msg').textContent = 'Salvato ✓';
+    document.getElementById('link-msg').textContent = 'Link aggiornato — pronto da condividere';
+    setTimeout(()=>{ document.getElementById('save-msg').textContent=''; },3000);
+  } catch(e) {
+    document.getElementById('save-msg').textContent = 'Errore: '+e.message;
+  }
+}
+
+function copyLink() {
+  const val = document.getElementById('link-out').value;
+  if (!val||val.includes('Salva')) return;
+  navigator.clipboard.writeText(val).then(()=>{
+    const btn = document.getElementById('btn-copy');
+    btn.textContent='Copiato ✓'; btn.classList.add('copied');
+    setTimeout(()=>{ btn.textContent='Copia'; btn.classList.remove('copied'); },2000);
+  });
+}
+
+// Enter key on input
+document.getElementById('pat-id').addEventListener('keydown', e=>{ if(e.key==='Enter') loadPatient(); });
+</script>
+</body>
+</html>
