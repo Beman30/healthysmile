@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="it">
 <head>
@@ -62,8 +63,21 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; a
 .section-title { font-family: 'Cormorant Garamond', serif; font-weight: 300; font-size: clamp(2rem, 4vw, 3.4rem); line-height: 1.12; color: var(--cream); margin-bottom: 1.6rem; }
 .section-title em { font-style: italic; color: var(--magenta); }
 
-/* STORIA */
-.storia { padding: 7rem 6vw; max-width: 860px; margin: 0 auto; border-top: 1px solid rgba(245,240,234,0.08); }
+
+
+.hero-claim { font-size: 0.78rem; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(245,240,234,0.35); margin-top: 1.8rem; }
+/* HERO BRIDGE */
+.hero-bridge { margin-top: 2.2rem; max-width: 520px; text-align: center; background: rgba(212,68,124,0.1); border: 1px solid rgba(212,68,124,0.25); border-radius: 2px; padding: 1.4rem 2rem; }
+.hero-bridge .bridge-pre { font-size: 0.72rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--magenta); margin-bottom: 0.6rem; }
+.hero-bridge .bridge-proof { font-size: 1rem; color: rgba(245,240,234,0.8); line-height: 1.75; }
+.hero-bridge .bridge-proof em { color: var(--cream); font-style: normal; font-weight: 400; }
+/* BRIDGE BOX */
+.bridge { max-width: 100%; background: var(--charcoal-mid); border-top: 1px solid rgba(212,68,124,0.2); border-bottom: 1px solid rgba(212,68,124,0.2); padding: 4rem 6vw; }
+.bridge-inner { max-width: 760px; margin: 0 auto; text-align: center; }
+.bridge-pre { font-size: 0.72rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--magenta); margin-bottom: 1.2rem; }
+.bridge-statement { font-family: 'Cormorant Garamond', serif; font-weight: 300; font-size: clamp(1.3rem, 3vw, 2rem); line-height: 1.5; color: var(--cream); margin-bottom: 1.4rem; }
+.bridge-proof { font-size: clamp(0.95rem, 1.6vw, 1.1rem); color: var(--text-dim); line-height: 1.8; max-width: 620px; margin: 0 auto; }
+.bridge-proof em { color: var(--cream); font-style: normal; font-weight: 400; }
 .storia-body { font-size: clamp(1.05rem, 1.8vw, 1.2rem); color: var(--text-dim); line-height: 1.9; }
 .storia-body strong { color: var(--cream); font-weight: 400; }
 .storia-body p + p { margin-top: 1.4rem; }
@@ -144,28 +158,14 @@ footer p { font-size: 0.78rem; color: var(--text-dim); }
 <div class="hero">
   <p class="hero-eyebrow">Healthy Smile by N &middot; Struttura Sanitaria &middot; Torino</p>
   <h1 class="hero-title">
-    Ti curiamo <em>meglio</em><br>per curarti meno.
+    Facciamo la miglior<br>prevenzione <em>possibile</em>.
   </h1>
-  <p class="hero-sub">
-    Non è uno slogan. È una scelta che abbiamo fatto — e che cambia tutto il modo in cui ti seguiamo.
-  </p>
-  <div class="hero-divider"></div>
-</div>
-
-<!-- STORIA -->
-<div class="storia reveal">
-  <span class="section-label">Perché è nato Healthy Smile</span>
-  <h2 class="section-title">Abbiamo smesso di<br>lavorare <em>come tutti</em>.</h2>
-  <div class="storia-body">
-    <p>Per anni abbiamo lavorato come la maggior parte delle strutture sanitarie: intervenire quando il problema era già esploso. Curare. Riparare. Ricominciare.</p>
-    <p>Era un modello che funzionava — per noi. <strong>Non per i pazienti.</strong></p>
-    <div class="storia-quote">
-      <p>«Il nostro obiettivo oggi non è intervenire di più.<br>È fare in modo che tu non ne abbia bisogno.»</p>
-    </div>
-    <p>Questo ha significato ripensare completamente il nostro approccio. Meno interventi. Più prevenzione. E soprattutto: <strong>un patto diverso con chi si affida a noi.</strong></p>
-    <p>La salute — quella vera, quella duratura — si costruisce prima che i problemi arrivino. Si costruisce con una fotografia precisa della tua situazione oggi, e con un percorso pensato per tenerla tale nel tempo.</p>
-    <p>Abbiamo chiamato questo percorso <strong>Piano Protezione</strong>.</p>
+  <div class="hero-bridge">
+    <p class="bridge-pre">Come lo dimostriamo?</p>
+    <p class="bridge-proof">Se segui il nostro percorso e, nonostante tutto, qualcosa va storto — <em>condividiamo anche noi il costo delle terapie.</em></p>
   </div>
+  <p class="hero-claim">Ti curiamo meglio per curarti meno.</p>
+  <div class="hero-divider"></div>
 </div>
 
 <!-- PILLARS -->
@@ -206,6 +206,22 @@ footer p { font-size: 0.78rem; color: var(--text-dim); }
       </div>
 
     </div>
+  </div>
+</div>
+
+<!-- STORIA -->
+<div class="storia reveal">
+  <span class="section-label">Perché è nato Healthy Smile</span>
+  <h2 class="section-title">Abbiamo scelto di<br>lavorare <em>in modo diverso</em>.</h2>
+  <div class="storia-body">
+    <p>Per anni abbiamo lavorato come la maggior parte delle strutture sanitarie: intervenire quando il problema era già esploso. Curare. Riparare. Ricominciare.</p>
+    <p>Era un modello che funzionava — per noi. <strong>Non per i pazienti.</strong></p>
+    <div class="storia-quote">
+      <p>«Il nostro obiettivo oggi non è intervenire di più.<br>È fare in modo che tu non ne abbia bisogno.»</p>
+    </div>
+    <p>Questo ha significato ripensare completamente il nostro approccio. Meno interventi. Più prevenzione. E soprattutto: <strong>un patto diverso con chi si affida a noi.</strong></p>
+    <p>La salute — quella vera, quella duratura — si costruisce prima che i problemi arrivino. Si costruisce con una fotografia precisa della tua situazione oggi, e con un percorso pensato per tenerla tale nel tempo.</p>
+    <p>Abbiamo chiamato questo percorso <strong>Piano Protezione</strong>.</p>
   </div>
 </div>
 
