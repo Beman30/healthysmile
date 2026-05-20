@@ -541,7 +541,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--gray-50);color:
                     <th style="padding:7px 10px;font-size:10px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.04em;border-bottom:var(--border);text-align:left">Prestazione</th>
                     <th style="padding:7px 10px;font-size:10px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.04em;border-bottom:var(--border);text-align:right;width:80px">Q.tà</th>
                     <th style="padding:7px 10px;font-size:10px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.04em;border-bottom:var(--border);text-align:right;width:90px">€ Unit.</th>
-                    <th style="padding:7px 10px;font-size:10px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.04em;border-bottom:var(--border);text-align:right;width:75px">Sc. %</th>
+                    <th style="padding:7px 10px;font-size:10px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.04em;border-bottom:var(--border);text-align:right;width:170px">Sconto % / € Scontato</th>
                     <th style="padding:7px 10px;font-size:10px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.04em;border-bottom:var(--border);text-align:right;width:95px">Totale €</th>
                     <th style="width:30px;border-bottom:var(--border)"></th>
                   </tr>
@@ -1837,13 +1837,14 @@ async function saveAndClosePrestazioni() {
 // Dati studio (modificabili qui)
 const STUDIO = {
   nome:     'Healthy Smile By N',
+  srl:      'Dominus SRL',
   via:      'Via Madama Cristina 2',
   cap:      '10100',
   citta:    'Torino',
   prov:     'TO',
-  piva:     '— ',  // aggiorna con P.IVA reale
-  tel:      '+39 346 182 4965',
-  email:    'info@healthysmilebyn.it'  // aggiorna con email reale
+  piva:     '12923420017',
+  tel:      '3924076794',
+  email:    'dentista@healthysmile.it'
 };
 
 function initPrevHeader() {
@@ -1964,7 +1965,8 @@ function addPrevRow() {
     label:  '',
     qta:    1,
     prezzo: 0,
-    sconto: 0
+    sconto: 0,
+    prezzoScontato: null
   });
   renderPrevRows();
 }
@@ -1983,8 +1985,17 @@ function renderPrevRows() {
         style="width:50px;border:1px solid transparent;border-radius:4px;padding:4px 5px;font-size:12px;text-align:right;background:transparent;outline:none" onfocus="this.style.borderColor='var(--gray-300)'" onblur="this.style.borderColor='transparent'"></td>
       <td style="padding:6px 8px;text-align:right"><input type="number" value="${r.prezzo||0}" step="0.01" onchange="updatePrevRow(${i},'prezzo',this.value)"
         style="width:80px;border:1px solid transparent;border-radius:4px;padding:4px 5px;font-size:12px;text-align:right;background:transparent;outline:none" onfocus="this.style.borderColor='var(--gray-300)'" onblur="this.style.borderColor='transparent'"></td>
-      <td style="padding:6px 8px;text-align:right"><input type="number" value="${r.sconto||0}" min="0" max="100" onchange="updatePrevRow(${i},'sconto',this.value)"
-        style="width:55px;border:1px solid transparent;border-radius:4px;padding:4px 5px;font-size:12px;text-align:right;background:transparent;outline:none" onfocus="this.style.borderColor='var(--gray-300)'" onblur="this.style.borderColor='transparent'"></td>
+      <td style="padding:6px 8px;text-align:right">
+        <div style="display:flex;align-items:center;gap:3px;justify-content:flex-end">
+          <input type="number" value="${r.sconto||0}" min="0" max="100" step="0.01" placeholder="%" oninput="updatePrevRowSconto(${i},'pct',this.value)"
+            style="width:52px;border:1px solid transparent;border-radius:4px;padding:4px 5px;font-size:12px;text-align:right;background:transparent;outline:none" onfocus="this.style.borderColor='var(--gray-300)'" onblur="this.style.borderColor='transparent'" title="Sconto in %">
+          <span style="font-size:10px;color:var(--gray-300)">%</span>
+          <span style="font-size:10px;color:var(--gray-400);margin:0 1px">/</span>
+          <span style="font-size:10px;color:var(--gray-300)">€</span>
+          <input type="number" value="${r.prezzoScontato!=null ? r.prezzoScontato : ''}" min="0" step="0.01" placeholder="0,00" oninput="updatePrevRowSconto(${i},'eur',this.value)"
+            style="width:62px;border:1px solid transparent;border-radius:4px;padding:4px 5px;font-size:12px;text-align:right;background:transparent;outline:none" onfocus="this.style.borderColor='var(--gray-300)'" onblur="this.style.borderColor='transparent'" title="Prezzo finale scontato">
+        </div>
+      </td>
       <td style="padding:6px 8px;text-align:right;font-weight:600;font-family:'DM Mono',monospace;font-size:12px;color:var(--teal)">€ ${tot.toFixed(2).replace('.',',')}</td>
       <td style="padding:6px 4px;text-align:center"><button onclick="removePrevRow(${i})" style="background:none;border:none;cursor:pointer;color:var(--gray-300);font-size:13px">✕</button></td>
     </tr>`;
@@ -1999,8 +2010,39 @@ function renderPrevRows() {
 }
 
 function calcTotRow(r) {
-  const lordo = (parseFloat(r.qta)||1) * (parseFloat(r.prezzo)||0);
+  const qta   = parseFloat(r.qta)||1;
+  const lordo = qta * (parseFloat(r.prezzo)||0);
+  if (r.prezzoScontato != null && r.prezzoScontato !== '') {
+    // prezzo scontato inserito direttamente → totale = prezzoScontato * qta
+    return (parseFloat(r.prezzoScontato)||0) * qta;
+  }
   return lordo * (1 - (parseFloat(r.sconto)||0)/100);
+}
+
+function updatePrevRowSconto(i, mode, val) {
+  const r = prevRows[i];
+  const prezzo = parseFloat(r.prezzo)||0;
+  const qta    = parseFloat(r.qta)||1;
+  if (mode === 'pct') {
+    const pct = parseFloat(val);
+    r.sconto = isNaN(pct) ? 0 : Math.min(Math.max(pct, 0), 100);
+    r.prezzoScontato = null; // reset prezzo scontato
+  } else { // mode === 'eur'
+    const eur = parseFloat(val);
+    if (isNaN(eur) || val === '') {
+      r.prezzoScontato = null;
+      r.sconto = 0;
+    } else {
+      r.prezzoScontato = Math.max(0, eur);
+      // calcola la % di sconto corrispondente
+      if (prezzo > 0) {
+        r.sconto = Math.max(0, Math.min(100, (1 - eur / prezzo) * 100));
+      } else {
+        r.sconto = 0;
+      }
+    }
+  }
+  renderPrevRows();
 }
 
 function updatePrevRow(i, field, val) {
@@ -2012,7 +2054,7 @@ function removePrevRow(i) { prevRows.splice(i,1); renderPrevRows(); }
 
 function applyGlobalDiscount() {
   const sc = parseFloat(document.getElementById('prev-sconto-glob').value)||0;
-  prevRows.forEach(r => r.sconto = sc);
+  prevRows.forEach(r => { r.sconto = sc; r.prezzoScontato = null; });
   renderPrevRows();
 }
 
@@ -2060,7 +2102,7 @@ function stampaPrev() {
       <td style="padding:7px 10px;border-bottom:1px solid #E8E8E8;font-size:13px">${esc(r.label||'')}</td>
       <td style="padding:7px 10px;border-bottom:1px solid #E8E8E8;text-align:right;font-size:13px">${r.qta||1}</td>
       <td style="padding:7px 10px;border-bottom:1px solid #E8E8E8;text-align:right;font-size:13px">€ ${fmt(parseFloat(r.prezzo)||0)}</td>
-      <td style="padding:7px 10px;border-bottom:1px solid #E8E8E8;text-align:right;font-size:13px">${r.sconto||0}%</td>
+      <td style="padding:7px 10px;border-bottom:1px solid #E8E8E8;text-align:right;font-size:13px">${parseFloat(r.sconto||0)%1===0 ? (r.sconto||0) : parseFloat(r.sconto||0).toFixed(2)}%</td>
       <td style="padding:7px 10px;border-bottom:1px solid #E8E8E8;text-align:right;font-weight:700;font-size:13px;color:#0F6E56">€ ${fmt(t)}</td>
     </tr>`;
   }).join('');
@@ -2110,6 +2152,7 @@ function stampaPrev() {
     <div>
       <div class="studio-name">${STUDIO.nome}</div>
       <div class="studio-info">
+        ${STUDIO.srl}<br>
         ${STUDIO.via}, ${STUDIO.cap} ${STUDIO.citta} (${STUDIO.prov})<br>
         Tel: ${STUDIO.tel} · ${STUDIO.email}<br>
         P.IVA: ${STUDIO.piva}
@@ -2136,7 +2179,6 @@ function stampaPrev() {
       <div class="box-line">Numero: <strong>${prevNum}</strong></div>
       <div class="box-line">Emesso il: <strong>${prevData}</strong></div>
       <div class="box-line">Valido fino al: <strong>${prevScad}</strong></div>
-      ${gv('f-op') ? `<div class="box-line">Medico: <strong>${gv('f-op')}</strong></div>` : ''}
     </div>
   </div>
 
@@ -2167,9 +2209,6 @@ function stampaPrev() {
       Preventivo n° ${prevNum} emesso da ${STUDIO.nome}<br>
       I prezzi sono indicativi e soggetti a conferma dopo visita clinica.<br>
       Valido fino al ${prevScad}.
-    </div>
-    <div class="firma-box">
-      <div class="firma-line">Firma del medico</div>
     </div>
   </div>
 </div>
