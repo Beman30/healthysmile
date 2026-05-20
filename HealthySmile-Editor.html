@@ -297,8 +297,15 @@ body::before {
 }
 
 .arcata-map {
-  display: flex; justify-content: center;
-  gap: 3px; flex-wrap: wrap; margin-bottom: 6px;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-justify-content: center;
+  justify-content: center;
+  -webkit-flex-wrap: wrap;
+  flex-wrap: wrap;
+  gap: 3px;
+  margin-bottom: 6px;
+  min-height: 42px;
 }
 
 .dente-map-btn {
@@ -307,9 +314,21 @@ body::before {
   border: 1.5px solid var(--border2);
   background: var(--surface2);
   cursor: pointer;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  gap: 2px; transition: all 0.15s; position: relative;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-direction: column;
+  flex-direction: column;
+  -webkit-align-items: center;
+  align-items: center;
+  -webkit-justify-content: center;
+  justify-content: center;
+  gap: 2px;
+  transition: all 0.15s;
+  position: relative;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+  flex-shrink: 0;
+  -webkit-flex-shrink: 0;
 }
 
 .dente-map-btn:hover { transform: translateY(-2px); }
@@ -1115,6 +1134,7 @@ function renderMappa() {
       const btn = document.createElement('div');
       btn.className = `dente-map-btn ${d.rischio}${selectedNum === d.num ? ' selected' : ''}`;
       btn.dataset.num = d.num;
+      btn.style.margin = '2px'; // Safari gap fallback
       btn.innerHTML = `<div class="dente-map-num">${d.num}</div><div class="dente-map-dot"></div>${d.implant ? '<div class="imp-tag">IMP</div>' : ''}`;
       btn.onclick = () => selectDente(d.num);
       container.appendChild(btn);
@@ -1407,8 +1427,8 @@ header{display:flex;justify-content:space-between;align-items:flex-start;margin-
 .arcata-section{margin-bottom:40px;}
 .section-title{font-family:'Playfair Display',serif;font-size:20px;margin-bottom:24px;color:var(--text);display:flex;align-items:center;gap:12px;}
 .section-title::after{content:'';flex:1;height:1px;background:var(--border);}
-.arcata{display:flex;justify-content:center;gap:6px;margin-bottom:8px;flex-wrap:wrap;}
-.dente-btn{width:44px;height:52px;border-radius:8px;border:1.5px solid var(--border);background:var(--surface);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;transition:all 0.2s;position:relative;}
+.arcata{display:-webkit-flex;display:flex;-webkit-justify-content:center;justify-content:center;gap:6px;margin-bottom:8px;-webkit-flex-wrap:wrap;flex-wrap:wrap;min-height:56px;}
+.dente-btn{width:44px;height:52px;border-radius:8px;border:1.5px solid var(--border);background:var(--surface);cursor:pointer;display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;gap:3px;transition:all 0.2s;position:relative;-webkit-box-sizing:border-box;box-sizing:border-box;-webkit-flex-shrink:0;flex-shrink:0;}
 .dente-btn:hover{transform:translateY(-3px);}
 .dente-btn.low{border-color:rgba(45,255,122,0.4)}.dente-btn.low:hover{border-color:var(--green);box-shadow:0 0 16px rgba(45,255,122,0.2)}
 .dente-btn.medium{border-color:rgba(255,209,102,0.4)}.dente-btn.medium:hover{border-color:var(--yellow);box-shadow:0 0 16px rgba(255,209,102,0.2)}
@@ -1661,6 +1681,7 @@ function renderArcata(arcata) {
     const btn = document.createElement('div');
     btn.className = 'dente-btn ' + d.rischio;
     btn.dataset.num = d.num;
+    btn.style.margin = '3px'; // Safari gap fallback
     btn.onclick = () => showDetail(d, btn);
     btn.innerHTML = '<div class="dente-num">' + d.num + '</div><div class="dente-dot"></div>' + (d.implant ? '<div class="imp-tag-small">IMP</div>' : '');
     btn.title = d.nome;
