@@ -1185,26 +1185,21 @@ function showDenteEditor(d) {
       <div class="toggle ${d.presente ? 'on' : ''}" id="toggle-presente" onclick="togglePresente()"></div>
     </div>
 
-    ${d.prezzoMercato ? `
+
     <div class="section-divider"></div>
-    <div class="section-label">Investimento</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
-      <div style="background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:12px 16px">
-        <div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim);margin-bottom:4px">Prezzo terapia</div>
-        <div style="font-family:'DM Mono',monospace;font-size:18px;color:var(--text)">€${d.prezzoMercato}</div>
+    <div class="section-label">Prezzi</div>
+    <div class="field-row">
+      <div class="field">
+        <label>Prezzo terapia (€)</label>
+        <input type="number" id="prezzo-mercato" min="0" step="1" placeholder="es. 180"
+          value="${d.prezzoMercato || ''}" oninput="aggiornaDente()">
       </div>
-      ${d.rischio === 'high' ? `
-      <div style="background:rgba(255,77,109,0.06);border:1px solid rgba(255,77,109,0.2);border-radius:10px;padding:12px 16px">
-        <div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--red);margin-bottom:4px">Prezzo di listino</div>
-        <div style="font-family:'DM Mono',monospace;font-size:18px;color:var(--red)">€${d.prezzoMercato}</div>
-        <div style="font-size:10px;color:var(--text-dim);margin-top:2px">da trattare — nessuno sconto</div>
-      </div>` : `
-      <div style="background:rgba(45,255,122,0.06);border:1px solid rgba(45,255,122,0.2);border-radius:10px;padding:12px 16px">
-        <div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--green);margin-bottom:4px">Con Piano Protezione</div>
-        <div style="font-family:'DM Mono',monospace;font-size:18px;color:var(--green)">€${d.prezzoConv}</div>
-        <div style="font-size:10px;color:var(--text-dim);margin-top:2px">risparmio €${d.prezzoMercato - d.prezzoConv} (–${d.rischio === 'medium' ? '30' : '70'}%)</div>
-      </div>`}
-    </div>` : ''}
+      <div class="field">
+        <label>Con convenzione (€)</label>
+        <input type="number" id="prezzo-conv" min="0" step="1" placeholder="es. 84"
+          value="${d.prezzoConv || ''}" oninput="aggiornaDente()">
+      </div>
+    </div>
     <div class="section-divider"></div>
     <div class="section-label">Note cliniche interne</div>
     <div class="field">
@@ -1264,6 +1259,10 @@ function aggiornaDente() {
   if (document.getElementById('consiglio')) d.consiglio = document.getElementById('consiglio').value;
   if (document.getElementById('note-dente')) d.note = document.getElementById('note-dente').value;
   if (document.getElementById('prestazioni-dente')) d.prestazioni = document.getElementById('prestazioni-dente').value;
+  const pm = document.getElementById('prezzo-mercato');
+  const pc = document.getElementById('prezzo-conv');
+  if (pm) d.prezzoMercato = pm.value ? parseInt(pm.value) : null;
+  if (pc) d.prezzoConv = pc.value ? parseInt(pc.value) : null;
   renderDenteList();
   updateStats();
 }
