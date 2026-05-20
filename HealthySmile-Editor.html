@@ -184,6 +184,7 @@ body::before {
 .dente-item-dot.medium { background: var(--yellow); }
 .dente-item-dot.high { background: var(--red); }
 .dente-item-dot.absent { background: var(--grey); opacity: 0.5; }
+.dente-item-dot.treated { background: var(--yellow); box-shadow: 0 0 6px rgba(255,209,102,0.5); }
 
 .dente-item-info { flex: 1; min-width: 0; }
 .dente-item-num {
@@ -322,6 +323,8 @@ body::before {
 .dente-map-btn.high.selected { border-color: var(--red); background: rgba(255,77,109,0.1); box-shadow: 0 0 14px rgba(255,77,109,0.25); }
 .dente-map-btn.absent { border-color: rgba(74,85,104,0.25); opacity: 0.45; }
 .dente-map-btn.absent.selected { border-color: var(--grey); background: rgba(74,85,104,0.1); box-shadow: 0 0 14px rgba(74,85,104,0.25); opacity: 0.7; }
+.dente-map-btn.treated { border-color: rgba(255,209,102,0.4); }
+.dente-map-btn.treated.selected { border-color: var(--yellow); background: rgba(255,209,102,0.12); box-shadow: 0 0 14px rgba(255,209,102,0.3); }
 
 .dente-map-num {
   font-family: 'DM Mono', monospace;
@@ -332,6 +335,7 @@ body::before {
 .medium .dente-map-dot { background: var(--yellow); }
 .high .dente-map-dot { background: var(--red); }
 .absent .dente-map-dot { background: var(--grey); }
+.treated .dente-map-dot { background: var(--yellow); }
 
 .imp-tag {
   position: absolute; bottom: 1px;
@@ -388,6 +392,7 @@ body::before {
 .rischio-btn.active-medium { border-color: var(--yellow); background: rgba(255,209,102,0.1); color: var(--yellow); }
 .rischio-btn.active-high { border-color: var(--red); background: rgba(255,77,109,0.1); color: var(--red); }
 .rischio-btn.active-absent { border-color: var(--grey); background: rgba(74,85,104,0.1); color: var(--grey); }
+.rischio-btn.active-treated { border-color: var(--yellow); background: rgba(255,209,102,0.15); color: var(--yellow); }
 
 /* Toggle switch */
 .toggle-row {
@@ -1140,7 +1145,7 @@ function renderDenteList() {
 
 function updateStats() {
   document.getElementById('stat-green').textContent = denti.filter(d => d.rischio === 'low').length;
-  document.getElementById('stat-yellow').textContent = denti.filter(d => d.rischio === 'medium').length;
+  document.getElementById('stat-yellow').textContent = denti.filter(d => d.rischio === 'medium' || d.rischio === 'treated').length;
   document.getElementById('stat-red').textContent = denti.filter(d => d.rischio === 'high').length;
   document.getElementById('stat-grey').textContent = denti.filter(d => d.rischio === 'absent').length;
 }
@@ -1157,8 +1162,8 @@ function selectDente(num) {
 function showDenteEditor(d) {
   document.getElementById('editor-title').textContent = `${d.num} — ${d.nome}`;
 
-  const rischioColors = { low: 'var(--green)', medium: 'var(--yellow)', high: 'var(--red)', absent: 'var(--grey)' };
-  const rischioLabels = { low: 'Basso', medium: 'Osservazione', high: 'Intervento', absent: 'Assente' };
+  const rischioColors = { low: 'var(--green)', medium: 'var(--yellow)', high: 'var(--red)', absent: 'var(--grey)', treated: 'var(--yellow)' };
+  const rischioLabels = { low: 'Basso', medium: 'Osservazione', high: 'Intervento', absent: 'Assente', treated: 'Curato da noi' };
   document.getElementById('editor-badge').innerHTML = `<span style="font-size:11px;font-weight:600;color:${rischioColors[d.rischio]};text-transform:uppercase;letter-spacing:0.1em">${rischioLabels[d.rischio]}</span>`;
 
   document.getElementById('editor-body').innerHTML = `
@@ -1168,6 +1173,7 @@ function showDenteEditor(d) {
       <div class="rischio-btn ${d.rischio === 'medium' ? 'active-medium' : ''}" onclick="setRischio('medium')">🟡 Osservazione</div>
       <div class="rischio-btn ${d.rischio === 'high' ? 'active-high' : ''}" onclick="setRischio('high')">🔴 Intervento</div>
       <div class="rischio-btn ${d.rischio === 'absent' ? 'active-absent' : ''}" onclick="setRischio('absent')">⚫ Assente</div>
+      <div class="rischio-btn ${d.rischio === 'treated' ? 'active-treated' : ''}" onclick="setRischio('treated')">⭐ Curato da noi</div>
     </div>
 
     <div class="toggle-row">
@@ -1200,19 +1206,30 @@ function showDenteEditor(d) {
       </div>`}
     </div>` : ''}
     <div class="section-divider"></div>
+    <div class="section-label">Note cliniche interne</div>
+    <div class="field">
+      <textarea id="note-dente" rows="3" placeholder="Es: Otturazione infiltrata, carie mesiale…" oninput="aggiornaDente()">${d.note || ''}</textarea>
+    </div>
+    <div class="section-divider"></div>
+    <div class="section-label">Prestazioni / Trattamenti</div>
+    <div class="field">
+      <textarea id="prestazioni-dente" rows="3" placeholder="Es: Otturazione II cl., Endodonzia bicanalare…" oninput="aggiornaDente()">${d.prestazioni || ''}</textarea>
+    </div>
+    <div class="section-divider"></div>
     <div class="section-label">Consiglio al paziente</div>
     <div class="field">
-      <textarea id="consiglio" rows="7" onchange="aggiornaDente()">${d.consiglio}</textarea>
+      <textarea id="consiglio" rows="7" oninput="aggiornaDente()">${d.consiglio}</textarea>
     </div>
   `;
 }
 
 function setRischio(r) {
   if (!selectedNum) return;
+  aggiornaDente(); // salva modifiche in corso prima di ridisegnare
   const d = denti.find(x => x.num === selectedNum);
   d.rischio = r;
   if (r === 'absent') d.presente = false;
-  aggiornaDente();
+  if (r === 'treated') d.presente = true;
   showDenteEditor(d);
   renderMappa();
   renderDenteList();
@@ -1244,7 +1261,9 @@ function togglePresente() {
 function aggiornaDente() {
   if (!selectedNum) return;
   const d = denti.find(x => x.num === selectedNum);
-  d.consiglio = document.getElementById('consiglio')?.value || d.consiglio;
+  if (document.getElementById('consiglio')) d.consiglio = document.getElementById('consiglio').value;
+  if (document.getElementById('note-dente')) d.note = document.getElementById('note-dente').value;
+  if (document.getElementById('prestazioni-dente')) d.prestazioni = document.getElementById('prestazioni-dente').value;
   renderDenteList();
   updateStats();
 }
@@ -1396,17 +1415,19 @@ header{display:flex;justify-content:space-between;align-items:flex-start;margin-
 .dente-btn.medium{border-color:rgba(255,209,102,0.4)}.dente-btn.medium:hover{border-color:var(--yellow);box-shadow:0 0 16px rgba(255,209,102,0.2)}
 .dente-btn.high{border-color:rgba(255,77,109,0.4)}.dente-btn.high:hover{border-color:var(--red);box-shadow:0 0 16px rgba(255,77,109,0.2)}
 .dente-btn.absent{border-color:rgba(74,85,104,0.3);opacity:0.45}.dente-btn.absent:hover{border-color:var(--grey);opacity:0.7}
+.dente-btn.treated{border-color:rgba(255,209,102,0.5);background:rgba(255,209,102,0.07)}.dente-btn.treated:hover{border-color:var(--yellow);box-shadow:0 0 16px rgba(255,209,102,0.25)}
 .dente-btn.selected{transform:translateY(-4px);z-index:10;}
 .dente-btn.selected.low{background:rgba(45,255,122,0.1);border-color:var(--green);box-shadow:0 0 20px rgba(45,255,122,0.3)}
 .dente-btn.selected.medium{background:rgba(255,209,102,0.1);border-color:var(--yellow);box-shadow:0 0 20px rgba(255,209,102,0.3)}
 .dente-btn.selected.high{background:rgba(255,77,109,0.1);border-color:var(--red);box-shadow:0 0 20px rgba(255,77,109,0.3)}
 .dente-btn.selected.absent{background:rgba(74,85,104,0.1);border-color:var(--grey);box-shadow:0 0 20px rgba(74,85,104,0.3);opacity:0.7}
+.dente-btn.selected.treated{background:rgba(255,209,102,0.15);border-color:var(--yellow);box-shadow:0 0 20px rgba(255,209,102,0.35)}
 .click-hint{text-align:center;margin:0 0 28px;font-size:13px;color:var(--text-dim);display:flex;align-items:center;justify-content:center;gap:8px;animation:hintPulse 2.5s infinite;}
 @keyframes hintPulse{0%,100%{opacity:0.4}50%{opacity:1}}
 .click-hint em{color:var(--green);font-style:normal;font-weight:500;}
 .dente-num{font-family:'DM Mono',monospace;font-size:10px;color:var(--text-dim);}
 .dente-dot{width:8px;height:8px;border-radius:50%;}
-.low .dente-dot{background:var(--green)}.medium .dente-dot{background:var(--yellow)}.high .dente-dot{background:var(--red)}.absent .dente-dot{background:var(--grey)}
+.low .dente-dot{background:var(--green)}.medium .dente-dot{background:var(--yellow)}.high .dente-dot{background:var(--red)}.absent .dente-dot{background:var(--grey)}.treated .dente-dot{background:var(--yellow);box-shadow:0 0 6px rgba(255,209,102,0.6)}
 .imp-tag-small{font-size:7px;color:var(--green);font-family:'DM Mono',monospace;opacity:0.8;}
 .arcata-label{text-align:center;font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em;margin:6px 0 16px;}
 .dente-detail{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:32px;margin-bottom:40px;animation:fadeIn 0.3s ease;}
@@ -1418,6 +1439,7 @@ header{display:flex;justify-content:space-between;align-items:flex-start;margin-
 .rischio-badge.medium{background:rgba(255,209,102,0.15);color:var(--yellow);border:1px solid rgba(255,209,102,0.3)}
 .rischio-badge.high{background:rgba(255,77,109,0.15);color:var(--red);border:1px solid rgba(255,77,109,0.3)}
 .rischio-badge.absent{background:rgba(74,85,104,0.15);color:var(--grey);border:1px solid rgba(74,85,104,0.3)}
+.rischio-badge.treated{background:rgba(255,209,102,0.18);color:var(--yellow);border:1px solid rgba(255,209,102,0.4)}
 .dente-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;}
 .detail-item{background:var(--surface2);border-radius:12px;padding:16px 20px;}
 .detail-item-label{font-size:11px;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-dim);margin-bottom:8px;}
@@ -1439,6 +1461,7 @@ header{display:flex;justify-content:space-between;align-items:flex-start;margin-
 .rischio-pill.medium{color:var(--yellow)}.rischio-pill.medium .dot{background:var(--yellow)}
 .rischio-pill.high{color:var(--red)}.rischio-pill.high .dot{background:var(--red)}
 .rischio-pill.absent{color:var(--grey)}.rischio-pill.absent .dot{background:var(--grey)}
+.rischio-pill.treated{color:var(--yellow)}.rischio-pill.treated .dot{background:var(--yellow)}
 .prezzo-mercato{font-size:13px;color:var(--text-muted);text-decoration:line-through;font-family:'DM Mono',monospace;}
 .prezzo-convenzione{font-size:14px;font-weight:600;font-family:'DM Mono',monospace;}
 .prezzo-convenzione.green{color:var(--green)}.prezzo-convenzione.yellow{color:var(--yellow)}.prezzo-convenzione.red{color:var(--red)}
@@ -1551,6 +1574,13 @@ header{display:flex;justify-content:space-between;align-items:flex-start;margin-
         <div class="filosofia-sub">Trattamento necessario — <strong>prezzo di listino</strong> senza scontistica</div>
       </div>
     </div>
+    <div class="filosofia-item yellow" style="border-color:rgba(255,209,102,0.3);background:rgba(255,209,102,0.07)">
+      <div class="filosofia-dot yellow-dot" style="box-shadow:0 0 10px rgba(255,209,102,0.7)"></div>
+      <div>
+        <div class="filosofia-label">Denti gialli con ⭐ — curati da noi</div>
+        <div class="filosofia-sub">Trattamento già eseguito presso il nostro studio — <strong>garanzia e follow-up inclusi</strong></div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1576,6 +1606,7 @@ header{display:flex;justify-content:space-between;align-items:flex-start;margin-
     <div class="legend-item"><div class="legend-dot" style="background:var(--yellow)"></div> Sotto osservazione</div>
     <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div> Intervento consigliato</div>
     <div class="legend-item"><div class="legend-dot" style="background:var(--grey)"></div> Assente</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--yellow);box-shadow:0 0 6px rgba(255,209,102,0.7);border:1.5px solid rgba(255,209,102,0.6)"></div> Curato da noi ⭐</div>
   </div>
 </div>
 
@@ -1648,27 +1679,29 @@ function showDetail(dente, btn) {
   selectedDente = dente.num;
   btn.classList.add('selected');
   const detail = document.getElementById('dente-detail');
-  const rischioLabel = {low:'Basso rischio',medium:'Sotto osservazione',high:'Intervento consigliato',absent:'Assente'}[dente.rischio];
-  const colorClass = {low:'green',medium:'yellow',high:'red',absent:'grey'}[dente.rischio];
-  const scontoLabel = {low:'–70%',medium:'–30%',high:'prezzo pieno',absent:'—'}[dente.rischio];
-  let prezziHTML = dente.prezzoMercato
+  const rischioLabel = {low:'Basso rischio',medium:'Sotto osservazione',high:'Intervento consigliato',absent:'Assente',treated:'Curato da noi ⭐'}[dente.rischio];
+  const colorClass = {low:'green',medium:'yellow',high:'red',absent:'grey',treated:'yellow'}[dente.rischio];
+  const scontoLabel = {low:'–70%',medium:'–30%',high:'prezzo pieno',absent:'—',treated:'—'}[dente.rischio];
+  let prezziHTML = dente.rischio === 'treated'
+    ? '<div class="dente-detail-grid"><div class="detail-item" style="background:rgba(255,209,102,0.07);border:1px solid rgba(255,209,102,0.2)"><div class="detail-item-label" style="color:var(--yellow)">Trattamento</div><div class="detail-item-value yellow" style="font-size:16px">⭐ Curato da noi</div></div><div class="detail-item"><div class="detail-item-label">Garanzia</div><div class="detail-item-value yellow" style="font-size:15px">Follow-up incluso</div></div></div>'
+    : dente.prezzoMercato
     ? (dente.rischio === 'high'
       ? '<div class="dente-detail-grid"><div class="detail-item"><div class="detail-item-label">Prezzo di listino</div><div class="detail-item-value red">€' + dente.prezzoMercato + '</div></div><div class="detail-item"><div class="detail-item-label">Stato</div><div class="detail-item-value red" style="font-size:16px">Da trattare — prezzo pieno</div></div></div>'
       : '<div class="dente-detail-grid"><div class="detail-item"><div class="detail-item-label">Prezzo di mercato</div><div class="detail-item-value crossed">€' + dente.prezzoMercato + '</div></div><div class="detail-item"><div class="detail-item-label">Con la tua convenzione <span style="color:var(--green);font-size:13px">' + scontoLabel + '</span></div><div class="detail-item-value ' + colorClass + '">€' + dente.prezzoConv + '</div></div></div>')
     : '<div class="dente-detail-grid"><div class="detail-item"><div class="detail-item-label">Costo previsto</div><div class="detail-item-value green">€0</div></div><div class="detail-item"><div class="detail-item-label">Stato</div><div class="detail-item-value green" style="font-size:16px">' + (dente.implant ? 'Impianto stabile' : 'Nessun intervento') + '</div></div></div>';
   detail.style.display = 'block';
-  detail.innerHTML = '<div class="dente-detail-header"><div><div style="font-size:12px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Dente ' + dente.num + (dente.implant ? ' — IMPIANTO' : '') + '</div><div class="dente-detail-title">' + dente.nome + '</div></div><div class="rischio-badge ' + dente.rischio + '">' + rischioLabel + '</div></div>' + prezziHTML + '<div class="detail-consiglio"><div class="detail-consiglio-label">💬 Il nostro consiglio per te</div><div class="detail-consiglio-text">' + dente.consiglio + '</div>' + (dente.rischio !== 'low' ? '<div class="wa-inline"><a href="https://wa.me/393461824965?text=Ciao%2C+vorrei+prenotare+per+il+dente+' + dente.num + '" target="_blank" class="wa-btn" style="margin-top:16px"><svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.115.549 4.099 1.504 5.829L.057 23.428a.75.75 0 0 0 .921.921l5.599-1.447A11.944 11.944 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.75a9.705 9.705 0 0 1-4.953-1.355l-.355-.211-3.674.949.969-3.558-.232-.368A9.705 9.705 0 0 1 2.25 12C2.25 6.615 6.615 2.25 12 2.25S21.75 6.615 21.75 12 17.385 21.75 12 21.75z"/></svg> Prenota su WhatsApp</a></div>' : '') + '</div>';
+  detail.innerHTML = '<div class="dente-detail-header"><div><div style="font-size:12px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Dente ' + dente.num + (dente.implant ? ' — IMPIANTO' : '') + '</div><div class="dente-detail-title">' + dente.nome + '</div></div><div class="rischio-badge ' + dente.rischio + '">' + rischioLabel + '</div></div>' + prezziHTML + (dente.prestazioni ? '<div style="background:rgba(255,209,102,0.05);border:1px solid rgba(255,209,102,0.15);border-radius:12px;padding:16px 20px;margin-bottom:16px"><div style="font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--yellow);font-weight:600;margin-bottom:8px">🦷 Prestazioni</div><div style="font-size:14px;color:var(--text-dim);line-height:1.7">' + dente.prestazioni + '</div></div>' : '') + '<div class="detail-consiglio"><div class="detail-consiglio-label">💬 Il nostro consiglio per te</div><div class="detail-consiglio-text">' + dente.consiglio + '</div>' + (dente.rischio !== 'low' && dente.rischio !== 'treated' ? '<div class="wa-inline"><a href="https://wa.me/393461824965?text=Ciao%2C+vorrei+prenotare+per+il+dente+' + dente.num + '" target="_blank" class="wa-btn" style="margin-top:16px"><svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.115.549 4.099 1.504 5.829L.057 23.428a.75.75 0 0 0 .921.921l5.599-1.447A11.944 11.944 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.75a9.705 9.705 0 0 1-4.953-1.355l-.355-.211-3.674.949.969-3.558-.232-.368A9.705 9.705 0 0 1 2.25 12C2.25 6.615 6.615 2.25 12 2.25S21.75 6.615 21.75 12 17.385 21.75 12 21.75z"/></svg> Prenota su WhatsApp</a></div>' : '') + '</div>';
   detail.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 
 function renderTable() {
   const body = document.getElementById('teeth-table-body');
-  const order = {high:0,medium:1,low:2,absent:3};
+  const order = {high:0,medium:1,treated:2,low:3,absent:4};
   [...denti].sort((a,b) => order[a.rischio] - order[b.rischio]).forEach(d => {
     const row = document.createElement('div');
     row.className = 'teeth-table-row';
-    const rischioLabel = {high:'Intervento',medium:'Osservazione',low:'Basso',absent:'Assente'}[d.rischio];
-    const pc = {high:'red',medium:'yellow',low:'green',absent:'grey'}[d.rischio];
+    const rischioLabel = {high:'Intervento',medium:'Osservazione',low:'Basso',absent:'Assente',treated:'Curato da noi'}[d.rischio];
+    const pc = {high:'red',medium:'yellow',low:'green',absent:'grey',treated:'yellow'}[d.rischio];
     row.innerHTML = '<span class="dente-num-cell">' + d.num + '</span><span class="dente-name">' + d.nome + (d.implant ? ' <span style="font-size:10px;color:var(--green);font-family:DM Mono">[IMP]</span>' : '') + '</span><span><div class="rischio-pill ' + d.rischio + '"><div class="dot"></div>' + rischioLabel + '</div></span><span class="prezzo-mercato">' + (d.prezzoMercato ? '€'+d.prezzoMercato : '—') + '</span><span class="prezzo-convenzione ' + pc + '">' + (d.prezzoConv ? '€'+d.prezzoConv : 'Nessun intervento') + '</span><span class="table-consiglio-btn">💬 Dettaglio</span>';
     row.onclick = () => { const b = document.querySelector('[data-num="'+d.num+'"]'); showDetail(d, b || document.createElement('div')); document.getElementById('dente-detail').scrollIntoView({behavior:'smooth',block:'center'}); };
     body.appendChild(row);
