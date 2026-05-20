@@ -470,9 +470,14 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--gray-50);color:
             <div style="font-size:11px;color:var(--gray-500);margin-bottom:.6rem">Clicca un dente per registrare la situazione esistente (otturazioni, corone, impianti già presenti...)</div>
 
             <!-- Arcate attuali -->
-            <div style="font-size:10px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.04em;margin-bottom:.4rem">Arcate complete</div>
+            <div style="font-size:10px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.04em;margin-bottom:.4rem">Arcate complete — protesi / ortodonzia</div>
             <div class="arcate-row" id="arcate-attuali-btns"></div>
             <div id="arcata-attuale-popup" class="arcata-popup"></div>
+
+            <!-- Prestazioni per arcata attuale -->
+            <div style="font-size:10px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.04em;margin-bottom:.4rem;margin-top:.7rem">Prestazioni per arcata completa</div>
+            <div class="arcate-row" id="arcate-presta-attuale-btns"></div>
+            <div id="arcata-presta-attuale-popup" class="arcata-popup"></div>
 
             <div class="odonto-wrap">
               <svg id="odonto-attuale" viewBox="0 0 660 200" style="width:100%;min-width:580px"></svg>
@@ -492,9 +497,14 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--gray-50);color:
             <div style="font-size:11px;color:var(--gray-500);margin-bottom:.6rem">Clicca un dente per assegnare trattamenti da eseguire. Il bordo indica lo stato: <span style="color:var(--red);font-weight:600">rosso = da fare</span> · <span style="color:var(--amber);font-weight:600">giallo = in corso</span> · <span style="color:var(--teal);font-weight:600">verde = eseguito</span></div>
 
             <!-- Arcate piano -->
-            <div style="font-size:10px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.04em;margin-bottom:.4rem">Arcate complete</div>
+            <div style="font-size:10px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.04em;margin-bottom:.4rem">Arcate complete — protesi / ortodonzia</div>
             <div class="arcate-row" id="arcate-piano-btns"></div>
             <div id="arcata-piano-popup" class="arcata-popup"></div>
+
+            <!-- Prestazioni per arcata piano -->
+            <div style="font-size:10px;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:.04em;margin-bottom:.4rem;margin-top:.7rem">Prestazioni per arcata completa</div>
+            <div class="arcate-row" id="arcate-presta-piano-btns"></div>
+            <div id="arcata-presta-piano-popup" class="arcata-popup"></div>
 
             <!-- Quadranti piano -->
             <div style="font-size:10px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.04em;margin-bottom:.4rem;margin-top:.7rem">Per quadrante</div>
@@ -929,6 +939,10 @@ let teethPiano = {};     // {16: [{tid:'estrazione', stato:'dafare'}]}
 let arcatePiano = {};
 let quadrantePiano = {};
 
+// Prestazioni TR_ATTUALE/TR_PIANO applicate ad arcata intera (non solo ARCH_TR)
+let arcateAttualePresta = {};  // {sup: ['otturato','corona'], inf: [...]}
+let arcatePianoPresta   = {};  // {sup: [{tid:'corona', stato:'dafare'}], inf: [...]}
+
 // Autosave debounced per odontogramma
 let _odSaveTimer = null;
 function scheduleOdoSave() {
@@ -953,6 +967,8 @@ window.addEventListener('load', () => {
   buildArcateBtns('arcate-attuali-btns', 'arcata-attuale-popup', 'attuale');
   buildArcateBtns('arcate-piano-btns',   'arcata-piano-popup',   'piano');
   buildQuadranteBtns();
+  buildArcatePresta('attuale');
+  buildArcatePresta('piano');
   startApp();
 });
 
@@ -1034,6 +1050,8 @@ async function openPatient(id) {
   teethPiano    = safeJson(p.piano, {});
   arcatePiano    = safeJson(p.arcate_piano, {});
   quadrantePiano = safeJson(p.quad_piano, {});
+  arcateAttualePresta = safeJson(p.arcate_attuale_presta, {});
+  arcatePianoPresta   = safeJson(p.arcate_piano_presta, {});
   diary         = safeJson(p.diario, []);
   docs          = safeJson(p.documenti, []);
   prevRows      = safeJson(p.preventivi, []);
@@ -1042,6 +1060,8 @@ async function openPatient(id) {
   refreshArcate('attuale');
   refreshArcate('piano');
   refreshQuadranti();
+  refreshArcatePresta('attuale');
+  refreshArcatePresta('piano');
   renderPianoRiepilogo();
   renderPrevRows();
   initPrevHeader();
@@ -1064,11 +1084,15 @@ async function openPatient(id) {
     teethPiano    = safeJson(d.piano, {});
     arcatePiano    = safeJson(d.arcate_piano, {});
     quadrantePiano = safeJson(d.quad_piano, {});
+    arcateAttualePresta = safeJson(d.arcate_attuale_presta, {});
+    arcatePianoPresta   = safeJson(d.arcate_piano_presta, {});
     refreshOdonto('attuale');
     refreshOdonto('piano');
     refreshArcate('attuale');
     refreshArcate('piano');
     refreshQuadranti();
+    refreshArcatePresta('attuale');
+    refreshArcatePresta('piano');
     renderPianoRiepilogo();
     setSyncPill('ok');
   });
@@ -1104,6 +1128,8 @@ function collectData() {
     piano:         JSON.stringify(teethPiano),
     arcate_piano:  JSON.stringify(arcatePiano),
     quad_piano:    JSON.stringify(quadrantePiano),
+    arcate_attuale_presta: JSON.stringify(arcateAttualePresta),
+    arcate_piano_presta:   JSON.stringify(arcatePianoPresta),
     prev_validita: parseInt(document.getElementById('prev-validita')?.value||30),
     preventivi:    JSON.stringify(prevRows),
     diario:        JSON.stringify(diary),
@@ -1588,6 +1614,116 @@ function setStatoQuadrante(qid, tid, stato) {
 }
 
 // ════════════════════════════════════════════════════════════
+// PRESTAZIONI PER ARCATA COMPLETA (usa TR_ATTUALE / TR_PIANO)
+// ════════════════════════════════════════════════════════════
+function buildArcatePresta(type) {
+  const rowId   = type === 'attuale' ? 'arcate-presta-attuale-btns'  : 'arcate-presta-piano-btns';
+  const popupId = type === 'attuale' ? 'arcata-presta-attuale-popup' : 'arcata-presta-piano-popup';
+  const el = document.getElementById(rowId);
+  if (!el) return;
+  el.innerHTML = ARCATE.map(a =>
+    `<button class="arcata-btn" id="${rowId}-${a.id}" onclick="selectArcataPresta('${a.id}','${type}','${rowId}','${popupId}')">${a.label}</button>`
+  ).join('');
+}
+
+function refreshArcatePresta(type) {
+  const rowId = type === 'attuale' ? 'arcate-presta-attuale-btns' : 'arcate-presta-piano-btns';
+  const data  = type === 'attuale' ? arcateAttualePresta : arcatePianoPresta;
+  const TR    = type === 'attuale' ? TR_ATTUALE : TR_PIANO;
+  ARCATE.forEach(a => {
+    const btn = document.getElementById(`${rowId}-${a.id}`);
+    if (!btn) return;
+    const items = data[a.id] || [];
+    btn.classList.toggle('has', items.length > 0);
+    const rawIds = type === 'attuale' ? items : items.map(x => x.tid || x);
+    const syms = rawIds.slice(0, 5).map(tid => {
+      const t = TR.find(x => x.id === tid);
+      return t ? `<span style="background:${t.color};color:white;font-size:9px;font-weight:700;padding:1px 4px;border-radius:3px;margin-left:3px">${t.sym}</span>` : '';
+    }).join('');
+    const extra = items.length > 5 ? `<span style="font-size:9px;color:var(--gray-500);margin-left:3px">+${items.length-5}</span>` : '';
+    btn.innerHTML = `${a.label}${syms}${extra}`;
+  });
+}
+
+function selectArcataPresta(aid, type, rowId, popupId) {
+  const popup = document.getElementById(popupId);
+  const data  = type === 'attuale' ? arcateAttualePresta : arcatePianoPresta;
+  const TR    = type === 'attuale' ? TR_ATTUALE : TR_PIANO;
+  if (!data[aid]) data[aid] = [];
+  const items  = data[aid];
+  const arcata = ARCATE.find(a => a.id === aid);
+
+  const btns = TR.map(t => {
+    const on = type === 'attuale'
+      ? items.includes(t.id)
+      : items.some(x => (x.tid || x) === t.id);
+    return `<button class="treat-btn ${on ? 'on' : ''}"
+      style="color:${t.color};${on ? 'background:' + t.color + ';' : ''}border-color:${on ? t.color : '#E5E3DC'}"
+      onclick="toggleArcataPresta('${aid}','${t.id}','${type}','${rowId}','${popupId}')">
+      <span class="treat-sym" style="background:${on ? 'rgba(255,255,255,.25)' : t.bg};color:${on ? 'white' : t.color}">${t.sym}</span>
+      ${t.label}
+    </button>`;
+  }).join('');
+
+  let statoHtml = '';
+  if (type === 'piano' && items.length) {
+    statoHtml = '<div style="margin-top:.7rem;border-top:var(--border);padding-top:.7rem">' +
+      '<div style="font-size:11px;font-weight:600;color:var(--gray-500);margin-bottom:.4rem">Stato:</div>' +
+      items.map(item => {
+        const tid   = item.tid || item;
+        const stato = item.stato || 'dafare';
+        const t     = TR.find(x => x.id === tid);
+        return t ? '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;gap:8px">' +
+          `<span style="font-size:11px;font-weight:600;color:${t.color};flex:1">${t.sym} ${t.label}</span>` +
+          '<div class="stato-selector">' +
+          `<button class="stato-opt so-dafare ${stato === 'dafare' ? 'on' : ''}" onclick="setStatoArcataPresta('${aid}','${tid}','dafare','${type}','${rowId}','${popupId}')">Da fare</button>` +
+          `<button class="stato-opt so-incorso ${stato === 'incorso' ? 'on' : ''}" onclick="setStatoArcataPresta('${aid}','${tid}','incorso','${type}','${rowId}','${popupId}')">In corso</button>` +
+          `<button class="stato-opt so-eseguito ${stato === 'eseguito' ? 'on' : ''}" onclick="setStatoArcataPresta('${aid}','${tid}','eseguito','${type}','${rowId}','${popupId}')">Eseguito</button>` +
+          '</div></div>' : '';
+      }).join('') + '</div>';
+  }
+
+  popup.innerHTML =
+    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.6rem">' +
+    `<strong style="font-size:13px">${arcata.label} — Prestazioni</strong>` +
+    `<button class="popup-close" onclick="document.getElementById('${popupId}').classList.remove('open')">✕</button>` +
+    '</div>' +
+    '<div style="font-size:11px;color:var(--gray-500);margin-bottom:.6rem">Seleziona le prestazioni da assegnare all'arcata intera</div>' +
+    `<div class="treat-grid">${btns}</div>` +
+    statoHtml;
+  popup.classList.add('open');
+}
+
+function toggleArcataPresta(aid, tid, type, rowId, popupId) {
+  const data = type === 'attuale' ? arcateAttualePresta : arcatePianoPresta;
+  if (!data[aid]) data[aid] = [];
+  if (type === 'attuale') {
+    const idx = data[aid].indexOf(tid);
+    if (idx >= 0) data[aid].splice(idx, 1); else data[aid].push(tid);
+  } else {
+    const idx = data[aid].findIndex(x => (x.tid || x) === tid);
+    if (idx >= 0) data[aid].splice(idx, 1); else data[aid].push({tid, stato: 'dafare'});
+  }
+  if (!data[aid].length) delete data[aid];
+  refreshArcatePresta(type);
+  selectArcataPresta(aid, type, rowId, popupId);
+  renderPianoRiepilogo();
+  scheduleOdoSave();
+}
+
+function setStatoArcataPresta(aid, tid, stato, type, rowId, popupId) {
+  const data = type === 'attuale' ? arcateAttualePresta : arcatePianoPresta;
+  const item = (data[aid] || []).find(x => (x.tid || x) === tid);
+  if (item && typeof item === 'object') {
+    item.stato = stato;
+    refreshArcatePresta(type);
+    selectArcataPresta(aid, type, rowId, popupId);
+    renderPianoRiepilogo();
+    scheduleOdoSave();
+  }
+}
+
+// ════════════════════════════════════════════════════════════
 // PIANO RIEPILOGO (sotto l'odontogramma piano)
 // ════════════════════════════════════════════════════════════
 function renderPianoRiepilogo() {
@@ -1602,13 +1738,23 @@ function renderPianoRiepilogo() {
     });
   });
 
-  // Trattamenti per arcata
+  // Trattamenti per arcata (ARCH_TR — protesi, ortodonzia, ecc.)
   Object.entries(arcatePiano).forEach(([aid, items]) => {
     const arc = ARCATE.find(a=>a.id===aid);
     (items||[]).forEach(item => {
       const tid = item.tid||item;
       const t   = ARCH_TR.find(x=>x.id===tid);
       if (t) entries.push({label: arc ? arc.label : aid, t, stato: item.stato||'dafare'});
+    });
+  });
+
+  // Trattamenti per arcata (prestazioni complete TR_PIANO)
+  Object.entries(arcatePianoPresta).forEach(([aid, items]) => {
+    const arc = ARCATE.find(a=>a.id===aid);
+    (items||[]).forEach(item => {
+      const tid = item.tid||item;
+      const t   = TR_PIANO.find(x=>x.id===tid);
+      if (t) entries.push({label: (arc ? arc.label : aid)+' (arcata)', t, stato: item.stato||'dafare'});
     });
   });
 
