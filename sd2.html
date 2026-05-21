@@ -269,7 +269,7 @@
 
 </div>
 <script>
-const API_KEY = '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';
+const PROXY_URL = 'https://sd-proxy-production-d279.up.railway.app/analizza'; // sostituisci con il tuo URL Railway
 const $ = id => document.getElementById(id);
 
 // screens
@@ -325,14 +325,26 @@ async function analyze() {
   show('s-loading'); animateSteps();
 
   const prompt = `Sei l'assistente digitale di Healthy Smile By N, studio dentistico a Torino.
-Filosofia: guadagniamo quando il paziente sta bene, non quando sta male. Piano Protezione = costo condiviso fino a -70% su elementi già mappati.
+
+Filosofia: guadagniamo quando il paziente sta bene, non quando sta male.
+Piano Protezione = costo condiviso fino a -70% su trattamenti già mappati nella scheda digitale.
+Il Piano Protezione copre: endodonzia (devitalizzazioni), conservativa (carie, ricostruzioni), chirurgia orale, protesi (corone, ponti, impianti).
+Il Piano Protezione NON copre l'igiene professionale — quella è il primo passo, non un prodotto.
 
 Analizza la foto del sorriso. Descrivi solo ciò che è visibile. Tono diretto, umano, non clinico né allarmista.
 
-3 sezioni: ok / controllare / attenzione — 2-4 osservazioni brevi ciascuna.
-Blocco costi: 1-3 trattamenti visibili o probabili con stime realistiche italiane (es. carie semplice €120→€48, devitalizzazione €600→€240, corona €900→€360).
-nota_filosofia: 2 righe personalizzate che collegano la situazione specifica alla filosofia "guadagniamo quando stai bene".
-Se foto non leggibile: foto_leggibile false.
+SEZIONI (ok / controllare / attenzione) — 2-4 osservazioni brevi ciascuna:
+- Se vedi tartaro, macchie, gengive arrossate: mettili in "controllare" o "attenzione" come osservazione, ma NON inserirli nel blocco costi.
+- Per igiene scrivi solo: "Igiene — da valutare in studio come primo passo del percorso."
+
+BLOCCO COSTI — solo per: carie, ricostruzioni, devitalizzazioni, estrazioni, corone, ponti, impianti.
+1-3 voci visibili o probabili, stime realistiche italiane:
+es. carie semplice €120→€48 (-60%), devitalizzazione €600→€240 (-60%), corona €900→€360 (-60%), impianto €1800→€720 (-60%).
+Se non vedi nulla di rilevante per queste categorie, lascia costi come array vuoto.
+
+nota_filosofia: 2 righe personalizzate sulla situazione specifica — collega quello che vedi alla filosofia "guadagniamo quando stai bene". Mai allarmista.
+
+Se foto non leggibile (buio, sfocata, nessun dente visibile): foto_leggibile false.
 
 Rispondi SOLO con JSON valido:
 {
@@ -344,17 +356,10 @@ Rispondi SOLO con JSON valido:
 }`;
 
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
+    const res = await fetch(PROXY_URL, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': API_KEY,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true'
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'claude-opus-4-5',
-        max_tokens: 1200,
         messages: [{ role: 'user', content: [
           { type: 'image', source: { type: 'base64', media_type: mime, data: b64 } },
           { type: 'text', text: prompt }
