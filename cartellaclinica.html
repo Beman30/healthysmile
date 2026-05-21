@@ -469,15 +469,10 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--gray-50);color:
             </div>
             <div style="font-size:11px;color:var(--gray-500);margin-bottom:.6rem">Clicca un dente per registrare la situazione esistente (otturazioni, corone, impianti già presenti...)</div>
 
-            <!-- Arcate attuali -->
-            <div style="font-size:10px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.04em;margin-bottom:.4rem">Arcate complete — protesi / ortodonzia</div>
+            <!-- Arcate attuali — unica sezione unificata -->
+            <div style="font-size:10px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.04em;margin-bottom:.4rem">Arcate complete</div>
             <div class="arcate-row" id="arcate-attuali-btns"></div>
             <div id="arcata-attuale-popup" class="arcata-popup"></div>
-
-            <!-- Prestazioni per arcata attuale -->
-            <div style="font-size:10px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.04em;margin-bottom:.4rem;margin-top:.7rem">Prestazioni per arcata completa</div>
-            <div class="arcate-row" id="arcate-presta-attuale-btns"></div>
-            <div id="arcata-presta-attuale-popup" class="arcata-popup"></div>
 
             <div class="odonto-wrap">
               <svg id="odonto-attuale" viewBox="0 0 660 200" style="width:100%;min-width:580px"></svg>
@@ -496,15 +491,10 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--gray-50);color:
             </div>
             <div style="font-size:11px;color:var(--gray-500);margin-bottom:.6rem">Clicca un dente per assegnare trattamenti da eseguire. Il bordo indica lo stato: <span style="color:var(--red);font-weight:600">rosso = da fare</span> · <span style="color:var(--amber);font-weight:600">giallo = in corso</span> · <span style="color:var(--teal);font-weight:600">verde = eseguito</span></div>
 
-            <!-- Arcate piano -->
-            <div style="font-size:10px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.04em;margin-bottom:.4rem">Arcate complete — protesi / ortodonzia</div>
+            <!-- Arcate piano — unica sezione unificata -->
+            <div style="font-size:10px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.04em;margin-bottom:.4rem">Arcate complete</div>
             <div class="arcate-row" id="arcate-piano-btns"></div>
             <div id="arcata-piano-popup" class="arcata-popup"></div>
-
-            <!-- Prestazioni per arcata piano -->
-            <div style="font-size:10px;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:.04em;margin-bottom:.4rem;margin-top:.7rem">Prestazioni per arcata completa</div>
-            <div class="arcate-row" id="arcate-presta-piano-btns"></div>
-            <div id="arcata-presta-piano-popup" class="arcata-popup"></div>
 
             <!-- Quadranti piano -->
             <div style="font-size:10px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.04em;margin-bottom:.4rem;margin-top:.7rem">Per quadrante</div>
@@ -996,8 +986,6 @@ window.addEventListener('load', () => {
   buildArcateBtns('arcate-attuali-btns', 'arcata-attuale-popup', 'attuale');
   buildArcateBtns('arcate-piano-btns',   'arcata-piano-popup',   'piano');
   buildQuadranteBtns();
-  buildArcatePresta('attuale');
-  buildArcatePresta('piano');
   startApp();
 });
 
@@ -1465,32 +1453,45 @@ function buildArcateBtns(rowId, popupId, type) {
 }
 
 function refreshArcate(type) {
-  const rowId  = type==='attuale' ? 'arcate-attuali-btns' : 'arcate-piano-btns';
-  const data   = type==='attuale' ? arcateAttuale : arcatePiano;
+  const rowId    = type==='attuale' ? 'arcate-attuali-btns' : 'arcate-piano-btns';
+  const dataArch = type==='attuale' ? arcateAttuale : arcatePiano;
+  const dataPres = type==='attuale' ? arcateAttualePresta : arcatePianoPresta;
+  const TR       = type==='attuale' ? TR_ATTUALE : TR_PIANO;
   ARCATE.forEach(a => {
     const btn = document.getElementById(`${rowId}-${a.id}`);
     if (!btn) return;
-    const items = data[a.id] || [];
-    btn.classList.toggle('has', items.length>0);
-    const syms = (type==='attuale' ? items : items.map(x=>x.tid||x)).map(tid => {
+    const archItems = dataArch[a.id] || [];
+    const presItems = dataPres[a.id] || [];
+    const hasAny = archItems.length > 0 || presItems.length > 0;
+    btn.classList.toggle('has', hasAny);
+    const archSyms = (type==='attuale' ? archItems : archItems.map(x=>x.tid||x)).map(tid => {
       const t = ARCH_TR.find(x=>x.id===tid);
-      return t?`<span style="background:${t.color};color:white;font-size:9px;font-weight:700;padding:1px 4px;border-radius:3px;margin-left:3px">${t.sym}</span>`:'';
+      return t ? `<span style="background:${t.color};color:white;font-size:9px;font-weight:700;padding:1px 4px;border-radius:3px;margin-left:2px">${t.sym}</span>` : '';
     }).join('');
-    btn.innerHTML = `${a.label}${syms}`;
+    const presIds = type==='attuale' ? presItems : presItems.map(x=>x.tid||x);
+    const presSyms = presIds.slice(0,4).map(tid => {
+      const t = TR.find(x=>x.id===tid);
+      return t ? `<span style="background:${t.color};color:white;font-size:9px;font-weight:700;padding:1px 4px;border-radius:3px;margin-left:2px">${t.sym}</span>` : '';
+    }).join('');
+    const extra = presItems.length > 4 ? `<span style="font-size:9px;color:var(--gray-500);margin-left:2px">+${presItems.length-4}</span>` : '';
+    btn.innerHTML = `${a.label}${archSyms}${presSyms}${extra}`;
   });
 }
 
 function selectArcata(aid, type, rowId, popupId) {
-  const popup = document.getElementById(popupId);
-  const data  = type==='attuale' ? arcateAttuale : arcatePiano;
-  if (!data[aid]) data[aid] = [];
-  const items = data[aid];
-  const arcata = ARCATE.find(a=>a.id===aid);
+  const popup    = document.getElementById(popupId);
+  const dataArch = type==='attuale' ? arcateAttuale : arcatePiano;
+  const dataPres = type==='attuale' ? arcateAttualePresta : arcatePianoPresta;
+  const TR       = type==='attuale' ? TR_ATTUALE : TR_PIANO;
+  if (!dataArch[aid]) dataArch[aid] = [];
+  if (!dataPres[aid]) dataPres[aid] = [];
+  const archItems = dataArch[aid];
+  const presItems = dataPres[aid];
+  const arcata    = ARCATE.find(a=>a.id===aid);
 
-  const btns = ARCH_TR.map(t => {
-    const on = type==='attuale'
-      ? items.includes(t.id)
-      : items.some(x=>(x.tid||x)===t.id);
+  // Sezione 1: ARCH_TR (protesi, ortodonzia)
+  const archBtns = ARCH_TR.map(t => {
+    const on = type==='attuale' ? archItems.includes(t.id) : archItems.some(x=>(x.tid||x)===t.id);
     return `<button class="treat-btn ${on?'on':''}"
       style="color:${t.color};${on?'background:'+t.color+';':''}border-color:${on?t.color:'#E5E3DC'}"
       onclick="toggleArcata('${aid}','${t.id}','${type}','${rowId}','${popupId}')">
@@ -1499,33 +1500,65 @@ function selectArcata(aid, type, rowId, popupId) {
     </button>`;
   }).join('');
 
-  let statoHtml = '';
-  if (type==='piano' && items.length) {
-    statoHtml = `<div style="margin-top:.7rem;border-top:var(--border);padding-top:.7rem">
-      <div style="font-size:11px;font-weight:600;color:var(--gray-500);margin-bottom:.4rem">Stato:</div>
-      ${items.map(item => {
-        const tid = item.tid||item;
-        const stato = item.stato||'dafare';
-        const t = ARCH_TR.find(x=>x.id===tid);
-        return t?`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px">
-          <span style="font-size:12px;font-weight:600;color:${t.color}">${t.sym} ${t.label}</span>
-          <div class="stato-selector">
-            <button class="stato-opt so-dafare ${stato==='dafare'?'on':''}" onclick="setStatoArcata('${aid}','${tid}','dafare','${type}','${rowId}','${popupId}')">Da fare</button>
-            <button class="stato-opt so-incorso ${stato==='incorso'?'on':''}" onclick="setStatoArcata('${aid}','${tid}','incorso','${type}','${rowId}','${popupId}')">In corso</button>
-            <button class="stato-opt so-eseguito ${stato==='eseguito'?'on':''}" onclick="setStatoArcata('${aid}','${tid}','eseguito','${type}','${rowId}','${popupId}')">Eseguito</button>
-          </div>
-        </div>`:'';
-      }).join('')}
-    </div>`;
+  // Sezione 2: TR_ATTUALE / TR_PIANO (prestazioni singolo dente, applicate ad arcata)
+  const presBtns = TR.map(t => {
+    const on = type==='attuale' ? presItems.includes(t.id) : presItems.some(x=>(x.tid||x)===t.id);
+    return `<button class="treat-btn ${on?'on':''}"
+      style="color:${t.color};${on?'background:'+t.color+';':''}border-color:${on?t.color:'#E5E3DC'}"
+      onclick="toggleArcataPresta('${aid}','${t.id}','${type}','${rowId}','${popupId}')">
+      <span class="treat-sym" style="background:${on?'rgba(255,255,255,.25)':t.bg||t.color+'22'};color:${on?'white':t.color}">${t.sym}</span>
+      ${t.label}
+    </button>`;
+  }).join('');
+
+  // Stato per ARCH_TR piano
+  let archStatoHtml = '';
+  if (type==='piano' && archItems.length) {
+    archStatoHtml = archItems.map(item => {
+      const tid = item.tid||item; const stato = item.stato||'dafare';
+      const t = ARCH_TR.find(x=>x.id===tid);
+      return t ? `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px">
+        <span style="font-size:11px;font-weight:600;color:${t.color}">${t.sym} ${t.label}</span>
+        <div class="stato-selector">
+          <button class="stato-opt so-dafare ${stato==='dafare'?'on':''}" onclick="setStatoArcata('${aid}','${tid}','dafare','${type}','${rowId}','${popupId}')">Da fare</button>
+          <button class="stato-opt so-incorso ${stato==='incorso'?'on':''}" onclick="setStatoArcata('${aid}','${tid}','incorso','${type}','${rowId}','${popupId}')">In corso</button>
+          <button class="stato-opt so-eseguito ${stato==='eseguito'?'on':''}" onclick="setStatoArcata('${aid}','${tid}','eseguito','${type}','${rowId}','${popupId}')">Eseguito</button>
+        </div>
+      </div>` : '';
+    }).join('');
   }
+
+  // Stato per prestazioni piano
+  let presStatoHtml = '';
+  if (type==='piano' && presItems.length) {
+    presStatoHtml = presItems.map(item => {
+      const tid = item.tid||item; const stato = item.stato||'dafare';
+      const t = TR.find(x=>x.id===tid);
+      return t ? `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px">
+        <span style="font-size:11px;font-weight:600;color:${t.color}">${t.sym} ${t.label}</span>
+        <div class="stato-selector">
+          <button class="stato-opt so-dafare ${stato==='dafare'?'on':''}" onclick="setStatoArcataPresta('${aid}','${tid}','dafare','${type}','${rowId}','${popupId}')">Da fare</button>
+          <button class="stato-opt so-incorso ${stato==='incorso'?'on':''}" onclick="setStatoArcataPresta('${aid}','${tid}','incorso','${type}','${rowId}','${popupId}')">In corso</button>
+          <button class="stato-opt so-eseguito ${stato==='eseguito'?'on':''}" onclick="setStatoArcataPresta('${aid}','${tid}','eseguito','${type}','${rowId}','${popupId}')">Eseguito</button>
+        </div>
+      </div>` : '';
+    }).join('');
+  }
+
+  const statoSection = (archStatoHtml || presStatoHtml)
+    ? `<div style="margin-top:.7rem;border-top:var(--border);padding-top:.7rem">
+        <div style="font-size:11px;font-weight:600;color:var(--gray-500);margin-bottom:.4rem">Stato:</div>
+        ${archStatoHtml}${presStatoHtml}
+      </div>` : '';
 
   popup.innerHTML = `
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.8rem">
       <strong style="font-size:13px">${arcata.label}</strong>
       <button class="popup-close" onclick="document.getElementById('${popupId}').classList.remove('open')">✕</button>
     </div>
-    <div class="treat-grid">${btns}</div>
-    ${statoHtml}`;
+    ${ARCH_TR.length ? `<div style="font-size:10px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.04em;margin-bottom:.4rem">Protesi / Ortodonzia</div><div class="treat-grid">${archBtns}</div>` : ''}
+    ${TR.length ? `<div style="font-size:10px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.04em;margin:.6rem 0 .4rem">Prestazioni</div><div class="treat-grid">${presBtns}</div>` : ''}
+    ${statoSection}`;
   popup.classList.add('open');
 }
 
@@ -1645,33 +1678,9 @@ function setStatoQuadrante(qid, tid, stato) {
 // ════════════════════════════════════════════════════════════
 // PRESTAZIONI PER ARCATA COMPLETA (usa TR_ATTUALE / TR_PIANO)
 // ════════════════════════════════════════════════════════════
-function buildArcatePresta(type) {
-  const rowId   = type === 'attuale' ? 'arcate-presta-attuale-btns'  : 'arcate-presta-piano-btns';
-  const popupId = type === 'attuale' ? 'arcata-presta-attuale-popup' : 'arcata-presta-piano-popup';
-  const el = document.getElementById(rowId);
-  if (!el) return;
-  el.innerHTML = ARCATE.map(a =>
-    `<button class="arcata-btn" id="${rowId}-${a.id}" onclick="selectArcataPresta('${a.id}','${type}','${rowId}','${popupId}')">${a.label}</button>`
-  ).join('');
-}
-
 function refreshArcatePresta(type) {
-  const rowId = type === 'attuale' ? 'arcate-presta-attuale-btns' : 'arcate-presta-piano-btns';
-  const data  = type === 'attuale' ? arcateAttualePresta : arcatePianoPresta;
-  const TR    = type === 'attuale' ? TR_ATTUALE : TR_PIANO;
-  ARCATE.forEach(a => {
-    const btn = document.getElementById(`${rowId}-${a.id}`);
-    if (!btn) return;
-    const items = data[a.id] || [];
-    btn.classList.toggle('has', items.length > 0);
-    const rawIds = type === 'attuale' ? items : items.map(x => x.tid || x);
-    const syms = rawIds.slice(0, 5).map(tid => {
-      const t = TR.find(x => x.id === tid);
-      return t ? `<span style="background:${t.color};color:white;font-size:9px;font-weight:700;padding:1px 4px;border-radius:3px;margin-left:3px">${t.sym}</span>` : '';
-    }).join('');
-    const extra = items.length > 5 ? `<span style="font-size:9px;color:var(--gray-500);margin-left:3px">+${items.length-5}</span>` : '';
-    btn.innerHTML = `${a.label}${syms}${extra}`;
-  });
+  // Ora gestito dentro refreshArcate (popup unificato)
+  refreshArcate(type);
 }
 
 function selectArcataPresta(aid, type, rowId, popupId) {
@@ -1734,8 +1743,11 @@ function toggleArcataPresta(aid, tid, type, rowId, popupId) {
     if (idx >= 0) data[aid].splice(idx, 1); else data[aid].push({tid, stato: 'dafare'});
   }
   if (!data[aid].length) delete data[aid];
-  refreshArcatePresta(type);
-  selectArcataPresta(aid, type, rowId, popupId);
+  refreshArcate(type);
+  // Riapri il popup unificato (rowId/popupId dell'arcata principale)
+  const uRowId   = type === 'attuale' ? 'arcate-attuali-btns' : 'arcate-piano-btns';
+  const uPopupId = type === 'attuale' ? 'arcata-attuale-popup' : 'arcata-piano-popup';
+  selectArcata(aid, type, uRowId, uPopupId);
   renderPianoRiepilogo();
   scheduleOdoSave();
 }
@@ -1745,8 +1757,10 @@ function setStatoArcataPresta(aid, tid, stato, type, rowId, popupId) {
   const item = (data[aid] || []).find(x => (x.tid || x) === tid);
   if (item && typeof item === 'object') {
     item.stato = stato;
-    refreshArcatePresta(type);
-    selectArcataPresta(aid, type, rowId, popupId);
+    refreshArcate(type);
+    const uRowId   = type === 'attuale' ? 'arcate-attuali-btns' : 'arcate-piano-btns';
+    const uPopupId = type === 'attuale' ? 'arcata-attuale-popup' : 'arcata-piano-popup';
+    selectArcata(aid, type, uRowId, uPopupId);
     renderPianoRiepilogo();
     scheduleOdoSave();
   }
