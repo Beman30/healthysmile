@@ -2457,22 +2457,10 @@ function stampaPrev() {
 // APRI IN EDITOR
 // ════════════════════════════════════════════════════════════
 function apriInEditor() {
-  if (!currentId) return;
-  // Salva prima
-  savePatient();
-  // Costruisci payload
-  const payload = {
-    codice: gv('f-codice'),
-    attuale: teethAttuale,
-    piano: teethPiano
-  };
-  const encoded = encodeURIComponent(JSON.stringify(payload));
-  // Apre l'editor con i dati nell'URL
-  // L'editor deve trovarsi nella stessa cartella con nome HealthySmile-Editor.html
-  const editorPath = 'HealthySmile-Editor.html';
-  const url = `${editorPath}?hs=${encoded}`;
+  if (!currentId) { notify('Seleziona prima un paziente', 'err'); return; }
+  const url = `HealthySmile-Editor.html?id=${encodeURIComponent(currentId)}`;
   window.open(url, '_blank');
-  notify('Apertura editor con dati paziente...', 'ok');
+  notify('Apertura editor...', 'ok');
 }
 
 // (demo mode rimosso — Firebase attivo)
