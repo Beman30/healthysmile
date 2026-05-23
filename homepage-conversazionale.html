@@ -52,7 +52,7 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);font-size:16
 
 /* ── NAV ─────────────────────────────────────────── */
 nav{position:sticky;top:0;z-index:100;background:var(--bg);border-bottom:1px solid var(--border);padding:0 32px;display:flex;align-items:center;justify-content:space-between;height:56px}
-.nav-logo{font-family:var(--serif);font-size:17px;color:var(--text);text-decoration:none;letter-spacing:-.01em;font-style:italic}
+.nav-logo{font-family:var(--serif);font-size:17px;color:var(--text-soft);text-decoration:none;letter-spacing:-.01em;font-style:italic}
 .nav-logo strong{font-style:normal;color:var(--violet);font-weight:400}
 .nav-links{display:flex;gap:4px;align-items:center}
 .nav-links a{font-size:13px;color:var(--text-soft);text-decoration:none;padding:6px 12px;border-radius:4px;transition:color .15s}
@@ -105,10 +105,10 @@ nav{position:sticky;top:0;z-index:100;background:var(--bg);border-bottom:1px sol
 /* ── SCELTE INIZIALI (lista editoriale) ──────────── */
 .start-label{
   display:block;
-  font-size:11px;
-  letter-spacing:.12em;
+  font-size:13px;
+  letter-spacing:.07em;
   text-transform:uppercase;
-  color:#4a3566;
+  color:#9080a8;
   margin-bottom:0;
 }
 .start-choices{
@@ -125,21 +125,22 @@ nav{position:sticky;top:0;z-index:100;background:var(--bg);border-bottom:1px sol
   border-bottom:1px solid #2e1f4e;
   padding:22px 0;
   font-family:var(--sans);
-  font-size:clamp(15px,2vw,17px);
-  color:#7a6a90;
+  font-size:19px;
+  line-height:1.35;
+  color:#c8bcd8;
   cursor:pointer;
   text-align:left;
-  transition:color .2s;
+  transition:color .2s,background .2s;
   gap:20px;
 }
 .start-btn .s-arr{
-  font-size:16px;
-  color:#3d2f5e;
+  font-size:18px;
+  color:#7a5fa8;
   transition:color .2s,transform .2s;
   flex-shrink:0;
 }
 .start-btn:hover{color:var(--white)}
-.start-btn:hover .s-arr{color:var(--pink);transform:translateX(5px)}
+.start-btn:hover .s-arr{color:var(--pink);transform:translateX(6px)}
 .start-btn.active{color:var(--white)}
 .start-btn.active .s-arr{color:var(--pink)}
 
@@ -759,6 +760,8 @@ footer{
 @media(max-width:600px){
   nav{padding:0 16px}
   .hero{padding:72px 20px 72px}
+  .start-label{font-size:12px;letter-spacing:.05em}
+  .start-btn{font-size:17px;padding:20px 0}
   .conversation{padding:56px 20px 80px}
   .sistema-protezione{padding:48px 16px}
   .sp-inner{padding:28px 20px}
