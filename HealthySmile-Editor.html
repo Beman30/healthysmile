@@ -872,96 +872,104 @@ function prezzoTR(tid) {
   return TR_PRICE[tid] || 0;
 }
 
-// ─── TESTI CLINICI COINVOLGENTI ───
+// ─── TESTI CLINICI — regola fondamentale ───────────────────────────────────
+// attualeArr = situazione GIÀ presente in bocca (odontogramma attuale)
+// pianoItems = prestazioni da fare/in corso/eseguite (piano trattamenti)
+// Il consiglio descrive PRIMA lo stato attuale, POI le cure pianificate.
+// Non inventa mai prestazioni: usa solo ciò che è in pianoItems dafare.
 function generaConsiglioClinico(num, pianoItems, attualeArr) {
   const daFare = pianoItems.filter(x => x.stato === 'dafare');
   if (!daFare.length) return null;
 
-  // Priorità trattamenti per testo principale
-  const hasTid = (tid) => daFare.some(x => x.tid === tid || TR_HIGH.concat(TR_MEDIUM).includes(x.tid));
-  const tids = daFare.map(x => x.tid);
+  const tids  = daFare.map(x => x.tid);
+  // Tutte le prestazioni da fare — nome leggibile, nessuna omissione
+  const nomiDaFare = daFare.map(x => labelTR(x.tid)).filter(Boolean);
+
+  // ── Stato attuale dal odontogramma ──
+  const attArr = Array.isArray(attualeArr) ? attualeArr : [];
+  const DEVITAL_IDS = ['devitaliz','terapia_endodontica_monocanalare',
+    'terapia_endodontica_bicanalare','terapia_endodontica_pluricanalare'];
+  const giaDevital  = attArr.some(t => DEVITAL_IDS.includes(t));
+  const giaImpianto = attArr.includes('impianto');
+  const giaCorona   = attArr.includes('corona');
+  const statoLabels = attArr.filter(t => t !== 'sano').map(t => labelTR(t)).filter(Boolean);
+  const prefissoStato = statoLabels.length
+    ? `Il dente ${num} (stato attuale: ${statoLabels.join(', ')}) `
+    : `Il dente ${num} `;
+
+  // ── Tipologie prestazioni pianificate ──
+  const EX_IDS  = ['da_estrarre','exs','exc','exg','exi','esi','exd',
+    'estrazione_semplice','estrazione_complessa','estrazione_dente_del_giudizio',
+    'estrazione_elemento_incluso','estrazione_elemento_semi_incluso'];
+  const ENDO_IDS = ['endo_fare','e1','e2','ep','terapia_endodontica_monocanalare',
+    'terapia_endodontica_bicanalare','terapia_endodontica_pluricanalare',
+    'ritratt1','ritratt2','ritratt3','ritrattamento_monocanalare','ritrattamento_pluricanalare'];
+  const K_IDS   = ['corona_fare','kzr','kzi','corona_zirconio','corona_zirconio_su_impianto',
+    'rifacimento_corona_in_zirconia'];
+  const IMP_IDS = ['imp_fare','impianto_osteointegrabile','impianto_zigomatico'];
+  const OTT_IDS = ['da_otturare','ott1','ott2','ott5','ol','or',
+    'otturazione_i_classe','otturazione_ii_classe','otturazione_v_classe',
+    'otturazione_dente_da_latte','otturazione_a_rischio_devitaliz'];
+
+  const hasEx   = tids.some(t => EX_IDS.includes(t));
+  const hasEndo = tids.some(t => ENDO_IDS.includes(t));
+  const hasK    = tids.some(t => K_IDS.includes(t));
+  const hasImp  = tids.some(t => IMP_IDS.includes(t));
+  const hasOtt  = tids.some(t => OTT_IDS.includes(t));
+
+  // Suffisso con piano completo quando ci sono più prestazioni
+  const pianoCompleto = nomiDaFare.length > 1
+    ? ` Piano completo: ${nomiDaFare.join(', ')}.`
+    : '';
 
   // ── Estrazione ──
-  if (tids.some(t => ['da_estrarre','exs','exc','exg','exi','esi','exd',
-      'estrazione_semplice','estrazione_complessa','estrazione_dente_del_giudizio',
-      'estrazione_elemento_incluso','estrazione_elemento_semi_incluso'].includes(t))) {
-    const hasImpianto = tids.some(t => ['imp_fare','impianto_osteointegrabile'].includes(t));
-    return `Il dente ${num} non è più recuperabile nelle condizioni attuali e necessita di estrazione. ` +
-      `Prima si interviene, più semplice sarà la riabilitazione: l'osso si riassorbe nel tempo dopo la perdita del dente, ` +
-      `rendendo un futuro impianto più complesso e costoso. ` +
-      (hasImpianto ? `Abbiamo già pianificato il posizionamento dell'impianto per ripristinare la funzione masticatoria.` :
-        `Ti consigliamo di pianificare subito la riabilitazione dello spazio per evitare lo spostamento dei denti adiacenti.`);
+  if (hasEx) {
+    const parts = [`${prefissoStato}necessita di estrazione.`];
+    if (hasImp) parts.push(`È già pianificato un impianto per ripristinare la funzione masticatoria.`);
+    else        parts.push(`Pianifichiamo subito la riabilitazione dello spazio.`);
+    return parts.join(' ') + pianoCompleto;
   }
 
-  // ── Endodonzia ──
-  if (tids.some(t => ['endo_fare','e1','e2','ep','terapia_endodontica_monocanalare',
-      'terapia_endodontica_bicanalare','terapia_endodontica_pluricanalare',
-      'ritratt1','ritratt2','ritratt3','ritrattamento_monocanalare','ritrattamento_pluricanalare'].includes(t))) {
-    const hasCorona = tids.some(t => ['corona_fare','kzr','kzi','corona_zirconio'].includes(t));
-    return `Il dente ${num} ha la polpa compromessa e necessita di terapia endodontica (devitalizzazione). ` +
-      `Il trattamento canalare elimina il tessuto infetto e salva il dente — senza intervento il rischio è un ascesso ` +
-      `o la perdita definitiva dell'elemento. ` +
-      (hasCorona ? `Dopo la devitalizzazione proteggeremo il dente con una corona in zirconio per dargli la massima resistenza.` :
-        `Una volta completato il trattamento, valuteremo insieme la protezione definitiva del dente.`);
+  // ── Endodonzia su dente NON ancora devitalizzato ──
+  if (hasEndo && !giaDevital) {
+    const hasKAnche = hasK;
+    return `${prefissoStato}ha la polpa compromessa e necessita di terapia endodontica. ` +
+      `Il trattamento canalare elimina il tessuto infetto e salva il dente.` +
+      (hasKAnche ? ` Dopo la devitalizzazione, proteggeremo il dente con una corona in zirconio.` : '') +
+      pianoCompleto;
   }
 
-  // ── Otturazione ──
-  if (tids.some(t => ['da_otturare','ott1','ott2','ott5','ol','or',
-      'otturazione_i_classe','otturazione_ii_classe','otturazione_v_classe',
-      'otturazione_dente_da_latte','otturazione_a_rischio_devitaliz'].includes(t))) {
+  // ── Corona (anche su dente già devitalizzato o impianto) ──
+  if (hasK) {
+    const suImp = tids.some(t => ['kzi','corona_zirconio_su_impianto'].includes(t));
+    const contesto = giaDevital
+      ? `${prefissoStato}è già devitalizzato e necessita di una corona protettiva`
+      : giaImpianto
+        ? `Il dente ${num} ha un impianto e necessita della corona definitiva`
+        : `${prefissoStato}necessita di una corona in zirconio${suImp ? ' su impianto' : ''}`;
+    return `${contesto}. Lo zirconio garantisce resistenza e durata nel tempo.` + pianoCompleto;
+  }
+
+  // ── Impianto (senza estrazione abbinata) ──
+  if (hasImp) {
+    return `Il dente ${num} è assente e il piano prevede un impianto osteointegrato. ` +
+      `Soluzione conservativa che non intacca i denti adiacenti e mantiene l'osso in salute.` +
+      pianoCompleto;
+  }
+
+  // ── Otturazione su dente NON già devitalizzato ──
+  if (hasOtt && !giaDevital) {
     const isRischio = tids.some(t => ['or','otturazione_a_rischio_devitaliz'].includes(t));
-    if (isRischio) {
-      return `Sul dente ${num} è presente una carie profonda a rischio devitalizzazione. ` +
-        `Intervenire ora con un'otturazione mirata può ancora salvare la vitalità del nervo. ` +
-        `Se si aspetta, la probabilità di dover devitalizzare il dente aumenta significativamente — ` +
-        `con tempi e costi molto superiori. È un dente che va trattato in tempi brevi.`;
-    }
-    return `Sul dente ${num} è presente una lesione cariosa attiva. ` +
-      `Intervenire ora significa un'otturazione semplice e conservativa — il tessuto da rimuovere è ancora minimo. ` +
-      `Più si aspetta, più la carie si approfondisce verso il nervo, trasformando un'otturazione da pochi minuti ` +
-      `in un'endodonzia con costi e tempi ben superiori. È un'ottima situazione per intervenire subito.`;
+    return isRischio
+      ? `${prefissoStato}presenta una carie profonda a rischio devitalizzazione. ` +
+        `Intervenire ora può ancora salvare la vitalità del nervo.` + pianoCompleto
+      : `${prefissoStato}presenta una lesione cariosa attiva. ` +
+        `Intervenire ora significa un'otturazione semplice — prima si agisce, più si risparmia.` +
+        pianoCompleto;
   }
 
-  // ── Impianto ──
-  if (tids.some(t => ['imp_fare','impianto_osteointegrabile','impianto_zigomatico'].includes(t))) {
-    return `Il dente ${num} è assente e il piano prevede il posizionamento di un impianto osteointegrato. ` +
-      `L'impianto è la soluzione più conservativa: non intacca i denti adiacenti, ` +
-      `mantiene l'osso in salute e dura decenni con la corretta igiene. ` +
-      `Abbiamo pianificato i tempi in base allo stato dell'osso rilevato in panoramica.`;
-  }
-
-  // ── Corona ──
-  if (tids.some(t => ['corona_fare','kzr','kzi','corona_zirconio','corona_zirconio_su_impianto',
-      'rifacimento_corona_in_zirconia'].includes(t))) {
-    const suImpianto = tids.some(t => ['kzi','corona_zirconio_su_impianto'].includes(t));
-    return `Il dente ${num} necessita di una corona in zirconio${suImpianto ? ' su impianto' : ''}. ` +
-      `Lo zirconio è il materiale più resistente e biocompatibile disponibile oggi — ` +
-      `estetica naturale e massima durata nel tempo. ` +
-      (suImpianto ? `Completa la riabilitazione dell'impianto e ripristina la piena funzione masticatoria.` :
-        `Protegge il dente da fratture e garantisce una tenuta a lungo termine.`);
-  }
-
-  // ── Igiene ──
-  if (tids.some(t => ['igiene_fare','ablazione_tartaro_igienista_in','ablazione_pediatrica_fino_agli',
-      'bonifica_arcata','levigature_radicolari'].includes(t))) {
-    return `Il dente ${num} ha accumulo di tartaro e necessita di una seduta di igiene professionale. ` +
-      `Il tartaro non si rimuove con lo spazzolino domestico e favorisce l'infiammazione gengivale (parodontite). ` +
-      `Una pulizia professionale regolare è il modo più efficace per prevenire perdita ossea e denti instabili nel lungo termine.`;
-  }
-
-  // ── Faccetta ──
-  if (tids.some(t => ['faccetta_in_ceramica','faccetta_in_composito','fc','fco'].includes(t))) {
-    return `Per il dente ${num} è prevista una faccetta estetica. ` +
-      `Le faccette sono lamine sottilissime che si applicano sulla superficie del dente — ` +
-      `correggono colore, forma e proporzioni con la massima conservazione della struttura naturale del dente. ` +
-      `Il risultato è un sorriso dall'aspetto completamente naturale.`;
-  }
-
-  // ── Default ──
-  const trattamenti = daFare.map(x => labelTR(x.tid)).join(', ');
-  return `Per il dente ${num} il piano di trattamento prevede: ${trattamenti}. ` +
-    `Ti illustreremo in dettaglio ogni fase durante la visita. ` +
-    `Il nostro obiettivo è completare le cure nel minor numero di sedute possibile.`;
+  // ── Default: elenca tutte le prestazioni senza reinterpretare ──
+  return `${prefissoStato}ha in piano: ${nomiDaFare.join(', ')}.`;
 }
 
 // Calcola prezzo totale dei trattamenti da fare per un dente
@@ -1017,60 +1025,75 @@ function _applicaDatiClinici(data) {
     document.getElementById('topbar-title').textContent = codice;
   }
 
-  // Odontogramma attuale → aggiorna array denti
   const attuale = data.attuale || {};
-  Object.entries(attuale).forEach(([num, treats]) => {
-    const n = parseInt(num);
-    const d = denti.find(x => x.num === n);
+  const piano   = data.piano   || {};
+
+  // Struttura unificata per dente — fonte unica di verità
+  const dettaglio = _buildDentiDettaglio(attuale, piano);
+
+  // ── console.log per ogni dente con dati clinici ──
+  console.group(`[_applicaDatiClinici] Dettaglio denti (${Object.keys(dettaglio).length} denti)`);
+  Object.values(dettaglio).forEach(det => {
+    console.log(
+      `Dente ${det.num}` +
+      `\n  situazione_attuale:   [${det.situazione_attuale.join(', ') || '—'}]` +
+      `\n  prestazioni_da_fare:  [${det.prestazioni_da_fare.map(p => p.nome).join(', ') || '—'}]` +
+      `\n  prestazioni_in_corso: [${det.prestazioni_in_corso.map(p => p.nome).join(', ') || '—'}]` +
+      `\n  prestazioni_eseguite: [${det.prestazioni_eseguite.map(p => p.nome).join(', ') || '—'}]`
+    );
+  });
+  console.groupEnd();
+
+  // ── Aggiorna array denti ──
+  Object.values(dettaglio).forEach(det => {
+    const d = denti.find(x => x.num === det.num);
     if (!d) return;
-    const arr = Array.isArray(treats) ? treats : [treats];
+
+    const arr = det._attArr;
+
+    // Presenza e flag impianto — SOLO dall'odontogramma
     d.presente = !arr.includes('estratto');
     d.implant  = arr.includes('impianto');
+
+    // Rischio da attuale (può essere sovrascritta sotto dal piano)
     if (!d.presente)                                d.rischio = 'absent';
     else if (arr.some(t => TR_HIGH.includes(t)))    d.rischio = 'high';
     else if (arr.some(t => TR_MEDIUM.includes(t)))  d.rischio = 'medium';
     else                                            d.rischio = 'low';
-    const labels = arr.filter(t => t !== 'sano').map(t => labelTR(t));
-    if (labels.length) {
-      d.note = labels.join(' + ');
-      // Sovrascrive SEMPRE il consiglio di DENTI_BASE con uno clinicamente neutro.
-      // Verrà ulteriormente affinato dal piano o dall'AI.
-      d.consiglio = _consiglioBaseAttuale(arr, n);
-    } else {
-      d.note = 'Sano';
-      d.consiglio = 'Dente sano. Nessun intervento previsto.';
-    }
-  });
 
-  // Piano trattamenti → consiglio automatico + prezzi
-  const piano = data.piano || {};
-  Object.entries(piano).forEach(([num, items]) => {
-    const n = parseInt(num);
-    const d = denti.find(x => x.num === n);
-    if (!d || !items.length) return;
-    const daFare   = items.filter(x => x.stato === 'dafare').map(x => labelTR(x.tid));
-    const inCorso  = items.filter(x => x.stato === 'incorso').map(x => labelTR(x.tid));
-    const eseguiti = items.filter(x => x.stato === 'eseguito').map(x => labelTR(x.tid));
-    // generaConsiglioClinico usa solo i daFare — non inventa prestazioni assenti
-    const consClinico = generaConsiglioClinico(n, items, attuale[num] || []);
-    if (consClinico) {
-      d.consiglio = consClinico;
-    } else if (inCorso.length || eseguiti.length) {
-      // Nessun daFare: il piano è completato o in corso — consiglio neutro sullo stato
-      const parti = [];
-      if (inCorso.length)  parti.push(`In corso: ${inCorso.join(', ')}`);
-      if (eseguiti.length) parti.push(`Completato: ${eseguiti.join(', ')}`);
-      d.consiglio = parti.join('. ') + '.';
-    }
-    // Se non c'è nessuna riga di piano rilevante, il consiglio base attuale rimane
-    const totPrezzo = calcolaPrezzo(items);
-    if (totPrezzo > 0) d.prezzoMercato = totPrezzo;
-    const hasFare = daFare.length > 0;
-    if (hasFare) d.rischio = 'high';
-    if (!d.presente) d.rischio = 'absent';
-    if (totPrezzo > 0) {
-      const scontoMap = { low: 0.30, medium: 0.70, high: 1.0, absent: 1.0 };
-      d.prezzoConv = Math.round(totPrezzo * (scontoMap[d.rischio] || 1.0));
+    // Nota = situazione attuale; consiglio = base neutro (mai DENTI_BASE)
+    d.note      = det.situazione_attuale.join(' + ') || 'Sano';
+    d.consiglio = _consiglioBaseAttuale(arr, det.num);
+
+    // Piano: affina consiglio e aggiorna rischio/prezzi
+    const pianoItems = [
+      ...det.prestazioni_da_fare,
+      ...det.prestazioni_in_corso,
+      ...det.prestazioni_eseguite
+    ].map(p => ({ tid: p.tid, stato: p.stato }));
+
+    if (pianoItems.length) {
+      const consClinico = generaConsiglioClinico(det.num, pianoItems, arr);
+      if (consClinico) {
+        d.consiglio = consClinico;
+      } else if (det.prestazioni_in_corso.length || det.prestazioni_eseguite.length) {
+        const parti = [];
+        if (det.prestazioni_in_corso.length)
+          parti.push(`In corso: ${det.prestazioni_in_corso.map(p => p.nome).join(', ')}`);
+        if (det.prestazioni_eseguite.length)
+          parti.push(`Completato: ${det.prestazioni_eseguite.map(p => p.nome).join(', ')}`);
+        d.consiglio = parti.join('. ') + '.';
+      }
+
+      if (det.prestazioni_da_fare.length) {
+        d.rischio = d.presente ? 'high' : 'absent';
+        const totPrezzo = det.prestazioni_da_fare.reduce((s, p) => s + p.prezzo, 0);
+        if (totPrezzo > 0) {
+          d.prezzoMercato = totPrezzo;
+          const scontoMap = { low: 0.30, medium: 0.70, high: 1.0, absent: 1.0 };
+          d.prezzoConv = Math.round(totPrezzo * (scontoMap[d.rischio] || 1.0));
+        }
+      }
     }
   });
 
@@ -1905,7 +1928,10 @@ async function compilaSchedaConAI() {
     const diario         = safeP(p.diario,          []);
     const preventivoRows = safeP(p.preventivi,      []);
 
-    // 4. Costruisci patientClinicalSummary
+    // 4. Struttura unificata per dente — fonte unica di verità per il Worker AI
+    const dentiDettaglio = _buildDentiDettaglio(odontogramma, piano);
+
+    // 5. Costruisci patientClinicalSummary
     const patientClinicalSummary = {
       meta: {
         patientId:    patientId,
@@ -1920,17 +1946,28 @@ async function compilaSchedaConAI() {
         generato:     new Date().toISOString(),
       },
 
-      odontogramma_attuale: {
-        denti:   odontogramma,   // { "16": ["impianto","corona"], ... }
-        arcate:  arcateAttuale,  // { "sup": ["tot_rimov"], ... }
-      },
+      // Struttura chiara per il Worker: attuale separato da da_fare
+      // Il Worker deve usare SOLO questi dati per generare i testi.
+      denti_dettaglio: Object.values(dentiDettaglio)
+        .filter(det =>
+          det.situazione_attuale.length > 0 ||
+          det.prestazioni_da_fare.length > 0 ||
+          det.prestazioni_in_corso.length > 0 ||
+          det.prestazioni_eseguite.length > 0
+        )
+        .map(det => ({
+          num:                  det.num,
+          situazione_attuale:   det.situazione_attuale,
+          prestazioni_da_fare:  det.prestazioni_da_fare.map(p => ({
+            nome: p.nome, prezzo: p.prezzo
+          })),
+          prestazioni_in_corso: det.prestazioni_in_corso.map(p => ({ nome: p.nome })),
+          prestazioni_eseguite: det.prestazioni_eseguite.map(p => ({ nome: p.nome })),
+        })),
 
-      piano_trattamenti: {
-        denti:      piano,          // { "16": [{tid, stato}, ...], ... }
-        arcate:     arcatePiano,
-        quadranti:  quadrantePiano,
-        riepilogo:  _buildPianoRiepilogo(piano, arcatePiano, quadrantePiano),
-      },
+      // Arcate e quadranti (trattamenti non per singolo dente)
+      arcate_piano:    arcatePiano,
+      quadranti_piano: quadrantePiano,
 
       preventivo: {
         righe:       preventivoRows,
@@ -1938,7 +1975,7 @@ async function compilaSchedaConAI() {
         validita_gg: p.prev_validita || 30,
       },
 
-      diario_clinico: diario.slice(-20), // ultimi 20 appunti per non gonfiare il prompt
+      diario_clinico: diario.slice(-20),
 
       note_generali: p.note_generali || '',
     };
@@ -1971,6 +2008,41 @@ async function compilaSchedaConAI() {
     btn.disabled = false;
     btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg> Compila scheda con AI`;
   }
+}
+
+// Struttura unificata per dente: separa nettamente attuale da piano.
+// Fonte unica di verità per generaConsiglioClinico, _applicaDatiClinici
+// e patientClinicalSummary inviato al Worker AI.
+function _buildDentiDettaglio(odontogramma, piano) {
+  const result = {};
+  const allNums = new Set([
+    ...Object.keys(odontogramma).map(Number),
+    ...Object.keys(piano).map(Number)
+  ].filter(n => !isNaN(n)));
+
+  allNums.forEach(num => {
+    const attualeRaw = odontogramma[num] || odontogramma[String(num)] || [];
+    const attArr = Array.isArray(attualeRaw) ? attualeRaw : [attualeRaw];
+    const pianoItems = piano[num] || piano[String(num)] || [];
+
+    const mapItem = it => ({
+      nome:   labelTR(it.tid) || it.tid,
+      tid:    it.tid,
+      prezzo: prezzoTR(it.tid),
+      stato:  it.stato || 'dafare'
+    });
+
+    result[num] = {
+      num,
+      situazione_attuale:    attArr.filter(t => t !== 'sano').map(t => labelTR(t)).filter(Boolean),
+      prestazioni_da_fare:   pianoItems.filter(x => x.stato === 'dafare').map(mapItem),
+      prestazioni_in_corso:  pianoItems.filter(x => x.stato === 'incorso').map(mapItem),
+      prestazioni_eseguite:  pianoItems.filter(x => x.stato === 'eseguito').map(mapItem),
+      // raw usato internamente da generaConsiglioClinico
+      _attArr: attArr,
+    };
+  });
+  return result;
 }
 
 // Costruisce un riepilogo leggibile del piano per il prompt AI
