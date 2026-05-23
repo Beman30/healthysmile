@@ -1,0 +1,1465 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Healthy Smile By N · Torino</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --black:#0e0e0e;
+  --white:#ffffff;
+  --bg:#fbf7f2;
+  --card:#fffaf6;
+  --text:#242124;
+  --text-soft:#6f666f;
+  --violet:#7b2cff;
+  --pink:#ff4fa3;
+  --border:#eadfeb;
+  --accent:#C8005C;
+  --gray-100:#f5f0f6;
+  --gray-200:#eadfeb;
+  --gray-300:#d4c8d8;
+  --gray-500:#6f666f;
+  --gray-700:#4a4845;
+  --serif:'DM Serif Display',Georgia,serif;
+  --sans:'DM Sans',system-ui,sans-serif;
+}
+html{scroll-behavior:smooth}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
+
+/* ── NAV ─────────────────────────────────────────── */
+nav{position:sticky;top:0;z-index:100;background:var(--bg);border-bottom:1px solid var(--border);padding:0 32px;display:flex;align-items:center;justify-content:space-between;height:56px}
+.nav-logo{font-family:var(--serif);font-size:17px;color:var(--text);text-decoration:none;letter-spacing:-.01em;font-style:italic}
+.nav-logo strong{font-style:normal;color:var(--violet);font-weight:400}
+.nav-links{display:flex;gap:4px;align-items:center}
+.nav-links a{font-size:13px;color:var(--text-soft);text-decoration:none;padding:6px 12px;border-radius:4px;transition:color .15s}
+.nav-links a:hover{color:var(--text)}
+.nav-cta{color:var(--violet) !important;border:1px solid var(--border) !important;border-radius:4px}
+.nav-cta:hover{border-color:var(--violet) !important}
+.hamburger{display:none;flex-direction:column;justify-content:center;gap:5px;width:36px;height:36px;cursor:pointer;padding:4px;background:none;border:none}
+.hamburger span{display:block;height:1.5px;background:var(--text-soft);border-radius:2px;transition:transform .3s,opacity .3s}
+.hamburger.open span:nth-child(1){transform:translateY(6.5px) rotate(45deg)}
+.hamburger.open span:nth-child(2){opacity:0}
+.hamburger.open span:nth-child(3){transform:translateY(-6.5px) rotate(-45deg)}
+.mobile-drawer{position:fixed;top:0;right:0;bottom:0;width:260px;background:#1a0f2e;z-index:300;transform:translateX(100%);transition:transform .35s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;padding:80px 32px 40px;gap:0;border-left:1px solid #2e1f4e}
+.mobile-drawer.open{transform:translateX(0)}
+.mobile-drawer-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:290;opacity:0;pointer-events:none;transition:opacity .35s}
+.mobile-drawer-overlay.open{opacity:1;pointer-events:auto}
+.mobile-drawer a{font-size:15px;color:#9985c5;text-decoration:none;padding:16px 0;border-bottom:1px solid #2e1f4e;transition:color .15s;display:block}
+.mobile-drawer a:hover{color:#fff}
+.drawer-cta{margin-top:32px;color:var(--white) !important;border-bottom:none !important;font-weight:500}
+.drawer-close{position:absolute;top:20px;right:20px;background:none;border:none;color:#6b5a8e;font-size:20px;cursor:pointer;padding:8px;line-height:1;transition:color .15s}
+.drawer-close:hover{color:#fff}
+@media(max-width:768px){.hamburger{display:flex}.nav-links{display:none}}
+
+/* ── HERO ────────────────────────────────────────── */
+.hero{
+  background:#150e22;
+  padding:100px 32px 88px;
+}
+.hero-inner{
+  max-width:580px;
+  margin:0 auto;
+}
+.hero-eyebrow{
+  display:block;
+  font-size:11px;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  color:#4a3566;
+  margin-bottom:32px;
+}
+.hero h1{
+  font-family:var(--serif);
+  font-size:clamp(38px,5.5vw,66px);
+  line-height:1.06;
+  letter-spacing:-.025em;
+  color:var(--white);
+  margin-bottom:72px;
+}
+.hero h1 em{font-style:italic;color:var(--pink)}
+
+/* ── SCELTE INIZIALI (lista editoriale) ──────────── */
+.start-label{
+  display:block;
+  font-size:11px;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  color:#4a3566;
+  margin-bottom:0;
+}
+.start-choices{
+  border-top:1px solid #2e1f4e;
+  margin-top:0;
+}
+.start-btn{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  width:100%;
+  background:transparent;
+  border:none;
+  border-bottom:1px solid #2e1f4e;
+  padding:22px 0;
+  font-family:var(--sans);
+  font-size:clamp(15px,2vw,17px);
+  color:#7a6a90;
+  cursor:pointer;
+  text-align:left;
+  transition:color .2s;
+  gap:20px;
+}
+.start-btn .s-arr{
+  font-size:16px;
+  color:#3d2f5e;
+  transition:color .2s,transform .2s;
+  flex-shrink:0;
+}
+.start-btn:hover{color:var(--white)}
+.start-btn:hover .s-arr{color:var(--pink);transform:translateX(5px)}
+.start-btn.active{color:var(--white)}
+.start-btn.active .s-arr{color:var(--pink)}
+
+/* ── CONVERSAZIONE ───────────────────────────────── */
+.conversation{
+  background:var(--bg);
+  padding:80px 32px 104px;
+  display:none;
+}
+.conversation.open{display:block}
+.convo-inner{
+  max-width:540px;
+  margin:0 auto;
+}
+
+/* Risposta data — riga compatta */
+.answered{
+  display:flex;
+  justify-content:space-between;
+  align-items:baseline;
+  gap:32px;
+  padding:18px 0;
+  border-bottom:1px solid var(--gray-200);
+  animation:fadein .35s ease both;
+}
+@keyframes fadein{from{opacity:0}to{opacity:1}}
+.ans-q{
+  font-size:13px;
+  color:var(--gray-500);
+  font-weight:300;
+  flex:1;
+  min-width:0;
+}
+.ans-a{
+  font-size:13px;
+  color:var(--gray-700);
+  font-weight:500;
+  text-align:right;
+  flex-shrink:0;
+  max-width:52%;
+}
+
+/* Step attivo */
+.active-step{
+  padding-top:56px;
+  animation:stepin .45s ease both;
+}
+@keyframes stepin{
+  from{opacity:0;transform:translateY(18px)}
+  to{opacity:1;transform:none}
+}
+.step-counter{
+  font-size:11px;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  color:var(--gray-300);
+  margin-bottom:18px;
+}
+.step-q{
+  font-family:var(--serif);
+  font-size:clamp(22px,3.2vw,30px);
+  color:var(--black);
+  line-height:1.2;
+  letter-spacing:-.015em;
+  margin-bottom:40px;
+}
+
+/* Scelte step */
+.step-choices{
+  border-top:1px solid var(--gray-200);
+}
+.choice-btn{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  width:100%;
+  background:transparent;
+  border:none;
+  border-bottom:1px solid var(--gray-200);
+  padding:18px 0;
+  font-family:var(--sans);
+  font-size:15px;
+  color:var(--gray-700);
+  cursor:pointer;
+  text-align:left;
+  transition:color .15s;
+  gap:20px;
+}
+.choice-btn .c-arr{
+  font-size:14px;
+  color:var(--gray-300);
+  flex-shrink:0;
+  transition:color .15s,transform .15s;
+}
+.choice-btn:hover{color:var(--violet)}
+.choice-btn:hover .c-arr{color:var(--violet);transform:translateX(4px)}
+
+/* ── PANNELLO FINALE ─────────────────────────────── */
+.end-panel{
+  padding-top:64px;
+  animation:stepin .5s ease .08s both;
+}
+.end-rule{
+  width:24px;
+  height:2px;
+  background:var(--violet);
+  margin-bottom:40px;
+}
+.end-title{
+  font-family:var(--serif);
+  font-size:clamp(20px,2.8vw,26px);
+  color:var(--violet);
+  line-height:1.2;
+  letter-spacing:-.01em;
+  margin-bottom:18px;
+}
+.end-body{
+  font-size:16px;
+  color:var(--gray-700);
+  font-weight:300;
+  line-height:1.85;
+  max-width:460px;
+  margin-bottom:52px;
+}
+.end-cta-header{
+  font-size:12px;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  color:var(--gray-500);
+  margin-bottom:16px;
+}
+.end-cta-sub{
+  font-size:15px;
+  color:var(--gray-700);
+  font-weight:300;
+  line-height:1.6;
+  margin-bottom:28px;
+}
+.end-cta-sub em{
+  font-style:normal;
+  color:var(--black);
+  font-weight:500;
+}
+.btn-main{
+  display:block;
+  background:linear-gradient(135deg,var(--violet) 0%,var(--pink) 100%);
+  color:var(--white);
+  font-family:var(--sans);
+  font-size:15px;
+  font-weight:500;
+  padding:17px 24px;
+  text-align:center;
+  text-decoration:none;
+  border-radius:4px;
+  transition:opacity .2s,box-shadow .2s;
+  margin-bottom:10px;
+  border:none;
+  cursor:pointer;
+  width:100%;
+  box-shadow:0 4px 18px rgba(123,44,255,.22);
+}
+.btn-main:hover{opacity:.88;box-shadow:0 6px 24px rgba(123,44,255,.32)}
+.btn-secondary{
+  display:block;
+  text-align:center;
+  font-size:13px;
+  color:var(--gray-500);
+  text-decoration:none;
+  padding:12px;
+  transition:color .15s;
+  width:100%;
+}
+.btn-secondary:hover{color:var(--black)}
+.restart-link{
+  display:block;
+  text-align:center;
+  font-size:11px;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  color:var(--gray-300);
+  margin-top:40px;
+  cursor:pointer;
+  background:none;
+  border:none;
+  font-family:var(--sans);
+  transition:color .15s;
+  width:100%;
+}
+.restart-link:hover{color:var(--gray-700)}
+
+/* ── FASTIDIO EXTRA ──────────────────────────────── */
+.end-disclaimer{
+  font-size:13px;
+  color:var(--gray-500);
+  font-weight:300;
+  font-style:italic;
+  margin-top:-36px;
+  margin-bottom:52px;
+  line-height:1.6;
+}
+.free-section{
+  border-top:1px solid var(--gray-200);
+  padding-top:40px;
+  transition:opacity .3s,filter .3s;
+}
+.free-section.locked{opacity:.4;pointer-events:none}
+.free-label{
+  font-size:14px;
+  color:var(--gray-700);
+  font-weight:400;
+  margin-bottom:14px;
+  line-height:1.5;
+}
+.free-textarea{
+  width:100%;
+  background:var(--gray-100);
+  border:1px solid var(--gray-200);
+  border-radius:3px;
+  padding:14px 16px;
+  font-size:14px;
+  font-family:var(--sans);
+  font-weight:300;
+  color:var(--black);
+  line-height:1.6;
+  resize:none;
+  outline:none;
+  transition:border-color .15s,background .15s;
+  margin-bottom:12px;
+  min-height:88px;
+}
+.free-textarea:focus{border-color:var(--violet);background:var(--white)}
+.free-textarea::placeholder{color:var(--gray-300)}
+.btn-continue{
+  display:block;
+  width:100%;
+  background:transparent;
+  border:1px solid var(--gray-300);
+  border-radius:3px;
+  padding:14px 20px;
+  font-family:var(--sans);
+  font-size:14px;
+  color:var(--gray-500);
+  cursor:pointer;
+  text-align:center;
+  transition:border-color .15s,color .15s;
+}
+.btn-continue:hover{border-color:var(--violet);color:var(--violet)}
+.btn-continue:disabled{opacity:.4;cursor:not-allowed;border-color:var(--gray-200)}
+.free-hint{
+  font-size:13px;
+  color:var(--pink);
+  font-weight:300;
+  line-height:1.5;
+  margin-bottom:10px;
+  display:none;
+}
+.btn-continue.loading{color:transparent;position:relative;pointer-events:none}
+.btn-continue.loading::after{
+  content:'';
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:18px;
+  color:var(--gray-500);
+  letter-spacing:.2em;
+  animation:dots 1.2s infinite;
+}
+@keyframes dots{
+  0%,100%{content:'·'}
+  33%{content:'··'}
+  66%{content:'···'}
+}
+.ai-response{
+  background:var(--card);
+  border:1px solid var(--border);
+  box-shadow:0 2px 20px rgba(123,44,255,.07);
+  border-radius:8px;
+  padding:28px 28px 24px;
+  margin-top:40px;
+  animation:stepin .45s ease both;
+}
+.ai-meta{
+  font-size:11px;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  color:var(--violet);
+  margin-bottom:20px;
+}
+.ai-text{
+  font-size:16px;
+  color:var(--text);
+  font-weight:300;
+  line-height:1.85;
+  max-width:460px;
+  margin-bottom:28px;
+}
+.hs-highlight{
+  color:var(--violet);
+  font-weight:500;
+}
+
+/* ── FOTO OPZIONALE ─────────────────────────────── */
+.photo-section{
+  margin-bottom:36px;
+  padding-top:32px;
+  border-top:1px solid var(--gray-200);
+}
+.photo-note{
+  font-size:13px;
+  color:var(--gray-500);
+  font-weight:300;
+  font-style:italic;
+  line-height:1.65;
+  margin-bottom:18px;
+}
+.photo-upload-label{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  font-size:13px;
+  color:var(--gray-500);
+  border:1px solid var(--gray-300);
+  border-radius:3px;
+  padding:10px 18px;
+  cursor:pointer;
+  transition:border-color .15s,color .15s;
+  user-select:none;
+}
+.photo-upload-label:hover{border-color:var(--violet);color:var(--violet)}
+.photo-preview-wrap{
+  margin-top:18px;
+  display:none;
+}
+.photo-preview-wrap img{
+  width:100%;
+  max-width:260px;
+  border-radius:4px;
+  border:1px solid var(--gray-200);
+  display:block;
+  margin-bottom:10px;
+  object-fit:cover;
+}
+.photo-remove-btn{
+  font-size:12px;
+  color:var(--gray-500);
+  background:none;
+  border:none;
+  cursor:pointer;
+  font-family:var(--sans);
+  padding:0;
+  letter-spacing:.04em;
+  text-decoration:underline;
+  transition:color .15s;
+}
+.photo-remove-btn:hover{color:var(--black)}
+
+/* ── SEZIONE TELEFONO ────────────────────────────── */
+.phone-section{
+  border-top:1px solid var(--border);
+  margin-top:28px;
+  padding-top:24px;
+}
+.phone-label{
+  font-size:14px;
+  color:var(--gray-700);
+  font-weight:400;
+  margin-bottom:6px;
+  line-height:1.5;
+}
+.phone-privacy{
+  font-size:12px;
+  color:var(--gray-500);
+  font-weight:300;
+  font-style:italic;
+  margin-bottom:14px;
+  line-height:1.5;
+}
+.phone-input{
+  width:100%;
+  background:var(--gray-100);
+  border:1px solid var(--gray-200);
+  border-radius:3px;
+  padding:13px 16px;
+  font-size:15px;
+  font-family:var(--sans);
+  font-weight:300;
+  color:var(--black);
+  outline:none;
+  transition:border-color .15s,background .15s;
+  margin-bottom:10px;
+}
+.phone-input:focus{border-color:var(--violet);background:var(--white)}
+.phone-input::placeholder{color:var(--gray-300)}
+.phone-confirm{
+  font-size:14px;
+  color:var(--violet);
+  font-weight:400;
+  font-style:italic;
+  margin-top:10px;
+  line-height:1.5;
+}
+
+/* ── CONSENSO GDPR ──────────────────────────────── */
+.consent-block{
+  border-top:1px solid var(--gray-200);
+  padding-top:40px;
+  margin-bottom:0;
+}
+.consent-title{
+  font-size:11px;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  color:var(--violet);
+  margin-bottom:16px;
+}
+.consent-body{
+  font-size:14px;
+  color:var(--gray-700);
+  font-weight:300;
+  line-height:1.7;
+  margin-bottom:14px;
+}
+.consent-uses-label{
+  font-size:14px;
+  color:var(--gray-700);
+  font-weight:300;
+  line-height:1.7;
+  margin-bottom:6px;
+}
+.consent-list{
+  list-style:none;
+  margin:0 0 14px 0;
+  padding:0;
+}
+.consent-list li{
+  font-size:14px;
+  color:var(--gray-700);
+  font-weight:300;
+  line-height:1.7;
+  padding-left:16px;
+  position:relative;
+}
+.consent-list li::before{
+  content:'—';
+  position:absolute;
+  left:0;
+  color:var(--gray-300);
+  font-size:12px;
+}
+.consent-note{
+  font-size:13px;
+  color:var(--gray-500);
+  font-weight:300;
+  font-style:italic;
+  line-height:1.6;
+  margin-bottom:28px;
+}
+.consent-label{
+  display:flex;
+  align-items:flex-start;
+  gap:12px;
+  cursor:pointer;
+  margin-bottom:14px;
+}
+.consent-label input[type="checkbox"]{
+  width:16px;
+  height:16px;
+  flex-shrink:0;
+  margin-top:3px;
+  accent-color:var(--violet);
+  cursor:pointer;
+}
+.consent-label span{
+  font-size:13px;
+  color:var(--gray-700);
+  font-weight:300;
+  line-height:1.65;
+}
+.consent-privacy-link{
+  display:inline-block;
+  font-size:12px;
+  color:var(--violet);
+  text-decoration:underline;
+  letter-spacing:.02em;
+  transition:color .15s;
+  margin-bottom:0;
+}
+.consent-privacy-link:hover{color:var(--text)}
+
+/* ── SCELTA MODALITÀ ────────────────────────────── */
+.mode-choice{
+  border-top:1px solid var(--gray-200);
+  padding-top:40px;
+  margin-bottom:0;
+}
+.mode-q{
+  font-size:14px;
+  color:var(--gray-700);
+  font-weight:400;
+  margin-bottom:14px;
+  line-height:1.5;
+}
+.mode-btns{
+  border-top:1px solid var(--gray-200);
+}
+.mode-btn{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  width:100%;
+  background:transparent;
+  border:none;
+  border-bottom:1px solid var(--gray-200);
+  padding:16px 0;
+  font-family:var(--sans);
+  font-size:15px;
+  color:var(--gray-700);
+  cursor:pointer;
+  text-align:left;
+  transition:color .15s;
+  gap:20px;
+}
+.mode-btn .m-arr{
+  font-size:14px;
+  color:var(--gray-300);
+  flex-shrink:0;
+  transition:color .15s,transform .15s;
+}
+.mode-btn:hover{color:var(--violet)}
+.mode-btn:hover .m-arr{color:var(--violet);transform:translateX(4px)}
+
+/* ── SISTEMA PROTEZIONE ──────────────────────────── */
+.sistema-protezione{
+  background:var(--bg);
+  padding:72px 32px;
+  border-top:1px solid var(--border);
+  border-bottom:1px solid var(--border);
+}
+.sp-inner{
+  max-width:540px;
+  margin:0 auto;
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:40px 36px;
+  box-shadow:0 2px 24px rgba(123,44,255,.06);
+}
+.sp-label{
+  font-size:11px;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  color:var(--violet);
+  margin-bottom:22px;
+}
+.sp-headline{
+  font-family:var(--serif);
+  font-size:clamp(20px,2.8vw,26px);
+  color:var(--text);
+  line-height:1.28;
+  letter-spacing:-.01em;
+  margin-bottom:20px;
+}
+.sp-body{
+  font-size:15px;
+  color:var(--text-soft);
+  font-weight:300;
+  line-height:1.78;
+}
+.sp-context{
+  margin-top:28px;
+  padding-top:24px;
+  border-top:1px solid var(--border);
+  font-size:14px;
+  color:var(--violet);
+  font-weight:400;
+  font-style:italic;
+  line-height:1.65;
+  display:none;
+}
+.sp-context.visible{display:block;animation:fadein .4s ease both}
+
+/* ── FOOTER ──────────────────────────────────────── */
+footer{
+  background:var(--bg);
+  padding:24px 32px;
+  border-top:1px solid var(--border);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  flex-wrap:wrap;
+  gap:12px;
+}
+.footer-logo{font-family:var(--serif);font-size:15px;color:var(--text-soft);font-style:italic}
+.footer-logo strong{font-style:normal;color:var(--violet);font-weight:400}
+.footer-links{display:flex;gap:20px}
+.footer-links a{font-size:12px;color:var(--text-soft);text-decoration:none;letter-spacing:.04em;transition:color .15s}
+.footer-links a:hover{color:var(--text)}
+
+/* ── MOBILE ──────────────────────────────────────── */
+@media(max-width:600px){
+  nav{padding:0 16px}
+  .hero{padding:72px 20px 72px}
+  .conversation{padding:56px 20px 80px}
+  .sistema-protezione{padding:48px 16px}
+  .sp-inner{padding:28px 20px}
+  footer{flex-direction:column;align-items:flex-start;padding:20px 16px}
+  .answered{flex-direction:column;gap:2px}
+  .ans-a{text-align:left;max-width:100%}
+  .active-step{padding-top:40px}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="https://healthysmile.it" class="nav-logo">Healthy <strong>Smile</strong> By N</a>
+  <div class="nav-links">
+    <a href="https://healthysmile.it/prevenzione">Prevenzione</a>
+    <a href="https://healthysmile.it/salva-il-tuo-dente">Non estrarre</a>
+    <a href="https://wa.me/393924076794" class="nav-cta">Scrivici</a>
+  </div>
+  <button class="hamburger" id="hamburger" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+<div class="mobile-drawer-overlay" id="drawerOverlay"></div>
+<div class="mobile-drawer" id="mobileDrawer">
+  <button class="drawer-close" id="drawerClose">✕</button>
+  <a href="https://healthysmile.it/prevenzione">Prevenzione</a>
+  <a href="https://healthysmile.it/salva-il-tuo-dente">Non estrarre</a>
+  <a href="https://wa.me/393924076794" class="drawer-cta">Scrivici</a>
+</div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-inner">
+    <span class="hero-eyebrow">Healthy Smile By N · Torino</span>
+    <h1>Ti curiamo <em>meno</em>,<br>per curarti meglio.</h1>
+
+    <span class="start-label">Da dove vuoi iniziare?</span>
+    <div class="start-choices">
+      <button class="start-btn" data-path="fastidio">
+        Ho un fastidio o un problema
+        <span class="s-arr">→</span>
+      </button>
+      <button class="start-btn" data-path="estetica">
+        Voglio migliorare il sorriso
+        <span class="s-arr">→</span>
+      </button>
+      <button class="start-btn" data-path="prevenzione">
+        Voglio prevenire problemi futuri
+        <span class="s-arr">→</span>
+      </button>
+      <button class="start-btn" data-path="guida">
+        Non so, guidami tu
+        <span class="s-arr">→</span>
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- CONVERSAZIONE -->
+<div class="conversation" id="conversation">
+  <div class="convo-inner" id="convoInner"></div>
+</div>
+
+<!-- SISTEMA PROTEZIONE -->
+<section class="sistema-protezione">
+  <div class="sp-inner">
+    <p class="sp-label">Sistema Protezione</p>
+    <p class="sp-headline">Il punto non è fare più cure.<br>È intercettare prima i problemi, così spesso ci sono meno spese, meno dolore e meno cure complesse.</p>
+    <p class="sp-body">Con la scheda digitale Healthy Smile, denti e gengive a rischio vengono monitorati nel tempo. Se qualcosa cambia, possiamo accorgercene prima che diventi una cura più complessa.</p>
+    <p class="sp-context" id="spContext"></p>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <span class="footer-logo">Healthy <strong>Smile</strong> By N</span>
+  <div class="footer-links">
+    <a href="https://healthysmile.it/prevenzione">Prevenzione</a>
+    <a href="https://healthysmile.it/salva-il-tuo-dente">Non estrarre</a>
+    <a href="https://www.instagram.com/healthy.smile.by.n" target="_blank" rel="noopener">Instagram</a>
+  </div>
+</footer>
+
+<script>
+/* ── CONFIGURAZIONE API ────────────────────────────────
+   Worker: healthy-smile-guide-agent (Cloudflare)
+   La API key Anthropic non è nell'HTML — è nel Worker.
+
+   Contratto POST:
+     Body  { page, path, symptom, userText, hasPhoto,
+             consent, consentTimestamp, privacyVersion, marketingUse }
+     200   { text: string }
+
+   API_ENDPOINT vuoto  → messaggio "demo" (nessuna chiamata)
+   API_ENDPOINT pieno  → chiamata reale al Worker
+   Errore di rete/API  → messaggio di errore tecnico
+   AI_FOLLOWUP         → fallback solo se risposta vuota dopo errore
+──────────────────────────────────────────────────────── */
+const API_ENDPOINT = 'https://healthy-smile-guide-agent.nicolapalmia.workers.dev';
+
+/* ── VISITOR ID persistente ────────────────────────── */
+const VISITOR_ID = (() => {
+  const key = 'healthySmileVisitorId';
+  let id = localStorage.getItem(key);
+  if (!id) { id = crypto.randomUUID(); localStorage.setItem(key, id); }
+  return id;
+})();
+let currentInteractionId = null;
+
+/* ── DATI ──────────────────────────────────────────── */
+const STEPS = {
+  fastidio: [
+    {
+      q: "Che tipo di problema senti?",
+      choices: [
+        "Dolore a un dente",
+        "Gengive che sanguinano",
+        "Sensibilità al freddo o al caldo",
+        "Dente rotto o scheggiato",
+        "Alito cattivo o sapore strano",
+        "Mi hanno detto di estrarre un dente"
+      ]
+    }
+  ],
+  estetica: [
+    {
+      q: "Cosa vuoi cambiare?",
+      choices: [
+        "Colore — denti più chiari",
+        "Forma dei denti",
+        "Allineamento e posizione",
+        "Il sorriso nel complesso"
+      ]
+    }
+  ],
+  prevenzione: [
+    {
+      q: "Cosa vuoi evitare?",
+      choices: [
+        "Carie nascoste",
+        "Devitalizzazioni",
+        "Problemi alle gengive",
+        "Spese impreviste"
+      ]
+    }
+  ],
+  guida: [
+    {
+      q: "Quale frase ti rappresenta di più?",
+      choices: [
+        "Non vado dal dentista da tanto",
+        "Ho paura di scoprire problemi",
+        "Voglio solo capire come sto",
+        "Voglio spendere meno nel tempo"
+      ]
+    }
+  ]
+};
+
+const LABELS = {
+  fastidio:    "Ho un fastidio o un problema",
+  estetica:    "Voglio migliorare il sorriso",
+  prevenzione: "Voglio prevenire problemi futuri",
+  guida:       "Non so, guidami tu"
+};
+
+const SP_CONTEXT = {
+  fastidio:    "Un sintomo non va ignorato, ma nemmeno trasformato subito in paura. Va capito.",
+  estetica:    "Prima di scegliere un trattamento estetico, bisogna capire cosa migliora davvero il sorriso.",
+  prevenzione: "La prevenzione non è una pulizia ogni tanto. È sapere quali denti sono più a rischio.",
+  guida:       "Se non sai da dove partire, la mappa digitale serve proprio a questo."
+};
+
+const FASTIDIO_DETAIL = {
+  "Dolore a un dente":
+    "Il dolore può avere cause molto diverse: una carie profonda, una vecchia otturazione infiltrata, una radice esposta o un'infiammazione del nervo. La differenza la fa il tipo di dolore — se compare solo al freddo e passa subito può essere una cosa, se pulsa, persiste o ti sveglia di notte può essere un'altra. Non è saggio coprirlo solo con antidolorifici: quelli attenuano il segnale, non risolvono l'origine. Il passo sensato è capire da dove parte prima che diventi più complesso da affrontare.",
+  "Gengive che sanguinano":
+    "Il sanguinamento gengivale non è quasi mai casuale. Spesso indica infiammazione: placca e tartaro che restano vicino alla gengiva la irritano, e la gengiva risponde sanguinando quando lavi i denti. Non significa per forza avere una malattia grave, ma significa che il tessuto sta reagendo. La cosa sbagliata da fare è smettere di spazzolare quell'area per paura — la cosa giusta è capire se basta un'igiene professionale profonda o se serve una valutazione più attenta delle gengive.",
+  "Sensibilità al freddo o al caldo":
+    "La sensibilità non è un problema estetico: è un segnale che qualcosa nella struttura del dente è cambiato. Può dipendere da smalto usurato, da una radice leggermente esposta per recesso gengivale, da una carie iniziale, o da un'otturazione che nel tempo ha perso il sigillo. C'è differenza tra una fitta breve che passa subito e un dolore che dura qualche minuto dopo lo stimolo — nel secondo caso il nervo potrebbe già essere coinvolto. Il passo sensato è capire la causa prima che il dente diventi più vulnerabile.",
+  "Dente rotto o scheggiato":
+    "Dipende molto da dove e quanto. Una scheggiatura superficiale dello smalto è spesso solo estetica e si risolve facilmente. Una frattura che raggiunge la dentina — lo strato sotto lo smalto — può causare sensibilità e andrebbe valutata. Se la frattura arriva vicino al nervo, o il dente fa male quando mordi o rilasci il morso, il tempo conta davvero: aspettare può rendere il recupero più complesso o, nei casi estremi, impossibile. Il passo sensato è farlo vedere prima che la situazione peggiori o si infetti.",
+  "Alito cattivo o sapore strano":
+    "Un alito persistente che non passa dopo lo spazzolamento ha quasi sempre un'origine interna. Può essere gengivale — batteri che si accumulano sotto la gengiva — oppure dentale, come carie o otturazioni deteriorate che trattengono residui. Un sapore anomalo, metallico o amaro, può indicare un'infezione in corso anche senza dolore evidente. Usare collutori o masticare gomme copre il sintomo senza risolverlo. Il passo sensato è capire da dove viene.",
+  "Mi hanno detto di estrarre un dente":
+    "Prima di procedere vale quasi sempre avere un secondo parere. L'estrazione è spesso l'opzione più rapida, ma non sempre la migliore sul lungo periodo: un dente perso lascia uno spazio che, se non gestito, può spostare gli adiacenti nel tempo e creare altri problemi. Esistono situazioni dove si può salvare un dente con devitalizzazione, ricostruzione o tecniche conservative — e situazioni dove l'estrazione è davvero la scelta giusta. La differenza la fa una valutazione attenta, non una decisione affrettata."
+};
+
+const ESTETICA_DETAIL = {
+  "Colore — denti più chiari":
+    "Il colore dei denti dipende da diversi fattori: pigmentazioni esterne legate a caffè, tè o vino, colore naturale dello smalto, e in alcuni casi la struttura interna del dente. Lo sbiancamento funziona bene sulle pigmentazioni esterne, meno su colorazioni profonde o su denti devitalizzati. Prima di scegliere il trattamento, vale la pena capire quale tipo di colorazione hai — perché la soluzione cambia, e con essa il risultato atteso.",
+  "Forma dei denti":
+    "La forma dei denti — corti, scheggiati, mal proporzionati, con spazi indesiderati — si corregge quasi sempre con compositi applicati direttamente o con faccette ceramiche più sottili di un'unghia. Non richiede quasi mai di toccare il dente in profondità. Il punto importante è capire se il problema riguarda solo la forma, o se c'è anche una questione di posizione che andrebbe valutata separatamente.",
+  "Allineamento e posizione":
+    "Denti ruotati, sovraffollati, distanziati o con un morso non ideale si correggono con ortodonzia — oggi quasi sempre con allineatori trasparenti. Il percorso è diverso per ogni bocca: dipende da quanto le posizioni devono spostarsi, dall'occlusione, dalla struttura ossea. Una valutazione ortodontica preliminare permette di capire tempi reali, risultato atteso e se è necessario un approccio combinato con trattamenti estetici.",
+  "Il sorriso nel complesso":
+    "Quando il problema è il sorriso nel complesso, spesso non si riesce a identificare un singolo elemento — e non è sbagliato. L'estetica del sorriso dipende da proporzioni, simmetria, colore, forma e come tutto interagisce con il viso. Una valutazione estetica non parte dal trattamento: parte dall'analisi di quello che c'è. Solo dopo si capisce cosa è davvero utile cambiare, in quale ordine, e con quale impatto visivo reale."
+};
+
+const PREVENZIONE_DETAIL = {
+  "Carie nascoste":
+    "Le carie nelle fasi iniziali sono quasi sempre asintomatiche. Si sviluppano in punti difficili da vedere — tra un dente e l'altro, sotto il bordo delle otturazioni, nelle fessure dei molari. Quando cominciano a fare male, sono già in una fase avanzata che richiede trattamenti più complessi. Intercettarle presto significa otturarle quando sono ancora piccole — una procedura semplice e rapida, con costi contenuti rispetto a quello che diventano se ignorate.",
+  "Devitalizzazioni":
+    "Un dente devitalizzato non è un dente 'morto' — è un dente che ha perso la sensibilità interna e che nel tempo diventa più fragile, più soggetto a fratture, con una durata media inferiore a un dente vitale. Quasi tutte le devitalizzazioni sono la conseguenza di una carie non intercettata in tempo. La prevenzione non elimina tutti i rischi, ma riduce drasticamente la probabilità che una carie semplice arrivi al nervo.",
+  "Problemi alle gengive":
+    "La malattia parodontale — infiammazione cronica che coinvolge gengiva e osso di supporto — è la principale causa di perdita dei denti negli adulti, e avanza in silenzio per anni. Le gengive si abbassano lentamente, l'osso si riduce, spesso senza dolore. Quando i denti iniziano a muoversi, il danno è già avanzato. Il monitoraggio regolare dei parametri parodontali, insieme a un'igiene professionale adeguata, è l'unico modo per intercettarla quando è ancora reversibile.",
+  "Spese impreviste":
+    "Le urgenze dentali costano quasi sempre molto di più dei controlli regolari. Una carie piccola si ottura in venti minuti per poche decine di euro — la stessa carie, trascurata, richiede devitalizzazione, perno e corona: un percorso lungo e significativamente più costoso. La prevenzione non è un costo aggiuntivo: è l'investimento che riduce i costi futuri. Una scheda digitale aggiornata permette di sapere dove si è a rischio e intervenire prima che diventi urgente."
+};
+
+const GUIDA_DETAIL = {
+  "Non vado dal dentista da tanto":
+    "È la situazione più comune. Non andarci da tempo non significa avere necessariamente problemi gravi — significa non sapere come si sta. L'unico modo per scoprirlo, senza amplificazioni e senza minimizzazioni, è una visita di valutazione con mappa digitale: ogni dente viene guardato, ogni zona documentata. Si esce con un quadro reale della propria bocca, non con supposizioni.",
+  "Ho paura di scoprire problemi":
+    "La paura di scoprire qualcosa di brutto è comprensibile e molto comune — ma quasi sempre amplifica il problema reale più di quanto la realtà giustifichi. Sapere cosa c'è, anche se non è tutto perfetto, dà il controllo della situazione. Il 90% delle volte quello che si trova è gestibile in modo semplice se preso in tempo. L'unica cosa che peggiora davvero la situazione è aspettare: i problemi dentali quasi mai si risolvono da soli.",
+  "Voglio solo capire come sto":
+    "Partire da una valutazione completa è il punto di partenza ideale. Una mappa digitale dente per dente, uno screening delle gengive, un'analisi dell'occlusione — in circa un'ora si ha un quadro reale. Non si parte dai trattamenti: si parte dalla conoscenza. Poi si decide insieme, senza pressioni, cosa ha senso fare e in quale ordine — e cosa invece si può semplicemente monitorare.",
+  "Voglio spendere meno nel tempo":
+    "La strategia più efficace per ridurre le spese dentali nel lungo periodo è la prevenzione regolare — non per principio, ma per un calcolo semplice: un problema piccolo costa meno di uno grande, e quasi tutti i problemi grandi iniziano come problemi piccoli ignorati. Una scheda digitale aggiornata permette di sapere dove si è a rischio e intervenire prima che diventi urgente."
+};
+
+const ALL_DETAIL = {
+  fastidio:    FASTIDIO_DETAIL,
+  estetica:    ESTETICA_DETAIL,
+  prevenzione: PREVENZIONE_DETAIL,
+  guida:       GUIDA_DETAIL
+};
+
+const AI_FOLLOWUP = {
+  "Dolore a un dente":
+    "Il dolore dentale ha gradazioni molto diverse: spesso è gestibile con una valutazione tempestiva, raramente richiede interventi urgenti. L'importante è non lasciarlo cronicizzare — tende ad amplificarsi nel tempo, non a passare da solo. Quello che hai descritto aiuta a inquadrare meglio la situazione.",
+  "Gengive che sanguinano":
+    "Il sanguinamento nella maggior parte dei casi è gengivite — infiammazione reversibile — che risponde bene a una pulizia professionale seguita da igiene quotidiana corretta. Solo in una minoranza dei casi indica parodontite, che richiede una valutazione più approfondita. In entrambi i casi, più presto si interviene, meglio è.",
+  "Sensibilità al freddo o al caldo":
+    "La sensibilità ha quasi sempre una causa precisa: smalto, radice, sigillo di un'otturazione. Identificarla presto rende la soluzione molto più semplice di quanto possa sembrare adesso. Quello che hai condiviso è utile — un dentista può confermare in pochi minuti di visita.",
+  "Dente rotto o scheggiato":
+    "La priorità è capire quanto è profonda la frattura e se coinvolge la struttura interna. È un'informazione che cambia tutto: alcune fratture si risolvono in una seduta, altre richiedono un approccio più pianificato. Prima si valuta, più opzioni restano disponibili.",
+  "Alito cattivo o sapore strano":
+    "Quello che descrivi ha quasi sempre una causa dentale o gengivale identificabile. La buona notizia è che di solito si risolve — ma solo dopo aver trovato l'origine, non coprendo il sintomo. Una visita di controllo permette di escludere le cause più comuni in poco tempo.",
+  "Mi hanno detto di estrarre un dente":
+    "Avere un secondo parere in questo caso è sensato — non per contraddire, ma per avere un quadro completo prima di prendere una decisione irreversibile. In molti casi esistono alternative; in altri l'estrazione è effettivamente la scelta migliore. Ma è utile saperlo con certezza, non per supposizione.",
+
+  "Colore — denti più chiari":
+    "La decisione tra sbiancamento e faccette dipende da un'analisi rapida: colore attuale, qualità dello smalto, presenza di restauri visibili. In molti casi il risultato atteso è raggiungibile in modo più semplice e meno costoso di quanto si immagini.",
+  "Forma dei denti":
+    "Capire se si tratta di un problema di forma o anche di posizione è il primo passo. Spesso la soluzione ottimale è meno invasiva di quanto si pensi — ma dipende da una valutazione diretta.",
+  "Allineamento e posizione":
+    "Capire i tempi reali e il risultato atteso richiede una valutazione con scansione digitale. In molti casi il percorso ortodontico è più breve di quanto si immagini, soprattutto con gli allineatori trasparenti.",
+  "Il sorriso nel complesso":
+    "Quello che hai descritto aiuta a preparare la conversazione giusta. Una valutazione estetica completa è il punto di partenza — senza presupposti sul trattamento, senza impegni.",
+
+  "Carie nascoste":
+    "Una radiografia bitewing, fatta nei tempi giusti, è lo strumento più efficace per intercettarle nelle fasi iniziali. Quello che hai condiviso aiuta a capire con quale attenzione e frequenza dovrebbe essere programmata.",
+  "Devitalizzazioni":
+    "Sapere dove si è a rischio permette di intervenire prima che una carie raggiunga il nervo. Quello che hai condiviso aiuta a costruire un piano di monitoraggio personalizzato.",
+  "Problemi alle gengive":
+    "Il parametro fondamentale è la profondità delle tasche gengivali — si misura in pochi minuti. Quello che descrivi suggerisce che vale la pena includerlo nella prossima visita di controllo.",
+  "Spese impreviste":
+    "Una scheda digitale aggiornata è il modo più diretto per sapere dove si è a rischio. Quello che hai condiviso aiuta a capire il punto di partenza giusto.",
+
+  "Non vado dal dentista da tanto":
+    "Il punto di partenza ideale è una visita completa con mappa digitale: si documenta tutto, si capisce dove si è, si decide insieme cosa fare e cosa invece monitorare. Niente di più.",
+  "Ho paura di scoprire problemi":
+    "Quasi sempre quello che si trova è gestibile in modo semplice se preso in tempo. Una visita senza urgenze, fatta con calma, è il modo migliore per trasformare l'incertezza in chiarezza.",
+  "Voglio solo capire come sto":
+    "Una valutazione completa richiede circa un'ora. Si esce con un quadro reale — senza pressioni sui trattamenti, senza impegni impliciti.",
+  "Voglio spendere meno nel tempo":
+    "Il calcolo è semplice: sapere dove si è a rischio permette di intervenire prima che un problema piccolo diventi grande. Quello che hai condiviso aiuta a costruire un piano sensato."
+};
+
+const ENDINGS = {
+  fastidio: {
+    title: "Ecco cosa può significare.",
+    disclaimer: "Non è una diagnosi, ma ti aiuta a capire da dove partire.",
+    wa:  "Ciao, ho un problema specifico e vorrei una valutazione",
+    btn: "Voglio un parere reale"
+  },
+  estetica: {
+    title: "Prima di scegliere, bisogna capire.",
+    disclaimer: "Non è una valutazione definitiva, ma ti aiuta a capire da dove guardare.",
+    wa:  "Ciao, vorrei una valutazione estetica per capire cosa migliorare davvero",
+    btn: "Voglio capire cosa migliorare davvero"
+  },
+  prevenzione: {
+    title: "La prevenzione vera inizia da qui.",
+    disclaimer: "Non è un check-up, ma ti aiuta a capire cosa monitorare.",
+    wa:  "Ciao, vorrei iniziare un percorso di prevenzione e avere la mia scheda digitale",
+    btn: "Voglio la mia scheda digitale"
+  },
+  guida: {
+    title: "Il punto di partenza giusto per te.",
+    disclaimer: "Non è una diagnosi, ma ti aiuta a trovare il punto di partenza migliore.",
+    wa:  "Ciao, non so da dove partire — vorrei una valutazione guidata",
+    btn: "Voglio una valutazione completa"
+  }
+};
+
+/* ── HELPERS ───────────────────────────────────────── */
+function resizeAndConvert(file) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const MAX = 1200;
+      let w = img.width, h = img.height;
+      if (w > MAX || h > MAX) {
+        if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
+        else       { w = Math.round(w * MAX / h); h = MAX; }
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      resolve(canvas.toDataURL('image/jpeg', 0.75).split(',')[1]);
+    };
+    img.onerror = reject;
+    img.src = url;
+  });
+}
+
+async function postSaveLead(phone) {
+  if (!API_ENDPOINT || !phone) return;
+  try {
+    await fetch(API_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action:        'saveLead',
+        visitorId:     VISITOR_ID,
+        phone,
+        interactionId: currentInteractionId,
+        page:          'homepage-conversazionale',
+        marketingUse:  false
+      })
+    });
+  } catch (_) {}
+}
+
+/* ── STATO ─────────────────────────────────────────── */
+let currentPath = null;
+let stepIdx = 0;
+
+const convEl   = document.getElementById('conversation');
+const innerEl  = document.getElementById('convoInner');
+
+/* ── RENDER ────────────────────────────────────────── */
+function appendAnswered(q, a) {
+  const el = document.createElement('div');
+  el.className = 'answered';
+  el.innerHTML = `<span class="ans-q">${q}</span><span class="ans-a">${a}</span>`;
+  innerEl.appendChild(el);
+}
+
+function renderStep(idx) {
+  const steps = STEPS[currentPath];
+  const { q, choices } = steps[idx];
+  const total = steps.length;
+
+  const el = document.createElement('div');
+  el.className = 'active-step';
+  el.id = 'activeStep';
+  el.innerHTML = `
+    ${total > 1 ? `<p class="step-counter">Passo ${idx + 1} di ${total}</p>` : ''}
+    <p class="step-q">${q}</p>
+    <div class="step-choices">
+      ${choices.map(c => `
+        <button class="choice-btn" data-val="${encodeURIComponent(c)}">
+          ${c} <span class="c-arr">→</span>
+        </button>`).join('')}
+    </div>`;
+
+  innerEl.appendChild(el);
+
+  el.querySelectorAll('.choice-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const val = decodeURIComponent(btn.dataset.val);
+      onChoice(q, val);
+    });
+  });
+
+  setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 60);
+}
+
+function renderEnd(lastAnswer) {
+  const { title, disclaimer, wa, btn } = ENDINGS[currentPath];
+  const body = ALL_DETAIL[currentPath]?.[lastAnswer] || '';
+  const waFull = `${wa}${lastAnswer ? ' — ' + lastAnswer.toLowerCase() : ''}`;
+
+  const el = document.createElement('div');
+  el.className = 'end-panel';
+  el.innerHTML = `
+    <div class="end-rule"></div>
+    <p class="end-title">${title}</p>
+    <p class="end-body">${body}</p>
+    <p class="end-disclaimer">${disclaimer}</p>
+
+    <div class="consent-block" id="consentBlock">
+      <p class="consent-title">Prima di continuare</p>
+      <p class="consent-body">Le informazioni che inserisci non verranno usate per pubblicità, remarketing, campagne promozionali o chiamate commerciali future.</p>
+      <p class="consent-uses-label">Le useremo solo per:</p>
+      <ul class="consent-list">
+        <li>capire meglio la tua situazione;</li>
+        <li>darti una risposta orientativa;</li>
+        <li>preparare meglio un'eventuale visita, se deciderai tu di prenotarla.</li>
+      </ul>
+      <p class="consent-note">Non sostituiscono una diagnosi o una visita odontoiatrica.</p>
+      <label class="consent-label">
+        <input type="checkbox" id="consentCheck">
+        <span>Ho letto e acconsento al trattamento delle informazioni che inserirò, inclusi eventuali dati relativi alla salute, solo per le finalità indicate sopra.</span>
+      </label>
+      <a class="consent-privacy-link" href="/privacy-chatbot.html" target="_blank" rel="noopener">Leggi informativa privacy completa →</a>
+    </div>
+
+    <div class="mode-choice" id="modeChoice" style="display:none">
+      <p class="mode-q">Vuoi aiutarmi a capire meglio?</p>
+      <div class="mode-btns">
+        <button class="mode-btn" id="modeTextBtn">Descrivo con parole mie <span class="m-arr">→</span></button>
+        <button class="mode-btn" id="modePhotoBtn">Carico una foto <span class="m-arr">→</span></button>
+      </div>
+    </div>
+
+    <div class="free-section" id="freeSection" style="display:none">
+      <p class="free-label">Vuoi aggiungere un dettaglio?</p>
+      <textarea class="free-textarea" id="freeText" rows="3"
+        placeholder="Scrivi qui quello che noti, cosa ti preoccupa o cosa vorresti capire meglio."></textarea>
+      <p class="free-hint" id="freeHint"></p>
+      <button class="btn-continue" id="continueBtn">Dimmi di più →</button>
+    </div>
+
+    <div class="ai-response" id="aiResponse" style="display:none">
+      <p class="ai-meta">Sulla base di quello che hai condiviso</p>
+      <p class="ai-text" id="aiText"></p>
+      <a class="btn-main" id="waBtn"
+        href="https://wa.me/393924076794?text=${encodeURIComponent(waFull)}"
+        target="_blank" rel="noopener">${btn}</a>
+      <div class="phone-section" id="textPhoneSection">
+        <p class="phone-label">Vuoi che ti ritroviamo quando vieni in studio?</p>
+        <p class="phone-privacy">Solo il numero. Nessuna chiamata commerciale.</p>
+        <input class="phone-input" type="tel" id="textPhoneInput" placeholder="Es. 348 123 4567">
+        <button class="btn-continue" id="textPhoneSaveBtn">Conferma →</button>
+        <p class="phone-confirm" id="textPhoneConfirm" style="display:none">Perfetto. Se verrai in studio, potremo ritrovare questa valutazione.</p>
+      </div>
+      <button class="restart-link" id="restartBtn">Ricomincia da capo</button>
+    </div>
+
+    <div class="photo-path" id="photoPath" style="display:none">
+      <p class="photo-note">Una foto può aiutare a capire meglio il contesto, ma non sostituisce una visita. Cerca di farla con buona luce, senza flash, il più nitida possibile.</p>
+      <label class="photo-upload-label" for="photoInput">
+        Scegli una foto →
+        <input type="file" id="photoInput" accept="image/*" style="display:none">
+      </label>
+      <div class="photo-preview-wrap" id="photoPreviewWrap" style="display:none">
+        <img id="photoImg" alt="">
+        <button class="photo-remove-btn" id="photoRemoveBtn">Rimuovi</button>
+      </div>
+      <button class="btn-continue" id="photoSubmitBtn" style="display:none">Analizza la foto →</button>
+      <div class="ai-response" id="photoAiResponse" style="display:none">
+        <p class="ai-meta">Sulla base della foto</p>
+        <p class="ai-text" id="photoAiText"></p>
+        <a class="btn-main" id="waBtnPhoto"
+          href="https://wa.me/393924076794?text=${encodeURIComponent(waFull + ' — ti mostro anche una foto')}"
+          target="_blank" rel="noopener">${btn}</a>
+        <div class="phone-section" id="photoPhoneSection">
+          <p class="phone-label">Vuoi che ti ritroviamo quando vieni in studio?</p>
+          <p class="phone-privacy">Solo il numero. Nessuna chiamata commerciale.</p>
+          <input class="phone-input" type="tel" id="photoPhoneInput" placeholder="Es. 348 123 4567">
+          <button class="btn-continue" id="photoPhoneSaveBtn">Conferma →</button>
+          <p class="phone-confirm" id="photoPhoneConfirm" style="display:none">Perfetto. Se verrai in studio, potremo ritrovare questa valutazione.</p>
+        </div>
+        <button class="restart-link" id="restartBtnPhoto">Ricomincia da capo</button>
+      </div>
+    </div>`;
+
+  innerEl.appendChild(el);
+
+  // ── consenso → sblocca scelta modalità ──────────
+  document.getElementById('consentCheck').addEventListener('change', (e) => {
+    const mc = document.getElementById('modeChoice');
+    mc.style.display = e.target.checked ? 'block' : 'none';
+    if (e.target.checked)
+      setTimeout(() => mc.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 60);
+  });
+
+  // ── scelta modalità ──────────────────────────────
+  document.getElementById('modeTextBtn').addEventListener('click', () => {
+    document.getElementById('modeChoice').style.display = 'none';
+    const fs = document.getElementById('freeSection');
+    fs.style.display = 'block';
+    setTimeout(() => fs.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 60);
+  });
+
+  document.getElementById('modePhotoBtn').addEventListener('click', () => {
+    document.getElementById('modeChoice').style.display = 'none';
+    const pp = document.getElementById('photoPath');
+    pp.style.display = 'block';
+    setTimeout(() => pp.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 60);
+  });
+
+  // ── percorso testo ────────────────────────────────
+  document.getElementById('continueBtn').addEventListener('click', async () => {
+    const userText = document.getElementById('freeText').value.trim();
+    const hint     = document.getElementById('freeHint');
+    const btn      = document.getElementById('continueBtn');
+
+    if (userText.length < 10) {
+      hint.textContent = 'Aggiungi qualche dettaglio in più — anche una frase è sufficiente.';
+      hint.style.display = 'block';
+      document.getElementById('freeText').focus();
+      return;
+    }
+    hint.style.display = 'none';
+
+    document.getElementById('freeSection').classList.add('locked');
+    btn.classList.add('loading');
+    btn.disabled = true;
+
+    let responseText = '';
+
+    if (!API_ENDPOINT) {
+      responseText = "L’agente AI non è ancora collegato. Questa è solo una demo.";
+    } else {
+      try {
+        const res = await fetch(API_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            page:             'homepage-conversazionale',
+            path:             currentPath,
+            symptom:          lastAnswer,
+            userText,
+            hasPhoto:         false,
+            consent:          true,
+            consentTimestamp: new Date().toISOString(),
+            privacyVersion:   'chatbot-v1',
+            marketingUse:     false,
+            visitorId:        VISITOR_ID
+          })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.text) {
+            responseText = data.text;
+            if (data.interactionId) currentInteractionId = data.interactionId;
+          } else throw new Error('empty');
+        } else {
+          throw new Error('http');
+        }
+      } catch (_) {
+        responseText = "Non riesco a leggere bene la tua descrizione in questo momento. Puoi riprovare o chiedere direttamente un parere reale.";
+      }
+    }
+
+    btn.classList.remove('loading');
+    document.getElementById('aiText').textContent = responseText;
+    document.getElementById('waBtn').href =
+      `https://wa.me/393924076794?text=${encodeURIComponent(waFull + '. ' + userText)}`;
+
+    const aiEl = document.getElementById('aiResponse');
+    aiEl.style.display = 'block';
+    setTimeout(() => aiEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 60);
+
+    // phone save — text path
+    document.getElementById('textPhoneSaveBtn').addEventListener('click', async () => {
+      const phoneVal = document.getElementById('textPhoneInput').value.trim();
+      if (!phoneVal) return;
+      const saveBtn = document.getElementById('textPhoneSaveBtn');
+      saveBtn.disabled = true;
+      await postSaveLead(phoneVal);
+      document.getElementById('textPhoneSection').querySelector('input').disabled = true;
+      document.getElementById('textPhoneConfirm').style.display = 'block';
+    });
+  });
+
+  document.getElementById('restartBtn').addEventListener('click', restart);
+
+  // ── percorso foto ─────────────────────────────────
+  const photoInput       = document.getElementById('photoInput');
+  const photoPreviewWrap = document.getElementById('photoPreviewWrap');
+  const photoImg         = document.getElementById('photoImg');
+  const photoSubmitBtn   = document.getElementById('photoSubmitBtn');
+  let photoFile          = null;
+  let photoObjectUrl     = null;
+
+  photoInput.addEventListener('change', () => {
+    const file = photoInput.files[0];
+    if (!file) return;
+    photoFile = file;
+    if (photoObjectUrl) URL.revokeObjectURL(photoObjectUrl);
+    photoObjectUrl = URL.createObjectURL(file);
+    photoImg.src = photoObjectUrl;
+    photoPreviewWrap.style.display = 'block';
+    photoSubmitBtn.style.display = 'block';
+    setTimeout(() => photoSubmitBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 60);
+  });
+
+  document.getElementById('photoRemoveBtn').addEventListener('click', () => {
+    photoInput.value = '';
+    photoFile = null;
+    if (photoObjectUrl) { URL.revokeObjectURL(photoObjectUrl); photoObjectUrl = null; }
+    photoImg.src = '';
+    photoPreviewWrap.style.display = 'none';
+    photoSubmitBtn.style.display = 'none';
+  });
+
+  photoSubmitBtn.addEventListener('click', async () => {
+    if (!photoFile) return;
+    photoSubmitBtn.classList.add('loading');
+    photoSubmitBtn.disabled = true;
+
+    let responseText = FALLBACK_TEXT || 'Non riesco a elaborare la risposta in questo momento.';
+
+    if (!API_ENDPOINT) {
+      responseText = "L'agente AI non è ancora collegato. Questa è solo una demo.";
+    } else {
+      try {
+        const photoBase64 = await resizeAndConvert(photoFile);
+        const res = await fetch(API_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            page:             'homepage-conversazionale',
+            path:             currentPath,
+            symptom:          lastAnswer,
+            userText:         '',
+            hasPhoto:         true,
+            photoBase64,
+            consent:          true,
+            consentTimestamp: new Date().toISOString(),
+            privacyVersion:   'chatbot-v1',
+            marketingUse:     false,
+            visitorId:        VISITOR_ID
+          })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.text) {
+            responseText = data.text;
+            if (data.interactionId) currentInteractionId = data.interactionId;
+          } else throw new Error('empty');
+        } else {
+          throw new Error('http');
+        }
+      } catch (_) {
+        responseText = "Non riesco ad analizzare la foto in questo momento. Puoi descrivere il problema con parole tue o contattare lo studio direttamente.";
+      }
+    }
+
+    photoSubmitBtn.classList.remove('loading');
+    document.getElementById('photoAiText').textContent = responseText;
+
+    const photoAiEl = document.getElementById('photoAiResponse');
+    photoAiEl.style.display = 'block';
+    setTimeout(() => photoAiEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 60);
+
+    // phone save — photo path
+    document.getElementById('photoPhoneSaveBtn').addEventListener('click', async () => {
+      const phoneVal = document.getElementById('photoPhoneInput').value.trim();
+      if (!phoneVal) return;
+      const saveBtn = document.getElementById('photoPhoneSaveBtn');
+      saveBtn.disabled = true;
+      await postSaveLead(phoneVal);
+      document.getElementById('photoPhoneSection').querySelector('input').disabled = true;
+      document.getElementById('photoPhoneConfirm').style.display = 'block';
+    });
+  });
+
+  document.getElementById('restartBtnPhoto').addEventListener('click', restart);
+
+  setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 60);
+}
+
+/* ── LOGICA ────────────────────────────────────────── */
+function onChoice(q, answer) {
+  document.getElementById('activeStep')?.remove();
+  appendAnswered(q, answer);
+  stepIdx++;
+
+  if (stepIdx < STEPS[currentPath].length) {
+    renderStep(stepIdx);
+  } else {
+    renderEnd(answer);
+  }
+}
+
+function startPath(path) {
+  currentPath = path;
+  stepIdx = 0;
+  innerEl.innerHTML = '';
+
+  document.querySelectorAll('.start-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector(`[data-path="${path}"]`).classList.add('active');
+
+  const spCtx = document.getElementById('spContext');
+  if (spCtx && SP_CONTEXT[path]) {
+    spCtx.textContent = SP_CONTEXT[path];
+    spCtx.classList.add('visible');
+  }
+
+  convEl.style.display = 'block';
+  appendAnswered('Da dove vuoi iniziare?', LABELS[path]);
+  renderStep(0);
+
+  setTimeout(() => convEl.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80);
+}
+
+function restart() {
+  currentPath = null;
+  stepIdx = 0;
+  innerEl.innerHTML = '';
+  convEl.style.display = 'none';
+  document.querySelectorAll('.start-btn').forEach(b => b.classList.remove('active'));
+  setTimeout(() => document.querySelector('.hero').scrollIntoView({ behavior: 'smooth', block: 'start' }), 60);
+}
+
+document.querySelectorAll('.start-btn').forEach(btn => {
+  btn.addEventListener('click', () => startPath(btn.dataset.path));
+});
+
+/* ── MOBILE DRAWER ─────────────────────────────────── */
+const hamburger    = document.getElementById('hamburger');
+const mobileDrawer = document.getElementById('mobileDrawer');
+const overlay      = document.getElementById('drawerOverlay');
+const drawerClose  = document.getElementById('drawerClose');
+
+const toggleDrawer = open => {
+  hamburger.classList.toggle('open', open);
+  mobileDrawer.classList.toggle('open', open);
+  overlay.classList.toggle('open', open);
+  document.body.style.overflow = open ? 'hidden' : '';
+};
+hamburger.addEventListener('click', () => toggleDrawer(!mobileDrawer.classList.contains('open')));
+overlay.addEventListener('click', () => toggleDrawer(false));
+drawerClose.addEventListener('click', () => toggleDrawer(false));
+</script>
+</body>
+</html>
