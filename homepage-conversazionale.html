@@ -7,6 +7,25 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+
+<!-- Google tag: GA4 + Google Ads base -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-SRMDX8JXL5"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-SRMDX8JXL5');
+  gtag('config', 'AW-947982327');
+</script>
+
+<!-- Microsoft Clarity -->
+<script>
+  (function(c,l,a,r,i,t,y){
+    c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+    t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+    y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+  })(window,document,"clarity","script","walfj3k79c");
+</script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -479,6 +498,21 @@ nav{position:sticky;top:0;z-index:100;background:var(--bg);border-bottom:1px sol
 }
 .photo-remove-btn:hover{color:var(--black)}
 
+/* ── LINK SECONDARIO FOTO ────────────────────────── */
+.photo-alt-link{
+  display:inline-block;
+  font-size:13px;
+  color:var(--gray-500);
+  font-weight:300;
+  text-decoration:none;
+  margin-top:18px;
+  padding:10px 0;
+  border-bottom:1px solid transparent;
+  transition:color .15s,border-color .15s;
+  line-height:1.5;
+}
+.photo-alt-link:hover{color:var(--violet);border-bottom-color:var(--violet)}
+
 /* ── SEZIONE TELEFONO ────────────────────────────── */
 .phone-section{
   border-top:1px solid var(--border);
@@ -827,6 +861,22 @@ footer{
 ──────────────────────────────────────────────────────── */
 const API_ENDPOINT = 'https://healthy-smile-guide-agent.nicolapalmia.workers.dev';
 
+/* ── TRACKING HELPERS ──────────────────────────────── */
+function safeTrack(name, params) {
+  try { if (typeof gtag === 'function') gtag('event', name, params || {}); } catch(_) {}
+}
+function safeAdsConversion() {
+  // Conversion label non ancora configurata.
+  // Quando disponibile, decommentare e aggiungere la label:
+  // try { if (typeof gtag === 'function') gtag('event', 'conversion', { send_to: 'AW-947982327/CONVERSION_LABEL' }); } catch(_) {}
+}
+function safeClaritySet(key, value) {
+  try { if (typeof clarity === 'function') clarity('set', key, String(value)); } catch(_) {}
+}
+function safeClarityEvent(name) {
+  try { if (typeof clarity === 'function') clarity('event', name); } catch(_) {}
+}
+
 /* ── VISITOR ID persistente ────────────────────────── */
 const VISITOR_ID = (() => {
   const key = 'healthySmileVisitorId';
@@ -1025,28 +1075,6 @@ const ENDINGS = {
 };
 
 /* ── HELPERS ───────────────────────────────────────── */
-function resizeAndConvert(file) {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    const url = URL.createObjectURL(file);
-    img.onload = () => {
-      URL.revokeObjectURL(url);
-      const MAX = 1200;
-      let w = img.width, h = img.height;
-      if (w > MAX || h > MAX) {
-        if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
-        else       { w = Math.round(w * MAX / h); h = MAX; }
-      }
-      const canvas = document.createElement('canvas');
-      canvas.width = w; canvas.height = h;
-      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-      resolve(canvas.toDataURL('image/jpeg', 0.75).split(',')[1]);
-    };
-    img.onerror = reject;
-    img.src = url;
-  });
-}
-
 async function postSaveLead(phone) {
   if (!API_ENDPOINT || !phone) return;
   try {
@@ -1144,8 +1172,8 @@ function renderEnd(lastAnswer) {
       <p class="mode-q">Vuoi aiutarmi a capire meglio?</p>
       <div class="mode-btns">
         <button class="mode-btn" id="modeTextBtn">Descrivo con parole mie <span class="m-arr">→</span></button>
-        <button class="mode-btn" id="modePhotoBtn">Carico una foto <span class="m-arr">→</span></button>
       </div>
+      <a class="photo-alt-link" href="https://healthysmile.it/sd2.html" target="_blank" rel="noopener">Oppure vuoi inviare una foto per una valutazione orale? →</a>
     </div>
 
     <div class="free-section" id="freeSection" style="display:none">
@@ -1172,42 +1200,22 @@ function renderEnd(lastAnswer) {
       <button class="restart-link" id="restartBtn">Ricomincia da capo</button>
     </div>
 
-    <div class="photo-path" id="photoPath" style="display:none">
-      <p class="photo-note">Una foto può aiutare a capire meglio il contesto, ma non sostituisce una visita. Cerca di farla con buona luce, senza flash, il più nitida possibile.</p>
-      <label class="photo-upload-label" for="photoInput">
-        Scegli una foto →
-        <input type="file" id="photoInput" accept="image/*" style="display:none">
-      </label>
-      <div class="photo-preview-wrap" id="photoPreviewWrap" style="display:none">
-        <img id="photoImg" alt="">
-        <button class="photo-remove-btn" id="photoRemoveBtn">Rimuovi</button>
-      </div>
-      <button class="btn-continue" id="photoSubmitBtn" style="display:none">Analizza la foto →</button>
-      <div class="ai-response" id="photoAiResponse" style="display:none">
-        <p class="ai-meta">Sulla base della foto</p>
-        <p class="ai-text" id="photoAiText"></p>
-        <a class="btn-main" id="waBtnPhoto"
-          href="https://wa.me/393924076794?text=${encodeURIComponent(waFull + ' — ti mostro anche una foto')}"
-          target="_blank" rel="noopener">${btn}</a>
-        <div class="phone-section" id="photoPhoneSection">
-          <p class="phone-label">Vuoi che ti ritroviamo quando vieni in studio?</p>
-          <p class="phone-privacy">Solo il numero. Nessuna chiamata commerciale.</p>
-          <input class="phone-input" type="tel" id="photoPhoneInput" placeholder="Es. 348 123 4567">
-          <button class="btn-continue" id="photoPhoneSaveBtn">Conferma →</button>
-          <p class="phone-confirm" id="photoPhoneConfirm" style="display:none">Perfetto. Se verrai in studio, potremo ritrovare questa valutazione.</p>
-        </div>
-        <button class="restart-link" id="restartBtnPhoto">Ricomincia da capo</button>
-      </div>
-    </div>`;
+    `;
 
   innerEl.appendChild(el);
+
+  el.querySelector('.photo-alt-link')?.addEventListener('click', () => {
+    safeTrack('hs_photo_link_click', { path: currentPath, symptom: lastAnswer });
+  });
 
   // ── consenso → sblocca scelta modalità ──────────
   document.getElementById('consentCheck').addEventListener('change', (e) => {
     const mc = document.getElementById('modeChoice');
     mc.style.display = e.target.checked ? 'block' : 'none';
-    if (e.target.checked)
+    if (e.target.checked) {
+      safeTrack('hs_consent_given', { path: currentPath, symptom: lastAnswer });
       setTimeout(() => mc.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 60);
+    }
   });
 
   // ── scelta modalità ──────────────────────────────
@@ -1216,13 +1224,6 @@ function renderEnd(lastAnswer) {
     const fs = document.getElementById('freeSection');
     fs.style.display = 'block';
     setTimeout(() => fs.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 60);
-  });
-
-  document.getElementById('modePhotoBtn').addEventListener('click', () => {
-    document.getElementById('modeChoice').style.display = 'none';
-    const pp = document.getElementById('photoPath');
-    pp.style.display = 'block';
-    setTimeout(() => pp.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 60);
   });
 
   // ── percorso testo ────────────────────────────────
@@ -1242,6 +1243,8 @@ function renderEnd(lastAnswer) {
     document.getElementById('freeSection').classList.add('locked');
     btn.classList.add('loading');
     btn.disabled = true;
+
+    safeTrack('hs_ai_request', { path: currentPath, symptom: lastAnswer, hasPhoto: false });
 
     let responseText = '';
 
@@ -1284,9 +1287,18 @@ function renderEnd(lastAnswer) {
     document.getElementById('waBtn').href =
       `https://wa.me/393924076794?text=${encodeURIComponent(waFull + '. ' + userText)}`;
 
+    safeTrack('hs_ai_response', { path: currentPath, symptom: lastAnswer });
+    safeClarityEvent('hs_ai_response');
+
     const aiEl = document.getElementById('aiResponse');
     aiEl.style.display = 'block';
     setTimeout(() => aiEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 60);
+
+    document.getElementById('waBtn').addEventListener('click', () => {
+      safeTrack('hs_whatsapp_click', { path: currentPath, symptom: lastAnswer, interactionId: currentInteractionId });
+      safeClarityEvent('hs_whatsapp_click');
+      safeAdsConversion();
+    });
 
     // phone save — text path
     document.getElementById('textPhoneSaveBtn').addEventListener('click', async () => {
@@ -1297,103 +1309,14 @@ function renderEnd(lastAnswer) {
       await postSaveLead(phoneVal);
       document.getElementById('textPhoneSection').querySelector('input').disabled = true;
       document.getElementById('textPhoneConfirm').style.display = 'block';
+      safeTrack('hs_phone_submit', { path: currentPath, symptom: lastAnswer, interactionId: currentInteractionId });
+      safeClarityEvent('hs_phone_submit');
+      safeAdsConversion();
     });
   });
 
   document.getElementById('restartBtn').addEventListener('click', restart);
 
-  // ── percorso foto ─────────────────────────────────
-  const photoInput       = document.getElementById('photoInput');
-  const photoPreviewWrap = document.getElementById('photoPreviewWrap');
-  const photoImg         = document.getElementById('photoImg');
-  const photoSubmitBtn   = document.getElementById('photoSubmitBtn');
-  let photoFile          = null;
-  let photoObjectUrl     = null;
-
-  photoInput.addEventListener('change', () => {
-    const file = photoInput.files[0];
-    if (!file) return;
-    photoFile = file;
-    if (photoObjectUrl) URL.revokeObjectURL(photoObjectUrl);
-    photoObjectUrl = URL.createObjectURL(file);
-    photoImg.src = photoObjectUrl;
-    photoPreviewWrap.style.display = 'block';
-    photoSubmitBtn.style.display = 'block';
-    setTimeout(() => photoSubmitBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 60);
-  });
-
-  document.getElementById('photoRemoveBtn').addEventListener('click', () => {
-    photoInput.value = '';
-    photoFile = null;
-    if (photoObjectUrl) { URL.revokeObjectURL(photoObjectUrl); photoObjectUrl = null; }
-    photoImg.src = '';
-    photoPreviewWrap.style.display = 'none';
-    photoSubmitBtn.style.display = 'none';
-  });
-
-  photoSubmitBtn.addEventListener('click', async () => {
-    if (!photoFile) return;
-    photoSubmitBtn.classList.add('loading');
-    photoSubmitBtn.disabled = true;
-
-    let responseText = FALLBACK_TEXT || 'Non riesco a elaborare la risposta in questo momento.';
-
-    if (!API_ENDPOINT) {
-      responseText = "L'agente AI non è ancora collegato. Questa è solo una demo.";
-    } else {
-      try {
-        const photoBase64 = await resizeAndConvert(photoFile);
-        const res = await fetch(API_ENDPOINT, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            page:             'homepage-conversazionale',
-            path:             currentPath,
-            symptom:          lastAnswer,
-            userText:         '',
-            hasPhoto:         true,
-            photoBase64,
-            consent:          true,
-            consentTimestamp: new Date().toISOString(),
-            privacyVersion:   'chatbot-v1',
-            marketingUse:     false,
-            visitorId:        VISITOR_ID
-          })
-        });
-        if (res.ok) {
-          const data = await res.json();
-          if (data.text) {
-            responseText = data.text;
-            if (data.interactionId) currentInteractionId = data.interactionId;
-          } else throw new Error('empty');
-        } else {
-          throw new Error('http');
-        }
-      } catch (_) {
-        responseText = "Non riesco ad analizzare la foto in questo momento. Puoi descrivere il problema con parole tue o contattare lo studio direttamente.";
-      }
-    }
-
-    photoSubmitBtn.classList.remove('loading');
-    document.getElementById('photoAiText').textContent = responseText;
-
-    const photoAiEl = document.getElementById('photoAiResponse');
-    photoAiEl.style.display = 'block';
-    setTimeout(() => photoAiEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 60);
-
-    // phone save — photo path
-    document.getElementById('photoPhoneSaveBtn').addEventListener('click', async () => {
-      const phoneVal = document.getElementById('photoPhoneInput').value.trim();
-      if (!phoneVal) return;
-      const saveBtn = document.getElementById('photoPhoneSaveBtn');
-      saveBtn.disabled = true;
-      await postSaveLead(phoneVal);
-      document.getElementById('photoPhoneSection').querySelector('input').disabled = true;
-      document.getElementById('photoPhoneConfirm').style.display = 'block';
-    });
-  });
-
-  document.getElementById('restartBtnPhoto').addEventListener('click', restart);
 
   setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 60);
 }
@@ -1407,6 +1330,9 @@ function onChoice(q, answer) {
   if (stepIdx < STEPS[currentPath].length) {
     renderStep(stepIdx);
   } else {
+    safeTrack('hs_symptom_selected', { path: currentPath, symptom: answer });
+    safeClaritySet('hs_path', currentPath);
+    safeClaritySet('hs_symptom', answer);
     renderEnd(answer);
   }
 }
@@ -1418,6 +1344,8 @@ function startPath(path) {
 
   document.querySelectorAll('.start-btn').forEach(b => b.classList.remove('active'));
   document.querySelector(`[data-path="${path}"]`).classList.add('active');
+
+  safeTrack('hs_start_path', { path, label: LABELS[path] });
 
   const spCtx = document.getElementById('spContext');
   if (spCtx && SP_CONTEXT[path]) {
