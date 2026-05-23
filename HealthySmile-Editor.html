@@ -511,7 +511,37 @@ body::before {
   .shell { grid-template-columns: 280px 1fr; }
   .editor-area { grid-template-columns: 1fr; }
 }
+
+/* ─── AI DEBUG BOX ─── */
+#ai-debug-box {
+  display: none;
+  margin: 16px 0;
+  background: rgba(45,255,122,0.04);
+  border: 1px solid rgba(45,255,122,0.25);
+  border-radius: 12px;
+  padding: 16px;
+}
+#ai-debug-box .debug-title {
+  font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em;
+  color: var(--green); font-weight: 600; margin-bottom: 10px;
+  display: flex; align-items: center; gap: 8px;
+}
+#ai-debug-box .debug-title::before {
+  content: ''; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--green); box-shadow: 0 0 8px var(--green);
+  display: inline-block;
+}
+#ai-debug-box pre {
+  font-family: 'DM Mono', monospace; font-size: 11px;
+  color: var(--text-dim); white-space: pre-wrap; word-break: break-all;
+  max-height: 320px; overflow-y: auto; line-height: 1.6;
+}
+#ai-debug-box .debug-status {
+  font-size: 11px; color: var(--text-dim); margin-top: 8px;
+}
 </style>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 </head>
 <body>
 
@@ -610,6 +640,10 @@ body::before {
       <div class="topbar-actions">
         <button class="btn btn-ghost" onclick="resetAll()">↺ Reset</button>
         <button class="btn btn-ghost" id="btn-import" style="display:none;border-color:rgba(45,255,122,0.4);color:var(--green)">✦ Importato dalla cartella</button>
+        <button class="btn btn-ghost" id="btn-ai" onclick="compilaSchedaConAI()" style="border-color:rgba(45,255,122,0.5);color:var(--green);gap:6px" title="Legge i dati Firebase e prepara il JSON per l'AI">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg>
+          Compila scheda con AI
+        </button>
         <button class="btn btn-primary" onclick="generaScheda()">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
           Genera Scheda
@@ -637,6 +671,13 @@ body::before {
           <div class="stat-label">Assenti</div>
           <div class="stat-value" id="stat-grey">—</div>
         </div>
+      </div>
+
+      <!-- AI Debug Box -->
+      <div id="ai-debug-box">
+        <div class="debug-title">patientClinicalSummary — JSON debug</div>
+        <pre id="ai-debug-pre"></pre>
+        <div class="debug-status" id="ai-debug-status"></div>
       </div>
 
       <!-- Bocca map -->
@@ -939,83 +980,113 @@ function labelTR(tid) {
   return tid.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()).replace(/\d+$/, '').trim();
 }
 
+// Genera un consiglio neutro e clinicamente corretto dall'odontogramma attuale,
+// senza usare mai i testi hardcoded di DENTI_BASE.
+function _consiglioBaseAttuale(arr, num) {
+  if (arr.includes('estratto'))
+    return `Elemento ${num} non presente in arcata.`;
+  if (arr.includes('impianto'))
+    return `Impianto osteointegrato sul dente ${num}. Igiene con scovolino interdentale quotidiana e controllo periodico.`;
+  const DEVITAL = ['devitaliz','terapia_endodontica_monocanalare','terapia_endodontica_bicanalare','terapia_endodontica_pluricanalare'];
+  if (arr.some(t => DEVITAL.includes(t)))
+    return `Dente ${num} già devitalizzato (trattamento endodontico pregresso). Da monitorare periodicamente — nessun intervento attivo previsto salvo nuove indicazioni.`;
+  if (arr.includes('corona'))
+    return `Dente ${num} con corona. Igiene accurata alle giunzioni gengiva-corona.`;
+  if (arr.includes('ponte'))
+    return `Ponte presente sul dente ${num}. Usa lo scovolino sotto al ponte ogni sera.`;
+  if (arr.includes('otturato'))
+    return `Dente ${num} già otturato. Mantieni l'igiene attuale e vieni ai controlli periodici.`;
+  if (arr.includes('cariato'))
+    return `Dente ${num} presenta una lesione cariosa. Richiede attenzione — più si aspetta, più complesso sarà l'intervento.`;
+  const labels = arr.filter(t => t !== 'sano').map(t => labelTR(t));
+  return labels.length
+    ? `Dente ${num}: ${labels.join(', ')}. Monitoraggio periodico.`
+    : `Dente ${num} in osservazione. Nessun intervento attivo previsto.`;
+}
+
+function _applicaDatiClinici(data) {
+  // ── Reset flag implant su tutti i denti: DENTI_BASE non deve mai emergere ──
+  // Solo l'odontogramma Firebase è fonte autorevole sull'impianto.
+  denti.forEach(d => { d.implant = false; });
+
+  // Codice paziente
+  if (data.codice) {
+    codice = data.codice;
+    document.getElementById('codice-display').textContent = codice;
+    document.getElementById('topbar-code').textContent = codice;
+    document.getElementById('topbar-title').textContent = codice;
+  }
+
+  // Odontogramma attuale → aggiorna array denti
+  const attuale = data.attuale || {};
+  Object.entries(attuale).forEach(([num, treats]) => {
+    const n = parseInt(num);
+    const d = denti.find(x => x.num === n);
+    if (!d) return;
+    const arr = Array.isArray(treats) ? treats : [treats];
+    d.presente = !arr.includes('estratto');
+    d.implant  = arr.includes('impianto');
+    if (!d.presente)                                d.rischio = 'absent';
+    else if (arr.some(t => TR_HIGH.includes(t)))    d.rischio = 'high';
+    else if (arr.some(t => TR_MEDIUM.includes(t)))  d.rischio = 'medium';
+    else                                            d.rischio = 'low';
+    const labels = arr.filter(t => t !== 'sano').map(t => labelTR(t));
+    if (labels.length) {
+      d.note = labels.join(' + ');
+      // Sovrascrive SEMPRE il consiglio di DENTI_BASE con uno clinicamente neutro.
+      // Verrà ulteriormente affinato dal piano o dall'AI.
+      d.consiglio = _consiglioBaseAttuale(arr, n);
+    } else {
+      d.note = 'Sano';
+      d.consiglio = 'Dente sano. Nessun intervento previsto.';
+    }
+  });
+
+  // Piano trattamenti → consiglio automatico + prezzi
+  const piano = data.piano || {};
+  Object.entries(piano).forEach(([num, items]) => {
+    const n = parseInt(num);
+    const d = denti.find(x => x.num === n);
+    if (!d || !items.length) return;
+    const daFare   = items.filter(x => x.stato === 'dafare').map(x => labelTR(x.tid));
+    const inCorso  = items.filter(x => x.stato === 'incorso').map(x => labelTR(x.tid));
+    const eseguiti = items.filter(x => x.stato === 'eseguito').map(x => labelTR(x.tid));
+    // generaConsiglioClinico usa solo i daFare — non inventa prestazioni assenti
+    const consClinico = generaConsiglioClinico(n, items, attuale[num] || []);
+    if (consClinico) {
+      d.consiglio = consClinico;
+    } else if (inCorso.length || eseguiti.length) {
+      // Nessun daFare: il piano è completato o in corso — consiglio neutro sullo stato
+      const parti = [];
+      if (inCorso.length)  parti.push(`In corso: ${inCorso.join(', ')}`);
+      if (eseguiti.length) parti.push(`Completato: ${eseguiti.join(', ')}`);
+      d.consiglio = parti.join('. ') + '.';
+    }
+    // Se non c'è nessuna riga di piano rilevante, il consiglio base attuale rimane
+    const totPrezzo = calcolaPrezzo(items);
+    if (totPrezzo > 0) d.prezzoMercato = totPrezzo;
+    const hasFare = daFare.length > 0;
+    if (hasFare) d.rischio = 'high';
+    if (!d.presente) d.rischio = 'absent';
+    if (totPrezzo > 0) {
+      const scontoMap = { low: 0.30, medium: 0.70, high: 1.0, absent: 1.0 };
+      d.prezzoConv = Math.round(totPrezzo * (scontoMap[d.rischio] || 1.0));
+    }
+  });
+
+  renderMappa();
+  renderDenteList();
+  updateStats();
+  generaTesti();
+  document.getElementById('btn-import').style.display = 'inline-flex';
+}
+
 function importaDaURL() {
   const params = new URLSearchParams(window.location.search);
   const raw = params.get('hs');
   if (!raw) return;
   try {
-    const data = JSON.parse(decodeURIComponent(raw));
-    // Codice paziente
-    if (data.codice) {
-      codice = data.codice;
-      document.getElementById('codice-display').textContent = codice;
-      document.getElementById('topbar-code').textContent = codice;
-      document.getElementById('topbar-title').textContent = codice;
-    }
-    // Odontogramma attuale → stato dente
-    const attuale = data.attuale || {};
-    Object.entries(attuale).forEach(([num, treats]) => {
-      const n = parseInt(num);
-      const d = denti.find(x => x.num === n);
-      if (!d) return;
-      const arr = Array.isArray(treats) ? treats : [treats];
-      d.presente = !arr.includes('estratto');
-      d.implant  = arr.includes('impianto');
-      // Rischio da situazione attuale
-      if (!d.presente)                                d.rischio = 'absent';
-      else if (arr.some(t => TR_HIGH.includes(t)))    d.rischio = 'high';
-      else if (arr.some(t => TR_MEDIUM.includes(t)))  d.rischio = 'medium';
-      else                                            d.rischio = 'low';
-      // Nota breve automatica — sovrascrive sempre il default DENTI_BASE
-      const labels = arr.filter(t=>t!=='sano').map(t=>labelTR(t));
-      if (labels.length) {
-        d.note = labels.join(' + ');
-      } else {
-        // dente presente nell'odontogramma ma senza trattamenti → sano
-        d.note = 'Sano';
-        if (!d.implant) d.consiglio = 'Dente sano. Nessun intervento previsto.';
-      }
-    });
-    // Piano trattamenti → consiglio automatico
-    const piano = data.piano || {};
-    Object.entries(piano).forEach(([num, items]) => {
-      const n = parseInt(num);
-      const d = denti.find(x => x.num === n);
-      if (!d || !items.length) return;
-      const daFare    = items.filter(x=>x.stato==='dafare').map(x=>labelTR(x.tid));
-      const inCorso   = items.filter(x=>x.stato==='incorso').map(x=>labelTR(x.tid));
-      const eseguiti  = items.filter(x=>x.stato==='eseguito').map(x=>labelTR(x.tid));
-      // Testo clinico coinvolgente
-      const consClinico = generaConsiglioClinico(n, items, attuale[num]||[]);
-      if (consClinico) d.consiglio = consClinico;
-      else {
-        let consiglio = '';
-        if (daFare.length)   consiglio += `Da eseguire: ${daFare.join(', ')}. `;
-        if (inCorso.length)  consiglio += `In corso: ${inCorso.join(', ')}. `;
-        if (eseguiti.length) consiglio += `Completato: ${eseguiti.join(', ')}.`;
-        if (consiglio.trim()) d.consiglio = consiglio.trim();
-      }
-      // Prezzi: somma trattamenti da fare
-      const totPrezzo = calcolaPrezzo(items);
-      if (totPrezzo > 0) {
-        d.prezzoMercato = totPrezzo;
-      }
-      // Rischio da piano — trattamenti da fare → SEMPRE rosso
-      const hasFare = daFare.length > 0;
-      if (hasFare) d.rischio = 'high';
-      // Dente non presente → sempre absent (sovrascrive)
-      if (!d.presente) d.rischio = 'absent';
-      // Prezzo convenzionato in base al rischio: verde –70%, giallo –30%, rosso = prezzo pieno
-      if (totPrezzo > 0) {
-        const scontoMap = { low: 0.30, medium: 0.70, high: 1.0, absent: 1.0 };
-        d.prezzoConv = Math.round(totPrezzo * (scontoMap[d.rischio] || 1.0));
-      }
-    });
-    renderMappa();
-    renderDenteList();
-    updateStats();
-    generaTesti();
-    document.getElementById('btn-import').style.display = 'inline-flex';
+    _applicaDatiClinici(JSON.parse(decodeURIComponent(raw)));
     showToast('✦ Dati importati dalla cartella clinica!');
   } catch(e) {
     console.error('Import fallito:', e);
@@ -1325,6 +1396,21 @@ function resetAll() {
 
 // ─── GENERA SCHEDA ───
 function generaScheda() {
+  // ── Debug: snapshot fedele di ciò che va nella scheda ──
+  console.group('[generaScheda] Snapshot denti al momento della generazione');
+  denti.forEach(d => {
+    console.log(
+      `%c${d.num} ${d.nome}` +
+      `  rischio=${d.rischio}  implant=${d.implant}  presente=${d.presente}` +
+      `\n  note: "${d.note}"` +
+      `\n  consiglio: "${(d.consiglio || '').slice(0, 100)}${(d.consiglio||'').length > 100 ? '…' : ''}"`,
+      d.rischio === 'high' ? 'color:#ff4d6d;font-weight:600'
+        : d.rischio === 'medium' ? 'color:#ffd166;font-weight:600'
+        : 'color:#6b8a74'
+    );
+  });
+  console.groupEnd();
+
   const dataVisita = document.getElementById('data-visita').value;
   const dataFormatted = dataVisita ? new Date(dataVisita).toLocaleDateString('it-IT') : new Date().toLocaleDateString('it-IT');
   const overviewText = document.getElementById('overview-text').value;
@@ -1738,6 +1824,272 @@ renderTable();
 <\/script>
 </body>
 </html>`;
+}
+
+// ═══════════════════════════════════════════════════════════
+// FIREBASE — connessione per lettura dati cartella clinica
+// ═══════════════════════════════════════════════════════════
+const _fbConfig = {
+  apiKey: "AIzaSyB9BXoJQLCx_Y9pwoXmxtVj1CLULohaUsw",
+  authDomain: "healthysmile-d2b52.firebaseapp.com",
+  projectId: "healthysmile-d2b52",
+  storageBucket: "healthysmile-d2b52.firebasestorage.app",
+  messagingSenderId: "984573798131",
+  appId: "1:984573798131:web:e96e695fb86b90a2413986"
+};
+
+let _fbApp = null;
+let _fbDb  = null;
+
+function getFirestoreDb() {
+  if (_fbDb) return _fbDb;
+  if (!firebase.apps.length) {
+    _fbApp = firebase.initializeApp(_fbConfig);
+  } else {
+    _fbApp = firebase.app();
+  }
+  _fbDb = firebase.firestore();
+  return _fbDb;
+}
+
+// ═══════════════════════════════════════════════════════════
+// COMPILA SCHEDA CON AI — Fase 1: lettura dati + JSON pulito
+// ═══════════════════════════════════════════════════════════
+
+async function compilaSchedaConAI() {
+  const btn = document.getElementById('btn-ai');
+  const debugBox = document.getElementById('ai-debug-box');
+  const debugPre = document.getElementById('ai-debug-pre');
+  const debugStatus = document.getElementById('ai-debug-status');
+
+  // 1. Leggi patient ID dall'URL (?id=pt_xxx)
+  const params = new URLSearchParams(window.location.search);
+  const patientId = params.get('id');
+
+  if (!patientId) {
+    showToast('⚠ Nessun ?id= nell\'URL — apri l\'editor da cartella clinica con ?id=pt_xxx');
+    debugBox.style.display = 'block';
+    debugPre.textContent = 'Errore: parametro ?id= non trovato nell\'URL.\nAggiungi ?id=<id_paziente> all\'URL per usare questa funzione.';
+    debugStatus.textContent = '⚠ ID paziente mancante';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = '⏳ Lettura Firebase…';
+  debugBox.style.display = 'block';
+  debugPre.textContent = 'Connessione a Firebase…';
+  debugStatus.textContent = '';
+
+  try {
+    const db = getFirestoreDb();
+
+    // 2. Recupera documento paziente da Firestore
+    const docSnap = await db.collection('pazienti').doc(patientId).get();
+    if (!docSnap.exists) {
+      throw new Error(`Paziente "${patientId}" non trovato in Firestore`);
+    }
+    const p = docSnap.data();
+
+    // 3. Parsing sicuro dei campi JSON stringificati
+    const safeP = (val, def) => {
+      if (!val) return def;
+      if (typeof val === 'object') return val;
+      try { return JSON.parse(val); } catch { return def; }
+    };
+
+    const odontogramma   = safeP(p.odontogramma,   {});
+    const piano          = safeP(p.piano,           {});
+    const arcatePiano    = safeP(p.arcate_piano,    {});
+    const quadrantePiano = safeP(p.quad_piano,      {});
+    const arcateAttuale  = safeP(p.arcate,          {});
+    const diario         = safeP(p.diario,          []);
+    const preventivoRows = safeP(p.preventivi,      []);
+
+    // 4. Costruisci patientClinicalSummary
+    const patientClinicalSummary = {
+      meta: {
+        patientId:    patientId,
+        codice:       p.codice       || '',
+        nome:         p.nome         || '',
+        cognome:      p.cognome      || '',
+        anno:         p.anno         || '',
+        dob:          p.dob          || '',
+        rischio:      p.rischio      || '',
+        prima_visita: p.prima_visita || '',
+        operatore:    p.operatore    || '',
+        generato:     new Date().toISOString(),
+      },
+
+      odontogramma_attuale: {
+        denti:   odontogramma,   // { "16": ["impianto","corona"], ... }
+        arcate:  arcateAttuale,  // { "sup": ["tot_rimov"], ... }
+      },
+
+      piano_trattamenti: {
+        denti:      piano,          // { "16": [{tid, stato}, ...], ... }
+        arcate:     arcatePiano,
+        quadranti:  quadrantePiano,
+        riepilogo:  _buildPianoRiepilogo(piano, arcatePiano, quadrantePiano),
+      },
+
+      preventivo: {
+        righe:       preventivoRows,
+        totale:      preventivoRows.reduce((s, r) => s + (r.prezzo || 0), 0),
+        validita_gg: p.prev_validita || 30,
+      },
+
+      diario_clinico: diario.slice(-20), // ultimi 20 appunti per non gonfiare il prompt
+
+      note_generali: p.note_generali || '',
+    };
+
+    // 5. Log in console
+    console.log('=== patientClinicalSummary ===');
+    console.log(JSON.stringify(patientClinicalSummary, null, 2));
+
+    // 6. Mostra nel debug box
+    debugPre.textContent = JSON.stringify(patientClinicalSummary, null, 2);
+    debugStatus.textContent =
+      `✓ Dati caricati — ${Object.keys(odontogramma).length} denti in odontogramma · ` +
+      `${Object.keys(piano).length} con piano · ` +
+      `${preventivoRows.length} righe preventivo · ` +
+      `${diario.length} note diario`;
+
+    // 7. Aggiorna editor con i dati reali (mappa, lista, testi)
+    _applicaDatiClinici({ codice: p.codice, attuale: odontogramma, piano: piano });
+
+    // 8. Chiama il Worker AI
+    btn.textContent = '⏳ AI in elaborazione…';
+    await generateAITexts(patientClinicalSummary);
+
+  } catch (err) {
+    console.error('compilaSchedaConAI error:', err);
+    debugPre.textContent = 'Errore: ' + err.message;
+    debugStatus.textContent = '✗ ' + err.message;
+    showToast('✗ Errore lettura Firebase');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg> Compila scheda con AI`;
+  }
+}
+
+// Costruisce un riepilogo leggibile del piano per il prompt AI
+function _buildPianoRiepilogo(piano, arcatePiano, quadrantePiano) {
+  const righe = [];
+  Object.entries(piano).forEach(([num, items]) => {
+    if (!items || !items.length) return;
+    items.forEach(it => {
+      righe.push({
+        dente:       parseInt(num),
+        trattamento: labelTR(it.tid) || it.tid,
+        stato:       it.stato || 'dafare',
+        prezzo:      prezzoTR(it.tid),
+      });
+    });
+  });
+  Object.entries(arcatePiano).forEach(([arcata, items]) => {
+    if (!items || !items.length) return;
+    items.forEach(it => {
+      righe.push({
+        dente:       arcata,
+        trattamento: labelTR(it.tid) || it.tid,
+        stato:       it.stato || 'dafare',
+        prezzo:      prezzoTR(it.tid),
+      });
+    });
+  });
+  Object.entries(quadrantePiano).forEach(([quad, items]) => {
+    if (!items || !items.length) return;
+    items.forEach(it => {
+      righe.push({
+        dente:       quad,
+        trattamento: labelTR(it.tid) || it.tid,
+        stato:       it.stato || 'dafare',
+        prezzo:      prezzoTR(it.tid),
+      });
+    });
+  });
+  return righe;
+}
+
+// ═══════════════════════════════════════════════════════════
+// WORKER AI — POST → Cloudflare Worker → Claude API
+// ═══════════════════════════════════════════════════════════
+const WORKER_URL = 'https://cartelladigitalepaziente.nicolapalmia.workers.dev';
+
+async function generateAITexts(patientClinicalSummary) {
+  const debugStatus = document.getElementById('ai-debug-status');
+
+  let res;
+  try {
+    res = await fetch(WORKER_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ patientClinicalSummary })
+    });
+  } catch (netErr) {
+    const msg = 'Worker non raggiungibile: ' + netErr.message;
+    debugStatus.textContent += ' · ✗ ' + msg;
+    showToast('✗ ' + msg);
+    throw netErr;
+  }
+
+  let ai;
+  try {
+    ai = await res.json();
+  } catch {
+    const msg = `Worker HTTP ${res.status} — risposta non JSON valida`;
+    debugStatus.textContent += ' · ✗ ' + msg;
+    showToast('✗ ' + msg);
+    throw new Error(msg);
+  }
+
+  if (!res.ok) {
+    const msg = `Worker HTTP ${res.status}: ${ai.error || JSON.stringify(ai).slice(0, 120)}`;
+    debugStatus.textContent += ' · ✗ ' + msg;
+    showToast('✗ ' + msg);
+    throw new Error(msg);
+  }
+
+  // ── Popola campi testo ──
+  if (ai.overview_text)
+    document.getElementById('overview-text').value  = ai.overview_text;
+  if (ai.filosofia_text)
+    document.getElementById('filosofia-text').value = ai.filosofia_text;
+  if (ai.wa_text)
+    document.getElementById('wa-text').value        = ai.wa_text;
+  if (ai.punti_forza) {
+    document.getElementById('punti-forza').value =
+      Array.isArray(ai.punti_forza) ? ai.punti_forza.join('\n') : ai.punti_forza;
+  }
+  if (ai.punti_critici) {
+    document.getElementById('punti-critici').value =
+      Array.isArray(ai.punti_critici) ? ai.punti_critici.join('\n') : ai.punti_critici;
+  }
+
+  // ── Aggiorna denti ──
+  if (ai.denti && typeof ai.denti === 'object') {
+    Object.entries(ai.denti).forEach(([numStr, info]) => {
+      if (!info) return;
+      const n = parseInt(numStr);
+      const d = denti.find(x => x.num === n);
+      if (!d) return;
+      if (info.consiglio !== undefined) d.consiglio = info.consiglio;
+      if (info.note      !== undefined) d.note      = info.note;
+      if (info.rischio !== undefined &&
+          ['low','medium','high','absent','treated'].includes(info.rischio)) {
+        d.rischio = info.rischio;
+        if (info.rischio === 'absent') d.presente = false;
+      }
+    });
+    renderMappa();
+    renderDenteList();
+    updateStats();
+  }
+
+  debugStatus.textContent += ' · ✦ AI completato';
+  showToast('✦ Testi AI compilati!');
+  switchTab('testi');
 }
 
 init();
