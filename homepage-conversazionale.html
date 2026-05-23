@@ -647,47 +647,66 @@ nav{position:sticky;top:0;z-index:100;background:var(--bg);border-bottom:1px sol
 }
 .consent-privacy-link:hover{color:var(--text)}
 
-/* ── SCELTA MODALITÀ ────────────────────────────── */
-.mode-choice{
-  border-top:1px solid var(--gray-200);
-  padding-top:40px;
-  margin-bottom:0;
-}
-.mode-q{
+/* ── AZIONI DOPO CONSENSO ───────────────────────── */
+.consent-body-compact{
   font-size:14px;
   color:var(--gray-700);
-  font-weight:400;
+  font-weight:300;
+  line-height:1.7;
   margin-bottom:14px;
+}
+.action-btns{
+  margin-top:24px;
+}
+.consent-error{
+  font-size:13px;
+  color:var(--pink);
+  font-weight:300;
   line-height:1.5;
+  margin-bottom:10px;
 }
-.mode-btns{
-  border-top:1px solid var(--gray-200);
-}
-.mode-btn{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
+.btn-action-text{
+  display:block;
   width:100%;
-  background:transparent;
-  border:none;
-  border-bottom:1px solid var(--gray-200);
-  padding:16px 0;
+  background:linear-gradient(135deg,var(--violet) 0%,var(--pink) 100%);
+  color:var(--white);
   font-family:var(--sans);
-  font-size:15px;
-  color:var(--gray-700);
+  font-size:16px;
+  font-weight:500;
+  padding:17px 24px;
+  text-align:center;
+  border:none;
+  border-radius:4px;
   cursor:pointer;
-  text-align:left;
-  transition:color .15s;
-  gap:20px;
+  transition:opacity .2s,box-shadow .2s;
+  margin-bottom:10px;
+  box-shadow:0 4px 18px rgba(123,44,255,.22);
 }
-.mode-btn .m-arr{
-  font-size:14px;
-  color:var(--gray-300);
-  flex-shrink:0;
-  transition:color .15s,transform .15s;
+.btn-action-text:hover{opacity:.88;box-shadow:0 6px 24px rgba(123,44,255,.32)}
+.btn-action-photo{
+  display:block;
+  border:1px solid var(--border);
+  border-radius:4px;
+  padding:16px 20px;
+  text-decoration:none;
+  background:var(--card);
+  transition:border-color .2s,box-shadow .2s;
 }
-.mode-btn:hover{color:var(--violet)}
-.mode-btn:hover .m-arr{color:var(--violet);transform:translateX(4px)}
+.btn-action-photo:hover{border-color:var(--gray-300);box-shadow:0 2px 12px rgba(123,44,255,.08)}
+.bap-label{
+  display:block;
+  font-size:15px;
+  font-weight:500;
+  color:var(--text);
+  margin-bottom:3px;
+}
+.bap-sub{
+  display:block;
+  font-size:12px;
+  color:var(--text-soft);
+  font-weight:300;
+  letter-spacing:.02em;
+}
 
 /* ── SISTEMA PROTEZIONE ──────────────────────────── */
 .sistema-protezione{
@@ -1156,27 +1175,21 @@ function renderEnd(lastAnswer) {
 
     <div class="consent-block" id="consentBlock">
       <p class="consent-title">Prima di continuare</p>
-      <p class="consent-body">Le informazioni che inserisci non verranno usate per pubblicità, remarketing, campagne promozionali o chiamate commerciali future.</p>
-      <p class="consent-uses-label">Le useremo solo per:</p>
-      <ul class="consent-list">
-        <li>capire meglio la tua situazione;</li>
-        <li>darti una risposta orientativa;</li>
-        <li>preparare meglio un'eventuale visita, se deciderai tu di prenotarla.</li>
-      </ul>
-      <p class="consent-note">Non sostituiscono una diagnosi o una visita odontoiatrica.</p>
+      <p class="consent-body-compact">Useremo le informazioni che inserisci solo per darti una risposta orientativa e preparare meglio un'eventuale visita. Non le useremo per pubblicità o chiamate commerciali future.</p>
       <label class="consent-label">
         <input type="checkbox" id="consentCheck">
-        <span>Ho letto e acconsento al trattamento delle informazioni che inserirò, inclusi eventuali dati relativi alla salute, solo per le finalità indicate sopra.</span>
+        <span>Ho letto e acconsento.</span>
       </label>
-      <a class="consent-privacy-link" href="/privacy-chatbot.html" target="_blank" rel="noopener">Leggi informativa privacy completa →</a>
+      <a class="consent-privacy-link" href="/privacy-chatbot.html" target="_blank" rel="noopener">Leggi informativa completa →</a>
     </div>
 
-    <div class="mode-choice" id="modeChoice" style="display:none">
-      <p class="mode-q">Vuoi aiutarmi a capire meglio?</p>
-      <div class="mode-btns">
-        <button class="mode-btn" id="modeTextBtn">Descrivo con parole mie <span class="m-arr">→</span></button>
-      </div>
-      <a class="photo-alt-link" href="https://healthysmile.it/sd2.html" target="_blank" rel="noopener">Oppure vuoi inviare una foto per una valutazione orale? →</a>
+    <div class="action-btns" id="actionBtns">
+      <p class="consent-error" id="consentError" style="display:none">Per continuare serve il consenso al trattamento delle informazioni inserite.</p>
+      <button class="btn-action-text" id="modeTextBtn">Descrivo il problema →</button>
+      <a class="btn-action-photo photo-alt-link" href="https://healthysmile.it/sd2.html" target="_blank" rel="noopener">
+        <span class="bap-label">Invio una foto della bocca</span>
+        <span class="bap-sub">Valutazione visiva su pagina dedicata →</span>
+      </a>
     </div>
 
     <div class="free-section" id="freeSection" style="display:none">
@@ -1211,19 +1224,22 @@ function renderEnd(lastAnswer) {
     safeTrack('hs_photo_link_click', { path: currentPath, symptom: lastAnswer });
   });
 
-  // ── consenso → sblocca scelta modalità ──────────
+  // ── consenso → tracking ──────────────────────────
   document.getElementById('consentCheck').addEventListener('change', (e) => {
-    const mc = document.getElementById('modeChoice');
-    mc.style.display = e.target.checked ? 'block' : 'none';
     if (e.target.checked) {
       safeTrack('hs_consent_given', { path: currentPath, symptom: lastAnswer });
-      setTimeout(() => mc.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 60);
+      document.getElementById('consentError').style.display = 'none';
     }
   });
 
-  // ── scelta modalità ──────────────────────────────
+  // ── descrivi il problema ─────────────────────────
   document.getElementById('modeTextBtn').addEventListener('click', () => {
-    document.getElementById('modeChoice').style.display = 'none';
+    if (!document.getElementById('consentCheck').checked) {
+      document.getElementById('consentError').style.display = 'block';
+      setTimeout(() => document.getElementById('consentCheck').scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 60);
+      return;
+    }
+    document.getElementById('actionBtns').style.display = 'none';
     const fs = document.getElementById('freeSection');
     fs.style.display = 'block';
     setTimeout(() => fs.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 60);
