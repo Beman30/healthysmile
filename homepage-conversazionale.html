@@ -1183,11 +1183,8 @@ function renderStep(idx) {
   const total = steps.length;
 
   const guideCardHTML = (currentPath === 'fastidio' && idx === 0) ? `
-    <a class="guide-card" href="problemi/gengive-sanguinanti.html" style="display:block;text-decoration:none;">
-      <p class="guide-card-label">Guida</p>
-      <p class="guide-card-title">Gengive che sanguinano?</p>
-      <p class="guide-card-text">Se vedi sangue quando lavi i denti, scopri quando non ignorare questo segnale e come partire dalla prevenzione.</p>
-      <span class="guide-card-btn">Leggi la guida →</span>
+    <a class="choice-btn" href="https://healthysmile.it/problemi/gengive-sanguinano.html" style="text-decoration:none;">
+      Gengive che sanguinano? <span class="c-arr">→</span>
     </a>` : '';
 
   const el = document.createElement('div');
@@ -1196,8 +1193,8 @@ function renderStep(idx) {
   el.innerHTML = `
     ${total > 1 ? `<p class="step-counter">Passo ${idx + 1} di ${total}</p>` : ''}
     <p class="step-q">${q}</p>
-    ${guideCardHTML}
     <div class="step-choices">
+      ${guideCardHTML}
       ${choices.map(c => `
         <button class="choice-btn" data-val="${encodeURIComponent(c)}">
           ${c} <span class="c-arr">→</span>
