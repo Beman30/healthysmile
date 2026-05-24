@@ -789,6 +789,53 @@ footer{
   .ans-a{text-align:left;max-width:100%}
   .active-step{padding-top:40px}
 }
+
+/* ── GUIDE CARD ──────────────────────────────────── */
+.guide-card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:20px 24px;
+  margin-bottom:24px;
+  box-shadow:0 2px 12px rgba(123,44,255,.06);
+}
+.guide-card-label{
+  font-size:11px;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  color:var(--violet);
+  margin-bottom:10px;
+}
+.guide-card-title{
+  font-family:var(--serif);
+  font-size:18px;
+  color:var(--black);
+  line-height:1.3;
+  letter-spacing:-.01em;
+  margin-bottom:8px;
+}
+.guide-card-text{
+  font-size:14px;
+  color:var(--gray-700);
+  font-weight:300;
+  line-height:1.65;
+  margin-bottom:14px;
+}
+.guide-card-btn{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  font-size:13px;
+  font-family:var(--sans);
+  color:var(--violet);
+  text-decoration:none;
+  border:1px solid var(--border);
+  border-radius:4px;
+  padding:9px 16px;
+  font-weight:500;
+  transition:border-color .15s,background .15s;
+}
+.guide-card-btn:hover{border-color:var(--violet);background:var(--gray-100)}
 </style>
 </head>
 <body>
@@ -1135,12 +1182,21 @@ function renderStep(idx) {
   const { q, choices } = steps[idx];
   const total = steps.length;
 
+  const guideCardHTML = (currentPath === 'fastidio' && idx === 0) ? `
+    <a class="guide-card" href="problemi/gengive-sanguinanti.html" style="display:block;text-decoration:none;">
+      <p class="guide-card-label">Guida</p>
+      <p class="guide-card-title">Gengive che sanguinano?</p>
+      <p class="guide-card-text">Se vedi sangue quando lavi i denti, scopri quando non ignorare questo segnale e come partire dalla prevenzione.</p>
+      <span class="guide-card-btn">Leggi la guida →</span>
+    </a>` : '';
+
   const el = document.createElement('div');
   el.className = 'active-step';
   el.id = 'activeStep';
   el.innerHTML = `
     ${total > 1 ? `<p class="step-counter">Passo ${idx + 1} di ${total}</p>` : ''}
     <p class="step-q">${q}</p>
+    ${guideCardHTML}
     <div class="step-choices">
       ${choices.map(c => `
         <button class="choice-btn" data-val="${encodeURIComponent(c)}">
