@@ -198,34 +198,28 @@ footer{background:#0a0a0a;padding:24px 32px;border-top:1px solid #1e1e1e;display
 .footer-links a{font-size:12px;color:#555;text-decoration:none;letter-spacing:.04em;transition:color .15s}
 .footer-links a:hover{color:#aaa}
 
-/* BLOCCO CONVERSAZIONALE */
-.conv-section{background:var(--white);padding:64px 24px;border-top:1px solid var(--gray-300)}
-.conv-section--gray{background:var(--gray-100)}
-.conv-wrap{max-width:540px;margin:0 auto}
-.conv-card{background:var(--accent-light);border:1px solid rgba(200,0,92,.2);border-radius:12px;padding:32px}
-.conv-label{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin-bottom:10px;display:block}
-.conv-title{font-family:var(--serif);font-size:clamp(20px,2.6vw,26px);color:var(--black);line-height:1.2;letter-spacing:-.015em;margin-bottom:12px}
-.conv-title em{color:var(--accent);font-style:italic}
-.conv-desc{font-size:16px;color:var(--gray-700);font-weight:300;line-height:1.75;margin-bottom:20px}
-.conv-desc strong{color:var(--black);font-weight:500}
-.conv-textarea{width:100%;min-height:96px;padding:14px 16px;font-family:var(--sans);font-size:16px;color:var(--black);background:var(--white);border:1.5px solid var(--gray-300);border-radius:8px;resize:vertical;line-height:1.6;outline:none;transition:border-color .2s;margin-bottom:10px;display:block}
-.conv-textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(200,0,92,.08)}
-.conv-textarea::placeholder{color:var(--gray-500)}
-.conv-btn-analyze{display:block;width:100%;padding:15px 20px;background:var(--accent);color:#fff;font-family:var(--sans);font-size:16px;font-weight:500;border:none;border-radius:8px;cursor:pointer;transition:opacity .2s;margin-bottom:10px;text-align:center}
-.conv-btn-analyze:hover{opacity:.87}
-.conv-wa-skip svg,.conv-response-wa svg{width:18px;height:18px;fill:#fff;flex-shrink:0}
-.conv-direct{font-size:14px;color:var(--gray-500);font-weight:300;margin-top:16px;text-align:center;line-height:1.5}
-.conv-direct a{color:var(--accent);text-decoration:none;font-weight:500}
-.conv-direct a:hover{text-decoration:underline}
-.conv-response{display:none;margin-top:16px;padding:20px;background:var(--white);border-radius:8px;border:1px solid var(--gray-300)}
-.conv-response-text{font-size:16px;color:var(--gray-700);font-weight:300;line-height:1.75;margin-bottom:16px}
-.conv-response-wa{display:flex;align-items:center;justify-content:center;gap:8px;background:#25D366;color:#fff;font-family:var(--sans);font-size:15px;font-weight:500;padding:13px 20px;text-decoration:none;border-radius:8px;transition:opacity .2s;width:100%}
-.conv-response-wa:hover{opacity:.88}
-/* BLOCCO CONV INLINE (dentro case-card) */
-.case-conv{margin-top:32px;padding:24px;background:var(--accent-light);border-radius:10px;border:1px solid rgba(200,0,92,.18)}
-.case-conv .conv-label{color:var(--accent)}
-.case-conv .conv-title{font-size:clamp(17px,2vw,21px)}
-.case-conv .conv-desc{font-size:15px;margin-bottom:16px}
+/* BLOCCO CONVERSAZIONALE — minimalista */
+.conv-row{border-top:1px solid var(--gray-300);background:var(--white)}
+.conv-row-inner{max-width:540px;margin:0 auto;padding:0 24px}
+.conv-trigger{display:flex;align-items:center;justify-content:space-between;width:100%;background:none;border:none;border-bottom:1px solid var(--gray-300);padding:22px 0;font-family:var(--sans);font-size:17px;color:var(--black);cursor:pointer;text-align:left;transition:color .2s;gap:20px}
+.conv-trigger:hover{color:var(--accent)}
+.conv-trigger .ct-arr{color:var(--accent);transition:transform .25s;flex-shrink:0;font-size:18px}
+.conv-trigger.open .ct-arr{transform:rotate(90deg)}
+.conv-expand{display:none;padding:20px 0 32px}
+.conv-expand.open{display:block}
+.cs-hint{font-size:14px;color:var(--gray-500);font-weight:300;margin-bottom:10px}
+.cs-textarea{width:100%;min-height:88px;padding:12px 14px;font-family:var(--sans);font-size:16px;color:var(--black);background:var(--white);border:1px solid var(--gray-300);border-radius:6px;resize:vertical;line-height:1.55;outline:none;transition:border-color .2s;margin-bottom:10px;display:block}
+.cs-textarea:focus{border-color:var(--accent)}
+.cs-textarea::placeholder{color:var(--gray-500)}
+.cs-continue{display:block;width:100%;padding:14px 20px;background:var(--accent);color:#fff;font-family:var(--sans);font-size:16px;font-weight:500;border:none;border-radius:6px;cursor:pointer;transition:opacity .2s}
+.cs-continue:hover{opacity:.85}
+.cs-response{display:none;margin-top:16px;padding:18px 20px;background:var(--gray-100);border-radius:8px;border:1px solid var(--gray-300)}
+.cs-response p{font-size:15px;color:var(--gray-700);font-weight:300;line-height:1.75;margin-bottom:14px}
+.cs-wa{display:flex;align-items:center;justify-content:center;gap:8px;background:#25D366;color:#fff;font-family:var(--sans);font-size:15px;font-weight:500;padding:12px 18px;text-decoration:none;border-radius:6px;transition:opacity .2s;width:100%}
+.cs-wa:hover{opacity:.88}
+.cs-wa svg{width:17px;height:17px;fill:#fff;flex-shrink:0}
+/* inline dentro case-card */
+.case-conv{margin-top:24px;border-top:1px solid var(--gray-300)}
 /* ALTRO PROBLEMA */
 .altro-block{display:flex;align-items:center;gap:20px;padding:18px 22px;background:var(--gray-100);border-radius:8px;border:1px solid var(--gray-300);margin-top:20px;flex-wrap:wrap}
 .altro-text{font-size:14px;color:var(--gray-500);font-weight:300;line-height:1.5;flex:1}
@@ -246,9 +240,7 @@ footer{background:#0a0a0a;padding:24px 32px;border-top:1px solid #1e1e1e;display
   .cause-card-body{padding-left:32px}
   .info-section{padding:56px 20px}
   .cta-section{padding:68px 20px 60px}
-  .conv-section{padding:48px 16px}
-  .conv-card{padding:24px 20px}
-  .case-conv{padding:20px}
+  .conv-row-inner{padding:0 16px}
   .altro-block{gap:12px}
   footer{flex-direction:column;align-items:flex-start;padding:20px 16px}
 }
@@ -301,30 +293,27 @@ footer{background:#0a0a0a;padding:24px 32px;border-top:1px solid #1e1e1e;display
   </div>
 </section>
 
-<!-- BLOCCO CONVERSAZIONALE — dopo le scelte principali -->
-<section class="conv-section">
-  <div class="conv-wrap">
-    <div class="conv-card">
-      <span class="conv-label">Il tuo caso è leggermente diverso?</span>
-      <p class="conv-title">Vuoi capirlo <em>con una risposta guidata?</em></p>
-      <p class="conv-desc">Scrivi cosa succede alle tue gengive. Il sito ti aiuta a orientarti con una prima risposta semplice, <strong>senza inviare nulla allo studio.</strong></p>
-      <textarea class="conv-textarea" placeholder="Scrivi qui cosa succede alle tue gengive..."></textarea>
-      <button class="conv-btn-analyze">Dammi una prima risposta</button>
-      <div class="conv-response">
-        <p class="conv-response-text">In base a quello che hai scritto, potrebbe essere utile fare un controllo mirato delle gengive. Se vuoi, puoi inviare questo messaggio allo studio su WhatsApp e ti rispondiamo direttamente.</p>
-        <a class="conv-response-wa" href="#" target="_blank" rel="noopener">
+<div class="conv-row">
+  <div class="conv-row-inner">
+    <button class="conv-trigger">Descrivi il tuo problema <span class="ct-arr">→</span></button>
+    <div class="conv-expand">
+      <p class="cs-hint">Scrivi cosa succede alle tue gengive</p>
+      <textarea class="cs-textarea" placeholder="Scrivi qui cosa succede..."></textarea>
+      <button class="cs-continue">Continua</button>
+      <div class="cs-response">
+        <p>Potrebbe essere utile fare un controllo mirato delle gengive.</p>
+        <a class="cs-wa" href="#" target="_blank" rel="noopener">
           <svg viewBox="0 0 24 24"><use href="#wa-ico"/></svg>
-          Invia il messaggio su WhatsApp
+          Invia allo studio su WhatsApp
         </a>
       </div>
-      <p class="conv-direct">Preferisci parlare direttamente con noi?<br><a href="https://wa.me/393924076794?text=Ciao%2C%20vorrei%20informazioni%20sulle%20gengive." target="_blank" rel="noopener">Scrivici su WhatsApp</a></p>
     </div>
     <div class="altro-block">
-      <p class="altro-text">Non riguarda solo le gengive?<br>Puoi tornare alla guida principale e scegliere un altro problema.</p>
+      <p class="altro-text">Non riguarda solo le gengive?<br>Puoi scegliere un altro problema nella guida principale.</p>
       <a href="https://healthysmile.it/homepage-conversazionale.html" class="btn-altro">Ho un altro problema</a>
     </div>
   </div>
-</section>
+</div>
 
 <!-- AREA RISPOSTA -->
 <div class="response-area" id="responseArea">
@@ -348,19 +337,19 @@ footer{background:#0a0a0a;padding:24px 32px;border-top:1px solid #1e1e1e;display
       </a>
       <button class="btn-ghost" data-scroll="cta">Prenota una valutazione</button>
       <div class="case-conv">
-        <span class="conv-label">Il tuo caso è leggermente diverso?</span>
-        <p class="conv-title">Vuoi capirlo <em>con una risposta guidata?</em></p>
-        <p class="conv-desc">Scrivi cosa succede alle tue gengive. Il sito ti aiuta a orientarti con una prima risposta semplice, <strong>senza inviare nulla allo studio.</strong></p>
-        <textarea class="conv-textarea" placeholder="Scrivi qui cosa succede alle tue gengive..."></textarea>
-        <button class="conv-btn-analyze">Dammi una prima risposta</button>
-        <div class="conv-response">
-          <p class="conv-response-text">In base a quello che hai scritto, potrebbe essere utile fare un controllo mirato delle gengive. Se vuoi, puoi inviare questo messaggio allo studio su WhatsApp e ti rispondiamo direttamente.</p>
-          <a class="conv-response-wa" href="#" target="_blank" rel="noopener">
-            <svg viewBox="0 0 24 24"><use href="#wa-ico"/></svg>
-            Invia il messaggio su WhatsApp
-          </a>
+        <button class="conv-trigger">Descrivi il tuo problema <span class="ct-arr">→</span></button>
+        <div class="conv-expand">
+          <p class="cs-hint">Scrivi cosa succede alle tue gengive</p>
+          <textarea class="cs-textarea" placeholder="Scrivi qui cosa succede..."></textarea>
+          <button class="cs-continue">Continua</button>
+          <div class="cs-response">
+            <p>Potrebbe essere utile fare un controllo mirato delle gengive.</p>
+            <a class="cs-wa" href="#" target="_blank" rel="noopener">
+              <svg viewBox="0 0 24 24"><use href="#wa-ico"/></svg>
+              Invia allo studio su WhatsApp
+            </a>
+          </div>
         </div>
-        <p class="conv-direct">Preferisci parlare direttamente con noi?<br><a href="https://wa.me/393924076794?text=Ciao%2C%20vorrei%20informazioni%20sulle%20gengive." target="_blank" rel="noopener">Scrivici su WhatsApp</a></p>
       </div>
     </div>
 
@@ -382,19 +371,19 @@ footer{background:#0a0a0a;padding:24px 32px;border-top:1px solid #1e1e1e;display
       </a>
       <button class="btn-ghost" data-scroll="cta">Prenota una valutazione</button>
       <div class="case-conv">
-        <span class="conv-label">Il tuo caso è leggermente diverso?</span>
-        <p class="conv-title">Vuoi capirlo <em>con una risposta guidata?</em></p>
-        <p class="conv-desc">Scrivi cosa succede alle tue gengive. Il sito ti aiuta a orientarti con una prima risposta semplice, <strong>senza inviare nulla allo studio.</strong></p>
-        <textarea class="conv-textarea" placeholder="Scrivi qui cosa succede alle tue gengive..."></textarea>
-        <button class="conv-btn-analyze">Dammi una prima risposta</button>
-        <div class="conv-response">
-          <p class="conv-response-text">In base a quello che hai scritto, potrebbe essere utile fare un controllo mirato delle gengive. Se vuoi, puoi inviare questo messaggio allo studio su WhatsApp e ti rispondiamo direttamente.</p>
-          <a class="conv-response-wa" href="#" target="_blank" rel="noopener">
-            <svg viewBox="0 0 24 24"><use href="#wa-ico"/></svg>
-            Invia il messaggio su WhatsApp
-          </a>
+        <button class="conv-trigger">Descrivi il tuo problema <span class="ct-arr">→</span></button>
+        <div class="conv-expand">
+          <p class="cs-hint">Scrivi cosa succede alle tue gengive</p>
+          <textarea class="cs-textarea" placeholder="Scrivi qui cosa succede..."></textarea>
+          <button class="cs-continue">Continua</button>
+          <div class="cs-response">
+            <p>Potrebbe essere utile fare un controllo mirato delle gengive.</p>
+            <a class="cs-wa" href="#" target="_blank" rel="noopener">
+              <svg viewBox="0 0 24 24"><use href="#wa-ico"/></svg>
+              Invia allo studio su WhatsApp
+            </a>
+          </div>
         </div>
-        <p class="conv-direct">Preferisci parlare direttamente con noi?<br><a href="https://wa.me/393924076794?text=Ciao%2C%20vorrei%20informazioni%20sulle%20gengive." target="_blank" rel="noopener">Scrivici su WhatsApp</a></p>
       </div>
     </div>
 
@@ -416,19 +405,19 @@ footer{background:#0a0a0a;padding:24px 32px;border-top:1px solid #1e1e1e;display
       </a>
       <button class="btn-ghost" data-scroll="cta">Prenota una valutazione</button>
       <div class="case-conv">
-        <span class="conv-label">Il tuo caso è leggermente diverso?</span>
-        <p class="conv-title">Vuoi capirlo <em>con una risposta guidata?</em></p>
-        <p class="conv-desc">Scrivi cosa succede alle tue gengive. Il sito ti aiuta a orientarti con una prima risposta semplice, <strong>senza inviare nulla allo studio.</strong></p>
-        <textarea class="conv-textarea" placeholder="Scrivi qui cosa succede alle tue gengive..."></textarea>
-        <button class="conv-btn-analyze">Dammi una prima risposta</button>
-        <div class="conv-response">
-          <p class="conv-response-text">In base a quello che hai scritto, potrebbe essere utile fare un controllo mirato delle gengive. Se vuoi, puoi inviare questo messaggio allo studio su WhatsApp e ti rispondiamo direttamente.</p>
-          <a class="conv-response-wa" href="#" target="_blank" rel="noopener">
-            <svg viewBox="0 0 24 24"><use href="#wa-ico"/></svg>
-            Invia il messaggio su WhatsApp
-          </a>
+        <button class="conv-trigger">Descrivi il tuo problema <span class="ct-arr">→</span></button>
+        <div class="conv-expand">
+          <p class="cs-hint">Scrivi cosa succede alle tue gengive</p>
+          <textarea class="cs-textarea" placeholder="Scrivi qui cosa succede..."></textarea>
+          <button class="cs-continue">Continua</button>
+          <div class="cs-response">
+            <p>Potrebbe essere utile fare un controllo mirato delle gengive.</p>
+            <a class="cs-wa" href="#" target="_blank" rel="noopener">
+              <svg viewBox="0 0 24 24"><use href="#wa-ico"/></svg>
+              Invia allo studio su WhatsApp
+            </a>
+          </div>
         </div>
-        <p class="conv-direct">Preferisci parlare direttamente con noi?<br><a href="https://wa.me/393924076794?text=Ciao%2C%20vorrei%20informazioni%20sulle%20gengive." target="_blank" rel="noopener">Scrivici su WhatsApp</a></p>
       </div>
     </div>
 
@@ -450,19 +439,19 @@ footer{background:#0a0a0a;padding:24px 32px;border-top:1px solid #1e1e1e;display
       </a>
       <button class="btn-ghost" data-scroll="cta">Prenota una valutazione</button>
       <div class="case-conv">
-        <span class="conv-label">Il tuo caso è leggermente diverso?</span>
-        <p class="conv-title">Vuoi capirlo <em>con una risposta guidata?</em></p>
-        <p class="conv-desc">Scrivi cosa succede alle tue gengive. Il sito ti aiuta a orientarti con una prima risposta semplice, <strong>senza inviare nulla allo studio.</strong></p>
-        <textarea class="conv-textarea" placeholder="Scrivi qui cosa succede alle tue gengive..."></textarea>
-        <button class="conv-btn-analyze">Dammi una prima risposta</button>
-        <div class="conv-response">
-          <p class="conv-response-text">In base a quello che hai scritto, potrebbe essere utile fare un controllo mirato delle gengive. Se vuoi, puoi inviare questo messaggio allo studio su WhatsApp e ti rispondiamo direttamente.</p>
-          <a class="conv-response-wa" href="#" target="_blank" rel="noopener">
-            <svg viewBox="0 0 24 24"><use href="#wa-ico"/></svg>
-            Invia il messaggio su WhatsApp
-          </a>
+        <button class="conv-trigger">Descrivi il tuo problema <span class="ct-arr">→</span></button>
+        <div class="conv-expand">
+          <p class="cs-hint">Scrivi cosa succede alle tue gengive</p>
+          <textarea class="cs-textarea" placeholder="Scrivi qui cosa succede..."></textarea>
+          <button class="cs-continue">Continua</button>
+          <div class="cs-response">
+            <p>Potrebbe essere utile fare un controllo mirato delle gengive.</p>
+            <a class="cs-wa" href="#" target="_blank" rel="noopener">
+              <svg viewBox="0 0 24 24"><use href="#wa-ico"/></svg>
+              Invia allo studio su WhatsApp
+            </a>
+          </div>
         </div>
-        <p class="conv-direct">Preferisci parlare direttamente con noi?<br><a href="https://wa.me/393924076794?text=Ciao%2C%20vorrei%20informazioni%20sulle%20gengive." target="_blank" rel="noopener">Scrivici su WhatsApp</a></p>
       </div>
     </div>
 
@@ -598,26 +587,23 @@ footer{background:#0a0a0a;padding:24px 32px;border-top:1px solid #1e1e1e;display
   </div>
 </div>
 
-<!-- BLOCCO CONVERSAZIONALE — prima della CTA finale -->
-<section class="conv-section conv-section--gray">
-  <div class="conv-wrap">
-    <div class="conv-card">
-      <span class="conv-label">Il tuo caso è leggermente diverso?</span>
-      <p class="conv-title">Vuoi capirlo <em>con una risposta guidata?</em></p>
-      <p class="conv-desc">Scrivi cosa succede alle tue gengive. Il sito ti aiuta a orientarti con una prima risposta semplice, <strong>senza inviare nulla allo studio.</strong></p>
-      <textarea class="conv-textarea" placeholder="Scrivi qui cosa succede alle tue gengive..."></textarea>
-      <button class="conv-btn-analyze">Dammi una prima risposta</button>
-      <div class="conv-response">
-        <p class="conv-response-text">In base a quello che hai scritto, potrebbe essere utile fare un controllo mirato delle gengive. Se vuoi, puoi inviare questo messaggio allo studio su WhatsApp e ti rispondiamo direttamente.</p>
-        <a class="conv-response-wa" href="#" target="_blank" rel="noopener">
+<div class="conv-row">
+  <div class="conv-row-inner">
+    <button class="conv-trigger">Descrivi il tuo problema <span class="ct-arr">→</span></button>
+    <div class="conv-expand">
+      <p class="cs-hint">Scrivi cosa succede alle tue gengive</p>
+      <textarea class="cs-textarea" placeholder="Scrivi qui cosa succede..."></textarea>
+      <button class="cs-continue">Continua</button>
+      <div class="cs-response">
+        <p>Potrebbe essere utile fare un controllo mirato delle gengive.</p>
+        <a class="cs-wa" href="#" target="_blank" rel="noopener">
           <svg viewBox="0 0 24 24"><use href="#wa-ico"/></svg>
-          Invia il messaggio su WhatsApp
+          Invia allo studio su WhatsApp
         </a>
       </div>
-      <p class="conv-direct">Preferisci parlare direttamente con noi?<br><a href="https://wa.me/393924076794?text=Ciao%2C%20vorrei%20informazioni%20sulle%20gengive." target="_blank" rel="noopener">Scrivici su WhatsApp</a></p>
     </div>
   </div>
-</section>
+</div>
 
 <!-- CTA FINALE -->
 <div class="cta-section" id="cta">
@@ -699,23 +685,33 @@ document.querySelectorAll('.cause-card-hd').forEach(function(hd) {
   });
 });
 
-/* BLOCCO CONVERSAZIONALE — analisi */
-document.querySelectorAll('.conv-btn-analyze').forEach(function(btn) {
+/* BLOCCO CONV — trigger accordion */
+document.querySelectorAll('.conv-trigger').forEach(function(trigger) {
+  trigger.addEventListener('click', function() {
+    var expand = trigger.nextElementSibling;
+    var isOpen = trigger.classList.contains('open');
+    trigger.classList.toggle('open', !isOpen);
+    if (isOpen) { expand.classList.remove('open'); }
+    else { expand.classList.add('open'); setTimeout(function() { expand.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }, 60); }
+  });
+});
+
+/* BLOCCO CONV — continua */
+document.querySelectorAll('.cs-continue').forEach(function(btn) {
   btn.addEventListener('click', function() {
-    var block = btn.closest('.conv-card') || btn.closest('.case-conv');
-    var textarea = block.querySelector('.conv-textarea');
+    var expand = btn.closest('.conv-expand');
+    var textarea = expand.querySelector('.cs-textarea');
     var txt = textarea.value.trim();
-    if (!txt) { textarea.focus(); textarea.style.borderColor = 'var(--accent)'; return; }
-    textarea.style.borderColor = '';
-    var responseDiv = block.querySelector('.conv-response');
-    var waLink = block.querySelector('.conv-response-wa');
-    var msg = 'Ciao, ho un problema con le gengive e vorrei un consiglio:\n\n' + txt;
+    if (!txt) { textarea.focus(); return; }
+    var response = expand.querySelector('.cs-response');
+    var waLink = expand.querySelector('.cs-wa');
+    var msg = 'Ciao, ho un problema con le gengive:\n\n' + txt;
     waLink.href = 'https://wa.me/393924076794?text=' + encodeURIComponent(msg);
-    responseDiv.style.display = 'block';
-    setTimeout(function() { responseDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }, 60);
+    response.style.display = 'block';
+    setTimeout(function() { response.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }, 60);
     try {
-      if (typeof gtag === 'function') gtag('event', 'hs_conv_analyze', { event_category: 'engagement', event_label: txt.substring(0, 50) });
-      if (typeof clarity === 'function') clarity('event', 'conv_analyze');
+      if (typeof gtag === 'function') gtag('event', 'hs_conv_continua', { event_category: 'engagement', event_label: txt.substring(0, 50) });
+      if (typeof clarity === 'function') clarity('event', 'conv_continua');
     } catch(_) {}
   });
 });
