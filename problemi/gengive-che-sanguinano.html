@@ -10,7 +10,6 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
 
-<!-- Google tag (gtag.js) - GA4 + Google Ads -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-SRMDX8JXL5"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
@@ -20,7 +19,6 @@
   gtag('config', 'AW-947982327');
 </script>
 
-<!-- Microsoft Clarity -->
 <script type="text/javascript">
   (function(c,l,a,r,i,t,y){
     c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
@@ -76,17 +74,23 @@ nav{position:sticky;top:0;z-index:100;background:var(--black);border-bottom:1px 
 .hero-inner{max-width:580px;margin:0 auto}
 .hero-eyebrow{display:block;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--gray-500);margin-bottom:32px}
 .hero h1{font-family:var(--serif);font-size:clamp(36px,5.5vw,64px);line-height:1.06;letter-spacing:-.025em;color:var(--white);margin-bottom:16px}
-.hero-subtitle{font-family:var(--serif);font-size:clamp(17px,2.4vw,22px);color:#c8c6c0;line-height:1.3;letter-spacing:-.01em;margin-bottom:16px;font-style:italic}
+.hero h1 .aw{color:var(--accent)}
+.hero-subtitle{font-family:var(--serif);font-size:clamp(17px,2.4vw,22px);color:#c8c6c0;line-height:1.3;letter-spacing:-.01em;margin-bottom:16px}
+.hero-subtitle em{color:var(--white);font-style:italic}
 .hero-micro{font-size:16px;color:#9a9890;font-weight:300;line-height:1.75;max-width:480px;margin-bottom:52px}
 
 /* BOTTONI QUANDO */
 .when-label{display:block;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--gray-500);margin-bottom:0}
 .when-choices{border-top:1px solid #2a2a2a;margin-top:0}
-.when-btn{display:flex;align-items:center;justify-content:space-between;width:100%;background:transparent;border:none;border-bottom:1px solid #2a2a2a;padding:22px 0;font-family:var(--sans);font-size:18px;line-height:1.35;color:#b5b3ac;cursor:pointer;text-align:left;transition:color .2s;gap:20px}
-.when-btn .w-arr{font-size:18px;color:#555;transition:color .2s,transform .2s;flex-shrink:0}
+.when-btn{display:flex;align-items:center;width:100%;background:transparent;border:none;border-bottom:1px solid #2a2a2a;padding:22px 0;font-family:var(--sans);font-size:17px;line-height:1.35;color:#b5b3ac;cursor:pointer;text-align:left;transition:color .2s;gap:16px}
+.when-btn .w-num{font-family:var(--serif);font-size:13px;color:var(--accent);opacity:.6;flex-shrink:0;min-width:20px;transition:opacity .2s;font-style:italic}
+.when-btn .w-txt{flex:1}
+.when-btn .w-arr{font-size:18px;color:#444;transition:color .2s,transform .2s;flex-shrink:0}
 .when-btn:hover{color:var(--white)}
-.when-btn:hover .w-arr{color:var(--accent);transform:translateX(6px)}
+.when-btn:hover .w-num{opacity:1}
+.when-btn:hover .w-arr{color:var(--accent);transform:translateX(5px)}
 .when-btn.active{color:var(--white)}
+.when-btn.active .w-num{opacity:1}
 .when-btn.active .w-arr{color:var(--accent)}
 
 /* AREA RISPOSTA */
@@ -99,13 +103,16 @@ nav{position:sticky;top:0;z-index:100;background:var(--black);border-bottom:1px 
 
 .case-rule{width:28px;height:2px;background:var(--accent);margin-bottom:28px}
 .case-label{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--gray-500);margin-bottom:10px}
-.case-title{font-family:var(--serif);font-size:clamp(21px,2.8vw,27px);color:var(--accent);line-height:1.2;letter-spacing:-.01em;margin-bottom:18px}
+.case-title{font-family:var(--serif);font-size:clamp(22px,2.8vw,30px);color:var(--black);line-height:1.2;letter-spacing:-.015em;margin-bottom:28px}
+.case-title em{color:var(--accent);font-style:italic}
 .case-body{font-size:17px;color:var(--gray-700);font-weight:300;line-height:1.85;max-width:460px;margin-bottom:36px}
 .case-body p{margin-bottom:14px}
 .case-body p:last-child{margin-bottom:0}
 .case-body strong{color:var(--black);font-weight:500}
+.body-step{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);font-weight:500;margin-top:22px;margin-bottom:6px;display:block}
+.body-step:first-child{margin-top:0}
 
-/* BOTTONI CTA */
+/* CTA BUTTONS */
 .btn-wa{display:flex;align-items:center;justify-content:center;gap:10px;background:#25D366;color:#fff;font-family:var(--sans);font-size:16px;font-weight:500;padding:16px 24px;text-decoration:none;border-radius:8px;transition:opacity .2s;margin-bottom:10px;width:100%}
 .btn-wa:hover{opacity:.88}
 .btn-wa svg{width:20px;height:20px;fill:#fff;flex-shrink:0}
@@ -118,41 +125,67 @@ nav{position:sticky;top:0;z-index:100;background:var(--black);border-bottom:1px 
 .card-section{background:var(--gray-100);padding:72px 24px;border-top:1px solid var(--gray-300)}
 .card-inner{max-width:540px;margin:0 auto;background:var(--white);border-radius:12px;padding:40px 36px;border:1px solid var(--gray-300)}
 .card-tag{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin-bottom:14px;display:block}
-.card-headline{font-family:var(--serif);font-size:clamp(24px,3.2vw,32px);color:var(--black);line-height:1.2;letter-spacing:-.02em;margin-bottom:4px}
-.card-sub{font-size:18px;color:var(--gray-500);font-weight:300;font-style:italic;margin-bottom:22px}
+.card-headline{font-family:var(--serif);font-size:clamp(24px,3.2vw,32px);color:var(--black);line-height:1.2;letter-spacing:-.02em;margin-bottom:20px}
+.card-headline em{color:var(--accent);font-style:italic}
 .card-body{font-size:17px;color:var(--gray-700);font-weight:300;line-height:1.82}
 .card-body p{margin-bottom:12px}
 .card-body p:last-child{margin-bottom:0}
 .card-body strong{color:var(--black);font-weight:500}
+.card-body em{color:var(--accent);font-style:italic;font-family:var(--serif)}
 
-/* SEZIONE CAUSE (nera) */
+/* CAUSE SECTION */
 .cause-section{background:var(--black);padding:72px 24px}
 .cause-inner{max-width:540px;margin:0 auto}
 .cause-eyebrow{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--gray-500);margin-bottom:14px;display:block}
-.cause-title{font-family:var(--serif);font-size:clamp(22px,3vw,30px);color:var(--white);line-height:1.2;letter-spacing:-.015em;margin-bottom:28px}
-.cause-grid{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:28px}
-.cause-chip{background:rgba(200,0,92,.08);border:1px solid rgba(200,0,92,.22);border-radius:6px;padding:11px 16px;font-size:15px;color:#c8c6c0;font-weight:300}
-.cause-chip strong{color:var(--white);font-weight:500}
-.cause-note{font-size:14px;color:#666;font-weight:300;font-style:italic;line-height:1.65;border-top:1px solid #222;padding-top:20px}
+.cause-title{font-family:var(--serif);font-size:clamp(22px,3vw,30px);color:var(--white);line-height:1.2;letter-spacing:-.015em;margin-bottom:32px}
+.cause-title em{color:var(--accent);font-style:italic}
 
-/* SEZIONE INFO */
+.cause-featured{display:flex;flex-direction:column;gap:10px;margin-bottom:28px}
+.cause-card{background:rgba(255,255,255,.03);border:1px solid #252525;border-radius:10px;overflow:hidden}
+.cause-card-hd{display:flex;align-items:center;gap:14px;padding:18px 20px;cursor:pointer;transition:background .15s}
+.cause-card-hd:hover{background:rgba(255,255,255,.04)}
+.cause-card-num{font-family:var(--serif);font-size:13px;color:var(--accent);font-style:italic;flex-shrink:0;width:18px}
+.cause-card-name{font-size:16px;color:var(--white);font-weight:400;flex:1}
+.cause-card-icon{font-size:18px;color:#444;transition:transform .25s,color .2s;flex-shrink:0;line-height:1}
+.cause-card.open .cause-card-icon{transform:rotate(45deg);color:var(--accent)}
+.cause-card-body{display:none;padding:4px 20px 20px 52px;font-size:15px;color:#b5b3ac;font-weight:300;line-height:1.8}
+.cause-card.open .cause-card-body{display:block}
+.cstep{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);display:block;margin-top:16px;margin-bottom:5px;font-weight:500}
+.cstep:first-child{margin-top:0}
+.cause-card-body p{margin-bottom:0}
+.cause-card-body strong{color:var(--white);font-weight:500}
+
+.cause-other-label{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#444;margin-bottom:12px;display:block}
+.cause-grid{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:28px}
+.cause-chip{background:rgba(200,0,92,.06);border:1px solid rgba(200,0,92,.16);border-radius:6px;padding:8px 14px;font-size:14px;color:#9a9890;font-weight:300}
+.cause-chip strong{color:#c8c6c0;font-weight:400}
+.cause-note{font-size:14px;color:#444;font-weight:300;font-style:italic;line-height:1.65;border-top:1px solid #1e1e1e;padding-top:20px}
+
+/* INFO SECTION */
 .info-section{background:var(--white);padding:72px 24px;border-top:1px solid var(--gray-300)}
 .info-inner{max-width:540px;margin:0 auto}
 .info-tag{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--gray-500);margin-bottom:14px;display:block}
 .info-title{font-family:var(--serif);font-size:clamp(22px,3vw,30px);color:var(--black);line-height:1.2;letter-spacing:-.015em;margin-bottom:20px}
-.info-body{font-size:17px;color:var(--gray-700);font-weight:300;line-height:1.85}
-.info-body p{margin-bottom:14px}
-.info-body p:last-child{margin-bottom:0}
-.info-body strong{color:var(--black);font-weight:500}
+.info-title em{color:var(--accent);font-style:italic}
+.info-lead{font-size:17px;color:var(--gray-700);font-weight:300;line-height:1.85;margin-bottom:28px}
+.progression{display:flex;flex-direction:column}
+.prog-item{display:flex;gap:16px;align-items:flex-start;padding:14px 0;border-bottom:1px solid var(--gray-300)}
+.prog-item:last-child{border-bottom:none}
+.prog-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);flex-shrink:0;margin-top:8px}
+.prog-text{font-size:16px;color:var(--gray-700);font-weight:300;line-height:1.65}
+.prog-text strong{color:var(--black);font-weight:500}
+.prog-text em{color:var(--accent);font-style:normal;font-weight:400}
 
 /* CTA FINALE */
 .cta-section{background:var(--black);padding:96px 24px 80px}
 .cta-inner{max-width:540px;margin:0 auto}
 .cta-eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--gray-500);margin-bottom:24px;display:block}
-.cta-headline{font-family:var(--serif);font-size:clamp(24px,3.5vw,38px);color:var(--white);line-height:1.12;letter-spacing:-.02em;margin-bottom:18px}
+.cta-pull{font-family:var(--serif);font-size:clamp(18px,2.4vw,23px);color:var(--accent);font-style:italic;line-height:1.3;margin-bottom:18px}
+.cta-headline{font-family:var(--serif);font-size:clamp(26px,3.5vw,40px);color:var(--white);line-height:1.1;letter-spacing:-.02em;margin-bottom:20px}
+.cta-headline em{color:var(--accent);font-style:italic}
 .cta-body{font-size:17px;color:#b5b3ac;font-weight:300;line-height:1.82;margin-bottom:14px}
 .cta-body strong{color:var(--white);font-weight:500}
-.cta-prompt{font-size:16px;color:#7a7870;font-weight:300;line-height:1.65;margin-bottom:32px}
+.cta-prompt{font-size:16px;color:#666;font-weight:300;line-height:1.65;margin-bottom:32px}
 .btn-home{display:block;text-align:center;font-size:14px;color:#555;text-decoration:none;padding:14px;transition:color .15s;width:100%}
 .btn-home:hover{color:#999}
 .cta-nap{font-size:14px;color:#555;line-height:1.9;margin-top:32px;padding-top:32px;border-top:1px solid #222}
@@ -168,15 +201,15 @@ footer{background:#0a0a0a;padding:24px 32px;border-top:1px solid #1e1e1e;display
 .footer-links a{font-size:12px;color:#555;text-decoration:none;letter-spacing:.04em;transition:color .15s}
 .footer-links a:hover{color:#aaa}
 
-/* MOBILE */
 @media(max-width:600px){
   nav{padding:0 16px}
   .hero{padding:68px 20px 64px}
-  .when-btn{font-size:16px;padding:20px 0}
+  .when-btn{font-size:15px;padding:20px 0}
   .response-area{padding:56px 20px 72px}
   .card-section{padding:48px 16px}
   .card-inner{padding:28px 20px}
   .cause-section{padding:56px 20px}
+  .cause-card-body{padding-left:32px}
   .info-section{padding:56px 20px}
   .cta-section{padding:68px 20px 60px}
   footer{flex-direction:column;align-items:flex-start;padding:20px 16px}
@@ -209,16 +242,16 @@ footer{background:#0a0a0a;padding:24px 32px;border-top:1px solid #1e1e1e;display
 <section class="hero">
   <div class="hero-inner">
     <span class="hero-eyebrow">Healthy Smile By N · Torino</span>
-    <h1>Gengive che sanguinano?</h1>
-    <p class="hero-subtitle">Scopri se è urgente e cosa può significare.</p>
-    <p class="hero-micro">Il sanguinamento gengivale non va ignorato. A volte è una semplice infiammazione. Altre volte può essere il primo segnale di un problema più profondo.</p>
+    <h1>Gengive che <span class="aw">sanguinano?</span></h1>
+    <p class="hero-subtitle"><em>Scopri se è urgente.</em> Ti diciamo noi la verità.</p>
+    <p class="hero-micro">Le gengive che sanguinano non vanno mai ignorate. A volte è una cosa semplice da risolvere in pochi giorni. Altre volte è il primo segnale di qualcosa che conviene affrontare prima che peggiori. Ti aiutiamo a capire.</p>
 
     <span class="when-label">Quando sanguinano?</span>
     <div class="when-choices">
-      <button class="when-btn" data-case="1">Solo quando lavo i denti <span class="w-arr">→</span></button>
-      <button class="when-btn" data-case="2">Appena le tocco <span class="w-arr">→</span></button>
-      <button class="when-btn" data-case="3">Sanguinano da sole <span class="w-arr">→</span></button>
-      <button class="when-btn" data-case="4">Sangue + dolore / gonfiore <span class="w-arr">→</span></button>
+      <button class="when-btn" data-case="1"><span class="w-num">01</span><span class="w-txt">Solo quando mi lavo i denti</span><span class="w-arr">→</span></button>
+      <button class="when-btn" data-case="2"><span class="w-num">02</span><span class="w-txt">Appena le tocco, anche senza lavarmi i denti</span><span class="w-arr">→</span></button>
+      <button class="when-btn" data-case="3"><span class="w-num">03</span><span class="w-txt">Mi sanguinano da sole, senza toccarle</span><span class="w-arr">→</span></button>
+      <button class="when-btn" data-case="4"><span class="w-num">04</span><span class="w-txt">Ho anche dolore, gonfiore o cattivo odore</span><span class="w-arr">→</span></button>
     </div>
   </div>
 </section>
@@ -230,11 +263,14 @@ footer{background:#0a0a0a;padding:24px 32px;border-top:1px solid #1e1e1e;display
     <div class="case-card" id="case-1">
       <div class="case-rule"></div>
       <p class="case-label">Caso 1 · Igiene quotidiana</p>
-      <p class="case-title">Sanguinano solo quando lavi i denti</p>
+      <p class="case-title">Probabilmente le gengive sono<br>un po' <em>infiammate.</em></p>
       <div class="case-body">
-        <p>Può dipendere da <strong>placca</strong>, <strong>tartaro</strong>, <strong>gengivite iniziale</strong> o spazzolamento scorretto.</p>
-        <p>Di solito non è un'urgenza, ma va controllato.</p>
-        <p>Prima si interviene, più spesso la soluzione è semplice.</p>
+        <span class="body-step">Cosa significa</span>
+        <p>Quando le gengive sanguinano solo durante il lavaggio, di solito c'è della <strong>placca o del tartaro</strong> che si accumula vicino al bordo gengivale. Lo spazzolino tocca una zona irritata, e lei risponde.</p>
+        <span class="body-step">Cosa può succedere</span>
+        <p>Se non si interviene, quella piccola infiammazione può diventare <strong>gengivite vera e propria</strong>. Le gengive si abbassano, i denti diventano sensibili, e il problema diventa più difficile da risolvere.</p>
+        <span class="body-step">Cosa fare</span>
+        <p>Una <strong>seduta di igiene professionale</strong> risolve spesso tutto. In studio valutiamo anche come spazzoli i denti — e se serve, ti correggiamo la tecnica.</p>
       </div>
       <a class="btn-wa" href="https://wa.me/393924076794?text=Ciao%2C%20le%20gengive%20mi%20sanguinano%20quando%20lavo%20i%20denti.%20Vorrei%20capire%20se%20%C3%A8%20urgente." target="_blank" rel="noopener">
         <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
@@ -246,11 +282,14 @@ footer{background:#0a0a0a;padding:24px 32px;border-top:1px solid #1e1e1e;display
     <div class="case-card" id="case-2">
       <div class="case-rule"></div>
       <p class="case-label">Caso 2 · Sensibilità al tocco</p>
-      <p class="case-title">Sanguinano appena le tocchi</p>
+      <p class="case-title">C'è infiammazione.<br><em>Meglio guardare bene.</em></p>
       <div class="case-body">
-        <p>Può indicare una <strong>infiammazione attiva</strong>.</p>
-        <p>Potrebbero esserci <strong>gengivite</strong>, tartaro sotto gengiva, tasche gengivali o inizio di <strong>parodontite</strong>.</p>
-        <p>Serve una valutazione più precisa.</p>
+        <span class="body-step">Cosa significa</span>
+        <p>Se le gengive sanguinano appena le sfiori — con il filo interdentale, con un dito, anche mangiando — vuol dire che il tessuto è già <strong>parecchio irritato</strong>. La gengivite è attiva.</p>
+        <span class="body-step">Cosa può succedere</span>
+        <p>In alcuni casi sotto la gengiva si sono già formate delle <strong>tasche gengivali</strong>: piccoli spazi dove i batteri proliferano lontano dallo spazzolino. Lì dentro il problema silenziosamente peggiora.</p>
+        <span class="body-step">Cosa fare</span>
+        <p>Serve una valutazione con <strong>sondaggio gengivale</strong> — una piccola misurazione indolore che ci dice quanto è profonda la situazione. Da lì decidiamo insieme cosa fare.</p>
       </div>
       <a class="btn-wa" href="https://wa.me/393924076794?text=Ciao%2C%20le%20gengive%20mi%20sanguinano%20appena%20le%20tocco.%20Vorrei%20una%20valutazione." target="_blank" rel="noopener">
         <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
@@ -262,11 +301,14 @@ footer{background:#0a0a0a;padding:24px 32px;border-top:1px solid #1e1e1e;display
     <div class="case-card" id="case-3">
       <div class="case-rule"></div>
       <p class="case-label">Caso 3 · Sanguinamento spontaneo</p>
-      <p class="case-title">Sanguinano da sole</p>
+      <p class="case-title">Questo merita attenzione.<br><em>Prima la guardi, meglio è.</em></p>
       <div class="case-body">
-        <p>Il sanguinamento spontaneo merita attenzione.</p>
-        <p>Può essere legato a infiammazione importante, farmaci, problemi di coagulazione, diabete, difese basse o condizioni generali.</p>
-        <p>Non significa avere qualcosa di grave, ma è meglio non aspettare.</p>
+        <span class="body-step">Cosa significa</span>
+        <p>Le gengive non dovrebbero mai sanguinare spontaneamente — cioè <strong>senza che tu le tocchi</strong>. Se succede, c'è un'infiammazione importante, oppure qualcosa a livello sistemico che interferisce: farmaci, difese immunitarie, ormoni, diabete.</p>
+        <span class="body-step">Cosa può succedere</span>
+        <p>Non ti diciamo che è grave. Ma ti diciamo che <strong>aspettare non aiuta</strong>. Il sanguinamento spontaneo, se trascurato, tende a peggiorare.</p>
+        <span class="body-step">Cosa fare</span>
+        <p>Scrivici su WhatsApp e descrivi la situazione. <strong>Ti diciamo noi</strong> se serve una visita urgente o se puoi aspettare qualche giorno.</p>
       </div>
       <a class="btn-wa" href="https://wa.me/393924076794?text=Ciao%2C%20le%20gengive%20mi%20sanguinano%20da%20sole%2C%20senza%20toccarle.%20Vorrei%20capire%20cosa%20fare." target="_blank" rel="noopener">
         <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
@@ -278,14 +320,18 @@ footer{background:#0a0a0a;padding:24px 32px;border-top:1px solid #1e1e1e;display
     <div class="case-card" id="case-4">
       <div class="case-rule"></div>
       <p class="case-label">Caso 4 · Sintomi multipli</p>
-      <p class="case-title">Sangue + dolore, gonfiore o pus</p>
+      <p class="case-title">Prenota una visita presto.<br><em>Non aspettare settimane.</em></p>
       <div class="case-body">
-        <p>Se insieme al sangue ci sono <strong>dolore</strong>, <strong>gonfiore</strong>, <strong>pus</strong>, alito cattivo o denti che si muovono, la visita è consigliata rapidamente.</p>
-        <p>Potrebbe esserci un problema gengivale o parodontale più avanzato.</p>
+        <span class="body-step">Cosa significa</span>
+        <p>Quando al sangue si aggiunge <strong>dolore, gonfiore, pus</strong> o un cattivo odore che non passa, di solito c'è un'infezione attiva — gengivale o parodontale.</p>
+        <span class="body-step">Cosa può succedere</span>
+        <p>Le infezioni nella bocca possono <strong>diffondersi velocemente</strong>. In alcuni casi si forma un ascesso. Non è una cosa che si risolve da sola con i collutori.</p>
+        <span class="body-step">Cosa fare</span>
+        <p><strong>Scrivici subito</strong> su WhatsApp. Anche il sabato mattina cerchiamo di trovare spazio per le urgenze.</p>
       </div>
-      <a class="btn-wa" href="https://wa.me/393924076794?text=Ciao%2C%20ho%20gengive%20che%20sanguinano%20con%20dolore%20e%20gonfiore.%20Vorrei%20una%20valutazione." target="_blank" rel="noopener">
+      <a class="btn-wa" href="https://wa.me/393924076794?text=Ciao%2C%20ho%20gengive%20che%20sanguinano%20con%20dolore%20e%20gonfiore.%20Vorrei%20una%20valutazione%20urgente." target="_blank" rel="noopener">
         <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-        Scrivici su WhatsApp
+        Scrivici su WhatsApp — è urgente
       </a>
       <button class="btn-ghost" data-scroll="cta">Prenota una valutazione</button>
     </div>
@@ -297,58 +343,127 @@ footer{background:#0a0a0a;padding:24px 32px;border-top:1px solid #1e1e1e;display
 <div class="card-section">
   <div class="card-inner">
     <span class="card-tag">È urgente?</span>
-    <p class="card-headline">Non sempre.</p>
-    <p class="card-sub">Ma va capito.</p>
+    <p class="card-headline">Non sempre. <em>Ma va capito.</em></p>
     <div class="card-body">
-      <p>Il punto non è spaventarti.</p>
-      <p>Il punto è capire se il sanguinamento è <strong>occasionale</strong>, <strong>infiammatorio</strong>, <strong>parodontale</strong> o collegato a qualcosa di più generale.</p>
+      <p>La risposta dipende da cosa sta succedendo davvero. Un piccolo sanguinamento durante il lavaggio è <strong>diverso</strong> da gengive che sanguinano da sole.</p>
+      <p>L'importante è non ignorarlo e non aspettare che passi da solo — <em>perché raramente passa.</em> Prima lo si guarda, prima si risolve.</p>
     </div>
   </div>
 </div>
 
-<!-- COSA PUÒ ESSERCI DIETRO -->
+<!-- CAUSE -->
 <div class="cause-section">
   <div class="cause-inner">
     <span class="cause-eyebrow">Possibili cause</span>
-    <p class="cause-title">Cosa può esserci dietro?</p>
+    <p class="cause-title">Cosa può esserci <em>dietro?</em></p>
+
+    <div class="cause-featured">
+
+      <div class="cause-card">
+        <div class="cause-card-hd">
+          <span class="cause-card-num">01</span>
+          <span class="cause-card-name">Placca e tartaro</span>
+          <span class="cause-card-icon">+</span>
+        </div>
+        <div class="cause-card-body">
+          <span class="cstep">Cosa significa</span>
+          <p>Quando non viene rimossa con lo spazzolino, la placca si solidifica e diventa <strong>tartaro</strong>. Il tartaro si deposita vicino alle gengive e le irrita in modo continuo.</p>
+          <span class="cstep">Cosa può succedere</span>
+          <p>L'irritazione cronica porta prima a <strong>gengivite</strong>, poi — se si lascia — a parodontite con perdita di osso.</p>
+          <span class="cstep">Cosa fare</span>
+          <p>Una <strong>seduta di igiene professionale</strong> rimuove il tartaro. Poi impara la tecnica giusta, e il problema spesso non torna.</p>
+        </div>
+      </div>
+
+      <div class="cause-card">
+        <div class="cause-card-hd">
+          <span class="cause-card-num">02</span>
+          <span class="cause-card-name">Gengivite</span>
+          <span class="cause-card-icon">+</span>
+        </div>
+        <div class="cause-card-body">
+          <span class="cstep">Cosa significa</span>
+          <p>Le gengive sono infiammate. È il <strong>primo stadio</strong> del problema — reversibile al 100%.</p>
+          <span class="cstep">Cosa può succedere</span>
+          <p>Se trascurata, la gengivite può diventare <strong>parodontite</strong>, che è molto più difficile da trattare.</p>
+          <span class="cstep">Cosa fare</span>
+          <p>Igiene professionale più igiene domiciliare corretta. Di solito in poche settimane si risolve.</p>
+        </div>
+      </div>
+
+      <div class="cause-card">
+        <div class="cause-card-hd">
+          <span class="cause-card-num">03</span>
+          <span class="cause-card-name">Parodontite</span>
+          <span class="cause-card-icon">+</span>
+        </div>
+        <div class="cause-card-body">
+          <span class="cstep">Cosa significa</span>
+          <p>L'infiammazione è arrivata più in profondità. <strong>L'osso che sorregge i denti</strong> si sta riducendo.</p>
+          <span class="cstep">Cosa può succedere</span>
+          <p>Senza trattamento, i denti diventano <strong>mobili</strong> e rischiano di cadere. Non è reversibile, ma si può stabilizzare.</p>
+          <span class="cstep">Cosa fare</span>
+          <p>Serve un piano parodontale specifico. <strong>Prima inizi, più osso salvi.</strong></p>
+        </div>
+      </div>
+
+    </div>
+
+    <span class="cause-other-label">Altre possibili cause</span>
     <div class="cause-grid">
-      <div class="cause-chip"><strong>Placca e tartaro</strong></div>
-      <div class="cause-chip"><strong>Gengivite</strong></div>
-      <div class="cause-chip"><strong>Parodontite</strong></div>
       <div class="cause-chip"><strong>Fumo</strong></div>
       <div class="cause-chip"><strong>Diabete</strong></div>
       <div class="cause-chip"><strong>Gravidanza o ormoni</strong></div>
       <div class="cause-chip"><strong>Farmaci anticoagulanti</strong></div>
-      <div class="cause-chip"><strong>Stress</strong></div>
+      <div class="cause-chip"><strong>Stress cronico</strong></div>
       <div class="cause-chip"><strong>Difese immunitarie basse</strong></div>
       <div class="cause-chip"><strong>Patologie autoimmuni</strong></div>
       <div class="cause-chip"><strong>Problemi della coagulazione</strong></div>
     </div>
-    <p class="cause-note">Queste sono possibilità generali, non una diagnosi online.</p>
+    <p class="cause-note">Queste sono possibilità generali — non una diagnosi online. Solo una visita può dirci cosa sta succedendo davvero.</p>
   </div>
 </div>
 
-<!-- COSA SUCCEDE SE NON FAI NULLA -->
+<!-- COSA SUCCEDE SE ASPETTI -->
 <div class="info-section">
   <div class="info-inner">
     <span class="info-tag">Cosa succede se aspetti</span>
-    <p class="info-title">Cosa succede se non fai nulla?</p>
-    <div class="info-body">
-      <p>All'inizio può sembrare solo sangue quando lavi i denti.</p>
-      <p>Nel tempo possono comparire <strong>infiammazione cronica</strong>, <strong>alito cattivo</strong>, <strong>gengive ritirate</strong>, <strong>tasche gengivali</strong>, <strong>perdita di osso</strong>, <strong>denti mobili</strong>.</p>
+    <p class="info-title">Cosa succede se <em>non fai niente?</em></p>
+    <p class="info-lead">All'inizio sembra solo qualche goccia di sangue. Poi, senza intervento, il problema cresce — lentamente ma costantemente.</p>
+    <div class="progression">
+      <div class="prog-item">
+        <div class="prog-dot"></div>
+        <p class="prog-text">Le gengive si abbassano e i denti diventano <strong>sensibili al freddo e al caldo</strong></p>
+      </div>
+      <div class="prog-item">
+        <div class="prog-dot"></div>
+        <p class="prog-text">Compare l'<strong>alito cattivo</strong> che non passa nemmeno con il collutorio</p>
+      </div>
+      <div class="prog-item">
+        <div class="prog-dot"></div>
+        <p class="prog-text">Si formano le <em>tasche gengivali</em> — canali dove i batteri lavorano indisturbati</p>
+      </div>
+      <div class="prog-item">
+        <div class="prog-dot"></div>
+        <p class="prog-text">L'<strong>osso sotto i denti</strong> comincia a ridursi in modo irreversibile</p>
+      </div>
+      <div class="prog-item">
+        <div class="prog-dot"></div>
+        <p class="prog-text">I denti diventano <strong>mobili</strong>. Il trattamento diventa lungo e costoso.</p>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- COSA FACCIAMO DA HEALTHY SMILE -->
+<!-- COSA FACCIAMO -->
 <div class="card-section">
   <div class="card-inner">
     <span class="card-tag">Cosa facciamo da Healthy Smile</span>
-    <p class="card-headline">Prima capiamo. Poi decidiamo.</p>
+    <p class="card-headline">Prima capiamo. <em>Poi ti diciamo cosa fare.</em></p>
     <div class="card-body">
-      <p>Controlliamo gengive, tartaro, tasche gengivali, mobilità dei denti e rischio parodontale.</p>
-      <p>Poi ti spieghiamo cosa conviene fare.</p>
-      <p>Niente allarmismi. Niente cure inutili. Solo una valutazione concreta.</p>
+      <p>Non ti diciamo "fai l'igiene" senza aver guardato bene. In studio controlliamo le gengive con uno strumento chiamato <strong>sondino parodontale</strong> — è indolore, e ci dà una mappa precisa della salute delle tue gengive.</p>
+      <p>Vediamo se c'è tartaro, quanto sono profonde eventuali tasche, se l'osso è intatto.</p>
+      <p>Poi ti spieghiamo cosa troviamo, in modo semplice, e ti diciamo cosa conviene fare — <em>senza allarmismi, senza cure che non servono.</em></p>
     </div>
   </div>
 </div>
@@ -357,12 +472,12 @@ footer{background:#0a0a0a;padding:24px 32px;border-top:1px solid #1e1e1e;display
 <div class="cta-section" id="cta">
   <div class="cta-inner">
     <span class="cta-eyebrow">Primo passo consigliato</span>
-    <p class="cta-headline">Igiene + controllo gengive</p>
+    <p class="cta-pull">Prima lo guardi, prima si risolve.</p>
+    <p class="cta-headline">Vuoi capire <em>cosa sta succedendo?</em></p>
     <div class="cta-body">
-      <p>Se le gengive sanguinano, spesso il primo passo è una seduta di <strong>igiene professionale</strong> con controllo mirato.</p>
-      <p>Da Healthy Smile lavoriamo con <strong>igienista in studio</strong>, <strong>scheda digitale</strong>, <strong>controllo del rischio</strong> e piano di mantenimento.</p>
+      <p>Il primo passo è una visita con <strong>controllo gengivale</strong>. Dura circa 30 minuti. Ti diciamo subito cosa c'è, cosa rischi se aspetti, e cosa si può fare.</p>
     </div>
-    <p class="cta-prompt">Vuoi capire se è urgente?<br>Scrivici su WhatsApp oppure prenota una valutazione.</p>
+    <p class="cta-prompt">Scrivici su WhatsApp — ti rispondiamo in pochi minuti.</p>
 
     <a class="btn-wa" href="https://wa.me/393924076794?text=Ciao%2C%20le%20gengive%20mi%20sanguinano.%20Vorrei%20capire%20se%20%C3%A8%20urgente%20e%20prenotare%20una%20valutazione." target="_blank" rel="noopener" style="font-size:17px;padding:18px 24px">
       <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
@@ -373,7 +488,7 @@ footer{background:#0a0a0a;padding:24px 32px;border-top:1px solid #1e1e1e;display
 
     <div class="cta-nap">
       <strong>Healthy Smile By N</strong> · Via Madama Cristina 2, Torino<br>
-      <a href="https://wa.me/393924076794">WhatsApp 392 407 6794</a> · <a href="tel:+393924076794">+39 392 407 6794</a><br>
+      <a href="tel:+393924076794">+39 392 407 6794</a> · <a href="https://wa.me/393924076794">WhatsApp</a><br>
       Lun–Ven 10:00–19:00
     </div>
   </div>
@@ -390,7 +505,6 @@ footer{background:#0a0a0a;padding:24px 32px;border-top:1px solid #1e1e1e;display
 </footer>
 
 <script>
-/* BOTTONI QUANDO */
 var whenBtns = document.querySelectorAll('.when-btn');
 var responseArea = document.getElementById('responseArea');
 whenBtns.forEach(function(btn) {
@@ -410,7 +524,6 @@ whenBtns.forEach(function(btn) {
   });
 });
 
-/* SCROLL SECONDARIO */
 document.querySelectorAll('.btn-ghost[data-scroll]').forEach(function(btn) {
   btn.addEventListener('click', function() {
     var t = document.getElementById(btn.dataset.scroll);
@@ -418,7 +531,15 @@ document.querySelectorAll('.btn-ghost[data-scroll]').forEach(function(btn) {
   });
 });
 
-/* TRACKING WHATSAPP */
+document.querySelectorAll('.cause-card-hd').forEach(function(hd) {
+  hd.addEventListener('click', function() {
+    var card = hd.parentElement;
+    var isOpen = card.classList.contains('open');
+    document.querySelectorAll('.cause-card').forEach(function(c) { c.classList.remove('open'); });
+    if (!isOpen) card.classList.add('open');
+  });
+});
+
 document.querySelectorAll('a[href*="wa.me"]').forEach(function(el) {
   el.addEventListener('click', function() {
     try {
@@ -431,7 +552,6 @@ document.querySelectorAll('a[href*="wa.me"]').forEach(function(el) {
   });
 });
 
-/* TRACKING TELEFONO */
 document.querySelectorAll('a[href^="tel:"]').forEach(function(el) {
   el.addEventListener('click', function() {
     try {
@@ -443,7 +563,6 @@ document.querySelectorAll('a[href^="tel:"]').forEach(function(el) {
   });
 });
 
-/* SCROLL DEPTH */
 (function() {
   var marks = [25, 50, 75, 90], fired = {};
   window.addEventListener('scroll', function() {
@@ -457,7 +576,6 @@ document.querySelectorAll('a[href^="tel:"]').forEach(function(el) {
   }, { passive: true });
 })();
 
-/* TIME ON PAGE */
 (function() {
   [30, 60, 120, 180].forEach(function(sec) {
     setTimeout(function() {
@@ -466,7 +584,6 @@ document.querySelectorAll('a[href^="tel:"]').forEach(function(el) {
   });
 })();
 
-/* MOBILE DRAWER */
 var hamburger = document.getElementById('hamburger');
 var mobileDrawer = document.getElementById('mobileDrawer');
 var overlay = document.getElementById('drawerOverlay');
