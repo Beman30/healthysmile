@@ -100,7 +100,6 @@ nav{position:sticky;top:0;z-index:100;background:var(--black);border-bottom:1px 
 .case-card{display:none;animation:stepin .45s ease both}
 .case-card.active{display:block}
 @keyframes stepin{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
-
 .case-rule{width:28px;height:2px;background:var(--accent);margin-bottom:28px}
 .case-label{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--gray-500);margin-bottom:10px}
 .case-title{font-family:var(--serif);font-size:clamp(22px,2.8vw,30px);color:var(--black);line-height:1.2;letter-spacing:-.015em;margin-bottom:28px}
@@ -139,7 +138,6 @@ nav{position:sticky;top:0;z-index:100;background:var(--black);border-bottom:1px 
 .cause-eyebrow{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--gray-500);margin-bottom:14px;display:block}
 .cause-title{font-family:var(--serif);font-size:clamp(22px,3vw,30px);color:var(--white);line-height:1.2;letter-spacing:-.015em;margin-bottom:32px}
 .cause-title em{color:var(--accent);font-style:italic}
-
 .cause-featured{display:flex;flex-direction:column;gap:10px;margin-bottom:28px}
 .cause-card{background:rgba(255,255,255,.03);border:1px solid #252525;border-radius:10px;overflow:hidden}
 .cause-card-hd{display:flex;align-items:center;gap:14px;padding:18px 20px;cursor:pointer;transition:background .15s}
@@ -154,7 +152,6 @@ nav{position:sticky;top:0;z-index:100;background:var(--black);border-bottom:1px 
 .cstep:first-child{margin-top:0}
 .cause-card-body p{margin-bottom:0}
 .cause-card-body strong{color:var(--white);font-weight:500}
-
 .cause-other-label{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#444;margin-bottom:12px;display:block}
 .cause-grid{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:28px}
 .cause-chip{background:rgba(200,0,92,.06);border:1px solid rgba(200,0,92,.16);border-radius:6px;padding:8px 14px;font-size:14px;color:#9a9890;font-weight:300}
@@ -201,6 +198,42 @@ footer{background:#0a0a0a;padding:24px 32px;border-top:1px solid #1e1e1e;display
 .footer-links a{font-size:12px;color:#555;text-decoration:none;letter-spacing:.04em;transition:color .15s}
 .footer-links a:hover{color:#aaa}
 
+/* BLOCCO CONVERSAZIONALE */
+.conv-section{background:var(--white);padding:64px 24px;border-top:1px solid var(--gray-300)}
+.conv-section--gray{background:var(--gray-100)}
+.conv-wrap{max-width:540px;margin:0 auto}
+.conv-card{background:var(--accent-light);border:1px solid rgba(200,0,92,.2);border-radius:12px;padding:32px}
+.conv-label{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin-bottom:10px;display:block}
+.conv-title{font-family:var(--serif);font-size:clamp(20px,2.6vw,26px);color:var(--black);line-height:1.2;letter-spacing:-.015em;margin-bottom:12px}
+.conv-title em{color:var(--accent);font-style:italic}
+.conv-desc{font-size:16px;color:var(--gray-700);font-weight:300;line-height:1.75;margin-bottom:20px}
+.conv-desc strong{color:var(--black);font-weight:500}
+.conv-textarea{width:100%;min-height:96px;padding:14px 16px;font-family:var(--sans);font-size:16px;color:var(--black);background:var(--white);border:1.5px solid var(--gray-300);border-radius:8px;resize:vertical;line-height:1.6;outline:none;transition:border-color .2s;margin-bottom:10px;display:block}
+.conv-textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(200,0,92,.08)}
+.conv-textarea::placeholder{color:var(--gray-500)}
+.conv-btn-analyze{display:block;width:100%;padding:15px 20px;background:var(--accent);color:#fff;font-family:var(--sans);font-size:16px;font-weight:500;border:none;border-radius:8px;cursor:pointer;transition:opacity .2s;margin-bottom:10px;text-align:center}
+.conv-btn-analyze:hover{opacity:.87}
+.conv-wa-skip{display:flex;align-items:center;justify-content:center;gap:8px;background:#25D366;color:#fff;font-family:var(--sans);font-size:15px;font-weight:500;padding:13px 20px;text-decoration:none;border-radius:8px;transition:opacity .2s;width:100%}
+.conv-wa-skip:hover{opacity:.88}
+.conv-wa-skip svg,.conv-response-wa svg{width:18px;height:18px;fill:#fff;flex-shrink:0}
+.conv-response{display:none;margin-top:16px;padding:20px;background:var(--white);border-radius:8px;border:1px solid var(--gray-300)}
+.conv-response-text{font-size:16px;color:var(--gray-700);font-weight:300;line-height:1.75;margin-bottom:16px}
+.conv-response-wa{display:flex;align-items:center;justify-content:center;gap:8px;background:#25D366;color:#fff;font-family:var(--sans);font-size:15px;font-weight:500;padding:13px 20px;text-decoration:none;border-radius:8px;transition:opacity .2s;width:100%}
+.conv-response-wa:hover{opacity:.88}
+/* BLOCCO CONV INLINE (dentro case-card) */
+.case-conv{margin-top:32px;padding:24px;background:var(--accent-light);border-radius:10px;border:1px solid rgba(200,0,92,.18)}
+.case-conv .conv-label{color:var(--accent)}
+.case-conv .conv-title{font-size:clamp(17px,2vw,21px)}
+.case-conv .conv-desc{font-size:15px;margin-bottom:16px}
+/* ALTRO PROBLEMA */
+.altro-block{display:flex;align-items:center;gap:20px;padding:18px 22px;background:var(--gray-100);border-radius:8px;border:1px solid var(--gray-300);margin-top:20px;flex-wrap:wrap}
+.altro-text{font-size:14px;color:var(--gray-500);font-weight:300;line-height:1.5;flex:1}
+.btn-altro{font-size:14px;font-weight:500;color:var(--accent);text-decoration:none;white-space:nowrap;padding:9px 16px;border:1px solid rgba(200,0,92,.4);border-radius:6px;transition:background .15s,color .15s;flex-shrink:0}
+.btn-altro:hover{background:var(--accent);color:#fff}
+.altro-block--dark{background:rgba(255,255,255,.03);border-color:#252525}
+.altro-block--dark .altro-text{color:#555}
+.altro-block--dark .btn-altro{border-color:rgba(200,0,92,.35)}
+
 @media(max-width:600px){
   nav{padding:0 16px}
   .hero{padding:68px 20px 64px}
@@ -212,11 +245,22 @@ footer{background:#0a0a0a;padding:24px 32px;border-top:1px solid #1e1e1e;display
   .cause-card-body{padding-left:32px}
   .info-section{padding:56px 20px}
   .cta-section{padding:68px 20px 60px}
+  .conv-section{padding:48px 16px}
+  .conv-card{padding:24px 20px}
+  .case-conv{padding:20px}
+  .altro-block{gap:12px}
   footer{flex-direction:column;align-items:flex-start;padding:20px 16px}
 }
 </style>
 </head>
 <body>
+
+<!-- SVG sprite riutilizzabile -->
+<svg style="display:none" aria-hidden="true">
+  <symbol id="wa-ico" viewBox="0 0 24 24">
+    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+  </symbol>
+</svg>
 
 <!-- NAV -->
 <nav>
@@ -256,6 +300,34 @@ footer{background:#0a0a0a;padding:24px 32px;border-top:1px solid #1e1e1e;display
   </div>
 </section>
 
+<!-- BLOCCO CONVERSAZIONALE — dopo le scelte principali -->
+<section class="conv-section">
+  <div class="conv-wrap">
+    <div class="conv-card">
+      <span class="conv-label">Il tuo caso è diverso?</span>
+      <p class="conv-title">Vuoi spiegarlo <em>a parole tue?</em></p>
+      <p class="conv-desc">Ogni bocca è diversa. Se il tuo caso non rientra perfettamente nelle risposte qui sopra, puoi scriverci cosa succede — quando sanguinano le gengive, da quanto tempo, se hai dolore, gonfiore, alito cattivo o altri sintomi. <strong>Il nostro assistente ti aiuta a capire quale potrebbe essere il primo passo più sensato.</strong></p>
+      <textarea class="conv-textarea" placeholder="Scrivi qui cosa succede alle tue gengive..."></textarea>
+      <button class="conv-btn-analyze">Analizza il mio caso</button>
+      <div class="conv-response">
+        <p class="conv-response-text">Grazie. In base a quello che hai scritto, il primo passo più sensato è far valutare le gengive con un controllo mirato. Se vuoi, puoi inviarci il messaggio su WhatsApp e ti rispondiamo direttamente.</p>
+        <a class="conv-response-wa" href="#" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24"><use href="#wa-ico"/></svg>
+          Invia questo messaggio su WhatsApp
+        </a>
+      </div>
+      <a class="conv-wa-skip" href="https://wa.me/393924076794?text=Ciao%2C%20vorrei%20spiegare%20il%20mio%20problema%20con%20le%20gengive." target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24"><use href="#wa-ico"/></svg>
+        Preferisco scrivere su WhatsApp
+      </a>
+    </div>
+    <div class="altro-block">
+      <p class="altro-text">Non riguarda solo le gengive?<br>Puoi tornare alla guida principale e scegliere un altro problema.</p>
+      <a href="https://healthysmile.it/homepage-conversazionale.html" class="btn-altro">Ho un altro problema</a>
+    </div>
+  </div>
+</section>
+
 <!-- AREA RISPOSTA -->
 <div class="response-area" id="responseArea">
   <div class="response-inner">
@@ -273,10 +345,28 @@ footer{background:#0a0a0a;padding:24px 32px;border-top:1px solid #1e1e1e;display
         <p>Una <strong>seduta di igiene professionale</strong> risolve spesso tutto. In studio valutiamo anche come spazzoli i denti — e se serve, ti correggiamo la tecnica.</p>
       </div>
       <a class="btn-wa" href="https://wa.me/393924076794?text=Ciao%2C%20le%20gengive%20mi%20sanguinano%20quando%20lavo%20i%20denti.%20Vorrei%20capire%20se%20%C3%A8%20urgente." target="_blank" rel="noopener">
-        <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        <svg viewBox="0 0 24 24"><use href="#wa-ico"/></svg>
         Scrivici su WhatsApp
       </a>
       <button class="btn-ghost" data-scroll="cta">Prenota una valutazione</button>
+      <div class="case-conv">
+        <span class="conv-label">Il tuo caso è leggermente diverso?</span>
+        <p class="conv-title">Vuoi spiegarlo <em>a parole tue?</em></p>
+        <p class="conv-desc">Se quello che hai letto non descrive esattamente la tua situazione, scrivici cosa succede. Ti aiutiamo a capire il primo passo.</p>
+        <textarea class="conv-textarea" placeholder="Scrivi qui cosa succede alle tue gengive..."></textarea>
+        <button class="conv-btn-analyze">Analizza il mio caso</button>
+        <div class="conv-response">
+          <p class="conv-response-text">Grazie. In base a quello che hai scritto, il primo passo più sensato è far valutare le gengive con un controllo mirato. Se vuoi, puoi inviarci il messaggio su WhatsApp e ti rispondiamo direttamente.</p>
+          <a class="conv-response-wa" href="#" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24"><use href="#wa-ico"/></svg>
+            Invia questo messaggio su WhatsApp
+          </a>
+        </div>
+        <a class="conv-wa-skip" href="https://wa.me/393924076794?text=Ciao%2C%20vorrei%20spiegare%20il%20mio%20problema%20con%20le%20gengive." target="_blank" rel="noopener" style="margin-top:10px">
+          <svg viewBox="0 0 24 24"><use href="#wa-ico"/></svg>
+          Preferisco scrivere su WhatsApp
+        </a>
+      </div>
     </div>
 
     <div class="case-card" id="case-2">
@@ -292,10 +382,28 @@ footer{background:#0a0a0a;padding:24px 32px;border-top:1px solid #1e1e1e;display
         <p>Serve una valutazione con <strong>sondaggio gengivale</strong> — una piccola misurazione indolore che ci dice quanto è profonda la situazione. Da lì decidiamo insieme cosa fare.</p>
       </div>
       <a class="btn-wa" href="https://wa.me/393924076794?text=Ciao%2C%20le%20gengive%20mi%20sanguinano%20appena%20le%20tocco.%20Vorrei%20una%20valutazione." target="_blank" rel="noopener">
-        <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        <svg viewBox="0 0 24 24"><use href="#wa-ico"/></svg>
         Scrivici su WhatsApp
       </a>
       <button class="btn-ghost" data-scroll="cta">Prenota una valutazione</button>
+      <div class="case-conv">
+        <span class="conv-label">Il tuo caso è leggermente diverso?</span>
+        <p class="conv-title">Vuoi spiegarlo <em>a parole tue?</em></p>
+        <p class="conv-desc">Se quello che hai letto non descrive esattamente la tua situazione, scrivici cosa succede. Ti aiutiamo a capire il primo passo.</p>
+        <textarea class="conv-textarea" placeholder="Scrivi qui cosa succede alle tue gengive..."></textarea>
+        <button class="conv-btn-analyze">Analizza il mio caso</button>
+        <div class="conv-response">
+          <p class="conv-response-text">Grazie. In base a quello che hai scritto, il primo passo più sensato è far valutare le gengive con un controllo mirato. Se vuoi, puoi inviarci il messaggio su WhatsApp e ti rispondiamo direttamente.</p>
+          <a class="conv-response-wa" href="#" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24"><use href="#wa-ico"/></svg>
+            Invia questo messaggio su WhatsApp
+          </a>
+        </div>
+        <a class="conv-wa-skip" href="https://wa.me/393924076794?text=Ciao%2C%20vorrei%20spiegare%20il%20mio%20problema%20con%20le%20gengive." target="_blank" rel="noopener" style="margin-top:10px">
+          <svg viewBox="0 0 24 24"><use href="#wa-ico"/></svg>
+          Preferisco scrivere su WhatsApp
+        </a>
+      </div>
     </div>
 
     <div class="case-card" id="case-3">
@@ -311,10 +419,28 @@ footer{background:#0a0a0a;padding:24px 32px;border-top:1px solid #1e1e1e;display
         <p>Scrivici su WhatsApp e descrivi la situazione. <strong>Ti diciamo noi</strong> se serve una visita urgente o se puoi aspettare qualche giorno.</p>
       </div>
       <a class="btn-wa" href="https://wa.me/393924076794?text=Ciao%2C%20le%20gengive%20mi%20sanguinano%20da%20sole%2C%20senza%20toccarle.%20Vorrei%20capire%20cosa%20fare." target="_blank" rel="noopener">
-        <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        <svg viewBox="0 0 24 24"><use href="#wa-ico"/></svg>
         Scrivici su WhatsApp
       </a>
       <button class="btn-ghost" data-scroll="cta">Prenota una valutazione</button>
+      <div class="case-conv">
+        <span class="conv-label">Il tuo caso è leggermente diverso?</span>
+        <p class="conv-title">Vuoi spiegarlo <em>a parole tue?</em></p>
+        <p class="conv-desc">Se quello che hai letto non descrive esattamente la tua situazione, scrivici cosa succede. Ti aiutiamo a capire il primo passo.</p>
+        <textarea class="conv-textarea" placeholder="Scrivi qui cosa succede alle tue gengive..."></textarea>
+        <button class="conv-btn-analyze">Analizza il mio caso</button>
+        <div class="conv-response">
+          <p class="conv-response-text">Grazie. In base a quello che hai scritto, il primo passo più sensato è far valutare le gengive con un controllo mirato. Se vuoi, puoi inviarci il messaggio su WhatsApp e ti rispondiamo direttamente.</p>
+          <a class="conv-response-wa" href="#" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24"><use href="#wa-ico"/></svg>
+            Invia questo messaggio su WhatsApp
+          </a>
+        </div>
+        <a class="conv-wa-skip" href="https://wa.me/393924076794?text=Ciao%2C%20vorrei%20spiegare%20il%20mio%20problema%20con%20le%20gengive." target="_blank" rel="noopener" style="margin-top:10px">
+          <svg viewBox="0 0 24 24"><use href="#wa-ico"/></svg>
+          Preferisco scrivere su WhatsApp
+        </a>
+      </div>
     </div>
 
     <div class="case-card" id="case-4">
@@ -330,10 +456,28 @@ footer{background:#0a0a0a;padding:24px 32px;border-top:1px solid #1e1e1e;display
         <p><strong>Scrivici subito</strong> su WhatsApp. Anche il sabato mattina cerchiamo di trovare spazio per le urgenze.</p>
       </div>
       <a class="btn-wa" href="https://wa.me/393924076794?text=Ciao%2C%20ho%20gengive%20che%20sanguinano%20con%20dolore%20e%20gonfiore.%20Vorrei%20una%20valutazione%20urgente." target="_blank" rel="noopener">
-        <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        <svg viewBox="0 0 24 24"><use href="#wa-ico"/></svg>
         Scrivici su WhatsApp — è urgente
       </a>
       <button class="btn-ghost" data-scroll="cta">Prenota una valutazione</button>
+      <div class="case-conv">
+        <span class="conv-label">Il tuo caso è leggermente diverso?</span>
+        <p class="conv-title">Vuoi spiegarlo <em>a parole tue?</em></p>
+        <p class="conv-desc">Se quello che hai letto non descrive esattamente la tua situazione, scrivici cosa succede. Ti aiutiamo a capire il primo passo.</p>
+        <textarea class="conv-textarea" placeholder="Scrivi qui cosa succede alle tue gengive..."></textarea>
+        <button class="conv-btn-analyze">Analizza il mio caso</button>
+        <div class="conv-response">
+          <p class="conv-response-text">Grazie. In base a quello che hai scritto, il primo passo più sensato è far valutare le gengive con un controllo mirato. Se vuoi, puoi inviarci il messaggio su WhatsApp e ti rispondiamo direttamente.</p>
+          <a class="conv-response-wa" href="#" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24"><use href="#wa-ico"/></svg>
+            Invia questo messaggio su WhatsApp
+          </a>
+        </div>
+        <a class="conv-wa-skip" href="https://wa.me/393924076794?text=Ciao%2C%20vorrei%20spiegare%20il%20mio%20problema%20con%20le%20gengive." target="_blank" rel="noopener" style="margin-top:10px">
+          <svg viewBox="0 0 24 24"><use href="#wa-ico"/></svg>
+          Preferisco scrivere su WhatsApp
+        </a>
+      </div>
     </div>
 
   </div>
@@ -468,6 +612,30 @@ footer{background:#0a0a0a;padding:24px 32px;border-top:1px solid #1e1e1e;display
   </div>
 </div>
 
+<!-- BLOCCO CONVERSAZIONALE — prima della CTA finale -->
+<section class="conv-section conv-section--gray">
+  <div class="conv-wrap">
+    <div class="conv-card">
+      <span class="conv-label">Hai ancora dubbi?</span>
+      <p class="conv-title">Vuoi spiegarlo <em>a parole tue?</em></p>
+      <p class="conv-desc">Ogni bocca è diversa. Se il tuo caso non rientra perfettamente nelle risposte qui sopra, puoi scriverci cosa succede — quando sanguinano le gengive, da quanto tempo, se hai dolore, gonfiore, alito cattivo o altri sintomi. <strong>Il nostro assistente ti aiuta a capire quale potrebbe essere il primo passo più sensato.</strong></p>
+      <textarea class="conv-textarea" placeholder="Scrivi qui cosa succede alle tue gengive..."></textarea>
+      <button class="conv-btn-analyze">Analizza il mio caso</button>
+      <div class="conv-response">
+        <p class="conv-response-text">Grazie. In base a quello che hai scritto, il primo passo più sensato è far valutare le gengive con un controllo mirato. Se vuoi, puoi inviarci il messaggio su WhatsApp e ti rispondiamo direttamente.</p>
+        <a class="conv-response-wa" href="#" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24"><use href="#wa-ico"/></svg>
+          Invia questo messaggio su WhatsApp
+        </a>
+      </div>
+      <a class="conv-wa-skip" href="https://wa.me/393924076794?text=Ciao%2C%20vorrei%20spiegare%20il%20mio%20problema%20con%20le%20gengive." target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24"><use href="#wa-ico"/></svg>
+        Preferisco scrivere su WhatsApp
+      </a>
+    </div>
+  </div>
+</section>
+
 <!-- CTA FINALE -->
 <div class="cta-section" id="cta">
   <div class="cta-inner">
@@ -480,11 +648,16 @@ footer{background:#0a0a0a;padding:24px 32px;border-top:1px solid #1e1e1e;display
     <p class="cta-prompt">Scrivici su WhatsApp — ti rispondiamo in pochi minuti.</p>
 
     <a class="btn-wa" href="https://wa.me/393924076794?text=Ciao%2C%20le%20gengive%20mi%20sanguinano.%20Vorrei%20capire%20se%20%C3%A8%20urgente%20e%20prenotare%20una%20valutazione." target="_blank" rel="noopener" style="font-size:17px;padding:18px 24px">
-      <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+      <svg viewBox="0 0 24 24"><use href="#wa-ico"/></svg>
       Scrivici su WhatsApp
     </a>
     <a class="btn-fucsia" href="https://wa.me/393924076794?text=Ciao%2C%20vorrei%20prenotare%20una%20valutazione%20per%20le%20gengive." target="_blank" rel="noopener" style="font-size:17px;padding:18px 24px">Prenota una valutazione</a>
     <a class="btn-home" href="https://healthysmile.it">← Torna alla home</a>
+
+    <div class="altro-block altro-block--dark">
+      <p class="altro-text">Non riguarda solo le gengive?<br>Puoi scegliere un altro problema nella guida principale.</p>
+      <a href="https://healthysmile.it/homepage-conversazionale.html" class="btn-altro">Ho un altro problema</a>
+    </div>
 
     <div class="cta-nap">
       <strong>Healthy Smile By N</strong> · Via Madama Cristina 2, Torino<br>
@@ -505,6 +678,7 @@ footer{background:#0a0a0a;padding:24px 32px;border-top:1px solid #1e1e1e;display
 </footer>
 
 <script>
+/* BOTTONI QUANDO */
 var whenBtns = document.querySelectorAll('.when-btn');
 var responseArea = document.getElementById('responseArea');
 whenBtns.forEach(function(btn) {
@@ -524,6 +698,7 @@ whenBtns.forEach(function(btn) {
   });
 });
 
+/* SCROLL SECONDARIO */
 document.querySelectorAll('.btn-ghost[data-scroll]').forEach(function(btn) {
   btn.addEventListener('click', function() {
     var t = document.getElementById(btn.dataset.scroll);
@@ -531,6 +706,7 @@ document.querySelectorAll('.btn-ghost[data-scroll]').forEach(function(btn) {
   });
 });
 
+/* CAUSE ACCORDION */
 document.querySelectorAll('.cause-card-hd').forEach(function(hd) {
   hd.addEventListener('click', function() {
     var card = hd.parentElement;
@@ -540,7 +716,47 @@ document.querySelectorAll('.cause-card-hd').forEach(function(hd) {
   });
 });
 
-document.querySelectorAll('a[href*="wa.me"]').forEach(function(el) {
+/* BLOCCO CONVERSAZIONALE — analisi */
+document.querySelectorAll('.conv-btn-analyze').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    var block = btn.closest('.conv-card') || btn.closest('.case-conv');
+    var textarea = block.querySelector('.conv-textarea');
+    var txt = textarea.value.trim();
+    if (!txt) { textarea.focus(); textarea.style.borderColor = 'var(--accent)'; return; }
+    textarea.style.borderColor = '';
+    var responseDiv = block.querySelector('.conv-response');
+    var waLink = block.querySelector('.conv-response-wa');
+    var msg = 'Ciao, ho un problema con le gengive e vorrei un consiglio:\n\n' + txt;
+    waLink.href = 'https://wa.me/393924076794?text=' + encodeURIComponent(msg);
+    responseDiv.style.display = 'block';
+    setTimeout(function() { responseDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }, 60);
+    try {
+      if (typeof gtag === 'function') gtag('event', 'hs_conv_analyze', { event_category: 'engagement', event_label: txt.substring(0, 50) });
+      if (typeof clarity === 'function') clarity('event', 'conv_analyze');
+    } catch(_) {}
+  });
+});
+
+/* BLOCCO CONVERSAZIONALE — skip su WA (include testo se presente) */
+document.querySelectorAll('.conv-wa-skip').forEach(function(link) {
+  link.addEventListener('click', function() {
+    var block = link.closest('.conv-card') || link.closest('.case-conv');
+    var textarea = block ? block.querySelector('.conv-textarea') : null;
+    var txt = textarea ? textarea.value.trim() : '';
+    var msg = txt ? 'Ciao, riguardo alle gengive: ' + txt : 'Ciao, vorrei spiegare il mio problema con le gengive.';
+    link.href = 'https://wa.me/393924076794?text=' + encodeURIComponent(msg);
+    try {
+      if (typeof gtag === 'function') {
+        gtag('event', 'whatsapp_click', { event_category: 'conversione', event_label: 'conv_wa_skip' });
+        gtag('event', 'conversion', { send_to: 'AW-947982327/whatsapp_click' });
+      }
+      if (typeof clarity === 'function') clarity('event', 'whatsapp_click');
+    } catch(_) {}
+  });
+});
+
+/* TRACKING WHATSAPP */
+document.querySelectorAll('a[href*="wa.me"]:not(.conv-wa-skip):not(.conv-response-wa)').forEach(function(el) {
   el.addEventListener('click', function() {
     try {
       if (typeof gtag === 'function') {
@@ -552,6 +768,7 @@ document.querySelectorAll('a[href*="wa.me"]').forEach(function(el) {
   });
 });
 
+/* TRACKING TELEFONO */
 document.querySelectorAll('a[href^="tel:"]').forEach(function(el) {
   el.addEventListener('click', function() {
     try {
@@ -563,6 +780,7 @@ document.querySelectorAll('a[href^="tel:"]').forEach(function(el) {
   });
 });
 
+/* SCROLL DEPTH */
 (function() {
   var marks = [25, 50, 75, 90], fired = {};
   window.addEventListener('scroll', function() {
@@ -576,6 +794,7 @@ document.querySelectorAll('a[href^="tel:"]').forEach(function(el) {
   }, { passive: true });
 })();
 
+/* TIME ON PAGE */
 (function() {
   [30, 60, 120, 180].forEach(function(sec) {
     setTimeout(function() {
@@ -584,6 +803,7 @@ document.querySelectorAll('a[href^="tel:"]').forEach(function(el) {
   });
 })();
 
+/* MOBILE DRAWER */
 var hamburger = document.getElementById('hamburger');
 var mobileDrawer = document.getElementById('mobileDrawer');
 var overlay = document.getElementById('drawerOverlay');
