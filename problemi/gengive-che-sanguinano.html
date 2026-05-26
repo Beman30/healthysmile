@@ -213,9 +213,10 @@ footer{background:#0a0a0a;padding:24px 32px;border-top:1px solid #1e1e1e;display
 .conv-textarea::placeholder{color:var(--gray-500)}
 .conv-btn-analyze{display:block;width:100%;padding:15px 20px;background:var(--accent);color:#fff;font-family:var(--sans);font-size:16px;font-weight:500;border:none;border-radius:8px;cursor:pointer;transition:opacity .2s;margin-bottom:10px;text-align:center}
 .conv-btn-analyze:hover{opacity:.87}
-.conv-wa-skip{display:flex;align-items:center;justify-content:center;gap:8px;background:#25D366;color:#fff;font-family:var(--sans);font-size:15px;font-weight:500;padding:13px 20px;text-decoration:none;border-radius:8px;transition:opacity .2s;width:100%}
-.conv-wa-skip:hover{opacity:.88}
 .conv-wa-skip svg,.conv-response-wa svg{width:18px;height:18px;fill:#fff;flex-shrink:0}
+.conv-direct{font-size:14px;color:var(--gray-500);font-weight:300;margin-top:16px;text-align:center;line-height:1.5}
+.conv-direct a{color:var(--accent);text-decoration:none;font-weight:500}
+.conv-direct a:hover{text-decoration:underline}
 .conv-response{display:none;margin-top:16px;padding:20px;background:var(--white);border-radius:8px;border:1px solid var(--gray-300)}
 .conv-response-text{font-size:16px;color:var(--gray-700);font-weight:300;line-height:1.75;margin-bottom:16px}
 .conv-response-wa{display:flex;align-items:center;justify-content:center;gap:8px;background:#25D366;color:#fff;font-family:var(--sans);font-size:15px;font-weight:500;padding:13px 20px;text-decoration:none;border-radius:8px;transition:opacity .2s;width:100%}
@@ -304,22 +305,19 @@ footer{background:#0a0a0a;padding:24px 32px;border-top:1px solid #1e1e1e;display
 <section class="conv-section">
   <div class="conv-wrap">
     <div class="conv-card">
-      <span class="conv-label">Il tuo caso è diverso?</span>
-      <p class="conv-title">Vuoi spiegarlo <em>a parole tue?</em></p>
-      <p class="conv-desc">Ogni bocca è diversa. Se il tuo caso non rientra perfettamente nelle risposte qui sopra, puoi scriverci cosa succede — quando sanguinano le gengive, da quanto tempo, se hai dolore, gonfiore, alito cattivo o altri sintomi. <strong>Il nostro assistente ti aiuta a capire quale potrebbe essere il primo passo più sensato.</strong></p>
+      <span class="conv-label">Il tuo caso è leggermente diverso?</span>
+      <p class="conv-title">Vuoi capirlo <em>con una risposta guidata?</em></p>
+      <p class="conv-desc">Scrivi cosa succede alle tue gengive. Il sito ti aiuta a orientarti con una prima risposta semplice, <strong>senza inviare nulla allo studio.</strong></p>
       <textarea class="conv-textarea" placeholder="Scrivi qui cosa succede alle tue gengive..."></textarea>
-      <button class="conv-btn-analyze">Analizza il mio caso</button>
+      <button class="conv-btn-analyze">Dammi una prima risposta</button>
       <div class="conv-response">
-        <p class="conv-response-text">Grazie. In base a quello che hai scritto, il primo passo più sensato è far valutare le gengive con un controllo mirato. Se vuoi, puoi inviarci il messaggio su WhatsApp e ti rispondiamo direttamente.</p>
+        <p class="conv-response-text">In base a quello che hai scritto, potrebbe essere utile fare un controllo mirato delle gengive. Se vuoi, puoi inviare questo messaggio allo studio su WhatsApp e ti rispondiamo direttamente.</p>
         <a class="conv-response-wa" href="#" target="_blank" rel="noopener">
           <svg viewBox="0 0 24 24"><use href="#wa-ico"/></svg>
-          Invia questo messaggio su WhatsApp
+          Invia il messaggio su WhatsApp
         </a>
       </div>
-      <a class="conv-wa-skip" href="https://wa.me/393924076794?text=Ciao%2C%20vorrei%20spiegare%20il%20mio%20problema%20con%20le%20gengive." target="_blank" rel="noopener">
-        <svg viewBox="0 0 24 24"><use href="#wa-ico"/></svg>
-        Preferisco scrivere su WhatsApp
-      </a>
+      <p class="conv-direct">Preferisci parlare direttamente con noi?<br><a href="https://wa.me/393924076794?text=Ciao%2C%20vorrei%20informazioni%20sulle%20gengive." target="_blank" rel="noopener">Scrivici su WhatsApp</a></p>
     </div>
     <div class="altro-block">
       <p class="altro-text">Non riguarda solo le gengive?<br>Puoi tornare alla guida principale e scegliere un altro problema.</p>
@@ -351,21 +349,18 @@ footer{background:#0a0a0a;padding:24px 32px;border-top:1px solid #1e1e1e;display
       <button class="btn-ghost" data-scroll="cta">Prenota una valutazione</button>
       <div class="case-conv">
         <span class="conv-label">Il tuo caso è leggermente diverso?</span>
-        <p class="conv-title">Vuoi spiegarlo <em>a parole tue?</em></p>
-        <p class="conv-desc">Se quello che hai letto non descrive esattamente la tua situazione, scrivici cosa succede. Ti aiutiamo a capire il primo passo.</p>
+        <p class="conv-title">Vuoi capirlo <em>con una risposta guidata?</em></p>
+        <p class="conv-desc">Scrivi cosa succede alle tue gengive. Il sito ti aiuta a orientarti con una prima risposta semplice, <strong>senza inviare nulla allo studio.</strong></p>
         <textarea class="conv-textarea" placeholder="Scrivi qui cosa succede alle tue gengive..."></textarea>
-        <button class="conv-btn-analyze">Analizza il mio caso</button>
+        <button class="conv-btn-analyze">Dammi una prima risposta</button>
         <div class="conv-response">
-          <p class="conv-response-text">Grazie. In base a quello che hai scritto, il primo passo più sensato è far valutare le gengive con un controllo mirato. Se vuoi, puoi inviarci il messaggio su WhatsApp e ti rispondiamo direttamente.</p>
+          <p class="conv-response-text">In base a quello che hai scritto, potrebbe essere utile fare un controllo mirato delle gengive. Se vuoi, puoi inviare questo messaggio allo studio su WhatsApp e ti rispondiamo direttamente.</p>
           <a class="conv-response-wa" href="#" target="_blank" rel="noopener">
             <svg viewBox="0 0 24 24"><use href="#wa-ico"/></svg>
-            Invia questo messaggio su WhatsApp
+            Invia il messaggio su WhatsApp
           </a>
         </div>
-        <a class="conv-wa-skip" href="https://wa.me/393924076794?text=Ciao%2C%20vorrei%20spiegare%20il%20mio%20problema%20con%20le%20gengive." target="_blank" rel="noopener" style="margin-top:10px">
-          <svg viewBox="0 0 24 24"><use href="#wa-ico"/></svg>
-          Preferisco scrivere su WhatsApp
-        </a>
+        <p class="conv-direct">Preferisci parlare direttamente con noi?<br><a href="https://wa.me/393924076794?text=Ciao%2C%20vorrei%20informazioni%20sulle%20gengive." target="_blank" rel="noopener">Scrivici su WhatsApp</a></p>
       </div>
     </div>
 
@@ -388,21 +383,18 @@ footer{background:#0a0a0a;padding:24px 32px;border-top:1px solid #1e1e1e;display
       <button class="btn-ghost" data-scroll="cta">Prenota una valutazione</button>
       <div class="case-conv">
         <span class="conv-label">Il tuo caso è leggermente diverso?</span>
-        <p class="conv-title">Vuoi spiegarlo <em>a parole tue?</em></p>
-        <p class="conv-desc">Se quello che hai letto non descrive esattamente la tua situazione, scrivici cosa succede. Ti aiutiamo a capire il primo passo.</p>
+        <p class="conv-title">Vuoi capirlo <em>con una risposta guidata?</em></p>
+        <p class="conv-desc">Scrivi cosa succede alle tue gengive. Il sito ti aiuta a orientarti con una prima risposta semplice, <strong>senza inviare nulla allo studio.</strong></p>
         <textarea class="conv-textarea" placeholder="Scrivi qui cosa succede alle tue gengive..."></textarea>
-        <button class="conv-btn-analyze">Analizza il mio caso</button>
+        <button class="conv-btn-analyze">Dammi una prima risposta</button>
         <div class="conv-response">
-          <p class="conv-response-text">Grazie. In base a quello che hai scritto, il primo passo più sensato è far valutare le gengive con un controllo mirato. Se vuoi, puoi inviarci il messaggio su WhatsApp e ti rispondiamo direttamente.</p>
+          <p class="conv-response-text">In base a quello che hai scritto, potrebbe essere utile fare un controllo mirato delle gengive. Se vuoi, puoi inviare questo messaggio allo studio su WhatsApp e ti rispondiamo direttamente.</p>
           <a class="conv-response-wa" href="#" target="_blank" rel="noopener">
             <svg viewBox="0 0 24 24"><use href="#wa-ico"/></svg>
-            Invia questo messaggio su WhatsApp
+            Invia il messaggio su WhatsApp
           </a>
         </div>
-        <a class="conv-wa-skip" href="https://wa.me/393924076794?text=Ciao%2C%20vorrei%20spiegare%20il%20mio%20problema%20con%20le%20gengive." target="_blank" rel="noopener" style="margin-top:10px">
-          <svg viewBox="0 0 24 24"><use href="#wa-ico"/></svg>
-          Preferisco scrivere su WhatsApp
-        </a>
+        <p class="conv-direct">Preferisci parlare direttamente con noi?<br><a href="https://wa.me/393924076794?text=Ciao%2C%20vorrei%20informazioni%20sulle%20gengive." target="_blank" rel="noopener">Scrivici su WhatsApp</a></p>
       </div>
     </div>
 
@@ -425,21 +417,18 @@ footer{background:#0a0a0a;padding:24px 32px;border-top:1px solid #1e1e1e;display
       <button class="btn-ghost" data-scroll="cta">Prenota una valutazione</button>
       <div class="case-conv">
         <span class="conv-label">Il tuo caso è leggermente diverso?</span>
-        <p class="conv-title">Vuoi spiegarlo <em>a parole tue?</em></p>
-        <p class="conv-desc">Se quello che hai letto non descrive esattamente la tua situazione, scrivici cosa succede. Ti aiutiamo a capire il primo passo.</p>
+        <p class="conv-title">Vuoi capirlo <em>con una risposta guidata?</em></p>
+        <p class="conv-desc">Scrivi cosa succede alle tue gengive. Il sito ti aiuta a orientarti con una prima risposta semplice, <strong>senza inviare nulla allo studio.</strong></p>
         <textarea class="conv-textarea" placeholder="Scrivi qui cosa succede alle tue gengive..."></textarea>
-        <button class="conv-btn-analyze">Analizza il mio caso</button>
+        <button class="conv-btn-analyze">Dammi una prima risposta</button>
         <div class="conv-response">
-          <p class="conv-response-text">Grazie. In base a quello che hai scritto, il primo passo più sensato è far valutare le gengive con un controllo mirato. Se vuoi, puoi inviarci il messaggio su WhatsApp e ti rispondiamo direttamente.</p>
+          <p class="conv-response-text">In base a quello che hai scritto, potrebbe essere utile fare un controllo mirato delle gengive. Se vuoi, puoi inviare questo messaggio allo studio su WhatsApp e ti rispondiamo direttamente.</p>
           <a class="conv-response-wa" href="#" target="_blank" rel="noopener">
             <svg viewBox="0 0 24 24"><use href="#wa-ico"/></svg>
-            Invia questo messaggio su WhatsApp
+            Invia il messaggio su WhatsApp
           </a>
         </div>
-        <a class="conv-wa-skip" href="https://wa.me/393924076794?text=Ciao%2C%20vorrei%20spiegare%20il%20mio%20problema%20con%20le%20gengive." target="_blank" rel="noopener" style="margin-top:10px">
-          <svg viewBox="0 0 24 24"><use href="#wa-ico"/></svg>
-          Preferisco scrivere su WhatsApp
-        </a>
+        <p class="conv-direct">Preferisci parlare direttamente con noi?<br><a href="https://wa.me/393924076794?text=Ciao%2C%20vorrei%20informazioni%20sulle%20gengive." target="_blank" rel="noopener">Scrivici su WhatsApp</a></p>
       </div>
     </div>
 
@@ -462,21 +451,18 @@ footer{background:#0a0a0a;padding:24px 32px;border-top:1px solid #1e1e1e;display
       <button class="btn-ghost" data-scroll="cta">Prenota una valutazione</button>
       <div class="case-conv">
         <span class="conv-label">Il tuo caso è leggermente diverso?</span>
-        <p class="conv-title">Vuoi spiegarlo <em>a parole tue?</em></p>
-        <p class="conv-desc">Se quello che hai letto non descrive esattamente la tua situazione, scrivici cosa succede. Ti aiutiamo a capire il primo passo.</p>
+        <p class="conv-title">Vuoi capirlo <em>con una risposta guidata?</em></p>
+        <p class="conv-desc">Scrivi cosa succede alle tue gengive. Il sito ti aiuta a orientarti con una prima risposta semplice, <strong>senza inviare nulla allo studio.</strong></p>
         <textarea class="conv-textarea" placeholder="Scrivi qui cosa succede alle tue gengive..."></textarea>
-        <button class="conv-btn-analyze">Analizza il mio caso</button>
+        <button class="conv-btn-analyze">Dammi una prima risposta</button>
         <div class="conv-response">
-          <p class="conv-response-text">Grazie. In base a quello che hai scritto, il primo passo più sensato è far valutare le gengive con un controllo mirato. Se vuoi, puoi inviarci il messaggio su WhatsApp e ti rispondiamo direttamente.</p>
+          <p class="conv-response-text">In base a quello che hai scritto, potrebbe essere utile fare un controllo mirato delle gengive. Se vuoi, puoi inviare questo messaggio allo studio su WhatsApp e ti rispondiamo direttamente.</p>
           <a class="conv-response-wa" href="#" target="_blank" rel="noopener">
             <svg viewBox="0 0 24 24"><use href="#wa-ico"/></svg>
-            Invia questo messaggio su WhatsApp
+            Invia il messaggio su WhatsApp
           </a>
         </div>
-        <a class="conv-wa-skip" href="https://wa.me/393924076794?text=Ciao%2C%20vorrei%20spiegare%20il%20mio%20problema%20con%20le%20gengive." target="_blank" rel="noopener" style="margin-top:10px">
-          <svg viewBox="0 0 24 24"><use href="#wa-ico"/></svg>
-          Preferisco scrivere su WhatsApp
-        </a>
+        <p class="conv-direct">Preferisci parlare direttamente con noi?<br><a href="https://wa.me/393924076794?text=Ciao%2C%20vorrei%20informazioni%20sulle%20gengive." target="_blank" rel="noopener">Scrivici su WhatsApp</a></p>
       </div>
     </div>
 
@@ -616,22 +602,19 @@ footer{background:#0a0a0a;padding:24px 32px;border-top:1px solid #1e1e1e;display
 <section class="conv-section conv-section--gray">
   <div class="conv-wrap">
     <div class="conv-card">
-      <span class="conv-label">Hai ancora dubbi?</span>
-      <p class="conv-title">Vuoi spiegarlo <em>a parole tue?</em></p>
-      <p class="conv-desc">Ogni bocca è diversa. Se il tuo caso non rientra perfettamente nelle risposte qui sopra, puoi scriverci cosa succede — quando sanguinano le gengive, da quanto tempo, se hai dolore, gonfiore, alito cattivo o altri sintomi. <strong>Il nostro assistente ti aiuta a capire quale potrebbe essere il primo passo più sensato.</strong></p>
+      <span class="conv-label">Il tuo caso è leggermente diverso?</span>
+      <p class="conv-title">Vuoi capirlo <em>con una risposta guidata?</em></p>
+      <p class="conv-desc">Scrivi cosa succede alle tue gengive. Il sito ti aiuta a orientarti con una prima risposta semplice, <strong>senza inviare nulla allo studio.</strong></p>
       <textarea class="conv-textarea" placeholder="Scrivi qui cosa succede alle tue gengive..."></textarea>
-      <button class="conv-btn-analyze">Analizza il mio caso</button>
+      <button class="conv-btn-analyze">Dammi una prima risposta</button>
       <div class="conv-response">
-        <p class="conv-response-text">Grazie. In base a quello che hai scritto, il primo passo più sensato è far valutare le gengive con un controllo mirato. Se vuoi, puoi inviarci il messaggio su WhatsApp e ti rispondiamo direttamente.</p>
+        <p class="conv-response-text">In base a quello che hai scritto, potrebbe essere utile fare un controllo mirato delle gengive. Se vuoi, puoi inviare questo messaggio allo studio su WhatsApp e ti rispondiamo direttamente.</p>
         <a class="conv-response-wa" href="#" target="_blank" rel="noopener">
           <svg viewBox="0 0 24 24"><use href="#wa-ico"/></svg>
-          Invia questo messaggio su WhatsApp
+          Invia il messaggio su WhatsApp
         </a>
       </div>
-      <a class="conv-wa-skip" href="https://wa.me/393924076794?text=Ciao%2C%20vorrei%20spiegare%20il%20mio%20problema%20con%20le%20gengive." target="_blank" rel="noopener">
-        <svg viewBox="0 0 24 24"><use href="#wa-ico"/></svg>
-        Preferisco scrivere su WhatsApp
-      </a>
+      <p class="conv-direct">Preferisci parlare direttamente con noi?<br><a href="https://wa.me/393924076794?text=Ciao%2C%20vorrei%20informazioni%20sulle%20gengive." target="_blank" rel="noopener">Scrivici su WhatsApp</a></p>
     </div>
   </div>
 </section>
@@ -737,23 +720,6 @@ document.querySelectorAll('.conv-btn-analyze').forEach(function(btn) {
   });
 });
 
-/* BLOCCO CONVERSAZIONALE — skip su WA (include testo se presente) */
-document.querySelectorAll('.conv-wa-skip').forEach(function(link) {
-  link.addEventListener('click', function() {
-    var block = link.closest('.conv-card') || link.closest('.case-conv');
-    var textarea = block ? block.querySelector('.conv-textarea') : null;
-    var txt = textarea ? textarea.value.trim() : '';
-    var msg = txt ? 'Ciao, riguardo alle gengive: ' + txt : 'Ciao, vorrei spiegare il mio problema con le gengive.';
-    link.href = 'https://wa.me/393924076794?text=' + encodeURIComponent(msg);
-    try {
-      if (typeof gtag === 'function') {
-        gtag('event', 'whatsapp_click', { event_category: 'conversione', event_label: 'conv_wa_skip' });
-        gtag('event', 'conversion', { send_to: 'AW-947982327/whatsapp_click' });
-      }
-      if (typeof clarity === 'function') clarity('event', 'whatsapp_click');
-    } catch(_) {}
-  });
-});
 
 /* TRACKING WHATSAPP */
 document.querySelectorAll('a[href*="wa.me"]:not(.conv-wa-skip):not(.conv-response-wa)').forEach(function(el) {
