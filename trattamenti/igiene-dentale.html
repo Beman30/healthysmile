@@ -38,11 +38,13 @@
   --gray-700:#4a4845;
   --accent:#C8005C;
   --accent-light:#fce8f2;
+  --green:#25D366;
   --serif:'DM Serif Display',Georgia,serif;
   --sans:'DM Sans',system-ui,sans-serif;
 }
 html{scroll-behavior:smooth}
 body{font-family:var(--sans);background:var(--white);color:var(--black);font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
+@media(max-width:768px){body{padding-bottom:56px}}
 
 /* NAV */
 nav{position:sticky;top:0;z-index:100;background:var(--black);border-bottom:1px solid #2a2a2a;padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:56px}
@@ -51,6 +53,11 @@ nav{position:sticky;top:0;z-index:100;background:var(--black);border-bottom:1px 
 .nav-links{display:flex;gap:4px;align-items:center}
 .nav-links a{font-size:13px;color:#fff;text-decoration:none;padding:6px 12px;border-radius:4px;transition:background .15s}
 .nav-links a:hover{background:#222}
+.nav-phone{display:flex;align-items:center;gap:6px;font-size:13px;color:#aaa !important;letter-spacing:.02em;padding:6px 10px !important;border-radius:4px;transition:color .15s !important,background .15s}
+.nav-phone:hover{color:var(--white) !important;background:#1a1a1a !important}
+.nav-phone svg{width:13px;height:13px;fill:#aaa;flex-shrink:0;transition:fill .15s}
+.nav-phone:hover svg{fill:var(--white)}
+.nav-sep{width:1px;height:16px;background:#333;margin:0 2px;flex-shrink:0}
 .nav-cta{font-size:13px !important;font-weight:500 !important;background:var(--accent) !important;color:var(--white) !important;padding:8px 16px !important;border-radius:6px;transition:opacity .15s}
 .nav-cta:hover{opacity:.85 !important}
 .hamburger{display:none;flex-direction:column;justify-content:center;gap:5px;width:36px;height:36px;cursor:pointer;padding:4px;background:none;border:none}
@@ -64,6 +71,8 @@ nav{position:sticky;top:0;z-index:100;background:var(--black);border-bottom:1px 
 .mobile-drawer-overlay.open{opacity:1;pointer-events:auto}
 .mobile-drawer a{font-size:15px;color:#aaa;text-decoration:none;padding:16px 0;border-bottom:1px solid #2a2a2a;transition:color .15s;display:block}
 .mobile-drawer a:hover{color:#fff}
+.drawer-phone{font-size:16px;color:var(--white) !important;font-weight:500;padding:18px 0 !important;display:flex !important;align-items:center;gap:8px}
+.drawer-phone svg{width:15px;height:15px;fill:var(--white);flex-shrink:0}
 .drawer-cta{margin-top:24px;background:var(--accent) !important;color:#fff !important;text-align:center;padding:14px 20px !important;border-radius:4px;border:none !important;font-weight:500}
 .drawer-close{position:absolute;top:16px;right:16px;background:none;border:none;color:#666;font-size:20px;cursor:pointer;padding:8px;line-height:1;transition:color .15s}
 .drawer-close:hover{color:#fff}
@@ -77,7 +86,7 @@ nav{position:sticky;top:0;z-index:100;background:var(--black);border-bottom:1px 
 .hero h1 .aw{color:var(--accent)}
 .hero-subtitle{font-family:var(--serif);font-size:clamp(17px,2.4vw,22px);color:#c8c6c0;line-height:1.3;letter-spacing:-.01em;margin-bottom:16px}
 .hero-subtitle em{color:var(--white);font-style:italic}
-.hero-micro{font-size:16px;color:#9a9890;font-weight:300;line-height:1.75;max-width:560px;margin-bottom:52px}
+.hero-micro{font-size:16px;color:#c0beb8;font-weight:300;line-height:1.75;max-width:560px;margin-bottom:52px}
 
 /* BOTTONI PERCHÉ */
 .why-label{display:block;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--gray-500);margin-bottom:0}
@@ -111,8 +120,19 @@ nav{position:sticky;top:0;z-index:100;background:var(--black);border-bottom:1px 
 .body-step{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);font-weight:500;margin-top:22px;margin-bottom:6px;display:block}
 .body-step:first-child{margin-top:0}
 
-/* CTA BUTTONS */
-.btn-wa{display:flex;align-items:center;justify-content:center;gap:10px;background:#25D366;color:#fff;font-family:var(--sans);font-size:16px;font-weight:500;padding:16px 24px;text-decoration:none;border-radius:8px;transition:opacity .2s;margin-bottom:10px;width:100%}
+/* DUAL CTA */
+.dual-cta{display:flex;gap:10px;margin-bottom:10px}
+.dual-cta > a{flex:1}
+.btn-tel-main{display:flex;align-items:center;justify-content:center;gap:9px;background:var(--accent);color:#fff;font-family:var(--sans);font-size:16px;font-weight:500;padding:16px 18px;text-decoration:none;border-radius:8px;transition:opacity .2s;text-align:center;width:100%}
+.btn-tel-main:hover{opacity:.85}
+.btn-tel-main svg{width:17px;height:17px;fill:#fff;flex-shrink:0}
+.btn-wa-alt{display:flex;align-items:center;justify-content:center;gap:9px;background:var(--green);color:#fff;font-family:var(--sans);font-size:16px;font-weight:500;padding:16px 18px;text-decoration:none;border-radius:8px;transition:opacity .2s;text-align:center;width:100%}
+.btn-wa-alt:hover{opacity:.88}
+.btn-wa-alt svg{width:17px;height:17px;fill:#fff;flex-shrink:0}
+@media(max-width:420px){.dual-cta{flex-direction:column}}
+
+/* CTA BUTTONS LEGACY */
+.btn-wa{display:flex;align-items:center;justify-content:center;gap:10px;background:var(--green);color:#fff;font-family:var(--sans);font-size:16px;font-weight:500;padding:16px 24px;text-decoration:none;border-radius:8px;transition:opacity .2s;margin-bottom:10px;width:100%}
 .btn-wa:hover{opacity:.88}
 .btn-wa svg{width:20px;height:20px;fill:#fff;flex-shrink:0}
 .btn-fucsia{display:block;background:var(--accent);color:#fff;font-family:var(--sans);font-size:16px;font-weight:500;padding:16px 24px;text-align:center;text-decoration:none;border-radius:8px;transition:opacity .2s;margin-bottom:10px;width:100%}
@@ -137,10 +157,11 @@ nav{position:sticky;top:0;z-index:100;background:var(--black);border-bottom:1px 
 .price-left{flex-shrink:0}
 .price-amount{font-family:var(--serif);font-size:44px;color:var(--white);line-height:1;letter-spacing:-.03em}
 .price-amount span{font-size:20px;vertical-align:super;font-family:var(--sans);font-weight:300;color:#aaa;letter-spacing:0}
-.price-label{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#555;margin-top:5px}
+.price-label{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#999;margin-top:5px}
 .price-right{flex:1}
 .price-text{font-size:15px;color:#b5b3ac;font-weight:300;line-height:1.7}
 .price-text strong{color:var(--white);font-weight:500}
+.price-cta{margin-top:20px}
 
 /* ACCORDION SECTION */
 .acc-section{background:var(--black);padding:72px 24px}
@@ -154,9 +175,9 @@ nav{position:sticky;top:0;z-index:100;background:var(--black);border-bottom:1px 
 .acc-hd:hover{background:rgba(255,255,255,.04)}
 .acc-num{font-family:var(--serif);font-size:13px;color:var(--accent);font-style:italic;flex-shrink:0;width:18px}
 .acc-name{font-size:16px;color:var(--white);font-weight:400;flex:1}
-.acc-icon{font-size:18px;color:#444;transition:transform .25s,color .2s;flex-shrink:0;line-height:1}
+.acc-icon{font-size:18px;color:#888;transition:transform .25s,color .2s;flex-shrink:0;line-height:1}
 .acc-item.open .acc-icon{transform:rotate(45deg);color:var(--accent)}
-.acc-body{display:none;padding:4px 20px 20px 52px;font-size:15px;color:#b5b3ac;font-weight:300;line-height:1.8}
+.acc-body{display:none;padding:4px 20px 20px 52px;font-size:15px;color:#c8c6c0;font-weight:300;line-height:1.8}
 .acc-item.open .acc-body{display:block}
 .acc-body p{margin-bottom:0}
 .acc-body strong{color:var(--white);font-weight:500}
@@ -175,7 +196,6 @@ nav{position:sticky;top:0;z-index:100;background:var(--black);border-bottom:1px 
 .prog-text{font-size:16px;color:var(--gray-700);font-weight:300;line-height:1.65}
 .prog-text strong{color:var(--black);font-weight:500}
 .prog-text em{color:var(--accent);font-style:normal;font-weight:400}
-.prog-arr{font-size:13px;color:#ccc;padding:12px 0 0 24px;font-weight:300;letter-spacing:.04em}
 
 /* CHIPS SECTION */
 .chips-section{background:var(--gray-100);padding:72px 24px;border-top:1px solid var(--gray-300)}
@@ -208,7 +228,7 @@ nav{position:sticky;top:0;z-index:100;background:var(--black);border-bottom:1px 
 .cs-response{display:none;margin-top:16px;padding:20px 22px;background:var(--gray-100);border-radius:10px;border:1px solid var(--gray-300)}
 .cs-response p{font-size:15px;color:var(--gray-700);font-weight:300;line-height:1.75;margin-bottom:14px}
 .cs-wa-prompt{font-size:13px;color:var(--gray-500);font-weight:400;margin-bottom:10px!important}
-.cs-wa{display:flex;align-items:center;justify-content:center;gap:8px;background:#25D366;color:#fff;font-family:var(--sans);font-size:15px;font-weight:500;padding:13px 18px;text-decoration:none;border-radius:6px;transition:opacity .2s;width:100%}
+.cs-wa{display:flex;align-items:center;justify-content:center;gap:8px;background:var(--green);color:#fff;font-family:var(--sans);font-size:15px;font-weight:500;padding:13px 18px;text-decoration:none;border-radius:6px;transition:opacity .2s;width:100%}
 .cs-wa:hover{opacity:.88}
 .cs-wa svg{width:17px;height:17px;fill:#fff;flex-shrink:0}
 
@@ -219,23 +239,33 @@ nav{position:sticky;top:0;z-index:100;background:var(--black);border-bottom:1px 
 .cta-pull{font-family:var(--serif);font-size:clamp(18px,2.4vw,23px);color:var(--accent);font-style:italic;line-height:1.3;margin-bottom:18px}
 .cta-headline{font-family:var(--serif);font-size:clamp(26px,3.5vw,40px);color:var(--white);line-height:1.1;letter-spacing:-.02em;margin-bottom:20px}
 .cta-headline em{color:var(--accent);font-style:italic}
-.cta-body{font-size:17px;color:#b5b3ac;font-weight:300;line-height:1.82;margin-bottom:14px}
+.cta-body{font-size:17px;color:#c8c6c0;font-weight:300;line-height:1.82;margin-bottom:14px}
 .cta-body strong{color:var(--white);font-weight:500}
-.cta-price-note{font-size:13px;color:#555;font-weight:300;text-align:center;margin-top:6px;margin-bottom:22px;line-height:1.5}
-.btn-home{display:block;text-align:center;font-size:14px;color:#555;text-decoration:none;padding:14px;transition:color .15s;width:100%}
-.btn-home:hover{color:#999}
+.cta-price-note{font-size:13px;color:#999;font-weight:300;text-align:center;margin-top:6px;margin-bottom:22px;line-height:1.5}
+/* dual CTA nella sezione finale — versione large */
+.dual-cta-lg{display:flex;gap:12px;margin-bottom:0}
+.dual-cta-lg > a{flex:1}
+.btn-tel-lg{display:flex;align-items:center;justify-content:center;gap:10px;background:var(--accent);color:#fff;font-family:var(--sans);font-size:17px;font-weight:500;padding:18px 20px;text-decoration:none;border-radius:8px;transition:opacity .2s;text-align:center;width:100%}
+.btn-tel-lg:hover{opacity:.85}
+.btn-tel-lg svg{width:20px;height:20px;fill:#fff;flex-shrink:0}
+.btn-wa-lg{display:flex;align-items:center;justify-content:center;gap:10px;background:var(--green);color:#fff;font-family:var(--sans);font-size:17px;font-weight:500;padding:18px 20px;text-decoration:none;border-radius:8px;transition:opacity .2s;text-align:center;width:100%}
+.btn-wa-lg:hover{opacity:.88}
+.btn-wa-lg svg{width:20px;height:20px;fill:#fff;flex-shrink:0}
+@media(max-width:520px){.dual-cta-lg{flex-direction:column}}
+.btn-home{display:block;text-align:center;font-size:14px;color:#888;text-decoration:none;padding:14px;transition:color .15s;width:100%}
+.btn-home:hover{color:#bbb}
 .cta-wa-sec{text-align:center;margin:14px 0 0}
 .cta-wa-sec a{display:inline-flex;align-items:center;gap:7px;color:rgba(37,211,102,.75);font-family:var(--sans);font-size:14px;font-weight:400;text-decoration:none;transition:opacity .2s}
-.cta-wa-sec a:hover{opacity:1;color:#25D366}
+.cta-wa-sec a:hover{opacity:1;color:var(--green)}
 .cta-wa-sec svg{width:15px;height:15px;fill:rgba(37,211,102,.75);flex-shrink:0}
 .studio-card{margin-top:44px;padding:28px 28px 24px;background:#111;border:1px solid #222;border-radius:12px;display:grid;grid-template-columns:1fr auto;gap:24px 32px;align-items:start}
 .studio-name{font-family:var(--serif);font-size:19px;color:var(--white);font-style:normal;line-height:1.2;margin-bottom:8px}
 .studio-name em{color:var(--accent);font-style:italic}
-.studio-meta{font-size:14px;color:#777;font-weight:300;line-height:1.7;margin-bottom:6px}
-.studio-address{font-size:14px;color:#666;font-weight:300;margin-bottom:6px}
-.studio-phone a{font-size:14px;color:#888;text-decoration:none;transition:color .2s}
+.studio-meta{font-size:14px;color:#aaa;font-weight:300;line-height:1.7;margin-bottom:6px}
+.studio-address{font-size:14px;color:#aaa;font-weight:300;margin-bottom:6px}
+.studio-phone a{font-size:14px;color:#bbb;text-decoration:none;transition:color .2s}
 .studio-phone a:hover{color:var(--white)}
-.studio-appt{font-size:11px;color:#444;letter-spacing:.08em;text-transform:uppercase;margin-top:12px}
+.studio-appt{font-size:11px;color:#888;letter-spacing:.08em;text-transform:uppercase;margin-top:12px}
 .studio-links{display:flex;flex-direction:column;gap:10px;align-items:flex-end;justify-content:center}
 .studio-link{font-family:var(--sans);font-size:13px;color:var(--accent);text-decoration:none;font-weight:500;white-space:nowrap;transition:opacity .2s}
 .studio-link:hover{opacity:.7}
@@ -247,7 +277,7 @@ nav{position:sticky;top:0;z-index:100;background:var(--black);border-bottom:1px 
 .btn-altro{font-size:14px;font-weight:500;color:var(--accent);text-decoration:none;white-space:nowrap;padding:9px 16px;border:1px solid rgba(200,0,92,.4);border-radius:6px;transition:background .15s,color .15s;flex-shrink:0}
 .btn-altro:hover{background:var(--accent);color:#fff}
 .altro-block--dark{background:rgba(255,255,255,.03);border-color:#252525}
-.altro-block--dark .altro-text{color:#555}
+.altro-block--dark .altro-text{color:#aaa}
 .altro-block--dark .btn-altro{border-color:rgba(200,0,92,.35)}
 
 /* INLINE CONV nella case-card */
@@ -262,11 +292,23 @@ nav{position:sticky;top:0;z-index:100;background:var(--black);border-bottom:1px 
 
 /* FOOTER */
 footer{background:#0a0a0a;padding:24px 32px;border-top:1px solid #1e1e1e;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
-.footer-logo{font-family:var(--serif);font-size:15px;color:#555;font-style:italic}
+.footer-logo{font-family:var(--serif);font-size:15px;color:#888;font-style:italic}
 .footer-logo em{color:#f0a0c0;font-style:italic}
 .footer-links{display:flex;gap:20px}
-.footer-links a{font-size:12px;color:#555;text-decoration:none;letter-spacing:.04em;transition:color .15s}
-.footer-links a:hover{color:#aaa}
+.footer-links a{font-size:12px;color:#888;text-decoration:none;letter-spacing:.04em;transition:color .15s}
+.footer-links a:hover{color:#ccc}
+
+/* STICKY BAR MOBILE */
+.sticky-bar{display:none;position:fixed;bottom:0;left:0;right:0;z-index:200;height:56px;transform:translateY(100%);transition:transform .3s cubic-bezier(.4,0,.2,1)}
+.sticky-bar.visible{transform:translateY(0)}
+.sticky-bar-half{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;font-family:var(--sans);font-size:15px;font-weight:500;color:#fff;text-decoration:none;transition:opacity .15s;height:100%}
+.sticky-bar-half:active{opacity:.85}
+.sticky-bar-wa{background:var(--green)}
+.sticky-bar-tel{background:var(--accent)}
+.sticky-bar-half svg{width:18px;height:18px;fill:#fff;flex-shrink:0}
+.sticky-bar-divider{width:1px;background:rgba(255,255,255,.2);height:60%;flex-shrink:0}
+@media(max-width:768px){.sticky-bar{display:flex}}
+@media(min-width:769px){.sticky-bar{display:none !important}}
 
 @media(max-width:600px){
   nav{padding:0 16px}
@@ -289,10 +331,13 @@ footer{background:#0a0a0a;padding:24px 32px;border-top:1px solid #1e1e1e;display
 </head>
 <body>
 
-<!-- SVG sprite riutilizzabile -->
+<!-- SVG sprite -->
 <svg style="display:none" aria-hidden="true">
   <symbol id="wa-ico" viewBox="0 0 24 24">
     <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+  </symbol>
+  <symbol id="phone-ico" viewBox="0 0 24 24">
+    <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/>
   </symbol>
 </svg>
 
@@ -302,6 +347,11 @@ footer{background:#0a0a0a;padding:24px 32px;border-top:1px solid #1e1e1e;display
   <div class="nav-links">
     <a href="https://healthysmile.it/prevenzione">Prevenzione</a>
     <a href="https://healthysmile.it/salva-il-tuo-dente">Non estrarre</a>
+    <span class="nav-sep"></span>
+    <a href="tel:+390112488248" class="nav-phone">
+      <svg viewBox="0 0 24 24"><use href="#phone-ico"/></svg>
+      011 2488248
+    </a>
     <a href="https://wa.me/393924076794?text=Ciao,%20ho%20visto%20il%20sito%20e%20vorrei%20informazioni%20sull%27igiene%20dentale" class="nav-cta">Scrivici</a>
   </div>
   <button class="hamburger" id="hamburger" aria-label="Menu">
@@ -313,6 +363,10 @@ footer{background:#0a0a0a;padding:24px 32px;border-top:1px solid #1e1e1e;display
   <button class="drawer-close" id="drawerClose">✕</button>
   <a href="https://healthysmile.it/prevenzione">Prevenzione</a>
   <a href="https://healthysmile.it/salva-il-tuo-dente">Non estrarre</a>
+  <a href="tel:+390112488248" class="drawer-phone">
+    <svg viewBox="0 0 24 24"><use href="#phone-ico"/></svg>
+    011 2488248
+  </a>
   <a href="https://wa.me/393924076794?text=Ciao,%20vorrei%20informazioni%20sull%27igiene%20dentale" class="drawer-cta">Scrivici su WhatsApp</a>
 </div>
 
@@ -352,11 +406,17 @@ footer{background:#0a0a0a;padding:24px 32px;border-top:1px solid #1e1e1e;display
         <span class="body-step">Cosa fare</span>
         <p>Una seduta professionale delicata rimuove completamente i depositi e lucida i denti, <strong>restituendo stabilità ai tessuti</strong> e un punto di partenza pulito su cui lavorare.</p>
       </div>
-      <a class="btn-wa" href="https://wa.me/393924076794?text=Ciao%2C%20ho%20tartaro%20e%20macchie%20e%20vorrei%20fare%20un%27igiene%20professionale." target="_blank" rel="noopener">
-        <svg viewBox="0 0 24 24"><use href="#wa-ico"/></svg>
-        Scrivici su WhatsApp
-      </a>
-      <button class="btn-ghost" data-scroll="cta">Prenota valutazione + igiene a 79€</button>
+      <div class="dual-cta">
+        <a class="btn-tel-main" href="tel:+390112488248">
+          <svg viewBox="0 0 24 24"><use href="#phone-ico"/></svg>
+          Telefona in Studio
+        </a>
+        <a class="btn-wa-alt" href="https://wa.me/393924076794?text=Ciao%2C%20ho%20tartaro%20e%20macchie%20e%20vorrei%20fare%20un%27igiene%20professionale." target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24"><use href="#wa-ico"/></svg>
+          WhatsApp
+        </a>
+      </div>
+      <button class="btn-ghost" data-scroll="cta">Oppure prenota online · valutazione + igiene a 79€</button>
       <div class="case-conv">
         <div class="conv-row-inline">
           <button class="conv-trigger-inline">Descrivi la tua situazione <span class="ct-arr">→</span></button>
@@ -390,11 +450,17 @@ footer{background:#0a0a0a;padding:24px 32px;border-top:1px solid #1e1e1e;display
         <span class="body-step">Cosa fare</span>
         <p>Una <strong>valutazione approfondita dello stato gengivale</strong> unita a una rimozione mirata del tartaro permette alle gengive di sgonfiarsi e guarire.</p>
       </div>
-      <a class="btn-wa" href="https://wa.me/393924076794?text=Ciao%2C%20le%20mie%20gengive%20sanguinano%20e%20vorrei%20capire%20cosa%20fare." target="_blank" rel="noopener">
-        <svg viewBox="0 0 24 24"><use href="#wa-ico"/></svg>
-        Scrivici su WhatsApp
-      </a>
-      <button class="btn-ghost" data-scroll="cta">Prenota valutazione + igiene a 79€</button>
+      <div class="dual-cta">
+        <a class="btn-tel-main" href="tel:+390112488248">
+          <svg viewBox="0 0 24 24"><use href="#phone-ico"/></svg>
+          Telefona in Studio
+        </a>
+        <a class="btn-wa-alt" href="https://wa.me/393924076794?text=Ciao%2C%20le%20mie%20gengive%20sanguinano%20e%20vorrei%20capire%20cosa%20fare." target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24"><use href="#wa-ico"/></svg>
+          WhatsApp
+        </a>
+      </div>
+      <button class="btn-ghost" data-scroll="cta">Oppure prenota online · valutazione + igiene a 79€</button>
       <div class="case-conv">
         <div class="conv-row-inline">
           <button class="conv-trigger-inline">Descrivi la tua situazione <span class="ct-arr">→</span></button>
@@ -428,11 +494,17 @@ footer{background:#0a0a0a;padding:24px 32px;border-top:1px solid #1e1e1e;display
         <span class="body-step">Cosa fare</span>
         <p>Una <strong>pulizia profonda elimina le nicchie batteriche</strong> e ristabilisce un ecosistema orale fresco e sano. In molti casi l'alito migliora già dopo la prima seduta.</p>
       </div>
-      <a class="btn-wa" href="https://wa.me/393924076794?text=Ciao%2C%20ho%20un%20problema%20con%20l%27alito%20e%20vorrei%20capire%20se%20dipende%20dai%20denti." target="_blank" rel="noopener">
-        <svg viewBox="0 0 24 24"><use href="#wa-ico"/></svg>
-        Scrivici su WhatsApp
-      </a>
-      <button class="btn-ghost" data-scroll="cta">Prenota valutazione + igiene a 79€</button>
+      <div class="dual-cta">
+        <a class="btn-tel-main" href="tel:+390112488248">
+          <svg viewBox="0 0 24 24"><use href="#phone-ico"/></svg>
+          Telefona in Studio
+        </a>
+        <a class="btn-wa-alt" href="https://wa.me/393924076794?text=Ciao%2C%20ho%20un%20problema%20con%20l%27alito%20e%20vorrei%20capire%20se%20dipende%20dai%20denti." target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24"><use href="#wa-ico"/></svg>
+          WhatsApp
+        </a>
+      </div>
+      <button class="btn-ghost" data-scroll="cta">Oppure prenota online · valutazione + igiene a 79€</button>
       <div class="case-conv">
         <div class="conv-row-inline">
           <button class="conv-trigger-inline">Descrivi la tua situazione <span class="ct-arr">→</span></button>
@@ -466,11 +538,17 @@ footer{background:#0a0a0a;padding:24px 32px;border-top:1px solid #1e1e1e;display
         <span class="body-step">Cosa fare</span>
         <p>Programmare una seduta e definire insieme un <strong>piano di richiamo personalizzato</strong> basato sulle tue reali necessità biologiche e ambientali.</p>
       </div>
-      <a class="btn-wa" href="https://wa.me/393924076794?text=Ciao%2C%20vorrei%20fare%20igiene%20dentale%20professionale%20per%20prevenzione." target="_blank" rel="noopener">
-        <svg viewBox="0 0 24 24"><use href="#wa-ico"/></svg>
-        Scrivici su WhatsApp
-      </a>
-      <button class="btn-ghost" data-scroll="cta">Prenota valutazione + igiene a 79€</button>
+      <div class="dual-cta">
+        <a class="btn-tel-main" href="tel:+390112488248">
+          <svg viewBox="0 0 24 24"><use href="#phone-ico"/></svg>
+          Telefona in Studio
+        </a>
+        <a class="btn-wa-alt" href="https://wa.me/393924076794?text=Ciao%2C%20vorrei%20fare%20igiene%20dentale%20professionale%20per%20prevenzione." target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24"><use href="#wa-ico"/></svg>
+          WhatsApp
+        </a>
+      </div>
+      <button class="btn-ghost" data-scroll="cta">Oppure prenota online · valutazione + igiene a 79€</button>
       <div class="case-conv">
         <div class="conv-row-inline">
           <button class="conv-trigger-inline">Descrivi la tua situazione <span class="ct-arr">→</span></button>
@@ -504,11 +582,17 @@ footer{background:#0a0a0a;padding:24px 32px;border-top:1px solid #1e1e1e;display
         <span class="body-step">Cosa fare</span>
         <p>Una seduta approfondita ma condotta con la <strong>massima delicatezza</strong> per ripartire da zero con una bocca fresca, pulita e monitorata. Niente fretta, niente paura.</p>
       </div>
-      <a class="btn-wa" href="https://wa.me/393924076794?text=Ciao%2C%20non%20faccio%20igiene%20dentale%20da%20molto%20tempo%20e%20vorrei%20tornare%20a%20farla." target="_blank" rel="noopener">
-        <svg viewBox="0 0 24 24"><use href="#wa-ico"/></svg>
-        Scrivici su WhatsApp
-      </a>
-      <button class="btn-ghost" data-scroll="cta">Prenota valutazione + igiene a 79€</button>
+      <div class="dual-cta">
+        <a class="btn-tel-main" href="tel:+390112488248">
+          <svg viewBox="0 0 24 24"><use href="#phone-ico"/></svg>
+          Telefona in Studio
+        </a>
+        <a class="btn-wa-alt" href="https://wa.me/393924076794?text=Ciao%2C%20non%20faccio%20igiene%20dentale%20da%20molto%20tempo%20e%20vorrei%20tornare%20a%20farla." target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24"><use href="#wa-ico"/></svg>
+          WhatsApp
+        </a>
+      </div>
+      <button class="btn-ghost" data-scroll="cta">Oppure prenota online · valutazione + igiene a 79€</button>
       <div class="case-conv">
         <div class="conv-row-inline">
           <button class="conv-trigger-inline">Descrivi la tua situazione <span class="ct-arr">→</span></button>
@@ -548,6 +632,18 @@ footer{background:#0a0a0a;padding:24px 32px;border-top:1px solid #1e1e1e;display
       </div>
       <div class="price-right">
         <p class="price-text"><strong>Trasparenza dall'inizio alla fine.</strong> Nessuna sorpresa, nessun costo nascosto e nessun trattamento non necessario proposto a fine seduta per gonfiare il conto. È la tariffa corretta per dedicare tutto il tempo necessario alla salute della tua bocca, includendo lo <strong>screening gengivale e la mappatura digitale completa</strong>.</p>
+      </div>
+    </div>
+    <div class="price-cta">
+      <div class="dual-cta">
+        <a class="btn-tel-main" href="tel:+390112488248">
+          <svg viewBox="0 0 24 24"><use href="#phone-ico"/></svg>
+          Telefona in Studio
+        </a>
+        <a class="btn-wa-alt" href="https://wa.me/393924076794?text=Ciao%2C%20vorrei%20prenotare%20una%20valutazione%20%2B%20igiene%20dentale." target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24"><use href="#wa-ico"/></svg>
+          Scrivici su WhatsApp
+        </a>
       </div>
     </div>
   </div>
@@ -632,7 +728,7 @@ footer{background:#0a0a0a;padding:24px 32px;border-top:1px solid #1e1e1e;display
       </div>
       <div class="prog-item">
         <div class="prog-dot"></div>
-        <p class="prog-text"><strong>Gengive più infiammate</strong> — il tessuto irrita si gonfia e il bordo gengivale arretra</p>
+        <p class="prog-text"><strong>Gengive più infiammate</strong> — il tessuto si gonfia e il bordo gengivale arretra</p>
       </div>
       <div class="prog-item">
         <div class="prog-dot"></div>
@@ -705,7 +801,16 @@ footer{background:#0a0a0a;padding:24px 32px;border-top:1px solid #1e1e1e;display
     <div class="cta-body">
       <p>Il primo passo è una seduta con <strong>screening gengivale e mappatura digitale inclusi</strong>. Ti diciamo subito cosa c'è, cosa rischi se aspetti e ogni quanto ha senso tornare.</p>
     </div>
-    <a class="btn-fucsia" href="https://wa.me/393924076794?text=Ciao%2C%20vorrei%20prenotare%20una%20valutazione%20%2B%20igiene%20dentale." target="_blank" rel="noopener" id="ctaBookBtn" style="font-size:17px;padding:18px 24px">Prenota valutazione + igiene Healthy Smile a 79€</a>
+    <div class="dual-cta-lg" id="ctaBookBtns">
+      <a class="btn-tel-lg" href="tel:+390112488248" id="ctaTelBtn">
+        <svg viewBox="0 0 24 24"><use href="#phone-ico"/></svg>
+        Telefona in Studio
+      </a>
+      <a class="btn-wa-lg" href="https://wa.me/393924076794?text=Ciao%2C%20vorrei%20prenotare%20una%20valutazione%20%2B%20igiene%20dentale." target="_blank" rel="noopener" id="ctaWaBtn">
+        <svg viewBox="0 0 24 24"><use href="#wa-ico"/></svg>
+        Scrivici su WhatsApp
+      </a>
+    </div>
     <p class="cta-price-note">Tariffa chiara, zero sorprese. Include screening gengivale e mappatura digitale.</p>
     <p class="cta-wa-sec">
       <a href="https://wa.me/393924076794?text=Ciao%2C%20ho%20una%20domanda%20sull%27igiene%20dentale%20e%20vorrei%20descriverti%20la%20situazione." target="_blank" rel="noopener">
@@ -719,7 +824,7 @@ footer{background:#0a0a0a;padding:24px 32px;border-top:1px solid #1e1e1e;display
         <p class="studio-name">Healthy Smile <em>By N</em></p>
         <p class="studio-meta">Torino · San Salvario</p>
         <p class="studio-address">Via Madama Cristina 2</p>
-        <p class="studio-phone"><a href="tel:+393924076794">+39 392 407 6794</a></p>
+        <p class="studio-phone"><a href="tel:+390112488248">011 2488248</a></p>
         <p class="studio-appt">visita su appuntamento</p>
       </div>
       <div class="studio-links">
@@ -746,6 +851,19 @@ footer{background:#0a0a0a;padding:24px 32px;border-top:1px solid #1e1e1e;display
     <a href="https://www.instagram.com/healthy.smile.by.n" target="_blank" rel="noopener">Instagram</a>
   </div>
 </footer>
+
+<!-- STICKY BAR MOBILE -->
+<div class="sticky-bar" id="stickyBar" role="navigation" aria-label="Contatti rapidi">
+  <a class="sticky-bar-half sticky-bar-wa" href="https://wa.me/393924076794?text=Ciao%2C%20vorrei%20informazioni%20sull%27igiene%20dentale" target="_blank" rel="noopener" aria-label="Scrivici su WhatsApp">
+    <svg viewBox="0 0 24 24"><use href="#wa-ico"/></svg>
+    WhatsApp
+  </a>
+  <div class="sticky-bar-divider"></div>
+  <a class="sticky-bar-half sticky-bar-tel" href="tel:+390112488248" aria-label="Chiama lo studio">
+    <svg viewBox="0 0 24 24"><use href="#phone-ico"/></svg>
+    Chiama Studio
+  </a>
+</div>
 
 <script>
 /* CONFIG AGENTE */
@@ -916,14 +1034,25 @@ document.getElementById('mainContinue').addEventListener('click', function() {
   );
 });
 
-/* TRACKING: CTA prenotazione */
-document.getElementById('ctaBookBtn').addEventListener('click', function() {
+/* TRACKING: CTA telefono principale */
+document.getElementById('ctaTelBtn').addEventListener('click', function() {
   try {
     if (typeof gtag === 'function') {
-      gtag('event', 'prenota_igiene_click', { event_category: 'conversione', event_label: 'cta_finale_79' });
+      gtag('event', 'click_telefono', { event_category: 'conversion', event_label: 'Chiamata Fisso 011' });
+      gtag('event', 'conversion', { send_to: 'AW-947982327/phone_click' });
+    }
+    if (typeof clarity === 'function') clarity('event', 'click_fisso_cta');
+  } catch(_) {}
+});
+
+/* TRACKING: CTA WhatsApp principale */
+document.getElementById('ctaWaBtn').addEventListener('click', function() {
+  try {
+    if (typeof gtag === 'function') {
+      gtag('event', 'prenota_igiene_click', { event_category: 'conversione', event_label: 'cta_finale_wa_79' });
       gtag('event', 'conversion', { send_to: 'AW-947982327/whatsapp_click' });
     }
-    if (typeof clarity === 'function') clarity('event', 'prenota_igiene_click');
+    if (typeof clarity === 'function') clarity('event', 'prenota_igiene_wa_click');
   } catch(_) {}
 });
 
@@ -937,7 +1066,7 @@ document.querySelectorAll('#altroProblem, .altro-block .btn-altro').forEach(func
   });
 });
 
-/* TRACKING WHATSAPP */
+/* TRACKING WHATSAPP — tutti i link wa.me */
 document.querySelectorAll('a[href*="wa.me"]').forEach(function(el) {
   el.addEventListener('click', function() {
     try {
@@ -950,15 +1079,15 @@ document.querySelectorAll('a[href*="wa.me"]').forEach(function(el) {
   });
 });
 
-/* TRACKING TELEFONO */
-document.querySelectorAll('a[href^="tel:"]').forEach(function(el) {
+/* TRACKING TELEFONO FISSO — tutti i link tel:+390112488248 */
+document.querySelectorAll('a[href="tel:+390112488248"]').forEach(function(el) {
   el.addEventListener('click', function() {
     try {
       if (typeof gtag === 'function') {
-        gtag('event', 'phone_click', { event_category: 'conversione', event_label: el.getAttribute('href') });
+        gtag('event', 'click_telefono', { event_category: 'conversion', event_label: 'Chiamata Fisso 011' });
         gtag('event', 'conversion', { send_to: 'AW-947982327/phone_click' });
       }
-      if (typeof clarity === 'function') clarity('event', 'phone_click');
+      if (typeof clarity === 'function') clarity('event', 'click_fisso_011');
     } catch(_) {}
   });
 });
@@ -990,6 +1119,21 @@ document.querySelectorAll('a[href^="tel:"]').forEach(function(el) {
       } catch(_) {}
     }, sec * 1000);
   });
+})();
+
+/* STICKY BAR — appare dopo 120px di scroll, solo mobile */
+(function() {
+  var stickyBar = document.getElementById('stickyBar');
+  var lastScroll = 0;
+  var shown = false;
+  window.addEventListener('scroll', function() {
+    var current = window.scrollY;
+    if (current > 120 && !shown) {
+      stickyBar.classList.add('visible');
+      shown = true;
+    }
+    lastScroll = current;
+  }, { passive: true });
 })();
 
 /* MOBILE DRAWER */
