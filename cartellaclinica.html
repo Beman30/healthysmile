@@ -341,6 +341,48 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--gray-50);color:
   .tab{font-size:11px;padding:6px 10px}
 }
 
+/* ── AI DETTATURA ── */
+.ai-rec-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+.ai-status{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:12px;font-size:12px;font-weight:500}
+.ai-s-idle{background:var(--gray-100);color:var(--gray-500)}
+.ai-s-rec{background:var(--red-light);color:var(--red)}
+.ai-s-proc{background:var(--amber-light);color:var(--amber)}
+.ai-s-done{background:var(--teal-light);color:var(--teal)}
+.ai-dot{width:7px;height:7px;border-radius:50%;background:currentColor}
+.ai-s-rec .ai-dot{animation:aiblink 1s infinite}
+@keyframes aiblink{0%,100%{opacity:1}50%{opacity:.2}}
+.ai-timer{font-family:'DM Mono',monospace;font-size:12px;color:var(--gray-500);padding:3px 7px;background:var(--gray-100);border-radius:4px}
+.ai-btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:var(--r-sm);font-size:12px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;border:none;transition:all .15s}
+.ai-btn:disabled{opacity:.5;cursor:not-allowed}
+.ai-btn-rec{background:var(--red);color:white}
+.ai-btn-rec:hover:not(:disabled){background:#a12020}
+.ai-btn-stop{background:#4b5563;color:white}
+.ai-btn-stop:hover{background:#374151}
+.ai-btn-primary{background:var(--teal);color:white}
+.ai-btn-primary:hover:not(:disabled){background:#0a5040}
+.ai-btn-outline{background:none;border:var(--border);color:var(--gray-700)}
+.ai-btn-outline:hover{background:var(--gray-100)}
+.ai-btn-warn{background:var(--amber-light);color:var(--amber);border:1px solid var(--amber)}
+.ai-btn-warn:hover{background:#fde8b4}
+.ai-err{background:var(--red-light);color:var(--red);border-radius:var(--r-sm);padding:8px 12px;font-size:12px;margin-bottom:8px;display:none}
+.ai-proposal-box{background:var(--gray-50);border:var(--border);border-radius:var(--r-sm);overflow:hidden;margin-bottom:12px}
+.ai-prop-head{padding:8px 14px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;display:flex;align-items:center;justify-content:space-between}
+.ai-prop-head.blue{background:var(--blue-light);color:var(--blue)}
+.ai-prop-head.amber{background:var(--amber-light);color:var(--amber)}
+.ai-prop-body{padding:14px}
+.ai-orig-box{background:var(--white);border:var(--border);border-radius:var(--r-sm);padding:8px 12px;font-size:12px;color:var(--gray-500);margin-bottom:12px;line-height:1.6;white-space:pre-wrap}
+.ai-table{width:100%;border-collapse:collapse;font-size:12px}
+.ai-table th{padding:6px 8px;text-align:left;background:#f8fafc;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--gray-500);border-bottom:var(--border);white-space:nowrap}
+.ai-table td{padding:6px 8px;border-bottom:var(--border);vertical-align:middle}
+.ai-table tr:last-child td{border-bottom:none}
+.ai-table select,.ai-table input[type=text],.ai-table input[type=number]{padding:4px 7px;border:var(--border);border-radius:4px;font-size:12px;font-family:'DM Sans',sans-serif;outline:none;transition:border-color .15s;background:white}
+.ai-table select:focus,.ai-table input:focus{border-color:var(--teal)}
+.ai-conf-warn{background:var(--amber-light);border-left:3px solid var(--amber);padding:4px 8px;border-radius:0 4px 4px 0;font-size:11px;color:var(--amber);font-weight:600}
+.ai-spin{display:inline-block;width:14px;height:14px;border:2px solid var(--gray-300);border-top-color:var(--teal);border-radius:50%;animation:aispin .7s linear infinite;flex-shrink:0}
+@keyframes aispin{to{transform:rotate(360deg)}}
+.ai-prest-sel{min-width:180px;width:100%}
+.ai-row-conf select{border-color:var(--amber)}
+
 </style>
   <\!-- Firebase SDK (compat) -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -402,6 +444,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--gray-50);color:
           <button class="tab"     onclick="openPreventivoTab()">Preventivo</button>
           <button class="tab"     onclick="switchTab('diario')">Diario clinico</button>
           <button class="tab"     onclick="switchTab('documenti')">Documenti</button>
+          <button class="tab"     onclick="switchTab('ai')">🤖 AI Dettatura</button>
         </div>
 
         <!-- ANAGRAFICA -->
@@ -598,6 +641,105 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--gray-50);color:
             <div class="doc-grid" id="doc-grid"></div>
           </div>
         </div>
+
+        <!-- AI DETTATURA -->
+        <div id="tab-ai" style="display:none">
+
+          <!-- Registra situazione attuale -->
+          <div class="card">
+            <div class="card-title">
+              <span>🎙 Registra situazione attuale</span>
+            </div>
+            <div style="font-size:12px;color:var(--gray-500);margin-bottom:10px">Ditta vocalmente la situazione clinica dente per dente (es. "dente 16 otturato, dente 26 corona in zirconio…")</div>
+            <div class="ai-rec-row">
+              <button class="ai-btn ai-btn-rec" id="ai-btn-rec-sit" onclick="aiStartRec('sit')">
+                <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><circle cx="5.5" cy="5.5" r="2.8" fill="white"/><circle cx="5.5" cy="5.5" r="5" stroke="white" stroke-width=".9"/></svg>
+                Registra
+              </button>
+              <button class="ai-btn ai-btn-stop" id="ai-btn-stop-sit" onclick="aiStopRec('sit')" style="display:none">
+                <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><rect x="1.5" y="1.5" width="8" height="8" rx="1.5" fill="white"/></svg>
+                Stop
+              </button>
+              <div class="ai-status ai-s-idle" id="ai-st-sit"><div class="ai-dot"></div><span>Inattivo</span></div>
+              <span class="ai-timer" id="ai-tm-sit" style="display:none">00:00</span>
+            </div>
+            <div class="ai-err" id="ai-err-sit"></div>
+            <div class="fg"><label>Trascrizione (modificabile)</label><textarea id="ai-tx-sit" style="min-height:80px" placeholder="La trascrizione apparirà qui. Puoi modificarla."></textarea></div>
+          </div>
+
+          <!-- Registra piano terapie -->
+          <div class="card">
+            <div class="card-title">
+              <span>🎙 Registra piano terapie</span>
+            </div>
+            <div style="font-size:12px;color:var(--gray-500);margin-bottom:10px">Ditta le terapie da eseguire (es. "dente 36 otturazione di seconda classe, dente 46 estrazione semplice…")</div>
+            <div class="ai-rec-row">
+              <button class="ai-btn ai-btn-rec" id="ai-btn-rec-ter" onclick="aiStartRec('ter')">
+                <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><circle cx="5.5" cy="5.5" r="2.8" fill="white"/><circle cx="5.5" cy="5.5" r="5" stroke="white" stroke-width=".9"/></svg>
+                Registra
+              </button>
+              <button class="ai-btn ai-btn-stop" id="ai-btn-stop-ter" onclick="aiStopRec('ter')" style="display:none">
+                <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><rect x="1.5" y="1.5" width="8" height="8" rx="1.5" fill="white"/></svg>
+                Stop
+              </button>
+              <div class="ai-status ai-s-idle" id="ai-st-ter"><div class="ai-dot"></div><span>Inattivo</span></div>
+              <span class="ai-timer" id="ai-tm-ter" style="display:none">00:00</span>
+            </div>
+            <div class="ai-err" id="ai-err-ter"></div>
+            <div class="fg"><label>Trascrizione (modificabile)</label><textarea id="ai-tx-ter" style="min-height:80px" placeholder="La trascrizione apparirà qui. Puoi modificarla."></textarea></div>
+          </div>
+
+          <!-- Pulsante analisi -->
+          <div style="display:flex;justify-content:flex-end;margin-bottom:1rem">
+            <button class="ai-btn ai-btn-primary" id="ai-btn-analizza" onclick="aiAvviaAnalisi()" style="padding:10px 22px;font-size:13px">
+              <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 1.5C3.7 1.5 1.5 3.7 1.5 6.5S3.7 11.5 6.5 11.5 11.5 9.3 11.5 6.5" stroke="white" stroke-width="1.6" stroke-linecap="round"/><path d="M9 2.5l2.5-.5-.5 2.5" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Analizza con AI
+            </button>
+          </div>
+
+          <!-- Risultati AI -->
+          <div id="ai-results" style="display:none">
+
+            <!-- Proposta situazione attuale -->
+            <div class="ai-proposal-box" id="ai-prop-sit">
+              <div class="ai-prop-head blue">
+                <span>Situazione attuale — proposta AI</span>
+                <div class="ai-status ai-s-proc" id="ai-badge-sit"><div class="ai-dot"></div><span>Elaborazione…</span></div>
+              </div>
+              <div class="ai-prop-body">
+                <div style="font-size:10px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px">Dettatura originale</div>
+                <div class="ai-orig-box" id="ai-orig-sit"></div>
+                <div style="font-size:10px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px">Proposta AI — modificabile</div>
+                <div id="ai-table-sit"><div style="display:flex;align-items:center;gap:8px;padding:20px;color:var(--gray-500);font-size:13px"><div class="ai-spin"></div>Analisi in corso…</div></div>
+              </div>
+            </div>
+
+            <!-- Proposta piano terapie -->
+            <div class="ai-proposal-box" id="ai-prop-ter">
+              <div class="ai-prop-head amber">
+                <span>Piano terapie — proposta AI</span>
+                <div class="ai-status ai-s-proc" id="ai-badge-ter"><div class="ai-dot"></div><span>Elaborazione…</span></div>
+              </div>
+              <div class="ai-prop-body">
+                <div style="font-size:10px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px">Dettatura originale</div>
+                <div class="ai-orig-box" id="ai-orig-ter"></div>
+                <div style="font-size:10px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px">Proposta AI + Listino — modificabile</div>
+                <div id="ai-table-ter"><div style="display:flex;align-items:center;gap:8px;padding:20px;color:var(--gray-500);font-size:13px"><div class="ai-spin"></div>Analisi in corso…</div></div>
+              </div>
+            </div>
+
+            <!-- Pulsante conferma -->
+            <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:4px;margin-bottom:2rem">
+              <button class="ai-btn ai-btn-outline" onclick="document.getElementById('ai-results').style.display='none'">Annulla</button>
+              <button class="ai-btn ai-btn-primary" id="ai-btn-conferma" onclick="aiConferma()" style="padding:10px 22px;font-size:13px">
+                <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 6.5l3.5 3.5 5.5-6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                Applica all'odontogramma e al preventivo
+              </button>
+            </div>
+
+          </div><!-- /ai-results -->
+
+        </div><!-- /tab-ai -->
 
       </div><!-- /record -->
     </main>
@@ -1901,11 +2043,11 @@ async function handleUpload(files) {
 // TABS
 // ════════════════════════════════════════════════════════════
 function switchTab(name) {
-  ['anagrafica','odontogramma','preventivo','diario','documenti'].forEach(t=>{
+  ['anagrafica','odontogramma','preventivo','diario','documenti','ai'].forEach(t=>{
     document.getElementById('tab-'+t).style.display = t===name?'':'none';
   });
   document.querySelectorAll('.tab').forEach((b,i)=>{
-    b.classList.toggle('on',['anagrafica','odontogramma','preventivo','diario','documenti'][i]===name);
+    b.classList.toggle('on',['anagrafica','odontogramma','preventivo','diario','documenti','ai'][i]===name);
   });
 }
 
