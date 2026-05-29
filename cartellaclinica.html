@@ -2979,7 +2979,6 @@ function aiRenderPiano(data) {
 
       return terapieArr.map((ter, idx) => {
         const rowKey = `${num}_${idx}`;
-        // Usa id_listino restituito dall'AI, con fallback al vecchio matching
         const aiId = ter.id_listino || '';
         const fallback = aiMatchPiano(ter.stato) || aiMatchPiano(ter.note || '');
         const matchedId = aiId || (fallback ? fallback.id : '');
@@ -2988,16 +2987,22 @@ function aiRenderPiano(data) {
         const matchedPrezzo = matched ? (matched.prezzo || 0) : 0;
         const rowBg = daConfermare ? 'background:var(--amber-light)' : '';
         const opts = `<option value="">— non aggiungere —</option>${TR_PIANO.map(t=>`<option value="${t.id}" data-prezzo="${t.prezzo||0}"${t.id===matchedId?' selected':''}>${t.label} — €${t.prezzo||0}</option>`).join('')}`;
-        const addBtn = daConfermare
-          ? `<button onclick="aiApriAggiungiListino('${rowKey}','ter',this)" style="margin-top:4px;display:block;background:var(--teal);color:white;border:none;border-radius:4px;padding:3px 8px;font-size:11px;cursor:pointer;font-weight:600">+ Aggiungi al listino</button>`
+
+        // Riga non trovata: mostra campo testo pre-compilato → verrà auto-salvato al confirm
+        const nuovaPrestazioneHtml = daConfermare
+          ? `<div style="margin-top:5px;display:flex;align-items:center;gap:4px">
+               <span style="font-size:10px;color:var(--amber);font-weight:600">Salva come nuova:</span>
+               <input id="ai-ter-newlabel-${rowKey}" type="text" value="${esc(ter.stato)}" placeholder="Nome prestazione" style="flex:1;border:1px solid var(--amber);border-radius:4px;padding:3px 6px;font-size:11px;outline:none">
+               <input id="ai-ter-newsym-${rowKey}" type="text" value="${(ter.stato||'').slice(0,2).toUpperCase()}" placeholder="SYM" maxlength="3" style="width:36px;border:1px solid var(--amber);border-radius:4px;padding:3px 4px;font-size:11px;text-align:center;outline:none">
+             </div>`
           : '';
 
         return `<tr style="${rowBg}" id="ai-ter-row-${rowKey}">
           <td>${idx===0 ? `<input type="number" id="ai-ter-num-${rowKey}" value="${num}" min="11" max="48" style="width:52px;border:var(--border);border-radius:4px;padding:4px 6px;font-size:13px;font-family:'DM Mono',monospace;font-weight:700;text-align:center;outline:none" title="Modifica numero dente">` : ''}</td>
           <td style="font-size:11px;color:var(--gray-500);max-width:140px">${esc(ter.stato)}${ter.note&&ter.note!==ter.stato?' — '+esc(ter.note):''}</td>
           <td>
-            <select id="ai-ter-sel-${rowKey}" class="ai-prest-sel" onchange="aiAggiornaPrezzoRiga('${rowKey}',this)">${opts}</select>
-            ${addBtn}
+            <select id="ai-ter-sel-${rowKey}" class="ai-prest-sel" onchange="aiAggiornaPrezzoRiga('${rowKey}',this);if(this.value)this.closest('td').querySelector('.ai-ter-new')?.remove()">${opts}</select>
+            ${daConfermare ? `<div class="ai-ter-new">${nuovaPrestazioneHtml}</div>` : ''}
           </td>
           <td><input type="number" id="ai-ter-qta-${rowKey}" value="1" min="1" style="width:50px"></td>
           <td><input type="number" id="ai-ter-prezzo-${rowKey}" value="${matchedPrezzo}" step="0.01" min="0" style="width:80px" placeholder="€"></td>
@@ -3312,13 +3317,41 @@ async function aiConferma() {
     // Raccoglie per dente tutte le terapie confermate → per salvare protocolli
     const terapiePerDente = {}; // num → [{tid, label, wasAI: bool}]
 
+    // Prima passa: auto-crea prestazioni nuove (righe senza match listino)
+    for (const { rowKey } of terRows) {
+      const sel       = document.getElementById(`ai-ter-sel-${rowKey}`);
+      const labelEl   = document.getElementById(`ai-ter-newlabel-${rowKey}`);
+      const symEl     = document.getElementById(`ai-ter-newsym-${rowKey}`);
+      const prezEl    = document.getElementById(`ai-ter-prezzo-${rowKey}`);
+      if (!sel || sel.value || !labelEl) continue; // ha già una corrispondenza
+      if (!document.getElementById(`ai-ter-row-${rowKey}`)) continue; // rimossa
+      const label  = (labelEl.value || '').trim();
+      const sym    = (symEl?.value || label.slice(0,2)).trim().toUpperCase();
+      const prezzo = parseFloat(prezEl?.value || 0) || 0;
+      if (!label) continue;
+      const id = 'ai_' + label.toLowerCase().replace(/[^a-z0-9]+/g,'_').slice(0,30) + '_' + Date.now().toString(36);
+      const nuova = { id, label, sym, color: '#686864', bg: '#EFEDE7', prezzo, tipo: 'piano' };
+      TR_PIANO.push(nuova);
+      // Seleziona la nuova voce nella select
+      const opt = document.createElement('option');
+      opt.value = id; opt.selected = true;
+      opt.setAttribute('data-prezzo', prezzo);
+      opt.textContent = label + ` — €${prezzo}`;
+      sel.appendChild(opt);
+      sel.value = id;
+      sel.closest('tr').style.background = '';
+    }
+    // Salva listino aggiornato in background
+    savePrestazioni().catch(() => {});
+    buildLegend();
+
     terRows.forEach(({ rowKey, num: numOrig }) => {
       const sel    = document.getElementById(`ai-ter-sel-${rowKey}`);
       const qtaEl  = document.getElementById(`ai-ter-qta-${rowKey}`);
       const prezEl = document.getElementById(`ai-ter-prezzo-${rowKey}`);
       const numEl  = document.getElementById(`ai-ter-num-${rowKey}`);
       const num    = (numEl && numEl.value) ? numEl.value : numOrig;
-      if (!sel || !sel.value || !document.getElementById(`ai-ter-row-${rowKey}`)) return; // riga rimossa
+      if (!sel || !sel.value || !document.getElementById(`ai-ter-row-${rowKey}`)) return;
 
       const tid    = sel.value;
       const qta    = parseFloat(qtaEl?.value || 1) || 1;
