@@ -2813,12 +2813,13 @@ async function aiAvviaAnalisi() {
   const pazCodice = gv('f-codice') || currentId;
   const listinoAtt = TR_ATTUALE.map(t => ({ id: t.id, label: t.label }));
   const listinoPia = TR_PIANO.map(t => ({ id: t.id, label: t.label, ...(t.prezzo != null ? { prezzo: t.prezzo } : {}) }));
-  const [esempiSit, esempiTer, protocolliGrouped] = await Promise.all([
-    aiCaricaMapping('situazione_attuale'),
-    aiCaricaMapping('terapie_da_attuare'),
-    aiCaricaProtocolli()
+
+  // Carica esempi e protocolli — errori non bloccano l'analisi
+  const [esempiSit, esempiTer] = await Promise.all([
+    aiCaricaMapping('situazione_attuale').catch(() => []),
+    aiCaricaMapping('terapie_da_attuare').catch(() => [])
   ]);
-  // Serializza i protocolli per il Worker: array di {trigger_id, trigger_label, varianti:[{terapie,count}]}
+  const protocolliGrouped = await aiCaricaProtocolli().catch(() => ({}));
   const protocolli = Object.values(protocolliGrouped).map(varianti => ({
     trigger_id:    varianti[0].trigger_id,
     trigger_label: varianti[0].trigger_label,
