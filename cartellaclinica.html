@@ -2813,11 +2813,18 @@ async function aiAvviaAnalisi() {
   const pazCodice = gv('f-codice') || currentId;
   const listinoAtt = TR_ATTUALE.map(t => ({ id: t.id, label: t.label }));
   const listinoPia = TR_PIANO.map(t => ({ id: t.id, label: t.label, ...(t.prezzo != null ? { prezzo: t.prezzo } : {}) }));
-  const [esempiSit, esempiTer, protocolli] = await Promise.all([
+  const [esempiSit, esempiTer, protocolliGrouped] = await Promise.all([
     aiCaricaMapping('situazione_attuale'),
     aiCaricaMapping('terapie_da_attuare'),
     aiCaricaProtocolli()
   ]);
+  // Serializza i protocolli per il Worker: array di {trigger_id, trigger_label, varianti:[{terapie,count}]}
+  const protocolli = Object.values(protocolliGrouped).map(varianti => ({
+    trigger_id:    varianti[0].trigger_id,
+    trigger_label: varianti[0].trigger_label,
+    varianti:      varianti.map(v => ({ terapie: v.terapie, count: v.count || 1 }))
+                           .sort((a,b) => b.count - a.count)
+  }));
 
   // Unica chiamata al Worker con tipo nota_completa
   try {
@@ -3185,21 +3192,33 @@ async function aiSalvaMapping(correzioni) {
   }
 }
 
-// ── Protocolli: quando una terapia AI porta più terapie confermate ──
-// Struttura: ai_protocols/{trigger_id} → { trigger_id, terapie: [{id, label}], count }
+// ── Protocolli con varianti per trigger ──
+// Doc ID: {trigger_id}__{hash_sorted_ids} → variante unica
+// Così "impianto+TAC+abutment+corona" e "impianto+abutment+corona" sono doc separati
 let _aiProtocolliCache = null;
 let _aiProtocolliCacheTs = 0;
+
+function _protocolloHash(terapie) {
+  return terapie.map(t => t.id).sort().join('__');
+}
 
 async function aiCaricaProtocolli() {
   if (_aiProtocolliCache && Date.now() - _aiProtocolliCacheTs < 5 * 60 * 1000) return _aiProtocolliCache;
   try {
-    const snap = await db.collection('ai_protocols').orderBy('count','desc').limit(30).get();
-    _aiProtocolliCache = snap.docs.map(d => d.data());
+    const snap = await db.collection('ai_protocols').orderBy('count','desc').limit(60).get();
+    const docs = snap.docs.map(d => d.data());
+    // Raggruppa per trigger_id, ordinate per count desc
+    const grouped = {};
+    docs.forEach(d => {
+      if (!grouped[d.trigger_id]) grouped[d.trigger_id] = [];
+      grouped[d.trigger_id].push(d);
+    });
+    _aiProtocolliCache = grouped;
     _aiProtocolliCacheTs = Date.now();
-    return _aiProtocolliCache;
+    return grouped;
   } catch(e) {
     console.warn('ai_protocols load error:', e.message);
-    return [];
+    return {};
   }
 }
 
@@ -3208,7 +3227,10 @@ async function aiSalvaProtocolli(protocolli) {
   if (!protocolli.length) return;
   const batch = db.batch();
   protocolli.forEach(p => {
-    const ref = db.collection('ai_protocols').doc(p.trigger_id);
+    // Doc ID univoco per variante: trigger + hash del pacchetto
+    const hash  = _protocolloHash(p.terapie);
+    const docId = `${p.trigger_id}__${hash}`;
+    const ref   = db.collection('ai_protocols').doc(docId);
     batch.set(ref, {
       trigger_id:    p.trigger_id,
       trigger_label: p.trigger_label || '',
