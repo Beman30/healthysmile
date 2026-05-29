@@ -687,7 +687,10 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--gray-50);color:
             <div class="ai-proposal-box" id="ai-prop-sit">
               <div class="ai-prop-head blue">
                 <span>Situazione attuale — proposta AI</span>
-                <div class="ai-status ai-s-proc" id="ai-badge-sit"><div class="ai-dot"></div><span>Elaborazione…</span></div>
+                <div style="display:flex;align-items:center;gap:8px">
+                  <button onclick="aiApriModalNuovaPrestazioneTipo('attuale')" style="background:white;color:#2563eb;border:1px solid #93c5fd;border-radius:4px;padding:2px 9px;font-size:11px;cursor:pointer;font-weight:600">+ Nuova prestazione</button>
+                  <div class="ai-status ai-s-proc" id="ai-badge-sit"><div class="ai-dot"></div><span>Elaborazione…</span></div>
+                </div>
               </div>
               <div class="ai-prop-body">
                 <div id="ai-table-sit"><div style="display:flex;align-items:center;gap:8px;padding:20px;color:var(--gray-500);font-size:13px"><div class="ai-spin"></div>Analisi in corso…</div></div>
@@ -698,7 +701,10 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--gray-50);color:
             <div class="ai-proposal-box" id="ai-prop-ter">
               <div class="ai-prop-head amber">
                 <span>Piano terapie proposto — modificabile</span>
-                <div class="ai-status ai-s-proc" id="ai-badge-ter"><div class="ai-dot"></div><span>Elaborazione…</span></div>
+                <div style="display:flex;align-items:center;gap:8px">
+                  <button onclick="aiApriModalNuovaPrestazioneTipo('piano')" style="background:white;color:#92400e;border:1px solid #fcd34d;border-radius:4px;padding:2px 9px;font-size:11px;cursor:pointer;font-weight:600">+ Nuova prestazione</button>
+                  <div class="ai-status ai-s-proc" id="ai-badge-ter"><div class="ai-dot"></div><span>Elaborazione…</span></div>
+                </div>
               </div>
               <div class="ai-prop-body">
                 <div id="ai-sommario-nota" style="margin-bottom:10px"></div>
@@ -2175,25 +2181,43 @@ function savePrestazioneLine() {
   buildLegend();
   setTimeout(() => savePrestazioni().catch(e => notify('Errore salvataggio: '+e.message,'err')), 300);
 
-  // Se era stato aperto da una riga AI, aggiorna quella select
+  // Aggiorna tutte le select AI già renderizzate con la nuova voce
+  if (idx < 0) {
+    if (tipo === 'piano' || tipo === 'arcata' || tipo === 'quadrante') {
+      document.querySelectorAll('[id^="ai-ter-sel-"]').forEach(sel => {
+        if (!sel.querySelector(`option[value="${id}"]`)) {
+          const opt = document.createElement('option');
+          opt.value = id; opt.setAttribute('data-prezzo', prezzo);
+          opt.textContent = `${label} — €${prezzo}`;
+          sel.appendChild(opt);
+        }
+      });
+    }
+    if (tipo === 'attuale') {
+      document.querySelectorAll('[id^="ai-sit-sel-"]').forEach(sel => {
+        if (!sel.querySelector(`option[value="${id}"]`)) {
+          const opt = document.createElement('option');
+          opt.value = id; opt.textContent = label;
+          sel.appendChild(opt);
+        }
+      });
+    }
+  }
+
+  // Se era stato aperto da una riga AI specifica, seleziona la voce e chiudi
   const aiRowKey = document.getElementById('pe-ai-rowkey')?.value;
-  if (aiRowKey && idx < 0 && (tipo === 'piano' || tipo === 'arcata' || tipo === 'quadrante')) {
-    const sel = document.getElementById(`ai-ter-sel-${aiRowKey}`);
-    if (sel) {
-      const opt = document.createElement('option');
-      opt.value = id;
-      opt.setAttribute('data-prezzo', prezzo);
-      opt.textContent = `${label} — €${prezzo}`;
-      opt.selected = true;
-      sel.appendChild(opt);
-      sel.value = id;
-      sel.closest('tr').style.background = '';
-      // Aggiorna prezzo
+  if (aiRowKey && idx < 0) {
+    const selTer = document.getElementById(`ai-ter-sel-${aiRowKey}`);
+    if (selTer && selTer.querySelector(`option[value="${id}"]`)) {
+      selTer.value = id;
+      selTer.closest('tr').style.background = '';
       const prezEl = document.getElementById(`ai-ter-prezzo-${aiRowKey}`);
       if (prezEl && prezzo > 0) prezEl.value = prezzo;
     }
     document.getElementById('prest-modal').classList.remove('open');
     notify(`"${label}" aggiunta al listino e selezionata ✓`, 'ok');
+  } else if (!aiRowKey && idx < 0) {
+    notify(`"${label}" aggiunta al listino ✓`, 'ok');
   }
   document.getElementById('pe-ai-rowkey').value = '';
 }
@@ -3051,12 +3075,23 @@ function aiRenderSituazione(data) {
 // AI — Apri modal Gestisci prestazioni per nuova voce da riga AI
 // ════════════════════════════════════════════════════════════
 function aiApriModalNuovaPrestazione(rowKey, label) {
-  document.getElementById('pe-ai-rowkey').value = rowKey;
-  document.querySelector('input[name="pe-dest"][value="piano"]').checked = true;
-  document.getElementById('pe-tipo').value   = 'piano';
+  _apriModalNuovaPrestazione(rowKey, label, 'piano');
+}
+
+function aiApriModalNuovaPrestazioneTipo(tipo) {
+  _apriModalNuovaPrestazione('', '', tipo);
+}
+
+function _apriModalNuovaPrestazione(rowKey, label, tipo) {
+  renderPrestazioniModal();
+  document.getElementById('pe-ai-rowkey').value = rowKey || '';
+  const destVal = (tipo === 'piano') ? 'piano' : 'attuale';
+  const destRadio = document.querySelector(`input[name="pe-dest"][value="${destVal}"]`);
+  if (destRadio) destRadio.checked = true;
+  document.getElementById('pe-tipo').value   = destVal;
   document.getElementById('pe-idx').value    = '-1';
-  document.getElementById('pe-label').value  = label;
-  document.getElementById('pe-sym').value    = label.slice(0,3).toUpperCase().replace(/\s/g,'');
+  document.getElementById('pe-label').value  = label || '';
+  document.getElementById('pe-sym').value    = label ? label.slice(0,3).toUpperCase().replace(/\s/g,'') : '';
   document.getElementById('pe-color').value  = '#686864';
   document.getElementById('pe-bg').value     = '#EFEDE7';
   document.getElementById('pe-prezzo').value = '';
