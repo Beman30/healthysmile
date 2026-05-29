@@ -440,11 +440,11 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--gray-50);color:
 
         <div class="tabs">
           <button class="tab on"  onclick="switchTab('anagrafica')">Anagrafica</button>
+          <button class="tab"     onclick="switchTab('ai')">🤖 AI Dettatura</button>
           <button class="tab"     onclick="switchTab('odontogramma')">Odontogramma</button>
           <button class="tab"     onclick="openPreventivoTab()">Preventivo</button>
           <button class="tab"     onclick="switchTab('diario')">Diario clinico</button>
           <button class="tab"     onclick="switchTab('documenti')">Documenti</button>
-          <button class="tab"     onclick="switchTab('ai')">🤖 AI Dettatura</button>
         </div>
 
         <!-- ANAGRAFICA -->
@@ -2020,11 +2020,11 @@ async function handleUpload(files) {
 // TABS
 // ════════════════════════════════════════════════════════════
 function switchTab(name) {
-  ['anagrafica','odontogramma','preventivo','diario','documenti','ai'].forEach(t=>{
+  ['anagrafica','ai','odontogramma','preventivo','diario','documenti'].forEach(t=>{
     document.getElementById('tab-'+t).style.display = t===name?'':'none';
   });
   document.querySelectorAll('.tab').forEach((b,i)=>{
-    b.classList.toggle('on',['anagrafica','odontogramma','preventivo','diario','documenti','ai'][i]===name);
+    b.classList.toggle('on',['anagrafica','ai','odontogramma','preventivo','diario','documenti'][i]===name);
   });
 }
 
