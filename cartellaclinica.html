@@ -2939,7 +2939,7 @@ function aiRenderSituazione(data) {
         ? `<button onclick="aiApriAggiungiListino('${num}','sit',this)" style="margin-left:6px;background:var(--teal);color:white;border:none;border-radius:4px;padding:3px 8px;font-size:11px;cursor:pointer;font-weight:600">+ Aggiungi al listino</button>`
         : '';
       return `<tr style="${rowBg}">
-        <td style="font-weight:700;font-family:'DM Mono',monospace;font-size:14px;color:var(--gray-900)">${num}</td>
+        <td><input type="number" id="ai-sit-num-${num}" value="${num}" min="11" max="48" style="width:52px;border:var(--border);border-radius:4px;padding:4px 6px;font-size:13px;font-family:'DM Mono',monospace;font-weight:700;text-align:center;outline:none" title="Modifica numero dente"></td>
         <td><code style="font-size:11px;color:var(--gray-500)">${esc(d.stato||'')}</code></td>
         <td style="white-space:nowrap">
           <select id="ai-sit-sel-${num}" style="min-width:160px" onchange="aiOnSelChange('${num}','sit',this)">${opts}</select>
@@ -3006,7 +3006,7 @@ function aiRenderPiano(data) {
           : '';
 
         return `<tr style="${rowBg}" id="ai-ter-row-${rowKey}">
-          <td style="font-weight:700;font-family:'DM Mono',monospace;font-size:14px;color:var(--gray-900)">${idx===0?num:''}</td>
+          <td>${idx===0 ? `<input type="number" id="ai-ter-num-${rowKey}" value="${num}" min="11" max="48" style="width:52px;border:var(--border);border-radius:4px;padding:4px 6px;font-size:13px;font-family:'DM Mono',monospace;font-weight:700;text-align:center;outline:none" title="Modifica numero dente">` : ''}</td>
           <td style="font-size:11px;color:var(--gray-500);max-width:140px">${esc(ter.stato)}${ter.note&&ter.note!==ter.stato?' — '+esc(ter.note):''}</td>
           <td>
             <select id="ai-ter-sel-${rowKey}" class="ai-prest-sel" onchange="aiAggiornaPrezzoRiga('${rowKey}',this)">${opts}</select>
@@ -3188,11 +3188,14 @@ async function aiConferma() {
 
   // ── Applica situazione attuale ──────────────────────────────
   if (aiProposta.sit && aiProposta.sit.denti) {
-    Object.entries(aiProposta.sit.denti).forEach(([num, d]) => {
-      const sel = document.getElementById(`ai-sit-sel-${num}`);
+    Object.entries(aiProposta.sit.denti).forEach(([numOrig, d]) => {
+      const sel    = document.getElementById(`ai-sit-sel-${numOrig}`);
       if (!sel || !sel.value) return;
-      const tid = sel.value;
-      const t   = TR_ATTUALE.find(x => x.id === tid);
+      const tid    = sel.value;
+      const t      = TR_ATTUALE.find(x => x.id === tid);
+      // Leggi il numero dente dall'input (potrebbe essere stato corretto dal medico)
+      const numEl  = document.getElementById(`ai-sit-num-${numOrig}`);
+      const num    = (numEl && numEl.value) ? numEl.value : numOrig;
       if (!teethAttuale[num]) teethAttuale[num] = [];
       if (!teethAttuale[num].includes(tid)) {
         teethAttuale[num].push(tid);
@@ -3222,10 +3225,13 @@ async function aiConferma() {
       terapieArr.forEach((ter, idx) => { aiRowData[`${num}_${idx}`] = ter; });
     });
 
-    terRows.forEach(({ rowKey, num }) => {
+    terRows.forEach(({ rowKey, num: numOrig }) => {
       const sel    = document.getElementById(`ai-ter-sel-${rowKey}`);
       const qtaEl  = document.getElementById(`ai-ter-qta-${rowKey}`);
       const prezEl = document.getElementById(`ai-ter-prezzo-${rowKey}`);
+      // Leggi il numero dente dall'input (potrebbe essere stato corretto dal medico)
+      const numEl  = document.getElementById(`ai-ter-num-${rowKey}`);
+      const num    = (numEl && numEl.value) ? numEl.value : numOrig;
       if (!sel || !sel.value) return;
 
       const tid    = sel.value;
