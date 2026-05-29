@@ -341,6 +341,48 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--gray-50);color:
   .tab{font-size:11px;padding:6px 10px}
 }
 
+/* ── AI DETTATURA ── */
+.ai-rec-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+.ai-status{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:12px;font-size:12px;font-weight:500}
+.ai-s-idle{background:var(--gray-100);color:var(--gray-500)}
+.ai-s-rec{background:var(--red-light);color:var(--red)}
+.ai-s-proc{background:var(--amber-light);color:var(--amber)}
+.ai-s-done{background:var(--teal-light);color:var(--teal)}
+.ai-dot{width:7px;height:7px;border-radius:50%;background:currentColor}
+.ai-s-rec .ai-dot{animation:aiblink 1s infinite}
+@keyframes aiblink{0%,100%{opacity:1}50%{opacity:.2}}
+.ai-timer{font-family:'DM Mono',monospace;font-size:12px;color:var(--gray-500);padding:3px 7px;background:var(--gray-100);border-radius:4px}
+.ai-btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:var(--r-sm);font-size:12px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;border:none;transition:all .15s}
+.ai-btn:disabled{opacity:.5;cursor:not-allowed}
+.ai-btn-rec{background:var(--red);color:white}
+.ai-btn-rec:hover:not(:disabled){background:#a12020}
+.ai-btn-stop{background:#4b5563;color:white}
+.ai-btn-stop:hover{background:#374151}
+.ai-btn-primary{background:var(--teal);color:white}
+.ai-btn-primary:hover:not(:disabled){background:#0a5040}
+.ai-btn-outline{background:none;border:var(--border);color:var(--gray-700)}
+.ai-btn-outline:hover{background:var(--gray-100)}
+.ai-btn-warn{background:var(--amber-light);color:var(--amber);border:1px solid var(--amber)}
+.ai-btn-warn:hover{background:#fde8b4}
+.ai-err{background:var(--red-light);color:var(--red);border-radius:var(--r-sm);padding:8px 12px;font-size:12px;margin-bottom:8px;display:none}
+.ai-proposal-box{background:var(--gray-50);border:var(--border);border-radius:var(--r-sm);overflow:hidden;margin-bottom:12px}
+.ai-prop-head{padding:8px 14px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;display:flex;align-items:center;justify-content:space-between}
+.ai-prop-head.blue{background:var(--blue-light);color:var(--blue)}
+.ai-prop-head.amber{background:var(--amber-light);color:var(--amber)}
+.ai-prop-body{padding:14px}
+.ai-orig-box{background:var(--white);border:var(--border);border-radius:var(--r-sm);padding:8px 12px;font-size:12px;color:var(--gray-500);margin-bottom:12px;line-height:1.6;white-space:pre-wrap}
+.ai-table{width:100%;border-collapse:collapse;font-size:12px}
+.ai-table th{padding:6px 8px;text-align:left;background:#f8fafc;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--gray-500);border-bottom:var(--border);white-space:nowrap}
+.ai-table td{padding:6px 8px;border-bottom:var(--border);vertical-align:middle}
+.ai-table tr:last-child td{border-bottom:none}
+.ai-table select,.ai-table input[type=text],.ai-table input[type=number]{padding:4px 7px;border:var(--border);border-radius:4px;font-size:12px;font-family:'DM Sans',sans-serif;outline:none;transition:border-color .15s;background:white}
+.ai-table select:focus,.ai-table input:focus{border-color:var(--teal)}
+.ai-conf-warn{background:var(--amber-light);border-left:3px solid var(--amber);padding:4px 8px;border-radius:0 4px 4px 0;font-size:11px;color:var(--amber);font-weight:600}
+.ai-spin{display:inline-block;width:14px;height:14px;border:2px solid var(--gray-300);border-top-color:var(--teal);border-radius:50%;animation:aispin .7s linear infinite;flex-shrink:0}
+@keyframes aispin{to{transform:rotate(360deg)}}
+.ai-prest-sel{min-width:180px;width:100%}
+.ai-row-conf select{border-color:var(--amber)}
+
 </style>
   <\!-- Firebase SDK (compat) -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -398,6 +440,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--gray-50);color:
 
         <div class="tabs">
           <button class="tab on"  onclick="switchTab('anagrafica')">Anagrafica</button>
+          <button class="tab"     onclick="switchTab('ai')">🤖 AI Dettatura</button>
           <button class="tab"     onclick="switchTab('odontogramma')">Odontogramma</button>
           <button class="tab"     onclick="openPreventivoTab()">Preventivo</button>
           <button class="tab"     onclick="switchTab('diario')">Diario clinico</button>
@@ -524,6 +567,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--gray-50);color:
               <div style="display:flex;gap:6px">
                 <button class="btn-s" onclick="importDaOdonto()">⟳ Da odontogramma</button>
                 <button class="btn-s c" onclick="addPrevRow()">+ Riga</button>
+                <button class="btn-s" onclick="prevNuovaVoceInline(this)" style="background:var(--teal-light);color:var(--teal);border-color:var(--teal)">+ Nuova voce listino</button>
                 <button class="btn-s" onclick="stampaPrev()" style="background:var(--blue-light);color:var(--blue);border-color:var(--blue)">🖨 Stampa / PDF</button>
               </div>
             </div>
@@ -598,6 +642,82 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--gray-50);color:
             <div class="doc-grid" id="doc-grid"></div>
           </div>
         </div>
+
+        <!-- AI DETTATURA -->
+        <div id="tab-ai" style="display:none">
+
+          <!-- Registra nota clinica -->
+          <div class="card">
+            <div class="card-title">
+              <span>🎙 Nota clinica vocale</span>
+            </div>
+            <div style="font-size:12px;color:var(--gray-500);margin-bottom:10px">Ditta liberamente: situazione dei denti, terapie necessarie, priorità. L'AI struttura tutto e propone il piano completo.</div>
+            <div class="ai-rec-row">
+              <button class="ai-btn ai-btn-rec" id="ai-btn-rec-nota" onclick="aiStartRec()">
+                <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><circle cx="5.5" cy="5.5" r="2.8" fill="white"/><circle cx="5.5" cy="5.5" r="5" stroke="white" stroke-width=".9"/></svg>
+                Registra
+              </button>
+              <button class="ai-btn ai-btn-stop" id="ai-btn-stop-nota" onclick="aiStopRec()" style="display:none">
+                <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><rect x="1.5" y="1.5" width="8" height="8" rx="1.5" fill="white"/></svg>
+                Stop
+              </button>
+              <div class="ai-status ai-s-idle" id="ai-st-nota"><div class="ai-dot"></div><span>Inattivo</span></div>
+              <span class="ai-timer" id="ai-tm-nota" style="display:none">00:00</span>
+            </div>
+            <div class="ai-err" id="ai-err-nota"></div>
+            <div class="fg"><label>Trascrizione (modificabile prima di analizzare)</label><textarea id="ai-tx-nota" style="min-height:90px" placeholder="La trascrizione apparirà qui. Puoi correggerla prima di inviare."></textarea></div>
+          </div>
+
+          <!-- Pulsante analisi -->
+          <div style="display:flex;justify-content:flex-end;gap:8px;margin-bottom:1rem">
+            <button class="ai-btn ai-btn-primary" id="ai-btn-analizza" onclick="aiAvviaAnalisi()" style="padding:10px 22px;font-size:13px">
+              <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 1.5C3.7 1.5 1.5 3.7 1.5 6.5S3.7 11.5 6.5 11.5 11.5 9.3 11.5 6.5" stroke="white" stroke-width="1.6" stroke-linecap="round"/><path d="M9 2.5l2.5-.5-.5 2.5" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Analizza con AI
+            </button>
+          </div>
+
+          <!-- Risultati AI -->
+          <div id="ai-results" style="display:none">
+
+            <!-- Nota originale -->
+            <div style="font-size:10px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px">Nota dettata</div>
+            <div class="ai-orig-box" id="ai-orig-nota" style="margin-bottom:16px"></div>
+
+            <!-- Proposta situazione attuale -->
+            <div class="ai-proposal-box" id="ai-prop-sit">
+              <div class="ai-prop-head blue">
+                <span>Situazione attuale — proposta AI</span>
+                <div class="ai-status ai-s-proc" id="ai-badge-sit"><div class="ai-dot"></div><span>Elaborazione…</span></div>
+              </div>
+              <div class="ai-prop-body">
+                <div id="ai-table-sit"><div style="display:flex;align-items:center;gap:8px;padding:20px;color:var(--gray-500);font-size:13px"><div class="ai-spin"></div>Analisi in corso…</div></div>
+              </div>
+            </div>
+
+            <!-- Proposta piano terapie -->
+            <div class="ai-proposal-box" id="ai-prop-ter">
+              <div class="ai-prop-head amber">
+                <span>Piano terapie proposto — modificabile</span>
+                <div class="ai-status ai-s-proc" id="ai-badge-ter"><div class="ai-dot"></div><span>Elaborazione…</span></div>
+              </div>
+              <div class="ai-prop-body">
+                <div id="ai-sommario-nota" style="margin-bottom:10px"></div>
+                <div id="ai-table-ter"><div style="display:flex;align-items:center;gap:8px;padding:20px;color:var(--gray-500);font-size:13px"><div class="ai-spin"></div>Analisi in corso…</div></div>
+              </div>
+            </div>
+
+            <!-- Pulsante conferma -->
+            <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:4px;margin-bottom:2rem">
+              <button class="ai-btn ai-btn-outline" onclick="document.getElementById('ai-results').style.display='none'">Annulla</button>
+              <button class="ai-btn ai-btn-primary" id="ai-btn-conferma" onclick="aiConferma()" style="padding:10px 22px;font-size:13px">
+                <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 6.5l3.5 3.5 5.5-6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                Applica tutto all'odontogramma e al preventivo
+              </button>
+            </div>
+
+          </div><!-- /ai-results -->
+
+        </div><!-- /tab-ai -->
 
       </div><!-- /record -->
     </main>
@@ -904,6 +1024,13 @@ const TR_PIANO_DEFAULT = [
   {id:'trattamento_locale_per_algia', label:'Trattamento locale per algia', color:'#686864', sym:'TRA', bg:'#EFEDE7', tipo:'piano', prezzo:20},
   {id:'trazionamento_canino_incluso', label:'Trazionamento Canino incluso', color:'#1A5EA8', sym:'TRA', bg:'#E8F1FD', tipo:'piano', prezzo:1000},
   {id:'valutazione_paradontale', label:'VALUTAZIONE PARADONTALE', color:'#1D9E75', sym:'VAL', bg:'#E1F5EE', tipo:'piano', prezzo:150},
+  // ── Arcate e quadranti ──────────────────────────────────────
+  {id:'arcata_superiore', label:'ARCATA SUPERIORE COMPLETA', color:'#1D9E75', sym:'AS', bg:'#E1F5EE', tipo:'piano', prezzo:0},
+  {id:'arcata_inferiore', label:'ARCATA INFERIORE COMPLETA', color:'#1D9E75', sym:'AI', bg:'#E1F5EE', tipo:'piano', prezzo:0},
+  {id:'primo_quadrante', label:'I QUADRANTE', color:'#1D9E75', sym:'Q1', bg:'#E1F5EE', tipo:'piano', prezzo:0},
+  {id:'secondo_quadrante', label:'II QUADRANTE', color:'#1D9E75', sym:'Q2', bg:'#E1F5EE', tipo:'piano', prezzo:0},
+  {id:'terzo_quadrante', label:'III QUADRANTE', color:'#1D9E75', sym:'Q3', bg:'#E1F5EE', tipo:'piano', prezzo:0},
+  {id:'quarto_quadrante', label:'IV QUADRANTE', color:'#1D9E75', sym:'Q4', bg:'#E1F5EE', tipo:'piano', prezzo:0},
 ];
 
 let TR_ATTUALE = [...TR_ATTUALE_DEFAULT];
@@ -1207,7 +1334,7 @@ async function createPatient() {
       anno:    '',
       rischio: 'basso',
       prima_visita: new Date().toISOString().split('T')[0],
-      odontogramma: '{"18":["sano"],"17":["sano"],"16":["sano"],"15":["sano"],"14":["sano"],"13":["sano"],"12":["sano"],"11":["sano"],"21":["sano"],"22":["sano"],"23":["sano"],"24":["sano"],"25":["sano"],"26":["sano"],"27":["sano"],"28":["sano"],"48":["sano"],"47":["sano"],"46":["sano"],"45":["sano"],"44":["sano"],"43":["sano"],"42":["sano"],"41":["sano"],"31":["sano"],"32":["sano"],"33":["sano"],"34":["sano"],"35":["sano"],"36":["sano"],"37":["sano"],"38":["sano"]}', arcate: '{}', piano: '{}', arcate_piano: '{}',
+      odontogramma: '{}', arcate: '{}', piano: '{}', arcate_piano: '{}',
       preventivi: '[]', diario: '[]', documenti: '[]'
     });
     setSyncPill('ok');
@@ -1901,11 +2028,11 @@ async function handleUpload(files) {
 // TABS
 // ════════════════════════════════════════════════════════════
 function switchTab(name) {
-  ['anagrafica','odontogramma','preventivo','diario','documenti'].forEach(t=>{
+  ['anagrafica','ai','odontogramma','preventivo','diario','documenti'].forEach(t=>{
     document.getElementById('tab-'+t).style.display = t===name?'':'none';
   });
   document.querySelectorAll('.tab').forEach((b,i)=>{
-    b.classList.toggle('on',['anagrafica','odontogramma','preventivo','diario','documenti'][i]===name);
+    b.classList.toggle('on',['anagrafica','ai','odontogramma','preventivo','diario','documenti'][i]===name);
   });
 }
 
@@ -2189,6 +2316,73 @@ function importDaOdonto() {
   prevRows = [...prevRows, ...newRows];
   renderPrevRows();
   notify(`${newRows.length} voci importate dall'odontogramma`,'ok');
+}
+
+function prevNuovaVoceInline(btn) {
+  // Mostra/nascondi form inline sotto i pulsanti
+  const existing = document.getElementById('prev-nuova-voce-form');
+  if (existing) { existing.remove(); return; }
+
+  const form = document.createElement('div');
+  form.id = 'prev-nuova-voce-form';
+  form.style.cssText = 'padding:10px 14px;background:var(--teal-light);border-bottom:1px solid var(--teal);display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end';
+  form.innerHTML = `
+    <div style="display:flex;flex-direction:column;gap:2px">
+      <label style="font-size:10px;font-weight:700;color:var(--teal);text-transform:uppercase;letter-spacing:.04em">Nome prestazione</label>
+      <input id="pnv-label" placeholder="es. Otturazione composito" style="width:220px;border:1px solid var(--teal);border-radius:4px;padding:5px 8px;font-size:12px;outline:none">
+    </div>
+    <div style="display:flex;flex-direction:column;gap:2px">
+      <label style="font-size:10px;font-weight:700;color:var(--teal);text-transform:uppercase;letter-spacing:.04em">Simbolo</label>
+      <input id="pnv-sym" placeholder="es. OC" maxlength="4" style="width:60px;border:1px solid var(--teal);border-radius:4px;padding:5px 8px;font-size:12px;text-align:center;outline:none">
+    </div>
+    <div style="display:flex;flex-direction:column;gap:2px">
+      <label style="font-size:10px;font-weight:700;color:var(--teal);text-transform:uppercase;letter-spacing:.04em">€ Prezzo</label>
+      <input id="pnv-prezzo" type="number" placeholder="0.00" step="0.01" min="0" style="width:90px;border:1px solid var(--teal);border-radius:4px;padding:5px 8px;font-size:12px;outline:none">
+    </div>
+    <div style="display:flex;flex-direction:column;gap:2px">
+      <label style="font-size:10px;font-weight:700;color:var(--teal);text-transform:uppercase;letter-spacing:.04em">Tipo</label>
+      <select id="pnv-tipo" style="border:1px solid var(--teal);border-radius:4px;padding:5px 8px;font-size:12px;outline:none">
+        <option value="piano">Piano trattamenti</option>
+        <option value="attuale">Situazione attuale</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:6px;padding-bottom:1px">
+      <button onclick="prevSalvaNuovaVoce()" style="background:var(--teal);color:white;border:none;border-radius:4px;padding:6px 16px;font-size:12px;font-weight:600;cursor:pointer">Salva e aggiungi riga</button>
+      <button onclick="document.getElementById('prev-nuova-voce-form').remove()" style="background:none;border:1px solid var(--gray-200);border-radius:4px;padding:6px 12px;font-size:12px;cursor:pointer;color:var(--gray-400)">Annulla</button>
+    </div>`;
+
+  // Inserisci dopo la toolbar pulsanti
+  btn.closest('div').parentNode.insertAdjacentElement('afterend', form);
+  setTimeout(() => document.getElementById('pnv-label')?.focus(), 50);
+}
+
+async function prevSalvaNuovaVoce() {
+  const label  = (document.getElementById('pnv-label')?.value || '').trim();
+  const sym    = (document.getElementById('pnv-sym')?.value || label.slice(0,3)).trim().toUpperCase();
+  const prezzo = parseFloat(document.getElementById('pnv-prezzo')?.value || 0) || 0;
+  const tipo   = document.getElementById('pnv-tipo')?.value || 'piano';
+  if (!label) { document.getElementById('pnv-label').style.borderColor='var(--red)'; return; }
+
+  const id = tipo + '_' + label.toLowerCase().replace(/[^a-z0-9]+/g,'_').slice(0,30) + '_' + Date.now().toString(36);
+  const nuova = { id, label, sym, color:'#1D9E75', bg:'#E1F5EE', prezzo, tipo };
+
+  if (tipo === 'attuale') TR_ATTUALE.push(nuova);
+  else                    TR_PIANO.push(nuova);
+
+  buildLegend();
+  document.getElementById('prev-prest-list')?.remove(); // forza rigenera datalist
+
+  try {
+    await savePrestazioni();
+    notify(`"${label}" aggiunta al listino ✓`, 'ok');
+  } catch(e) {
+    notify('Errore salvataggio: ' + e.message, 'err');
+  }
+
+  // Aggiungi subito una riga nel preventivo con questa voce
+  prevRows.push({ id:'pr_'+Date.now(), dente:'', tid:id, label, qta:1, prezzo, sconto:0 });
+  renderPrevRows();
+  document.getElementById('prev-nuova-voce-form')?.remove();
 }
 
 function addPrevRow() {
@@ -2514,6 +2708,999 @@ function closeSidebar() {
 }
 
 // Close sidebar when a patient is selected on mobile — handled in renderList
+
+// ════════════════════════════════════════════════════════════
+// AI DETTATURA — Worker URLs
+// ════════════════════════════════════════════════════════════
+const AI_WORKER_TRASCRIZIONE = 'https://trascrittore.nicolapalmia.workers.dev';
+const AI_WORKER_STRUTTURA    = 'https://odontogramma.nicolapalmia.workers.dev';
+
+// ════════════════════════════════════════════════════════════
+// AI DETTATURA — State
+// ════════════════════════════════════════════════════════════
+const AIR = { recorder: null, chunks: [], timer: null, secs: 0, active: false };
+
+// Cache dati AI per confirm
+const aiProposta = { sit: null, ter: null };
+
+// ════════════════════════════════════════════════════════════
+// AI — Recording (singola nota clinica)
+// ════════════════════════════════════════════════════════════
+async function aiStartRec() {
+  if (AIR.active) return;
+  aiHideErr('nota');
+
+  let stream;
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+  } catch(e) {
+    const msgs = {
+      NotAllowedError:  'Accesso al microfono negato.',
+      NotFoundError:    'Nessun microfono trovato.',
+      NotReadableError: 'Microfono occupato.'
+    };
+    aiShowErr('nota', msgs[e.name] || 'Impossibile accedere al microfono.');
+    return;
+  }
+
+  AIR.chunks = []; AIR.secs = 0;
+  const mime = ['audio/webm;codecs=opus','audio/webm','audio/mp4'].find(t => MediaRecorder.isTypeSupported(t)) || '';
+  try { AIR.recorder = new MediaRecorder(stream, mime ? { mimeType: mime } : {}); }
+  catch { AIR.recorder = new MediaRecorder(stream); }
+
+  AIR.recorder.ondataavailable = e => { if (e.data.size > 0) AIR.chunks.push(e.data); };
+
+  AIR.recorder.onstop = async () => {
+    stream.getTracks().forEach(t => t.stop());
+    aiStopTimer();
+
+    if (!AIR.chunks.length || AIR.secs < 1) {
+      aiShowErr('nota', 'Registrazione troppo breve.');
+      aiSetStatus('nota', 'idle', 'Inattivo'); aiSetUI(false); return;
+    }
+
+    const blob = new Blob(AIR.chunks, { type: AIR.recorder.mimeType || 'audio/webm' });
+    aiSetStatus('nota', 'proc', 'Trascrizione…');
+
+    try {
+      const fd = new FormData();
+      fd.append('audio', blob, 'recording.webm');
+      const resp = await fetch(AI_WORKER_TRASCRIZIONE, { method: 'POST', body: fd });
+      if (!resp.ok) { const e = await resp.json().catch(() => ({})); throw new Error(e.error || `HTTP ${resp.status}`); }
+      const text = (await resp.json()).transcription || '';
+      if (!text.trim()) { aiShowErr('nota', 'Nessun testo riconosciuto. Riprova.'); aiSetStatus('nota', 'idle', 'Inattivo'); return; }
+      const ta = document.getElementById('ai-tx-nota');
+      const existing = ta.value.trim();
+      ta.value = existing ? existing + '\n\n' + text : text;
+      aiSetStatus('nota', 'done', 'Completata');
+      notify('Trascrizione completata', 'ok');
+    } catch(e) {
+      aiShowErr('nota', 'Errore trascrizione: ' + e.message);
+      aiSetStatus('nota', 'idle', 'Inattivo');
+    }
+  };
+
+  AIR.recorder.start(200);
+  AIR.active = true;
+  aiSetUI(true);
+  aiSetStatus('nota', 'rec', 'In registrazione');
+  aiStartTimer();
+}
+
+function aiStopRec() {
+  if (!AIR.active || !AIR.recorder) return;
+  AIR.active = false;
+  AIR.recorder.stop();
+  aiSetUI(false);
+}
+
+function aiSetUI(recording) {
+  const br = document.getElementById('ai-btn-rec-nota');
+  const bs = document.getElementById('ai-btn-stop-nota');
+  const tm = document.getElementById('ai-tm-nota');
+  if (br) br.style.display = recording ? 'none' : 'inline-flex';
+  if (bs) bs.style.display = recording ? 'inline-flex' : 'none';
+  if (tm) tm.style.display = recording ? 'inline-block' : 'none';
+}
+
+function aiSetStatus(sec, cls, txt) {
+  const e = document.getElementById(`ai-st-${sec}`);
+  if (!e) return;
+  e.className = `ai-status ai-s-${cls}`;
+  e.innerHTML = `<div class="ai-dot"></div><span>${txt}</span>`;
+}
+
+function aiStartTimer() {
+  AIR.timer = setInterval(() => {
+    AIR.secs++;
+    const m = String(Math.floor(AIR.secs/60)).padStart(2,'0');
+    const s = String(AIR.secs%60).padStart(2,'0');
+    const el = document.getElementById('ai-tm-nota');
+    if (el) el.textContent = `${m}:${s}`;
+  }, 1000);
+}
+
+function aiStopTimer() { clearInterval(AIR.timer); }
+function aiShowErr(sec, msg) { const e=document.getElementById(`ai-err-${sec}`); if(e){e.textContent=msg;e.style.display='block';} }
+function aiHideErr(sec) { const e=document.getElementById(`ai-err-${sec}`); if(e) e.style.display='none'; }
+
+// ════════════════════════════════════════════════════════════
+// AI — Corrispondenza con listino prestazioni (fallback locale)
+// ════════════════════════════════════════════════════════════
+const AI_STATO_ATTUALE_MAP = {
+  sano:'sano', mancante:'estratto', estratto:'estratto',
+  otturazione:'otturato', otturato:'otturato',
+  devitalizzazione:'devitaliz', devitalizzato:'devitaliz',
+  impianto:'impianto', corona:'corona', ponte:'ponte',
+  provvisorio:'provvisorio', parziale:'parziale',
+  frattura:'frattura', erosione:'erosione',
+  bite:'bite_att', igiene:'igiene_att', sbiancamento:'sbianc_att'
+};
+
+function aiMatchAttuale(stato) {
+  return AI_STATO_ATTUALE_MAP[stato] ||
+    TR_ATTUALE.find(t => t.id === stato) ||
+    TR_ATTUALE.find(t => t.label.toLowerCase().includes(stato.toLowerCase())) ||
+    null;
+}
+
+function aiMatchPiano(nomeAI) {
+  if (!nomeAI) return null;
+  const needle = nomeAI.toLowerCase().replace(/[^a-z0-9àèéìòù ]/g,'').trim();
+  let m = TR_PIANO.find(t => t.id === needle.replace(/\s+/g,'_'));
+  if (m) return m;
+  m = TR_PIANO.find(t => t.label.toLowerCase().includes(needle));
+  if (m) return m;
+  const candidates = TR_PIANO.filter(t => {
+    const words = t.label.toLowerCase().split(/\s+/).filter(w=>w.length>4);
+    return words.length > 0 && words.every(w => needle.includes(w));
+  });
+  if (candidates.length === 1) return candidates[0];
+  const sig = TR_PIANO.filter(t => {
+    const words = t.label.toLowerCase().split(/\s+/).filter(w=>w.length>5);
+    return words.some(w => needle.includes(w));
+  });
+  if (sig.length === 1) return sig[0];
+  return null;
+}
+
+// ════════════════════════════════════════════════════════════
+// AI — Avvia analisi nota completa
+// ════════════════════════════════════════════════════════════
+async function aiAvviaAnalisi() {
+  if (!currentId) { notify('Apri prima una cartella paziente', 'err'); return; }
+  const nota = document.getElementById('ai-tx-nota').value.trim();
+  if (!nota) { notify('Registra o scrivi una nota clinica prima di analizzare', 'err'); return; }
+
+  const results = document.getElementById('ai-results');
+  results.style.display = 'block';
+  document.getElementById('ai-btn-conferma').disabled = true;
+  aiProposta.sit = null; aiProposta.ter = null;
+
+  document.getElementById('ai-orig-nota').textContent = nota;
+  document.getElementById('ai-table-sit').innerHTML = '<div style="display:flex;align-items:center;gap:8px;padding:20px;color:var(--gray-500);font-size:13px"><div class="ai-spin"></div>Analisi in corso…</div>';
+  document.getElementById('ai-table-ter').innerHTML  = '<div style="display:flex;align-items:center;gap:8px;padding:20px;color:var(--gray-500);font-size:13px"><div class="ai-spin"></div>Analisi in corso…</div>';
+  document.getElementById('ai-sommario-nota').innerHTML = '';
+  aiBadge('sit', 'proc', 'Elaborazione…');
+  aiBadge('ter', 'proc', 'Elaborazione…');
+  results.scrollIntoView({ behavior: 'smooth' });
+
+  const pazCodice = gv('f-codice') || currentId;
+  const listinoAtt = TR_ATTUALE.map(t => ({ id: t.id, label: t.label }));
+  const listinoPia = TR_PIANO.map(t => ({ id: t.id, label: t.label, ...(t.prezzo != null ? { prezzo: t.prezzo } : {}) }));
+
+  // Carica esempi e protocolli — errori non bloccano l'analisi
+  const [esempiSit, esempiTer] = await Promise.all([
+    aiCaricaMapping('situazione_attuale').catch(() => []),
+    aiCaricaMapping('terapie_da_attuare').catch(() => [])
+  ]);
+  const protocolliGrouped = await aiCaricaProtocolli().catch(() => ({}));
+  const protocolli = Object.values(protocolliGrouped).map(varianti => ({
+    trigger_id:    varianti[0].trigger_id,
+    trigger_label: varianti[0].trigger_label,
+    varianti:      varianti.map(v => ({ terapie: v.terapie, count: v.count || 1 }))
+                           .sort((a,b) => b.count - a.count)
+  }));
+
+  // Unica chiamata al Worker con tipo nota_completa
+  try {
+    const resp = await fetch(AI_WORKER_STRUTTURA, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        codice_paziente: pazCodice,
+        tipo: 'nota_completa',
+        trascrizione: nota,
+        listino_attuale: listinoAtt,
+        listino_piano: listinoPia,
+        esempi_attuale: esempiSit,
+        esempi_piano: esempiTer,
+        protocolli
+      })
+    });
+    if (!resp.ok) { const e = await resp.json().catch(()=>({})); throw new Error(e.error || `HTTP ${resp.status}`); }
+    const data = await resp.json();
+
+    // data.situazione_attuale e data.terapie_da_attuare
+    if (data.situazione_attuale) {
+      aiProposta.sit = data.situazione_attuale;
+      aiRenderSituazione(data.situazione_attuale);
+      aiBadge('sit', 'done', 'Pronto');
+    } else {
+      aiBadge('sit', 'idle', 'Nessun dato');
+      document.getElementById('ai-table-sit').innerHTML = '<div style="padding:16px;text-align:center;color:var(--gray-300);font-size:12px">Nessuna situazione attuale identificata.</div>';
+    }
+
+    if (data.terapie_da_attuare) {
+      aiProposta.ter = data.terapie_da_attuare;
+      aiRenderPiano(data.terapie_da_attuare);
+      aiBadge('ter', 'done', 'Pronto');
+      if (data.sommario) {
+        document.getElementById('ai-sommario-nota').innerHTML =
+          `<div style="background:#fef9c3;border:1px solid #fde68a;border-radius:var(--r-sm);padding:8px 12px;font-size:12px;color:#78350f">
+            <strong>📋 Valutazione AI:</strong> ${esc(data.sommario)}</div>`;
+      }
+    } else {
+      aiBadge('ter', 'idle', 'Nessun dato');
+      document.getElementById('ai-table-ter').innerHTML = '<div style="padding:16px;text-align:center;color:var(--gray-300);font-size:12px">Nessun piano terapie identificato.</div>';
+    }
+
+    if (aiProposta.sit || aiProposta.ter) {
+      document.getElementById('ai-btn-conferma').disabled = false;
+    }
+  } catch(e) {
+    aiBadge('sit', 'idle', 'Errore'); aiBadge('ter', 'idle', 'Errore');
+    document.getElementById('ai-table-sit').innerHTML =
+      `<div style="padding:12px;background:var(--red-light);color:var(--red);border-radius:var(--r-sm);font-size:12px">Errore: ${esc(e.message)}</div>`;
+    document.getElementById('ai-table-ter').innerHTML = '';
+    notify('Errore AI: ' + e.message, 'err');
+  }
+}
+
+function aiBadge(sec, cls, txt) {
+  const e = document.getElementById(`ai-badge-${sec}`);
+  if (!e) return;
+  e.className = `ai-status ai-s-${cls}`;
+  e.innerHTML = `<div class="ai-dot"></div><span>${txt}</span>`;
+}
+
+// ════════════════════════════════════════════════════════════
+// AI — Render proposta situazione attuale
+// ════════════════════════════════════════════════════════════
+function aiRenderSituazione(data) {
+  const container = document.getElementById('ai-table-sit');
+  const denti = data.denti || {};
+  const avvisi = data.avvisi || [];
+
+  if (!Object.keys(denti).length) {
+    container.innerHTML = '<div style="padding:14px;text-align:center;color:var(--gray-300);font-size:12px">Nessun dente identificato.</div>';
+    return;
+  }
+
+  const avvisiHtml = avvisi.length
+    ? `<div style="background:#fef9c3;border:1px solid #fde68a;border-radius:var(--r-sm);padding:8px 12px;margin-bottom:10px;font-size:12px">
+        <strong style="color:#92400e">⚠ Avvisi AI:</strong>
+        <ul style="margin:4px 0 0 16px;color:#78350f">${avvisi.map(a=>`<li>${esc(a)}</li>`).join('')}</ul>
+       </div>` : '';
+
+  const optsAttuale = TR_ATTUALE.map(t => `<option value="${t.id}">${t.label}</option>`).join('');
+
+  const rows = Object.entries(denti)
+    .sort((a,b) => parseInt(a[0])-parseInt(b[0]))
+    .map(([num, d]) => {
+      // Usa id_listino restituito dall'AI, con fallback al vecchio matching
+      const aiId = d.id_listino || '';
+      const fallback = aiMatchAttuale(d.stato || '');
+      const matchedId = aiId || (fallback ? (typeof fallback === 'object' ? fallback.id : fallback) : '');
+      const daConfermare = !matchedId;
+      const confIcon = d.confidence==='alta' ? '●' : d.confidence==='media' ? '◐' : '○';
+      const confColor = d.confidence==='alta' ? 'var(--teal)' : d.confidence==='media' ? 'var(--amber)' : 'var(--red)';
+      const rowBg = daConfermare ? 'background:var(--amber-light)' : '';
+      const opts = `<option value="">— non applicare —</option>${TR_ATTUALE.map(t=>`<option value="${t.id}"${t.id===matchedId?' selected':''}>${t.label}</option>`).join('')}`;
+      const addBtn = daConfermare
+        ? `<button onclick="aiApriAggiungiListino('${num}','sit',this)" style="margin-left:6px;background:var(--teal);color:white;border:none;border-radius:4px;padding:3px 8px;font-size:11px;cursor:pointer;font-weight:600">+ Aggiungi al listino</button>`
+        : '';
+      return `<tr style="${rowBg}">
+        <td><input type="number" id="ai-sit-num-${num}" value="${num}" min="11" max="48" style="width:52px;border:var(--border);border-radius:4px;padding:4px 6px;font-size:13px;font-family:'DM Mono',monospace;font-weight:700;text-align:center;outline:none" title="Modifica numero dente"></td>
+        <td><code style="font-size:11px;color:var(--gray-500)">${esc(d.stato||'')}</code></td>
+        <td style="white-space:nowrap">
+          <select id="ai-sit-sel-${num}" style="min-width:160px" onchange="aiOnSelChange('${num}','sit',this)">${opts}</select>
+          ${addBtn}
+        </td>
+        <td style="font-size:11px;color:var(--gray-500)">${esc(d.problema||d.note||'')}</td>
+        <td style="text-align:center;color:${confColor}" title="Affidabilità AI: ${d.confidence}">${confIcon}</td>
+      </tr>`;
+    }).join('');
+
+  container.innerHTML = `
+    ${avvisiHtml}
+    <div style="overflow-x:auto">
+      <table class="ai-table">
+        <thead><tr>
+          <th>Dente</th><th>AI stato</th><th>Codice listino</th><th>Problema</th><th title="Affidabilità">AI</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+}
+
+// ════════════════════════════════════════════════════════════
+// AI — Render proposta piano terapie con listino
+// ════════════════════════════════════════════════════════════
+function aiRenderPiano(data) {
+  const container = document.getElementById('ai-table-ter');
+  const denti = data.denti || {};
+  const avvisi = data.avvisi || [];
+
+  if (!Object.keys(denti).length) {
+    container.innerHTML = '<div style="padding:14px;text-align:center;color:var(--gray-300);font-size:12px">Nessuna terapia identificata.</div>';
+    return;
+  }
+
+  const avvisiHtml = avvisi.length
+    ? `<div style="background:#fef9c3;border:1px solid #fde68a;border-radius:var(--r-sm);padding:8px 12px;margin-bottom:10px;font-size:12px">
+        <strong style="color:#92400e">⚠ Avvisi AI:</strong>
+        <ul style="margin:4px 0 0 16px;color:#78350f">${avvisi.map(a=>`<li>${esc(a)}</li>`).join('')}</ul>
+       </div>` : '';
+
+  // Costruisce righe supportando sia formato array (terapie[]) che singolo stato
+  const rows = Object.entries(denti)
+    .sort((a,b) => parseInt(a[0])-parseInt(b[0]))
+    .flatMap(([num, d]) => {
+      // Nuovo formato: d.terapie = [{stato, note, confidence}, ...]
+      const terapieArr = Array.isArray(d.terapie) && d.terapie.length
+        ? d.terapie
+        : [{ stato: d.stato || '', note: d.problema || d.note || '', confidence: d.confidence || 'media' }];
+
+      return terapieArr.map((ter, idx) => {
+        const rowKey = `${num}_${idx}`;
+        const aiId = ter.id_listino || '';
+        const fallback = aiMatchPiano(ter.stato) || aiMatchPiano(ter.note || '');
+        const matchedId = aiId || (fallback ? fallback.id : '');
+        const matched = TR_PIANO.find(t => t.id === matchedId);
+        const daConfermare = !matchedId;
+        const matchedPrezzo = matched ? (matched.prezzo || 0) : 0;
+        const rowBg = daConfermare ? 'background:var(--amber-light)' : '';
+        const opts = `<option value="">— non aggiungere —</option>${TR_PIANO.map(t=>`<option value="${t.id}" data-prezzo="${t.prezzo||0}"${t.id===matchedId?' selected':''}>${t.label} — €${t.prezzo||0}</option>`).join('')}`;
+
+        // Riga non trovata: mostra campo testo pre-compilato → verrà auto-salvato al confirm
+        const nuovaPrestazioneHtml = daConfermare
+          ? `<div style="margin-top:5px;display:flex;align-items:center;gap:4px">
+               <span style="font-size:10px;color:var(--amber);font-weight:600">Salva come nuova:</span>
+               <input id="ai-ter-newlabel-${rowKey}" type="text" value="${esc(ter.stato)}" placeholder="Nome prestazione" style="flex:1;border:1px solid var(--amber);border-radius:4px;padding:3px 6px;font-size:11px;outline:none">
+               <input id="ai-ter-newsym-${rowKey}" type="text" value="${(ter.stato||'').slice(0,2).toUpperCase()}" placeholder="SYM" maxlength="3" style="width:36px;border:1px solid var(--amber);border-radius:4px;padding:3px 4px;font-size:11px;text-align:center;outline:none">
+             </div>`
+          : '';
+
+        return `<tr style="${rowBg}" id="ai-ter-row-${rowKey}">
+          <td>${idx===0 ? `<input type="number" id="ai-ter-num-${rowKey}" value="${num}" min="11" max="48" style="width:52px;border:var(--border);border-radius:4px;padding:4px 6px;font-size:13px;font-family:'DM Mono',monospace;font-weight:700;text-align:center;outline:none" title="Modifica numero dente">` : ''}</td>
+          <td style="font-size:11px;color:var(--gray-500);max-width:140px">${esc(ter.stato)}${ter.note&&ter.note!==ter.stato?' — '+esc(ter.note):''}</td>
+          <td>
+            <select id="ai-ter-sel-${rowKey}" class="ai-prest-sel" onchange="aiAggiornaPrezzoRiga('${rowKey}',this);if(this.value)this.closest('td').querySelector('.ai-ter-new')?.remove()">${opts}</select>
+            ${daConfermare ? `<div class="ai-ter-new">${nuovaPrestazioneHtml}</div>` : ''}
+          </td>
+          <td><input type="number" id="ai-ter-qta-${rowKey}" value="1" min="1" style="width:50px"></td>
+          <td><input type="number" id="ai-ter-prezzo-${rowKey}" value="${matchedPrezzo}" step="0.01" min="0" style="width:80px" placeholder="€"></td>
+          <td><button onclick="this.closest('tr').remove()" style="background:none;border:none;cursor:pointer;color:var(--gray-300);font-size:14px;padding:2px 6px" title="Rimuovi riga">✕</button></td>
+        </tr>`;
+      });
+    }).join('');
+
+  // Salva la mappa rowKey → num per il confirm
+  aiProposta._terRows = Object.entries(denti)
+    .sort((a,b) => parseInt(a[0])-parseInt(b[0]))
+    .flatMap(([num, d]) => {
+      const terapieArr = Array.isArray(d.terapie) && d.terapie.length ? d.terapie : [{ stato: d.stato }];
+      return terapieArr.map((_, idx) => ({ rowKey: `${num}_${idx}`, num }));
+    });
+
+  container.innerHTML = `
+    ${avvisiHtml}
+    <div style="overflow-x:auto">
+      <table class="ai-table">
+        <thead><tr>
+          <th>Dente</th><th>AI terapia</th><th>Prestazione listino</th><th>Q.tà</th><th>€ Unit.</th><th></th>
+        </tr></thead>
+        <tbody id="ai-ter-tbody">${rows}</tbody>
+      </table>
+    </div>
+    <button onclick="aiAggiungiRigaLibera()" style="margin-top:8px;background:none;border:1px dashed var(--gray-300);border-radius:var(--r-sm);padding:6px 14px;font-size:12px;color:var(--gray-400);cursor:pointer;width:100%">+ Aggiungi riga manuale</button>
+    ${rows.includes('da confermare') ? '<div style="font-size:11px;color:var(--amber);margin-top:8px">⚠ Le righe arancioni non hanno trovato corrispondenza nel listino: seleziona manualmente la prestazione.</div>' : ''}`;
+}
+
+function aiAggiornaPrezzoRiga(rowKey, sel) {
+  const opt = sel.options[sel.selectedIndex];
+  const prezzo = opt ? parseFloat(opt.getAttribute('data-prezzo') || 0) : 0;
+  const prezzoEl = document.getElementById(`ai-ter-prezzo-${rowKey}`);
+  if (prezzoEl && prezzo > 0) prezzoEl.value = prezzo;
+}
+
+// ════════════════════════════════════════════════════════════
+// AI — Aggiungi riga manuale al piano terapie
+// ════════════════════════════════════════════════════════════
+let _aiRigaLibIdx = 0;
+function aiAggiungiRigaLibera() {
+  const tbody = document.getElementById('ai-ter-tbody');
+  if (!tbody) return;
+  const idx = 'lib_' + (++_aiRigaLibIdx);
+  const opts = `<option value="">— seleziona —</option>${TR_PIANO.map(t=>`<option value="${t.id}" data-prezzo="${t.prezzo||0}">${t.label} — €${t.prezzo||0}</option>`).join('')}`;
+  const tr = document.createElement('tr');
+  tr.id = `ai-ter-row-${idx}`;
+  tr.style.background = 'var(--amber-light)';
+  tr.innerHTML = `
+    <td><input type="number" id="ai-ter-num-${idx}" placeholder="dente" min="11" max="48" style="width:52px;border:var(--border);border-radius:4px;padding:4px 6px;font-size:13px;font-family:'DM Mono',monospace;font-weight:700;text-align:center;outline:none"></td>
+    <td style="font-size:11px;color:var(--gray-400);font-style:italic">riga aggiunta</td>
+    <td>
+      <select id="ai-ter-sel-${idx}" class="ai-prest-sel" onchange="aiAggiornaPrezzoRiga('${idx}',this);if(this.value)this.closest('tr').style.background=''">${opts}</select>
+    </td>
+    <td><input type="number" id="ai-ter-qta-${idx}" value="1" min="1" style="width:50px"></td>
+    <td><input type="number" id="ai-ter-prezzo-${idx}" value="0" step="0.01" min="0" style="width:80px" placeholder="€"></td>
+    <td><button onclick="this.closest('tr').remove()" style="background:none;border:none;cursor:pointer;color:var(--gray-300);font-size:14px;padding:2px 6px" title="Rimuovi riga">✕</button></td>`;
+  tbody.appendChild(tr);
+  // Registra la riga nei _terRows così aiConferma la gestisce
+  if (!aiProposta._terRows) aiProposta._terRows = [];
+  aiProposta._terRows.push({ rowKey: idx, num: '' });
+  tr.querySelector(`#ai-ter-num-${idx}`).focus();
+}
+
+// ════════════════════════════════════════════════════════════
+// AI — Aggiungi al listino (da riga non trovata)
+// ════════════════════════════════════════════════════════════
+function aiApriAggiungiListino(rowKey, sec, btn) {
+  // Trova o crea il mini-form inline sotto il bottone
+  const existingForm = btn.parentNode.querySelector('.ai-add-listino-form');
+  if (existingForm) { existingForm.remove(); return; }
+
+  const tipo = sec === 'sit' ? 'attuale' : 'piano';
+  const form = document.createElement('div');
+  form.className = 'ai-add-listino-form';
+  form.style.cssText = 'margin-top:6px;padding:8px;background:white;border:1px solid var(--teal);border-radius:var(--r-sm);font-size:12px';
+  form.innerHTML = `
+    <div style="font-weight:600;color:var(--teal);margin-bottom:6px">Nuova prestazione nel listino</div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:flex-end">
+      <div><label style="font-size:10px;font-weight:600;color:var(--gray-500);display:block;margin-bottom:2px">Nome</label>
+        <input id="ai-new-label-${rowKey}" style="width:180px;border:var(--border);border-radius:4px;padding:5px 8px;font-size:12px;font-family:'DM Sans',sans-serif;outline:none" placeholder="es. Otturazione composito"></div>
+      <div><label style="font-size:10px;font-weight:600;color:var(--gray-500);display:block;margin-bottom:2px">Simbolo</label>
+        <input id="ai-new-sym-${rowKey}" style="width:60px;border:var(--border);border-radius:4px;padding:5px 8px;font-size:12px;font-family:'DM Sans',sans-serif;outline:none" placeholder="es. O" maxlength="3"></div>
+      ${tipo==='piano'?`<div><label style="font-size:10px;font-weight:600;color:var(--gray-500);display:block;margin-bottom:2px">€ Prezzo</label>
+        <input id="ai-new-prezzo-${rowKey}" type="number" style="width:80px;border:var(--border);border-radius:4px;padding:5px 8px;font-size:12px;font-family:'DM Sans',sans-serif;outline:none" placeholder="0.00" step="0.01"></div>`:''}
+      <button onclick="aiSalvaInListino('${rowKey}','${tipo}',this)" style="background:var(--teal);color:white;border:none;border-radius:4px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer">Salva</button>
+    </div>`;
+  btn.parentNode.appendChild(form);
+  document.getElementById(`ai-new-label-${rowKey}`).focus();
+}
+
+async function aiSalvaInListino(rowKey, tipo, btn) {
+  const label  = (document.getElementById(`ai-new-label-${rowKey}`)?.value || '').trim();
+  const sym    = (document.getElementById(`ai-new-sym-${rowKey}`)?.value || '').trim();
+  const prezzo = parseFloat(document.getElementById(`ai-new-prezzo-${rowKey}`)?.value || 0) || 0;
+  if (!label || !sym) { notify('Inserisci nome e simbolo', 'err'); return; }
+
+  const id = 'ai_' + label.toLowerCase().replace(/[^a-z0-9]+/g,'_').slice(0,30) + '_' + Date.now().toString(36);
+  const nuova = { id, label, sym, color: '#686864', bg: '#EFEDE7', prezzo, tipo };
+
+  if (tipo === 'attuale') { TR_ATTUALE.push(nuova); }
+  else                    { TR_PIANO.push(nuova); nuova.tipo = 'piano'; }
+
+  buildLegend();
+  try {
+    await savePrestazioni();
+    notify('Prestazione "' + label + '" aggiunta al listino ✓', 'ok');
+  } catch(e) {
+    notify('Errore salvataggio listino: ' + e.message, 'err');
+  }
+
+  // Aggiorna la select di questa riga con la nuova voce e selezionala
+  const selId = tipo === 'attuale' ? `ai-sit-sel-${rowKey}` : `ai-ter-sel-${rowKey}`;
+  const sel = document.getElementById(selId);
+  if (sel) {
+    const opt = document.createElement('option');
+    opt.value = id;
+    opt.setAttribute('data-prezzo', prezzo);
+    opt.textContent = label + (tipo==='piano' ? ` — €${prezzo}` : '');
+    opt.selected = true;
+    sel.appendChild(opt);
+    // Aggiorna prezzo se piano
+    if (tipo === 'piano') {
+      const prezEl = document.getElementById(`ai-ter-prezzo-${rowKey}`);
+      if (prezEl && prezzo > 0) prezEl.value = prezzo;
+    }
+    // Rimuovi sfondo arancione
+    sel.closest('tr').style.background = '';
+  }
+
+  // Chiudi il form
+  btn.closest('.ai-add-listino-form').remove();
+}
+
+function aiOnSelChange(key, sec, sel) {
+  // Quando il medico sceglie manualmente, rimuovi sfondo arancione
+  if (sel.value) sel.closest('tr').style.background = '';
+}
+
+// ════════════════════════════════════════════════════════════
+// AI LEARNING — Salva/carica mapping su Firestore
+// Collezione: ai_mapping/{tipo}__{stato_ai}__{id_listino}
+// ════════════════════════════════════════════════════════════
+
+// Cache locale dei mapping caricati, per non rifetcharli ad ogni analisi
+let _aiMappingCache = { attuale: null, piano: null, ts: 0 };
+
+async function aiCaricaMapping(tipo) {
+  const cacheKey = tipo === 'situazione_attuale' ? 'attuale' : 'piano';
+  // Usa cache se fresca (< 5 minuti)
+  if (_aiMappingCache[cacheKey] && Date.now() - _aiMappingCache.ts < 5 * 60 * 1000) {
+    return _aiMappingCache[cacheKey];
+  }
+  try {
+    const snap = await db.collection('ai_mapping')
+      .where('tipo', '==', tipo)
+      .orderBy('count', 'desc')
+      .limit(60)
+      .get();
+    const mapping = snap.docs.map(d => d.data());
+    _aiMappingCache[cacheKey] = mapping;
+    _aiMappingCache.ts = Date.now();
+    return mapping;
+  } catch(e) {
+    console.warn('ai_mapping load error:', e.message);
+    return [];
+  }
+}
+
+async function aiSalvaMapping(correzioni) {
+  if (!correzioni.length) return;
+  const batch = db.batch();
+  correzioni.forEach(c => {
+    const docId = `${c.tipo}__${(c.stato_ai||'').replace(/[^a-z0-9_]/g,'_')}__${c.id_listino}`;
+    const ref = db.collection('ai_mapping').doc(docId);
+    batch.set(ref, {
+      tipo:          c.tipo,
+      stato_ai:      c.stato_ai || '',
+      id_listino:    c.id_listino,
+      label_listino: c.label_listino || '',
+      prezzo:        c.prezzo || 0,
+      count:         firebase.firestore.FieldValue.increment(1),
+      ts:            firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+  });
+  try {
+    await batch.commit();
+    _aiMappingCache.attuale = null;
+    _aiMappingCache.piano   = null;
+  } catch(e) {
+    console.warn('ai_mapping save error:', e.message);
+  }
+}
+
+// ── Protocolli con varianti per trigger ──
+// Doc ID: {trigger_id}__{hash_sorted_ids} → variante unica
+// Così "impianto+TAC+abutment+corona" e "impianto+abutment+corona" sono doc separati
+let _aiProtocolliCache = null;
+let _aiProtocolliCacheTs = 0;
+
+function _protocolloHash(terapie) {
+  return terapie.map(t => t.id).sort().join('__');
+}
+
+async function aiCaricaProtocolli() {
+  if (_aiProtocolliCache && Date.now() - _aiProtocolliCacheTs < 5 * 60 * 1000) return _aiProtocolliCache;
+  try {
+    const snap = await db.collection('ai_protocols').orderBy('count','desc').limit(60).get();
+    const docs = snap.docs.map(d => d.data());
+    // Raggruppa per trigger_id, ordinate per count desc
+    const grouped = {};
+    docs.forEach(d => {
+      if (!grouped[d.trigger_id]) grouped[d.trigger_id] = [];
+      grouped[d.trigger_id].push(d);
+    });
+    _aiProtocolliCache = grouped;
+    _aiProtocolliCacheTs = Date.now();
+    return grouped;
+  } catch(e) {
+    console.warn('ai_protocols load error:', e.message);
+    return {};
+  }
+}
+
+async function aiSalvaProtocolli(protocolli) {
+  // protocolli = [{ trigger_id, trigger_label, terapie: [{id, label}] }]
+  if (!protocolli.length) return;
+  const batch = db.batch();
+  protocolli.forEach(p => {
+    // Doc ID univoco per variante: trigger + hash del pacchetto
+    const hash  = _protocolloHash(p.terapie);
+    const docId = `${p.trigger_id}__${hash}`;
+    const ref   = db.collection('ai_protocols').doc(docId);
+    batch.set(ref, {
+      trigger_id:    p.trigger_id,
+      trigger_label: p.trigger_label || '',
+      terapie:       p.terapie,
+      count:         firebase.firestore.FieldValue.increment(1),
+      ts:            firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+  });
+  try {
+    await batch.commit();
+    _aiProtocolliCache = null;
+  } catch(e) {
+    console.warn('ai_protocols save error:', e.message);
+  }
+}
+
+// ════════════════════════════════════════════════════════════
+// AI — Conferma e applica
+// ════════════════════════════════════════════════════════════
+async function aiConferma() {
+  if (!currentId) { notify('Nessun paziente aperto', 'err'); return; }
+  let modifiche = 0;
+  const correzioni = []; // da salvare in Firestore per il learning
+
+  // ── Applica situazione attuale ──────────────────────────────
+  if (aiProposta.sit && aiProposta.sit.denti) {
+    const dentiMenzionati = new Set();
+
+    Object.entries(aiProposta.sit.denti).forEach(([numOrig, d]) => {
+      const sel    = document.getElementById(`ai-sit-sel-${numOrig}`);
+      if (!sel || !sel.value) return;
+      const tid    = sel.value;
+      const t      = TR_ATTUALE.find(x => x.id === tid);
+      const numEl  = document.getElementById(`ai-sit-num-${numOrig}`);
+      const num    = (numEl && numEl.value) ? numEl.value : numOrig;
+      dentiMenzionati.add(String(num));
+      if (!teethAttuale[num]) teethAttuale[num] = [];
+      if (!teethAttuale[num].includes(tid)) {
+        teethAttuale[num].push(tid);
+        modifiche++;
+      }
+      if (d.stato || d.id_listino) {
+        correzioni.push({
+          tipo:          'situazione_attuale',
+          stato_ai:      d.stato || d.id_listino || '',
+          id_listino:    tid,
+          label_listino: t ? t.label : tid,
+          prezzo:        0
+        });
+      }
+    });
+
+    // Denti non menzionati → sano (verde)
+    const tuttiiDenti = [];
+    [1,2,3,4].forEach(q => {
+      for (let d = 1; d <= 8; d++) tuttiiDenti.push(String(q * 10 + d));
+    });
+    const sanoId = TR_ATTUALE.find(t => t.id === 'sano')?.id || 'sano';
+    tuttiiDenti.forEach(num => {
+      if (!dentiMenzionati.has(num) && !teethAttuale[num]?.length) {
+        teethAttuale[num] = [sanoId];
+        modifiche++;
+      }
+    });
+
+    refreshOdonto('attuale');
+  }
+
+  // ── Applica piano terapie ───────────────────────────────────
+  if (aiProposta.ter && aiProposta.ter.denti) {
+    const terRows = aiProposta._terRows || Object.keys(aiProposta.ter.denti).map(num => ({ rowKey: `${num}_0`, num }));
+    const aiRowData = {};
+    Object.entries(aiProposta.ter.denti).forEach(([num, d]) => {
+      const terapieArr = Array.isArray(d.terapie) && d.terapie.length ? d.terapie : [{ stato: d.stato, id_listino: d.id_listino }];
+      terapieArr.forEach((ter, idx) => { aiRowData[`${num}_${idx}`] = ter; });
+    });
+
+    // Raccoglie per dente tutte le terapie confermate → per salvare protocolli
+    const terapiePerDente = {}; // num → [{tid, label, wasAI: bool}]
+
+    // Prima passa: auto-crea prestazioni nuove (righe senza match listino)
+    for (const { rowKey } of terRows) {
+      const sel       = document.getElementById(`ai-ter-sel-${rowKey}`);
+      const labelEl   = document.getElementById(`ai-ter-newlabel-${rowKey}`);
+      const symEl     = document.getElementById(`ai-ter-newsym-${rowKey}`);
+      const prezEl    = document.getElementById(`ai-ter-prezzo-${rowKey}`);
+      if (!sel || sel.value || !labelEl) continue; // ha già una corrispondenza
+      if (!document.getElementById(`ai-ter-row-${rowKey}`)) continue; // rimossa
+      const label  = (labelEl.value || '').trim();
+      const sym    = (symEl?.value || label.slice(0,2)).trim().toUpperCase();
+      const prezzo = parseFloat(prezEl?.value || 0) || 0;
+      if (!label) continue;
+      const id = 'ai_' + label.toLowerCase().replace(/[^a-z0-9]+/g,'_').slice(0,30) + '_' + Date.now().toString(36);
+      const nuova = { id, label, sym, color: '#686864', bg: '#EFEDE7', prezzo, tipo: 'piano' };
+      TR_PIANO.push(nuova);
+      // Seleziona la nuova voce nella select
+      const opt = document.createElement('option');
+      opt.value = id; opt.selected = true;
+      opt.setAttribute('data-prezzo', prezzo);
+      opt.textContent = label + ` — €${prezzo}`;
+      sel.appendChild(opt);
+      sel.value = id;
+      sel.closest('tr').style.background = '';
+    }
+    // Salva listino aggiornato in background
+    savePrestazioni().catch(() => {});
+    buildLegend();
+
+    terRows.forEach(({ rowKey, num: numOrig }) => {
+      const sel    = document.getElementById(`ai-ter-sel-${rowKey}`);
+      const qtaEl  = document.getElementById(`ai-ter-qta-${rowKey}`);
+      const prezEl = document.getElementById(`ai-ter-prezzo-${rowKey}`);
+      const numEl  = document.getElementById(`ai-ter-num-${rowKey}`);
+      const num    = (numEl && numEl.value) ? numEl.value : numOrig;
+      if (!sel || !sel.value || !document.getElementById(`ai-ter-row-${rowKey}`)) return;
+
+      const tid    = sel.value;
+      const qta    = parseFloat(qtaEl?.value || 1) || 1;
+      const prezzo = parseFloat(prezEl?.value || 0) || 0;
+      const t      = findTR(tid);
+
+      if (!teethPiano[parseInt(num)]) teethPiano[parseInt(num)] = [];
+      const already = teethPiano[parseInt(num)].find(x => x.tid === tid);
+      if (!already) {
+        teethPiano[parseInt(num)].push({ tid, stato: 'dafare' });
+        modifiche++;
+      }
+
+      const existingPrev = prevRows.find(r => r.dente == num && r.tid === tid);
+      if (!existingPrev && t) {
+        prevRows.push({ id: 'ai_'+Date.now()+'_'+rowKey, dente: num, tid, label: t.label, qta, prezzo, sconto: 0 });
+      }
+
+      // Mapping singolo
+      const aiTer = aiRowData[rowKey];
+      if (aiTer) {
+        correzioni.push({
+          tipo:          'terapie_da_attuare',
+          stato_ai:      aiTer.stato || aiTer.id_listino || '',
+          id_listino:    tid,
+          label_listino: t ? t.label : tid,
+          prezzo
+        });
+      }
+
+      // Accumula per protocollo dente
+      if (!terapiePerDente[num]) terapiePerDente[num] = [];
+      terapiePerDente[num].push({ tid, label: t ? t.label : tid, wasAI: !!aiTer });
+    });
+
+    // ── Salva protocolli: denti con ≥2 terapie dove ≥1 era AI e ≥1 manuale
+    const protocolli = [];
+    Object.entries(terapiePerDente).forEach(([num, lista]) => {
+      if (lista.length < 2) return;
+      const aiItems = lista.filter(x => x.wasAI);
+      const extras  = lista.filter(x => !x.wasAI);
+      if (!aiItems.length || !extras.length) return;
+      // Per ogni terapia AI di quel dente, salva il pacchetto completo
+      aiItems.forEach(trigger => {
+        protocolli.push({
+          trigger_id:    trigger.tid,
+          trigger_label: trigger.label,
+          terapie:       lista.map(x => ({ id: x.tid, label: x.label }))
+        });
+      });
+    });
+
+    refreshOdonto('piano');
+    renderPianoRiepilogo();
+    renderPrevRows();
+
+    if (protocolli.length) aiSalvaProtocolli(protocolli);
+  }
+
+  if (modifiche > 0) {
+    scheduleOdoSave();
+    notify(`${modifiche} elementi applicati ✓`, 'ok');
+    document.getElementById('ai-btn-conferma').textContent = '✓ Applicato';
+    document.getElementById('ai-btn-conferma').style.background = 'var(--teal)';
+    document.getElementById('ai-btn-conferma').disabled = true;
+    aiSalvaMapping(correzioni);
+  } else {
+    notify('Nessuna modifica da applicare (selezioni vuote)', 'i');
+  }
+}
+
+// ════════════════════════════════════════════════════════════
+// AI — (legacy, non più usato direttamente)
+// ════════════════════════════════════════════════════════════
+async function aiProponePiano() {
+  if (!currentId) { notify('Nessun paziente aperto', 'err'); return; }
+
+  // Costruisci il riepilogo testuale della situazione attuale confermata
+  const dentiAttuale = Object.entries(teethAttuale);
+  if (!dentiAttuale.length) {
+    notify('Prima conferma la situazione attuale (odontogramma → attuale)', 'i');
+    return;
+  }
+
+  const righe = dentiAttuale.map(([num, tids]) => {
+    const labels = (Array.isArray(tids) ? tids : [tids])
+      .map(tid => { const t = TR_ATTUALE.find(x => x.id === tid); return t ? t.label : tid; })
+      .filter(Boolean);
+    return `Dente ${num}: ${labels.join(', ')}`;
+  }).join('\n');
+
+  const pazCodice = gv('f-codice') || currentId;
+  const listino = TR_PIANO.map(t => ({ id: t.id, label: t.label, ...(t.prezzo != null ? { prezzo: t.prezzo } : {}) }));
+  const esempi  = await aiCaricaMapping('terapie_da_attuare');
+
+  // Mostra sezione risultato
+  const box = document.getElementById('ai-piano-auto');
+  box.style.display = '';
+  document.getElementById('ai-btn-conferma-piano').disabled = true;
+  document.getElementById('ai-piano-sommario').innerHTML = '';
+  document.getElementById('ai-table-piano').innerHTML = '<div style="padding:14px;text-align:center;color:var(--gray-300);font-size:12px">Analisi in corso…</div>';
+  aiBadge('piano', 'loading', 'Analisi…');
+  box.scrollIntoView({ behavior: 'smooth' });
+
+  try {
+    const resp = await fetch(AI_WORKER_STRUTTURA, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        codice_paziente: pazCodice,
+        tipo: 'proposta_piano',
+        trascrizione: righe,
+        listino,
+        esempi
+      })
+    });
+    if (!resp.ok) { const e = await resp.json().catch(()=>({})); throw new Error(e.error || `HTTP ${resp.status}`); }
+    const data = await resp.json();
+    aiProposta._pianoProposto = data;
+    aiRenderPianoProposto(data);
+    aiBadge('piano', 'done', 'Pronto');
+    document.getElementById('ai-btn-conferma-piano').disabled = false;
+  } catch(e) {
+    aiBadge('piano', 'idle', 'Errore');
+    document.getElementById('ai-table-piano').innerHTML =
+      `<div style="padding:12px;background:var(--red-light);color:var(--red);border-radius:var(--r-sm);font-size:12px">Errore: ${esc(e.message)}</div>`;
+    notify('Errore proposta piano: ' + e.message, 'err');
+  }
+}
+
+function aiRenderPianoProposto(data) {
+  const denti  = data.denti || {};
+  const avvisi = data.avvisi || [];
+  const sommario = data.sommario || '';
+  const tableEl  = document.getElementById('ai-table-piano');
+  const sommEl   = document.getElementById('ai-piano-sommario');
+
+  if (sommario) {
+    sommEl.innerHTML = `<div style="background:var(--purple-light);border:1px solid var(--purple);border-radius:var(--r-sm);padding:10px 14px;margin-bottom:10px;font-size:12px;color:var(--purple)">
+      <strong>📋 Sommario AI:</strong> ${esc(sommario)}</div>`;
+  }
+
+  if (!Object.keys(denti).length) {
+    tableEl.innerHTML = '<div style="padding:14px;text-align:center;color:var(--gray-300);font-size:12px">Nessuna terapia proposta.</div>';
+    return;
+  }
+
+  const avvisiHtml = avvisi.length
+    ? `<div style="background:#fef9c3;border:1px solid #fde68a;border-radius:var(--r-sm);padding:8px 12px;margin-bottom:10px;font-size:12px">
+        <strong style="color:#92400e">⚠ Note AI:</strong>
+        <ul style="margin:4px 0 0 16px;color:#78350f">${avvisi.map(a=>`<li>${esc(a)}</li>`).join('')}</ul>
+       </div>` : '';
+
+  const _terRows = [];
+
+  const rows = Object.entries(denti)
+    .sort((a,b) => parseInt(a[0])-parseInt(b[0]))
+    .flatMap(([num, d]) => {
+      const terapieArr = Array.isArray(d.terapie) && d.terapie.length ? d.terapie : [{ stato: d.stato, id_listino: d.id_listino }];
+      return terapieArr.map((ter, idx) => {
+        const rowKey = `${num}_${idx}`;
+        _terRows.push({ rowKey, num });
+        const matchedId  = ter.id_listino || '';
+        const matched    = TR_PIANO.find(t => t.id === matchedId);
+        const prezzo     = matched ? (matched.prezzo || 0) : 0;
+        const priorita   = ter.priorita || d.priorita || '';
+        const prioLabel  = priorita === 'urgente' ? '🔴 Urgente' : priorita === 'programmabile' ? '🟡 Programmabile' : priorita === 'estetico' ? '🟢 Estetico' : '';
+
+        const opts = `<option value="">— non aggiungere —</option>${TR_PIANO.map(t=>`<option value="${t.id}" data-prezzo="${t.prezzo||0}"${t.id===matchedId?' selected':''}>${t.label} — €${t.prezzo||0}</option>`).join('')}`;
+
+        return `<tr>
+          <td style="text-align:center;padding:4px 6px">
+            <input id="ai-ppr-num-${rowKey}" type="number" min="11" max="48" value="${esc(num)}" style="width:52px;text-align:center;border:1px solid var(--gray-200);border-radius:4px;padding:2px 4px;font-size:12px">
+          </td>
+          <td style="padding:4px 6px;font-size:11px;color:var(--gray-400)">${esc(ter.stato || ter.id_listino || '—')}</td>
+          ${prioLabel ? `<td style="padding:4px 6px;font-size:11px">${prioLabel}</td>` : '<td></td>'}
+          <td style="padding:4px 6px">
+            <select id="ai-ppr-sel-${rowKey}" onchange="this.closest('tr').querySelector('.ppr-prezzo').value=this.selectedOptions[0]?.dataset?.prezzo||0" style="width:100%;font-size:12px;border:1px solid var(--gray-200);border-radius:4px;padding:2px 4px">${opts}</select>
+          </td>
+          <td style="padding:4px 6px">
+            <input id="ai-ppr-qta-${rowKey}" type="number" min="1" value="1" style="width:44px;font-size:12px;border:1px solid var(--gray-200);border-radius:4px;padding:2px 4px;text-align:center">
+          </td>
+          <td style="padding:4px 6px">
+            <input class="ppr-prezzo" id="ai-ppr-prezzo-${rowKey}" type="number" min="0" value="${prezzo}" style="width:64px;font-size:12px;border:1px solid var(--gray-200);border-radius:4px;padding:2px 4px;text-align:right">
+          </td>
+        </tr>`;
+      });
+    }).join('');
+
+  tableEl.innerHTML = `${avvisiHtml}<table style="width:100%;border-collapse:collapse">
+    <thead><tr style="font-size:11px;color:var(--gray-400);border-bottom:1px solid var(--gray-100)">
+      <th style="padding:4px 6px;text-align:center">Dente</th>
+      <th style="padding:4px 6px;text-align:left">AI propone</th>
+      <th style="padding:4px 6px;text-align:left">Priorità</th>
+      <th style="padding:4px 6px;text-align:left">Prestazione</th>
+      <th style="padding:4px 6px;text-align:center">Qta</th>
+      <th style="padding:4px 6px;text-align:right">€</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+
+  aiProposta._pianoProposto._terRowsPiano = _terRows;
+}
+
+// ════════════════════════════════════════════════════════════
+// AI — Applica piano di cura proposto
+// ════════════════════════════════════════════════════════════
+async function aiConfermaPiano() {
+  if (!currentId) return;
+  const data = aiProposta._pianoProposto;
+  if (!data) return;
+
+  const _terRows = data._terRowsPiano || [];
+  const aiRowData = {};
+  Object.entries(data.denti || {}).forEach(([num, d]) => {
+    const terapieArr = Array.isArray(d.terapie) && d.terapie.length ? d.terapie : [{ stato: d.stato, id_listino: d.id_listino }];
+    terapieArr.forEach((ter, idx) => { aiRowData[`${num}_${idx}`] = ter; });
+  });
+
+  let modifiche = 0;
+  const correzioni = [];
+
+  _terRows.forEach(({ rowKey, num: numOrig }) => {
+    const sel    = document.getElementById(`ai-ppr-sel-${rowKey}`);
+    const qtaEl  = document.getElementById(`ai-ppr-qta-${rowKey}`);
+    const prezEl = document.getElementById(`ai-ppr-prezzo-${rowKey}`);
+    const numEl  = document.getElementById(`ai-ppr-num-${rowKey}`);
+    const num    = (numEl && numEl.value) ? numEl.value : numOrig;
+    if (!sel || !sel.value) return;
+
+    const tid    = sel.value;
+    const qta    = parseFloat(qtaEl?.value || 1) || 1;
+    const prezzo = parseFloat(prezEl?.value || 0) || 0;
+    const t      = findTR(tid);
+
+    if (!teethPiano[parseInt(num)]) teethPiano[parseInt(num)] = [];
+    const already = teethPiano[parseInt(num)].find(x => x.tid === tid);
+    if (!already) {
+      teethPiano[parseInt(num)].push({ tid, stato: 'dafare' });
+      modifiche++;
+    }
+
+    const existingPrev = prevRows.find(r => r.dente == num && r.tid === tid);
+    if (!existingPrev && t) {
+      prevRows.push({ id: 'aipp_'+Date.now()+'_'+rowKey, dente: num, tid, label: t.label, qta, prezzo, sconto: 0 });
+    }
+
+    const aiTer = aiRowData[rowKey];
+    if (aiTer) {
+      correzioni.push({
+        tipo:          'terapie_da_attuare',
+        stato_ai:      aiTer.stato || aiTer.id_listino || '',
+        id_listino:    tid,
+        label_listino: t ? t.label : tid,
+        prezzo
+      });
+    }
+  });
+
+  if (modifiche > 0) {
+    refreshOdonto('piano');
+    renderPianoRiepilogo();
+    renderPrevRows();
+    scheduleOdoSave();
+    notify(`Piano applicato: ${modifiche} terapie aggiunte ✓`, 'ok');
+    const btn = document.getElementById('ai-btn-conferma-piano');
+    btn.textContent = '✓ Piano applicato';
+    btn.style.background = 'var(--teal)';
+    btn.disabled = true;
+    aiSalvaMapping(correzioni);
+  } else {
+    notify('Nessuna terapia da applicare (selezioni vuote)', 'i');
+  }
+}
 </script>
 </body>
 </html>
