@@ -645,48 +645,26 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--gray-50);color:
         <!-- AI DETTATURA -->
         <div id="tab-ai" style="display:none">
 
-          <!-- Registra situazione attuale -->
+          <!-- Registra nota clinica -->
           <div class="card">
             <div class="card-title">
-              <span>🎙 Registra situazione attuale</span>
+              <span>🎙 Nota clinica vocale</span>
             </div>
-            <div style="font-size:12px;color:var(--gray-500);margin-bottom:10px">Ditta vocalmente la situazione clinica dente per dente (es. "dente 16 otturato, dente 26 corona in zirconio…")</div>
+            <div style="font-size:12px;color:var(--gray-500);margin-bottom:10px">Ditta liberamente: situazione dei denti, terapie necessarie, priorità. L'AI struttura tutto e propone il piano completo.</div>
             <div class="ai-rec-row">
-              <button class="ai-btn ai-btn-rec" id="ai-btn-rec-sit" onclick="aiStartRec('sit')">
+              <button class="ai-btn ai-btn-rec" id="ai-btn-rec-nota" onclick="aiStartRec()">
                 <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><circle cx="5.5" cy="5.5" r="2.8" fill="white"/><circle cx="5.5" cy="5.5" r="5" stroke="white" stroke-width=".9"/></svg>
                 Registra
               </button>
-              <button class="ai-btn ai-btn-stop" id="ai-btn-stop-sit" onclick="aiStopRec('sit')" style="display:none">
+              <button class="ai-btn ai-btn-stop" id="ai-btn-stop-nota" onclick="aiStopRec()" style="display:none">
                 <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><rect x="1.5" y="1.5" width="8" height="8" rx="1.5" fill="white"/></svg>
                 Stop
               </button>
-              <div class="ai-status ai-s-idle" id="ai-st-sit"><div class="ai-dot"></div><span>Inattivo</span></div>
-              <span class="ai-timer" id="ai-tm-sit" style="display:none">00:00</span>
+              <div class="ai-status ai-s-idle" id="ai-st-nota"><div class="ai-dot"></div><span>Inattivo</span></div>
+              <span class="ai-timer" id="ai-tm-nota" style="display:none">00:00</span>
             </div>
-            <div class="ai-err" id="ai-err-sit"></div>
-            <div class="fg"><label>Trascrizione (modificabile)</label><textarea id="ai-tx-sit" style="min-height:80px" placeholder="La trascrizione apparirà qui. Puoi modificarla."></textarea></div>
-          </div>
-
-          <!-- Registra piano terapie -->
-          <div class="card">
-            <div class="card-title">
-              <span>🎙 Registra piano terapie</span>
-            </div>
-            <div style="font-size:12px;color:var(--gray-500);margin-bottom:10px">Ditta le terapie da eseguire (es. "dente 36 otturazione di seconda classe, dente 46 estrazione semplice…")</div>
-            <div class="ai-rec-row">
-              <button class="ai-btn ai-btn-rec" id="ai-btn-rec-ter" onclick="aiStartRec('ter')">
-                <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><circle cx="5.5" cy="5.5" r="2.8" fill="white"/><circle cx="5.5" cy="5.5" r="5" stroke="white" stroke-width=".9"/></svg>
-                Registra
-              </button>
-              <button class="ai-btn ai-btn-stop" id="ai-btn-stop-ter" onclick="aiStopRec('ter')" style="display:none">
-                <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><rect x="1.5" y="1.5" width="8" height="8" rx="1.5" fill="white"/></svg>
-                Stop
-              </button>
-              <div class="ai-status ai-s-idle" id="ai-st-ter"><div class="ai-dot"></div><span>Inattivo</span></div>
-              <span class="ai-timer" id="ai-tm-ter" style="display:none">00:00</span>
-            </div>
-            <div class="ai-err" id="ai-err-ter"></div>
-            <div class="fg"><label>Trascrizione (modificabile)</label><textarea id="ai-tx-ter" style="min-height:80px" placeholder="La trascrizione apparirà qui. Puoi modificarla."></textarea></div>
+            <div class="ai-err" id="ai-err-nota"></div>
+            <div class="fg"><label>Trascrizione (modificabile prima di analizzare)</label><textarea id="ai-tx-nota" style="min-height:90px" placeholder="La trascrizione apparirà qui. Puoi correggerla prima di inviare."></textarea></div>
           </div>
 
           <!-- Pulsante analisi -->
@@ -695,14 +673,14 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--gray-50);color:
               <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 1.5C3.7 1.5 1.5 3.7 1.5 6.5S3.7 11.5 6.5 11.5 11.5 9.3 11.5 6.5" stroke="white" stroke-width="1.6" stroke-linecap="round"/><path d="M9 2.5l2.5-.5-.5 2.5" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
               Analizza con AI
             </button>
-            <button class="ai-btn" id="ai-btn-piano-auto" onclick="aiProponePiano()" style="padding:10px 22px;font-size:13px;background:var(--purple);color:white" title="L'AI analizza la situazione attuale e propone un piano di cura completo">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2z"/><path d="M12 8v4l3 3"/></svg>
-              Proponi piano di cura
-            </button>
           </div>
 
           <!-- Risultati AI -->
           <div id="ai-results" style="display:none">
+
+            <!-- Nota originale -->
+            <div style="font-size:10px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px">Nota dettata</div>
+            <div class="ai-orig-box" id="ai-orig-nota" style="margin-bottom:16px"></div>
 
             <!-- Proposta situazione attuale -->
             <div class="ai-proposal-box" id="ai-prop-sit">
@@ -711,9 +689,6 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--gray-50);color:
                 <div class="ai-status ai-s-proc" id="ai-badge-sit"><div class="ai-dot"></div><span>Elaborazione…</span></div>
               </div>
               <div class="ai-prop-body">
-                <div style="font-size:10px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px">Dettatura originale</div>
-                <div class="ai-orig-box" id="ai-orig-sit"></div>
-                <div style="font-size:10px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px">Proposta AI — modificabile</div>
                 <div id="ai-table-sit"><div style="display:flex;align-items:center;gap:8px;padding:20px;color:var(--gray-500);font-size:13px"><div class="ai-spin"></div>Analisi in corso…</div></div>
               </div>
             </div>
@@ -721,13 +696,11 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--gray-50);color:
             <!-- Proposta piano terapie -->
             <div class="ai-proposal-box" id="ai-prop-ter">
               <div class="ai-prop-head amber">
-                <span>Piano terapie — proposta AI</span>
+                <span>Piano terapie proposto — modificabile</span>
                 <div class="ai-status ai-s-proc" id="ai-badge-ter"><div class="ai-dot"></div><span>Elaborazione…</span></div>
               </div>
               <div class="ai-prop-body">
-                <div style="font-size:10px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px">Dettatura originale</div>
-                <div class="ai-orig-box" id="ai-orig-ter"></div>
-                <div style="font-size:10px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px">Proposta AI + Listino — modificabile</div>
+                <div id="ai-sommario-nota" style="margin-bottom:10px"></div>
                 <div id="ai-table-ter"><div style="display:flex;align-items:center;gap:8px;padding:20px;color:var(--gray-500);font-size:13px"><div class="ai-spin"></div>Analisi in corso…</div></div>
               </div>
             </div>
@@ -737,32 +710,11 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--gray-50);color:
               <button class="ai-btn ai-btn-outline" onclick="document.getElementById('ai-results').style.display='none'">Annulla</button>
               <button class="ai-btn ai-btn-primary" id="ai-btn-conferma" onclick="aiConferma()" style="padding:10px 22px;font-size:13px">
                 <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 6.5l3.5 3.5 5.5-6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                Applica all'odontogramma e al preventivo
+                Applica tutto all'odontogramma e al preventivo
               </button>
             </div>
 
           </div><!-- /ai-results -->
-
-          <!-- Piano di cura automatico -->
-          <div id="ai-piano-auto" style="display:none">
-            <div class="ai-proposal-box">
-              <div class="ai-prop-head" style="background:var(--purple-light)">
-                <span style="color:var(--purple);font-weight:700">🧠 Piano di cura proposto dall'AI</span>
-                <div class="ai-status" id="ai-badge-piano" style="background:var(--purple-light);color:var(--purple)"><div class="ai-dot"></div><span>Elaborazione…</span></div>
-              </div>
-              <div class="ai-prop-body">
-                <div id="ai-piano-sommario"></div>
-                <div id="ai-table-piano"><div style="display:flex;align-items:center;gap:8px;padding:20px;color:var(--gray-500);font-size:13px"><div class="ai-spin"></div>L'AI sta analizzando la situazione clinica…</div></div>
-              </div>
-            </div>
-            <div style="display:flex;justify-content:flex-end;gap:8px;margin-bottom:2rem">
-              <button class="ai-btn ai-btn-outline" onclick="document.getElementById('ai-piano-auto').style.display='none'">Annulla</button>
-              <button class="ai-btn ai-btn-primary" id="ai-btn-conferma-piano" onclick="aiConfermaPiano()" style="padding:10px 22px;font-size:13px;background:var(--purple)">
-                <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 6.5l3.5 3.5 5.5-6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                Applica piano all'odontogramma e al preventivo
-              </button>
-            </div>
-          </div><!-- /ai-piano-auto -->
 
         </div><!-- /tab-ai -->
 
@@ -2691,21 +2643,17 @@ const AI_WORKER_STRUTTURA    = 'https://odontogramma.nicolapalmia.workers.dev';
 // ════════════════════════════════════════════════════════════
 // AI DETTATURA — State
 // ════════════════════════════════════════════════════════════
-const AIR = {
-  sit: { recorder: null, chunks: [], timer: null, secs: 0, active: false },
-  ter: { recorder: null, chunks: [], timer: null, secs: 0, active: false }
-};
+const AIR = { recorder: null, chunks: [], timer: null, secs: 0, active: false };
 
 // Cache dati AI per confirm
 const aiProposta = { sit: null, ter: null };
 
 // ════════════════════════════════════════════════════════════
-// AI — Recording
+// AI — Recording (singola nota clinica)
 // ════════════════════════════════════════════════════════════
-async function aiStartRec(sec) {
-  const r = AIR[sec];
-  if (r.active) return;
-  aiHideErr(sec);
+async function aiStartRec() {
+  if (AIR.active) return;
+  aiHideErr('nota');
 
   let stream;
   try {
@@ -2716,28 +2664,28 @@ async function aiStartRec(sec) {
       NotFoundError:    'Nessun microfono trovato.',
       NotReadableError: 'Microfono occupato.'
     };
-    aiShowErr(sec, msgs[e.name] || 'Impossibile accedere al microfono.');
+    aiShowErr('nota', msgs[e.name] || 'Impossibile accedere al microfono.');
     return;
   }
 
-  r.chunks = []; r.secs = 0;
+  AIR.chunks = []; AIR.secs = 0;
   const mime = ['audio/webm;codecs=opus','audio/webm','audio/mp4'].find(t => MediaRecorder.isTypeSupported(t)) || '';
-  try { r.recorder = new MediaRecorder(stream, mime ? { mimeType: mime } : {}); }
-  catch { r.recorder = new MediaRecorder(stream); }
+  try { AIR.recorder = new MediaRecorder(stream, mime ? { mimeType: mime } : {}); }
+  catch { AIR.recorder = new MediaRecorder(stream); }
 
-  r.recorder.ondataavailable = e => { if (e.data.size > 0) r.chunks.push(e.data); };
+  AIR.recorder.ondataavailable = e => { if (e.data.size > 0) AIR.chunks.push(e.data); };
 
-  r.recorder.onstop = async () => {
+  AIR.recorder.onstop = async () => {
     stream.getTracks().forEach(t => t.stop());
-    aiStopTimer(sec);
+    aiStopTimer();
 
-    if (!r.chunks.length || r.secs < 1) {
-      aiShowErr(sec, 'Registrazione troppo breve.');
-      aiSetStatus(sec, 'idle', 'Inattivo'); aiSetUI(sec, false); return;
+    if (!AIR.chunks.length || AIR.secs < 1) {
+      aiShowErr('nota', 'Registrazione troppo breve.');
+      aiSetStatus('nota', 'idle', 'Inattivo'); aiSetUI(false); return;
     }
 
-    const blob = new Blob(r.chunks, { type: r.recorder.mimeType || 'audio/webm' });
-    aiSetStatus(sec, 'proc', 'Trascrizione…');
+    const blob = new Blob(AIR.chunks, { type: AIR.recorder.mimeType || 'audio/webm' });
+    aiSetStatus('nota', 'proc', 'Trascrizione…');
 
     try {
       const fd = new FormData();
@@ -2745,37 +2693,36 @@ async function aiStartRec(sec) {
       const resp = await fetch(AI_WORKER_TRASCRIZIONE, { method: 'POST', body: fd });
       if (!resp.ok) { const e = await resp.json().catch(() => ({})); throw new Error(e.error || `HTTP ${resp.status}`); }
       const text = (await resp.json()).transcription || '';
-      if (!text.trim()) { aiShowErr(sec, 'Nessun testo riconosciuto. Riprova.'); aiSetStatus(sec, 'idle', 'Inattivo'); return; }
-      const ta = document.getElementById(`ai-tx-${sec}`);
+      if (!text.trim()) { aiShowErr('nota', 'Nessun testo riconosciuto. Riprova.'); aiSetStatus('nota', 'idle', 'Inattivo'); return; }
+      const ta = document.getElementById('ai-tx-nota');
       const existing = ta.value.trim();
       ta.value = existing ? existing + '\n\n' + text : text;
-      aiSetStatus(sec, 'done', 'Completata');
+      aiSetStatus('nota', 'done', 'Completata');
       notify('Trascrizione completata', 'ok');
     } catch(e) {
-      aiShowErr(sec, 'Errore trascrizione: ' + e.message);
-      aiSetStatus(sec, 'idle', 'Inattivo');
+      aiShowErr('nota', 'Errore trascrizione: ' + e.message);
+      aiSetStatus('nota', 'idle', 'Inattivo');
     }
   };
 
-  r.recorder.start(200);
-  r.active = true;
-  aiSetUI(sec, true);
-  aiSetStatus(sec, 'rec', 'In registrazione');
-  aiStartTimer(sec);
+  AIR.recorder.start(200);
+  AIR.active = true;
+  aiSetUI(true);
+  aiSetStatus('nota', 'rec', 'In registrazione');
+  aiStartTimer();
 }
 
-function aiStopRec(sec) {
-  const r = AIR[sec];
-  if (!r.active || !r.recorder) return;
-  r.active = false;
-  r.recorder.stop();
-  aiSetUI(sec, false);
+function aiStopRec() {
+  if (!AIR.active || !AIR.recorder) return;
+  AIR.active = false;
+  AIR.recorder.stop();
+  aiSetUI(false);
 }
 
-function aiSetUI(sec, recording) {
-  const br = document.getElementById(`ai-btn-rec-${sec}`);
-  const bs = document.getElementById(`ai-btn-stop-${sec}`);
-  const tm = document.getElementById(`ai-tm-${sec}`);
+function aiSetUI(recording) {
+  const br = document.getElementById('ai-btn-rec-nota');
+  const bs = document.getElementById('ai-btn-stop-nota');
+  const tm = document.getElementById('ai-tm-nota');
   if (br) br.style.display = recording ? 'none' : 'inline-flex';
   if (bs) bs.style.display = recording ? 'inline-flex' : 'none';
   if (tm) tm.style.display = recording ? 'inline-block' : 'none';
@@ -2788,26 +2735,23 @@ function aiSetStatus(sec, cls, txt) {
   e.innerHTML = `<div class="ai-dot"></div><span>${txt}</span>`;
 }
 
-function aiStartTimer(sec) {
-  const r = AIR[sec];
-  r.timer = setInterval(() => {
-    r.secs++;
-    const m = String(Math.floor(r.secs/60)).padStart(2,'0');
-    const s = String(r.secs%60).padStart(2,'0');
-    const el = document.getElementById(`ai-tm-${sec}`);
+function aiStartTimer() {
+  AIR.timer = setInterval(() => {
+    AIR.secs++;
+    const m = String(Math.floor(AIR.secs/60)).padStart(2,'0');
+    const s = String(AIR.secs%60).padStart(2,'0');
+    const el = document.getElementById('ai-tm-nota');
     if (el) el.textContent = `${m}:${s}`;
   }, 1000);
 }
 
-function aiStopTimer(sec) { clearInterval(AIR[sec].timer); }
+function aiStopTimer() { clearInterval(AIR.timer); }
 function aiShowErr(sec, msg) { const e=document.getElementById(`ai-err-${sec}`); if(e){e.textContent=msg;e.style.display='block';} }
 function aiHideErr(sec) { const e=document.getElementById(`ai-err-${sec}`); if(e) e.style.display='none'; }
 
 // ════════════════════════════════════════════════════════════
-// AI — Corrispondenza con listino prestazioni
+// AI — Corrispondenza con listino prestazioni (fallback locale)
 // ════════════════════════════════════════════════════════════
-
-// Mappa stato AI situazione attuale → id TR_ATTUALE
 const AI_STATO_ATTUALE_MAP = {
   sano:'sano', mancante:'estratto', estratto:'estratto',
   otturazione:'otturato', otturato:'otturato',
@@ -2828,19 +2772,15 @@ function aiMatchAttuale(stato) {
 function aiMatchPiano(nomeAI) {
   if (!nomeAI) return null;
   const needle = nomeAI.toLowerCase().replace(/[^a-z0-9àèéìòù ]/g,'').trim();
-  // 1. exact id
   let m = TR_PIANO.find(t => t.id === needle.replace(/\s+/g,'_'));
   if (m) return m;
-  // 2. label contains needle (whole phrase)
   m = TR_PIANO.find(t => t.label.toLowerCase().includes(needle));
   if (m) return m;
-  // 3. needle contains label main word (>4 chars)
   const candidates = TR_PIANO.filter(t => {
     const words = t.label.toLowerCase().split(/\s+/).filter(w=>w.length>4);
     return words.length > 0 && words.every(w => needle.includes(w));
   });
   if (candidates.length === 1) return candidates[0];
-  // 4. any significant word match
   const sig = TR_PIANO.filter(t => {
     const words = t.label.toLowerCase().split(/\s+/).filter(w=>w.length>5);
     return words.some(w => needle.includes(w));
@@ -2850,73 +2790,85 @@ function aiMatchPiano(nomeAI) {
 }
 
 // ════════════════════════════════════════════════════════════
-// AI — Avvia analisi
+// AI — Avvia analisi nota completa
 // ════════════════════════════════════════════════════════════
 async function aiAvviaAnalisi() {
   if (!currentId) { notify('Apri prima una cartella paziente', 'err'); return; }
-  const sit = document.getElementById('ai-tx-sit').value.trim();
-  const ter = document.getElementById('ai-tx-ter').value.trim();
-  if (!sit && !ter) { notify('Registra almeno una sezione prima di analizzare', 'err'); return; }
+  const nota = document.getElementById('ai-tx-nota').value.trim();
+  if (!nota) { notify('Registra o scrivi una nota clinica prima di analizzare', 'err'); return; }
 
   const results = document.getElementById('ai-results');
   results.style.display = 'block';
   document.getElementById('ai-btn-conferma').disabled = true;
   aiProposta.sit = null; aiProposta.ter = null;
 
-  // Mostra dettature originali
-  document.getElementById('ai-orig-sit').textContent = sit || '(nessuna dettatura)';
-  document.getElementById('ai-orig-ter').textContent = ter || '(nessuna dettatura)';
-
-  // Spinner reset
-  document.getElementById('ai-table-sit').innerHTML = sit
-    ? '<div style="display:flex;align-items:center;gap:8px;padding:20px;color:var(--gray-500);font-size:13px"><div class="ai-spin"></div>Analisi in corso…</div>'
-    : '<div style="padding:16px;text-align:center;color:var(--gray-300);font-size:12px">Nessuna dettatura per questa sezione.</div>';
-  document.getElementById('ai-table-ter').innerHTML = ter
-    ? '<div style="display:flex;align-items:center;gap:8px;padding:20px;color:var(--gray-500);font-size:13px"><div class="ai-spin"></div>Analisi in corso…</div>'
-    : '<div style="padding:16px;text-align:center;color:var(--gray-300);font-size:12px">Nessuna dettatura per questa sezione.</div>';
+  document.getElementById('ai-orig-nota').textContent = nota;
+  document.getElementById('ai-table-sit').innerHTML = '<div style="display:flex;align-items:center;gap:8px;padding:20px;color:var(--gray-500);font-size:13px"><div class="ai-spin"></div>Analisi in corso…</div>';
+  document.getElementById('ai-table-ter').innerHTML  = '<div style="display:flex;align-items:center;gap:8px;padding:20px;color:var(--gray-500);font-size:13px"><div class="ai-spin"></div>Analisi in corso…</div>';
+  document.getElementById('ai-sommario-nota').innerHTML = '';
   aiBadge('sit', 'proc', 'Elaborazione…');
   aiBadge('ter', 'proc', 'Elaborazione…');
-
   results.scrollIntoView({ behavior: 'smooth' });
 
-  // Lancia in parallelo
-  await Promise.all([
-    sit ? aiProcessSezione('sit', sit) : Promise.resolve(),
-    ter ? aiProcessSezione('ter', ter) : Promise.resolve()
+  const pazCodice = gv('f-codice') || currentId;
+  const listinoAtt = TR_ATTUALE.map(t => ({ id: t.id, label: t.label }));
+  const listinoPia = TR_PIANO.map(t => ({ id: t.id, label: t.label, ...(t.prezzo != null ? { prezzo: t.prezzo } : {}) }));
+  const [esempiSit, esempiTer] = await Promise.all([
+    aiCaricaMapping('situazione_attuale'),
+    aiCaricaMapping('terapie_da_attuare')
   ]);
 
-  // Abilita conferma se almeno una sezione analizzata
-  if (aiProposta.sit || aiProposta.ter) {
-    document.getElementById('ai-btn-conferma').disabled = false;
-  }
-}
-
-async function aiProcessSezione(sec, testo) {
-  const tipo = sec === 'sit' ? 'situazione_attuale' : 'terapie_da_attuare';
-  const pazCodice = gv('f-codice') || currentId;
-  // Invia il listino al Worker: l'AI sceglierà l'id esatto
-  const listino = (sec === 'sit' ? TR_ATTUALE : TR_PIANO).map(t => ({
-    id: t.id, label: t.label, ...(t.prezzo != null ? { prezzo: t.prezzo } : {})
-  }));
-  // Carica mapping appresi dai medici (esempi per il prompt AI)
-  const esempi = await aiCaricaMapping(tipo);
+  // Unica chiamata al Worker con tipo nota_completa
   try {
     const resp = await fetch(AI_WORKER_STRUTTURA, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ codice_paziente: pazCodice, tipo, trascrizione: testo, listino, esempi })
+      body: JSON.stringify({
+        codice_paziente: pazCodice,
+        tipo: 'nota_completa',
+        trascrizione: nota,
+        listino_attuale: listinoAtt,
+        listino_piano: listinoPia,
+        esempi_attuale: esempiSit,
+        esempi_piano: esempiTer
+      })
     });
     if (!resp.ok) { const e = await resp.json().catch(()=>({})); throw new Error(e.error || `HTTP ${resp.status}`); }
     const data = await resp.json();
-    aiProposta[sec] = data;
-    if (sec === 'sit') aiRenderSituazione(data);
-    else               aiRenderPiano(data);
-    aiBadge(sec, 'done', 'Pronto');
+
+    // data.situazione_attuale e data.terapie_da_attuare
+    if (data.situazione_attuale) {
+      aiProposta.sit = data.situazione_attuale;
+      aiRenderSituazione(data.situazione_attuale);
+      aiBadge('sit', 'done', 'Pronto');
+    } else {
+      aiBadge('sit', 'idle', 'Nessun dato');
+      document.getElementById('ai-table-sit').innerHTML = '<div style="padding:16px;text-align:center;color:var(--gray-300);font-size:12px">Nessuna situazione attuale identificata.</div>';
+    }
+
+    if (data.terapie_da_attuare) {
+      aiProposta.ter = data.terapie_da_attuare;
+      aiRenderPiano(data.terapie_da_attuare);
+      aiBadge('ter', 'done', 'Pronto');
+      if (data.sommario) {
+        document.getElementById('ai-sommario-nota').innerHTML =
+          `<div style="background:#fef9c3;border:1px solid #fde68a;border-radius:var(--r-sm);padding:8px 12px;font-size:12px;color:#78350f">
+            <strong>📋 Valutazione AI:</strong> ${esc(data.sommario)}</div>`;
+      }
+    } else {
+      aiBadge('ter', 'idle', 'Nessun dato');
+      document.getElementById('ai-table-ter').innerHTML = '<div style="padding:16px;text-align:center;color:var(--gray-300);font-size:12px">Nessun piano terapie identificato.</div>';
+    }
+
+    if (aiProposta.sit || aiProposta.ter) {
+      document.getElementById('ai-btn-conferma').disabled = false;
+    }
   } catch(e) {
-    aiBadge(sec, 'idle', 'Errore');
-    document.getElementById(`ai-table-${sec}`).innerHTML =
-      `<div style="padding:12px;background:var(--red-light);color:var(--red);border-radius:var(--r-sm);font-size:12px">Errore analisi: ${esc(e.message)}</div>`;
-    notify('Errore AI (' + sec + '): ' + e.message, 'err');
+    aiBadge('sit', 'idle', 'Errore'); aiBadge('ter', 'idle', 'Errore');
+    document.getElementById('ai-table-sit').innerHTML =
+      `<div style="padding:12px;background:var(--red-light);color:var(--red);border-radius:var(--r-sm);font-size:12px">Errore: ${esc(e.message)}</div>`;
+    document.getElementById('ai-table-ter').innerHTML = '';
+    notify('Errore AI: ' + e.message, 'err');
   }
 }
 
@@ -3309,7 +3261,7 @@ async function aiConferma() {
 }
 
 // ════════════════════════════════════════════════════════════
-// AI — Proponi piano di cura automatico
+// AI — (legacy, non più usato direttamente)
 // ════════════════════════════════════════════════════════════
 async function aiProponePiano() {
   if (!currentId) { notify('Nessun paziente aperto', 'err'); return; }
