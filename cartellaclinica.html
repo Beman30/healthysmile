@@ -567,6 +567,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--gray-50);color:
               <div style="display:flex;gap:6px">
                 <button class="btn-s" onclick="importDaOdonto()">⟳ Da odontogramma</button>
                 <button class="btn-s c" onclick="addPrevRow()">+ Riga</button>
+                <button class="btn-s" onclick="prevNuovaVoceInline(this)" style="background:var(--teal-light);color:var(--teal);border-color:var(--teal)">+ Nuova voce listino</button>
                 <button class="btn-s" onclick="stampaPrev()" style="background:var(--blue-light);color:var(--blue);border-color:var(--blue)">🖨 Stampa / PDF</button>
               </div>
             </div>
@@ -1023,6 +1024,13 @@ const TR_PIANO_DEFAULT = [
   {id:'trattamento_locale_per_algia', label:'Trattamento locale per algia', color:'#686864', sym:'TRA', bg:'#EFEDE7', tipo:'piano', prezzo:20},
   {id:'trazionamento_canino_incluso', label:'Trazionamento Canino incluso', color:'#1A5EA8', sym:'TRA', bg:'#E8F1FD', tipo:'piano', prezzo:1000},
   {id:'valutazione_paradontale', label:'VALUTAZIONE PARADONTALE', color:'#1D9E75', sym:'VAL', bg:'#E1F5EE', tipo:'piano', prezzo:150},
+  // ── Arcate e quadranti ──────────────────────────────────────
+  {id:'arcata_superiore', label:'ARCATA SUPERIORE COMPLETA', color:'#1D9E75', sym:'AS', bg:'#E1F5EE', tipo:'piano', prezzo:0},
+  {id:'arcata_inferiore', label:'ARCATA INFERIORE COMPLETA', color:'#1D9E75', sym:'AI', bg:'#E1F5EE', tipo:'piano', prezzo:0},
+  {id:'primo_quadrante', label:'I QUADRANTE', color:'#1D9E75', sym:'Q1', bg:'#E1F5EE', tipo:'piano', prezzo:0},
+  {id:'secondo_quadrante', label:'II QUADRANTE', color:'#1D9E75', sym:'Q2', bg:'#E1F5EE', tipo:'piano', prezzo:0},
+  {id:'terzo_quadrante', label:'III QUADRANTE', color:'#1D9E75', sym:'Q3', bg:'#E1F5EE', tipo:'piano', prezzo:0},
+  {id:'quarto_quadrante', label:'IV QUADRANTE', color:'#1D9E75', sym:'Q4', bg:'#E1F5EE', tipo:'piano', prezzo:0},
 ];
 
 let TR_ATTUALE = [...TR_ATTUALE_DEFAULT];
@@ -2308,6 +2316,73 @@ function importDaOdonto() {
   prevRows = [...prevRows, ...newRows];
   renderPrevRows();
   notify(`${newRows.length} voci importate dall'odontogramma`,'ok');
+}
+
+function prevNuovaVoceInline(btn) {
+  // Mostra/nascondi form inline sotto i pulsanti
+  const existing = document.getElementById('prev-nuova-voce-form');
+  if (existing) { existing.remove(); return; }
+
+  const form = document.createElement('div');
+  form.id = 'prev-nuova-voce-form';
+  form.style.cssText = 'padding:10px 14px;background:var(--teal-light);border-bottom:1px solid var(--teal);display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end';
+  form.innerHTML = `
+    <div style="display:flex;flex-direction:column;gap:2px">
+      <label style="font-size:10px;font-weight:700;color:var(--teal);text-transform:uppercase;letter-spacing:.04em">Nome prestazione</label>
+      <input id="pnv-label" placeholder="es. Otturazione composito" style="width:220px;border:1px solid var(--teal);border-radius:4px;padding:5px 8px;font-size:12px;outline:none">
+    </div>
+    <div style="display:flex;flex-direction:column;gap:2px">
+      <label style="font-size:10px;font-weight:700;color:var(--teal);text-transform:uppercase;letter-spacing:.04em">Simbolo</label>
+      <input id="pnv-sym" placeholder="es. OC" maxlength="4" style="width:60px;border:1px solid var(--teal);border-radius:4px;padding:5px 8px;font-size:12px;text-align:center;outline:none">
+    </div>
+    <div style="display:flex;flex-direction:column;gap:2px">
+      <label style="font-size:10px;font-weight:700;color:var(--teal);text-transform:uppercase;letter-spacing:.04em">€ Prezzo</label>
+      <input id="pnv-prezzo" type="number" placeholder="0.00" step="0.01" min="0" style="width:90px;border:1px solid var(--teal);border-radius:4px;padding:5px 8px;font-size:12px;outline:none">
+    </div>
+    <div style="display:flex;flex-direction:column;gap:2px">
+      <label style="font-size:10px;font-weight:700;color:var(--teal);text-transform:uppercase;letter-spacing:.04em">Tipo</label>
+      <select id="pnv-tipo" style="border:1px solid var(--teal);border-radius:4px;padding:5px 8px;font-size:12px;outline:none">
+        <option value="piano">Piano trattamenti</option>
+        <option value="attuale">Situazione attuale</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:6px;padding-bottom:1px">
+      <button onclick="prevSalvaNuovaVoce()" style="background:var(--teal);color:white;border:none;border-radius:4px;padding:6px 16px;font-size:12px;font-weight:600;cursor:pointer">Salva e aggiungi riga</button>
+      <button onclick="document.getElementById('prev-nuova-voce-form').remove()" style="background:none;border:1px solid var(--gray-200);border-radius:4px;padding:6px 12px;font-size:12px;cursor:pointer;color:var(--gray-400)">Annulla</button>
+    </div>`;
+
+  // Inserisci dopo la toolbar pulsanti
+  btn.closest('div').parentNode.insertAdjacentElement('afterend', form);
+  setTimeout(() => document.getElementById('pnv-label')?.focus(), 50);
+}
+
+async function prevSalvaNuovaVoce() {
+  const label  = (document.getElementById('pnv-label')?.value || '').trim();
+  const sym    = (document.getElementById('pnv-sym')?.value || label.slice(0,3)).trim().toUpperCase();
+  const prezzo = parseFloat(document.getElementById('pnv-prezzo')?.value || 0) || 0;
+  const tipo   = document.getElementById('pnv-tipo')?.value || 'piano';
+  if (!label) { document.getElementById('pnv-label').style.borderColor='var(--red)'; return; }
+
+  const id = tipo + '_' + label.toLowerCase().replace(/[^a-z0-9]+/g,'_').slice(0,30) + '_' + Date.now().toString(36);
+  const nuova = { id, label, sym, color:'#1D9E75', bg:'#E1F5EE', prezzo, tipo };
+
+  if (tipo === 'attuale') TR_ATTUALE.push(nuova);
+  else                    TR_PIANO.push(nuova);
+
+  buildLegend();
+  document.getElementById('prev-prest-list')?.remove(); // forza rigenera datalist
+
+  try {
+    await savePrestazioni();
+    notify(`"${label}" aggiunta al listino ✓`, 'ok');
+  } catch(e) {
+    notify('Errore salvataggio: ' + e.message, 'err');
+  }
+
+  // Aggiungi subito una riga nel preventivo con questa voce
+  prevRows.push({ id:'pr_'+Date.now(), dente:'', tid:id, label, qta:1, prezzo, sconto:0 });
+  renderPrevRows();
+  document.getElementById('prev-nuova-voce-form')?.remove();
 }
 
 function addPrevRow() {
