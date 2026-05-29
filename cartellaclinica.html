@@ -2813,9 +2813,10 @@ async function aiAvviaAnalisi() {
   const pazCodice = gv('f-codice') || currentId;
   const listinoAtt = TR_ATTUALE.map(t => ({ id: t.id, label: t.label }));
   const listinoPia = TR_PIANO.map(t => ({ id: t.id, label: t.label, ...(t.prezzo != null ? { prezzo: t.prezzo } : {}) }));
-  const [esempiSit, esempiTer] = await Promise.all([
+  const [esempiSit, esempiTer, protocolli] = await Promise.all([
     aiCaricaMapping('situazione_attuale'),
-    aiCaricaMapping('terapie_da_attuare')
+    aiCaricaMapping('terapie_da_attuare'),
+    aiCaricaProtocolli()
   ]);
 
   // Unica chiamata al Worker con tipo nota_completa
@@ -2830,7 +2831,8 @@ async function aiAvviaAnalisi() {
         listino_attuale: listinoAtt,
         listino_piano: listinoPia,
         esempi_attuale: esempiSit,
-        esempi_piano: esempiTer
+        esempi_piano: esempiTer,
+        protocolli
       })
     });
     if (!resp.ok) { const e = await resp.json().catch(()=>({})); throw new Error(e.error || `HTTP ${resp.status}`); }
@@ -3159,7 +3161,6 @@ async function aiCaricaMapping(tipo) {
 }
 
 async function aiSalvaMapping(correzioni) {
-  // correzioni = [{tipo, stato_ai, id_listino, label_listino, prezzo}]
   if (!correzioni.length) return;
   const batch = db.batch();
   correzioni.forEach(c => {
@@ -3177,11 +3178,50 @@ async function aiSalvaMapping(correzioni) {
   });
   try {
     await batch.commit();
-    // Invalida cache
     _aiMappingCache.attuale = null;
     _aiMappingCache.piano   = null;
   } catch(e) {
     console.warn('ai_mapping save error:', e.message);
+  }
+}
+
+// ── Protocolli: quando una terapia AI porta più terapie confermate ──
+// Struttura: ai_protocols/{trigger_id} → { trigger_id, terapie: [{id, label}], count }
+let _aiProtocolliCache = null;
+let _aiProtocolliCacheTs = 0;
+
+async function aiCaricaProtocolli() {
+  if (_aiProtocolliCache && Date.now() - _aiProtocolliCacheTs < 5 * 60 * 1000) return _aiProtocolliCache;
+  try {
+    const snap = await db.collection('ai_protocols').orderBy('count','desc').limit(30).get();
+    _aiProtocolliCache = snap.docs.map(d => d.data());
+    _aiProtocolliCacheTs = Date.now();
+    return _aiProtocolliCache;
+  } catch(e) {
+    console.warn('ai_protocols load error:', e.message);
+    return [];
+  }
+}
+
+async function aiSalvaProtocolli(protocolli) {
+  // protocolli = [{ trigger_id, trigger_label, terapie: [{id, label}] }]
+  if (!protocolli.length) return;
+  const batch = db.batch();
+  protocolli.forEach(p => {
+    const ref = db.collection('ai_protocols').doc(p.trigger_id);
+    batch.set(ref, {
+      trigger_id:    p.trigger_id,
+      trigger_label: p.trigger_label || '',
+      terapie:       p.terapie,
+      count:         firebase.firestore.FieldValue.increment(1),
+      ts:            firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+  });
+  try {
+    await batch.commit();
+    _aiProtocolliCache = null;
+  } catch(e) {
+    console.warn('ai_protocols save error:', e.message);
   }
 }
 
@@ -3225,28 +3265,28 @@ async function aiConferma() {
   // ── Applica piano terapie ───────────────────────────────────
   if (aiProposta.ter && aiProposta.ter.denti) {
     const terRows = aiProposta._terRows || Object.keys(aiProposta.ter.denti).map(num => ({ rowKey: `${num}_0`, num }));
-    // Ricostruisci mappa rowKey → dato AI (stato_ai originale)
     const aiRowData = {};
     Object.entries(aiProposta.ter.denti).forEach(([num, d]) => {
       const terapieArr = Array.isArray(d.terapie) && d.terapie.length ? d.terapie : [{ stato: d.stato, id_listino: d.id_listino }];
       terapieArr.forEach((ter, idx) => { aiRowData[`${num}_${idx}`] = ter; });
     });
 
+    // Raccoglie per dente tutte le terapie confermate → per salvare protocolli
+    const terapiePerDente = {}; // num → [{tid, label, wasAI: bool}]
+
     terRows.forEach(({ rowKey, num: numOrig }) => {
       const sel    = document.getElementById(`ai-ter-sel-${rowKey}`);
       const qtaEl  = document.getElementById(`ai-ter-qta-${rowKey}`);
       const prezEl = document.getElementById(`ai-ter-prezzo-${rowKey}`);
-      // Leggi il numero dente dall'input (potrebbe essere stato corretto dal medico)
       const numEl  = document.getElementById(`ai-ter-num-${rowKey}`);
       const num    = (numEl && numEl.value) ? numEl.value : numOrig;
-      if (!sel || !sel.value) return;
+      if (!sel || !sel.value || !document.getElementById(`ai-ter-row-${rowKey}`)) return; // riga rimossa
 
       const tid    = sel.value;
       const qta    = parseFloat(qtaEl?.value || 1) || 1;
       const prezzo = parseFloat(prezEl?.value || 0) || 0;
       const t      = findTR(tid);
 
-      // Aggiungi al piano odontogramma
       if (!teethPiano[parseInt(num)]) teethPiano[parseInt(num)] = [];
       const already = teethPiano[parseInt(num)].find(x => x.tid === tid);
       if (!already) {
@@ -3254,13 +3294,12 @@ async function aiConferma() {
         modifiche++;
       }
 
-      // Aggiungi al preventivo
       const existingPrev = prevRows.find(r => r.dente == num && r.tid === tid);
       if (!existingPrev && t) {
         prevRows.push({ id: 'ai_'+Date.now()+'_'+rowKey, dente: num, tid, label: t.label, qta, prezzo, sconto: 0 });
       }
 
-      // Salva mapping per learning
+      // Mapping singolo
       const aiTer = aiRowData[rowKey];
       if (aiTer) {
         correzioni.push({
@@ -3271,10 +3310,34 @@ async function aiConferma() {
           prezzo
         });
       }
+
+      // Accumula per protocollo dente
+      if (!terapiePerDente[num]) terapiePerDente[num] = [];
+      terapiePerDente[num].push({ tid, label: t ? t.label : tid, wasAI: !!aiTer });
     });
+
+    // ── Salva protocolli: denti con ≥2 terapie dove ≥1 era AI e ≥1 manuale
+    const protocolli = [];
+    Object.entries(terapiePerDente).forEach(([num, lista]) => {
+      if (lista.length < 2) return;
+      const aiItems = lista.filter(x => x.wasAI);
+      const extras  = lista.filter(x => !x.wasAI);
+      if (!aiItems.length || !extras.length) return;
+      // Per ogni terapia AI di quel dente, salva il pacchetto completo
+      aiItems.forEach(trigger => {
+        protocolli.push({
+          trigger_id:    trigger.tid,
+          trigger_label: trigger.label,
+          terapie:       lista.map(x => ({ id: x.tid, label: x.label }))
+        });
+      });
+    });
+
     refreshOdonto('piano');
     renderPianoRiepilogo();
     renderPrevRows();
+
+    if (protocolli.length) aiSalvaProtocolli(protocolli);
   }
 
   if (modifiche > 0) {
@@ -3283,7 +3346,6 @@ async function aiConferma() {
     document.getElementById('ai-btn-conferma').textContent = '✓ Applicato';
     document.getElementById('ai-btn-conferma').style.background = 'var(--teal)';
     document.getElementById('ai-btn-conferma').disabled = true;
-    // Salva learning in background — non blocca l'utente
     aiSalvaMapping(correzioni);
   } else {
     notify('Nessuna modifica da applicare (selezioni vuote)', 'i');
