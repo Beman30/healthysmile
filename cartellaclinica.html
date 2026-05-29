@@ -2656,6 +2656,440 @@ function closeSidebar() {
 }
 
 // Close sidebar when a patient is selected on mobile — handled in renderList
+
+// ════════════════════════════════════════════════════════════
+// AI DETTATURA — Worker URLs
+// ════════════════════════════════════════════════════════════
+const AI_WORKER_TRASCRIZIONE = 'https://trascrittore.nicolapalmia.workers.dev';
+const AI_WORKER_STRUTTURA    = 'https://odontogramma.nicolapalmia.workers.dev';
+
+// ════════════════════════════════════════════════════════════
+// AI DETTATURA — State
+// ════════════════════════════════════════════════════════════
+const AIR = {
+  sit: { recorder: null, chunks: [], timer: null, secs: 0, active: false },
+  ter: { recorder: null, chunks: [], timer: null, secs: 0, active: false }
+};
+
+// Cache dati AI per confirm
+const aiProposta = { sit: null, ter: null };
+
+// ════════════════════════════════════════════════════════════
+// AI — Recording
+// ════════════════════════════════════════════════════════════
+async function aiStartRec(sec) {
+  const r = AIR[sec];
+  if (r.active) return;
+  aiHideErr(sec);
+
+  let stream;
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+  } catch(e) {
+    const msgs = {
+      NotAllowedError:  'Accesso al microfono negato.',
+      NotFoundError:    'Nessun microfono trovato.',
+      NotReadableError: 'Microfono occupato.'
+    };
+    aiShowErr(sec, msgs[e.name] || 'Impossibile accedere al microfono.');
+    return;
+  }
+
+  r.chunks = []; r.secs = 0;
+  const mime = ['audio/webm;codecs=opus','audio/webm','audio/mp4'].find(t => MediaRecorder.isTypeSupported(t)) || '';
+  try { r.recorder = new MediaRecorder(stream, mime ? { mimeType: mime } : {}); }
+  catch { r.recorder = new MediaRecorder(stream); }
+
+  r.recorder.ondataavailable = e => { if (e.data.size > 0) r.chunks.push(e.data); };
+
+  r.recorder.onstop = async () => {
+    stream.getTracks().forEach(t => t.stop());
+    aiStopTimer(sec);
+
+    if (!r.chunks.length || r.secs < 1) {
+      aiShowErr(sec, 'Registrazione troppo breve.');
+      aiSetStatus(sec, 'idle', 'Inattivo'); aiSetUI(sec, false); return;
+    }
+
+    const blob = new Blob(r.chunks, { type: r.recorder.mimeType || 'audio/webm' });
+    aiSetStatus(sec, 'proc', 'Trascrizione…');
+
+    try {
+      const fd = new FormData();
+      fd.append('audio', blob, 'recording.webm');
+      const resp = await fetch(AI_WORKER_TRASCRIZIONE, { method: 'POST', body: fd });
+      if (!resp.ok) { const e = await resp.json().catch(() => ({})); throw new Error(e.error || `HTTP ${resp.status}`); }
+      const text = (await resp.json()).transcription || '';
+      if (!text.trim()) { aiShowErr(sec, 'Nessun testo riconosciuto. Riprova.'); aiSetStatus(sec, 'idle', 'Inattivo'); return; }
+      const ta = document.getElementById(`ai-tx-${sec}`);
+      const existing = ta.value.trim();
+      ta.value = existing ? existing + '\n\n' + text : text;
+      aiSetStatus(sec, 'done', 'Completata');
+      notify('Trascrizione completata', 'ok');
+    } catch(e) {
+      aiShowErr(sec, 'Errore trascrizione: ' + e.message);
+      aiSetStatus(sec, 'idle', 'Inattivo');
+    }
+  };
+
+  r.recorder.start(200);
+  r.active = true;
+  aiSetUI(sec, true);
+  aiSetStatus(sec, 'rec', 'In registrazione');
+  aiStartTimer(sec);
+}
+
+function aiStopRec(sec) {
+  const r = AIR[sec];
+  if (!r.active || !r.recorder) return;
+  r.active = false;
+  r.recorder.stop();
+  aiSetUI(sec, false);
+}
+
+function aiSetUI(sec, recording) {
+  const br = document.getElementById(`ai-btn-rec-${sec}`);
+  const bs = document.getElementById(`ai-btn-stop-${sec}`);
+  const tm = document.getElementById(`ai-tm-${sec}`);
+  if (br) br.style.display = recording ? 'none' : 'inline-flex';
+  if (bs) bs.style.display = recording ? 'inline-flex' : 'none';
+  if (tm) tm.style.display = recording ? 'inline-block' : 'none';
+}
+
+function aiSetStatus(sec, cls, txt) {
+  const e = document.getElementById(`ai-st-${sec}`);
+  if (!e) return;
+  e.className = `ai-status ai-s-${cls}`;
+  e.innerHTML = `<div class="ai-dot"></div><span>${txt}</span>`;
+}
+
+function aiStartTimer(sec) {
+  const r = AIR[sec];
+  r.timer = setInterval(() => {
+    r.secs++;
+    const m = String(Math.floor(r.secs/60)).padStart(2,'0');
+    const s = String(r.secs%60).padStart(2,'0');
+    const el = document.getElementById(`ai-tm-${sec}`);
+    if (el) el.textContent = `${m}:${s}`;
+  }, 1000);
+}
+
+function aiStopTimer(sec) { clearInterval(AIR[sec].timer); }
+function aiShowErr(sec, msg) { const e=document.getElementById(`ai-err-${sec}`); if(e){e.textContent=msg;e.style.display='block';} }
+function aiHideErr(sec) { const e=document.getElementById(`ai-err-${sec}`); if(e) e.style.display='none'; }
+
+// ════════════════════════════════════════════════════════════
+// AI — Corrispondenza con listino prestazioni
+// ════════════════════════════════════════════════════════════
+
+// Mappa stato AI situazione attuale → id TR_ATTUALE
+const AI_STATO_ATTUALE_MAP = {
+  sano:'sano', mancante:'estratto', estratto:'estratto',
+  otturazione:'otturato', otturato:'otturato',
+  devitalizzazione:'devitaliz', devitalizzato:'devitaliz',
+  impianto:'impianto', corona:'corona', ponte:'ponte',
+  provvisorio:'provvisorio', parziale:'parziale',
+  frattura:'frattura', erosione:'erosione',
+  bite:'bite_att', igiene:'igiene_att', sbiancamento:'sbianc_att'
+};
+
+function aiMatchAttuale(stato) {
+  return AI_STATO_ATTUALE_MAP[stato] ||
+    TR_ATTUALE.find(t => t.id === stato) ||
+    TR_ATTUALE.find(t => t.label.toLowerCase().includes(stato.toLowerCase())) ||
+    null;
+}
+
+function aiMatchPiano(nomeAI) {
+  if (!nomeAI) return null;
+  const needle = nomeAI.toLowerCase().replace(/[^a-z0-9àèéìòù ]/g,'').trim();
+  // 1. exact id
+  let m = TR_PIANO.find(t => t.id === needle.replace(/\s+/g,'_'));
+  if (m) return m;
+  // 2. label contains needle (whole phrase)
+  m = TR_PIANO.find(t => t.label.toLowerCase().includes(needle));
+  if (m) return m;
+  // 3. needle contains label main word (>4 chars)
+  const candidates = TR_PIANO.filter(t => {
+    const words = t.label.toLowerCase().split(/\s+/).filter(w=>w.length>4);
+    return words.length > 0 && words.every(w => needle.includes(w));
+  });
+  if (candidates.length === 1) return candidates[0];
+  // 4. any significant word match
+  const sig = TR_PIANO.filter(t => {
+    const words = t.label.toLowerCase().split(/\s+/).filter(w=>w.length>5);
+    return words.some(w => needle.includes(w));
+  });
+  if (sig.length === 1) return sig[0];
+  return null;
+}
+
+// ════════════════════════════════════════════════════════════
+// AI — Avvia analisi
+// ════════════════════════════════════════════════════════════
+async function aiAvviaAnalisi() {
+  if (!currentId) { notify('Apri prima una cartella paziente', 'err'); return; }
+  const sit = document.getElementById('ai-tx-sit').value.trim();
+  const ter = document.getElementById('ai-tx-ter').value.trim();
+  if (!sit && !ter) { notify('Registra almeno una sezione prima di analizzare', 'err'); return; }
+
+  const results = document.getElementById('ai-results');
+  results.style.display = 'block';
+  document.getElementById('ai-btn-conferma').disabled = true;
+  aiProposta.sit = null; aiProposta.ter = null;
+
+  // Mostra dettature originali
+  document.getElementById('ai-orig-sit').textContent = sit || '(nessuna dettatura)';
+  document.getElementById('ai-orig-ter').textContent = ter || '(nessuna dettatura)';
+
+  // Spinner reset
+  document.getElementById('ai-table-sit').innerHTML = sit
+    ? '<div style="display:flex;align-items:center;gap:8px;padding:20px;color:var(--gray-500);font-size:13px"><div class="ai-spin"></div>Analisi in corso…</div>'
+    : '<div style="padding:16px;text-align:center;color:var(--gray-300);font-size:12px">Nessuna dettatura per questa sezione.</div>';
+  document.getElementById('ai-table-ter').innerHTML = ter
+    ? '<div style="display:flex;align-items:center;gap:8px;padding:20px;color:var(--gray-500);font-size:13px"><div class="ai-spin"></div>Analisi in corso…</div>'
+    : '<div style="padding:16px;text-align:center;color:var(--gray-300);font-size:12px">Nessuna dettatura per questa sezione.</div>';
+  aiBadge('sit', 'proc', 'Elaborazione…');
+  aiBadge('ter', 'proc', 'Elaborazione…');
+
+  results.scrollIntoView({ behavior: 'smooth' });
+
+  // Lancia in parallelo
+  await Promise.all([
+    sit ? aiProcessSezione('sit', sit) : Promise.resolve(),
+    ter ? aiProcessSezione('ter', ter) : Promise.resolve()
+  ]);
+
+  // Abilita conferma se almeno una sezione analizzata
+  if (aiProposta.sit || aiProposta.ter) {
+    document.getElementById('ai-btn-conferma').disabled = false;
+  }
+}
+
+async function aiProcessSezione(sec, testo) {
+  const tipo = sec === 'sit' ? 'situazione_attuale' : 'terapie_da_attuare';
+  const pazCodice = gv('f-codice') || currentId;
+  try {
+    const resp = await fetch(AI_WORKER_STRUTTURA, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ codice_paziente: pazCodice, tipo, trascrizione: testo })
+    });
+    if (!resp.ok) { const e = await resp.json().catch(()=>({})); throw new Error(e.error || `HTTP ${resp.status}`); }
+    const data = await resp.json();
+    aiProposta[sec] = data;
+    if (sec === 'sit') aiRenderSituazione(data);
+    else               aiRenderPiano(data);
+    aiBadge(sec, 'done', 'Pronto');
+  } catch(e) {
+    aiBadge(sec, 'idle', 'Errore');
+    document.getElementById(`ai-table-${sec}`).innerHTML =
+      `<div style="padding:12px;background:var(--red-light);color:var(--red);border-radius:var(--r-sm);font-size:12px">Errore analisi: ${esc(e.message)}</div>`;
+    notify('Errore AI (' + sec + '): ' + e.message, 'err');
+  }
+}
+
+function aiBadge(sec, cls, txt) {
+  const e = document.getElementById(`ai-badge-${sec}`);
+  if (!e) return;
+  e.className = `ai-status ai-s-${cls}`;
+  e.innerHTML = `<div class="ai-dot"></div><span>${txt}</span>`;
+}
+
+// ════════════════════════════════════════════════════════════
+// AI — Render proposta situazione attuale
+// ════════════════════════════════════════════════════════════
+function aiRenderSituazione(data) {
+  const container = document.getElementById('ai-table-sit');
+  const denti = data.denti || {};
+  const avvisi = data.avvisi || [];
+
+  if (!Object.keys(denti).length) {
+    container.innerHTML = '<div style="padding:14px;text-align:center;color:var(--gray-300);font-size:12px">Nessun dente identificato.</div>';
+    return;
+  }
+
+  const avvisiHtml = avvisi.length
+    ? `<div style="background:#fef9c3;border:1px solid #fde68a;border-radius:var(--r-sm);padding:8px 12px;margin-bottom:10px;font-size:12px">
+        <strong style="color:#92400e">⚠ Avvisi AI:</strong>
+        <ul style="margin:4px 0 0 16px;color:#78350f">${avvisi.map(a=>`<li>${esc(a)}</li>`).join('')}</ul>
+       </div>` : '';
+
+  const optsAttuale = TR_ATTUALE.map(t => `<option value="${t.id}">${t.label}</option>`).join('');
+
+  const rows = Object.entries(denti)
+    .sort((a,b) => parseInt(a[0])-parseInt(b[0]))
+    .map(([num, d]) => {
+      const matchedTR = aiMatchAttuale(d.stato || '');
+      const matchedId = matchedTR ? (typeof matchedTR === 'object' ? matchedTR.id : matchedTR) : '';
+      const confIcon = d.confidence==='alta' ? '●' : d.confidence==='media' ? '◐' : '○';
+      const confColor = d.confidence==='alta' ? 'var(--teal)' : d.confidence==='media' ? 'var(--amber)' : 'var(--red)';
+      const opts = `<option value="">— non applicare —</option>${TR_ATTUALE.map(t=>`<option value="${t.id}"${t.id===matchedId?' selected':''}>${t.label}</option>`).join('')}`;
+      return `<tr>
+        <td style="font-weight:700;font-family:'DM Mono',monospace;font-size:14px;color:var(--gray-900)">${num}</td>
+        <td><code style="font-size:11px;color:var(--gray-500)">${esc(d.stato||'')}</code></td>
+        <td><select id="ai-sit-sel-${num}" style="min-width:160px">${opts}</select></td>
+        <td style="font-size:11px;color:var(--gray-500)">${esc(d.problema||'')}</td>
+        <td style="text-align:center;color:${confColor}" title="Affidabilità AI: ${d.confidence}">${confIcon}</td>
+      </tr>`;
+    }).join('');
+
+  container.innerHTML = `
+    ${avvisiHtml}
+    <div style="overflow-x:auto">
+      <table class="ai-table">
+        <thead><tr>
+          <th>Dente</th><th>AI stato</th><th>Codice listino</th><th>Problema</th><th title="Affidabilità">AI</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+}
+
+// ════════════════════════════════════════════════════════════
+// AI — Render proposta piano terapie con listino
+// ════════════════════════════════════════════════════════════
+function aiRenderPiano(data) {
+  const container = document.getElementById('ai-table-ter');
+  const denti = data.denti || {};
+  const avvisi = data.avvisi || [];
+
+  if (!Object.keys(denti).length) {
+    container.innerHTML = '<div style="padding:14px;text-align:center;color:var(--gray-300);font-size:12px">Nessuna terapia identificata.</div>';
+    return;
+  }
+
+  const avvisiHtml = avvisi.length
+    ? `<div style="background:#fef9c3;border:1px solid #fde68a;border-radius:var(--r-sm);padding:8px 12px;margin-bottom:10px;font-size:12px">
+        <strong style="color:#92400e">⚠ Avvisi AI:</strong>
+        <ul style="margin:4px 0 0 16px;color:#78350f">${avvisi.map(a=>`<li>${esc(a)}</li>`).join('')}</ul>
+       </div>` : '';
+
+  const optsPiano = TR_PIANO.map(t => `<option value="${t.id}">${t.label} — €${t.prezzo||0}</option>`).join('');
+
+  const rows = Object.entries(denti)
+    .sort((a,b) => parseInt(a[0])-parseInt(b[0]))
+    .map(([num, d]) => {
+      const stato = d.stato || '';
+      // Try to match the therapy name to the listino
+      const matchName = d.problema || stato || d.note || '';
+      let matched = aiMatchPiano(matchName) || aiMatchPiano(stato);
+      const daConfermare = !matched;
+      const matchedId = matched ? matched.id : '';
+      const matchedPrezzo = matched ? (matched.prezzo || 0) : 0;
+      const confWarnHtml = daConfermare
+        ? `<span class="ai-conf-warn" title="Prestazione non trovata nel listino">⚠ da confermare</span>` : '';
+      const rowCls = daConfermare ? 'ai-row-conf' : '';
+
+      const opts = `<option value="">— non aggiungere —</option>${TR_PIANO.map(t=>`<option value="${t.id}" data-prezzo="${t.prezzo||0}"${t.id===matchedId?' selected':''}>${t.label} — €${t.prezzo||0}</option>`).join('')}`;
+
+      return `<tr class="${rowCls}" id="ai-ter-row-${num}">
+        <td style="font-weight:700;font-family:'DM Mono',monospace;font-size:14px;color:var(--gray-900)">${num}</td>
+        <td style="font-size:11px;color:var(--gray-500);max-width:140px">${esc(matchName)}</td>
+        <td>
+          ${confWarnHtml}
+          <select id="ai-ter-sel-${num}" class="ai-prest-sel" onchange="aiAggiornaPrezzoRiga('${num}',this)">${opts}</select>
+        </td>
+        <td><input type="number" id="ai-ter-qta-${num}" value="1" min="1" style="width:50px"></td>
+        <td><input type="number" id="ai-ter-prezzo-${num}" value="${matchedPrezzo}" step="0.01" min="0" style="width:80px" placeholder="€"></td>
+      </tr>`;
+    }).join('');
+
+  container.innerHTML = `
+    ${avvisiHtml}
+    <div style="overflow-x:auto">
+      <table class="ai-table">
+        <thead><tr>
+          <th>Dente</th><th>AI terapia</th><th>Prestazione listino</th><th>Q.tà</th><th>€ Unit.</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+    <div style="font-size:11px;color:var(--amber);margin-top:8px">
+      ⚠ Le righe evidenziate non hanno trovato corrispondenza nel listino: seleziona manualmente la prestazione.
+    </div>`;
+}
+
+function aiAggiornaPrezzoRiga(num, sel) {
+  const opt = sel.options[sel.selectedIndex];
+  const prezzo = opt ? parseFloat(opt.getAttribute('data-prezzo') || 0) : 0;
+  const prezzoEl = document.getElementById(`ai-ter-prezzo-${num}`);
+  if (prezzoEl && prezzo > 0) prezzoEl.value = prezzo;
+}
+
+// ════════════════════════════════════════════════════════════
+// AI — Conferma e applica
+// ════════════════════════════════════════════════════════════
+function aiConferma() {
+  if (!currentId) { notify('Nessun paziente aperto', 'err'); return; }
+  let modifiche = 0;
+
+  // ── Applica situazione attuale ──────────────────────────────
+  if (aiProposta.sit && aiProposta.sit.denti) {
+    Object.keys(aiProposta.sit.denti).forEach(num => {
+      const sel = document.getElementById(`ai-sit-sel-${num}`);
+      if (!sel || !sel.value) return;
+      const tid = sel.value;
+      if (!teethAttuale[num]) teethAttuale[num] = [];
+      if (!teethAttuale[num].includes(tid)) {
+        teethAttuale[num].push(tid);
+        modifiche++;
+      }
+    });
+    refreshOdonto('attuale');
+  }
+
+  // ── Applica piano terapie ───────────────────────────────────
+  if (aiProposta.ter && aiProposta.ter.denti) {
+    Object.keys(aiProposta.ter.denti).forEach(num => {
+      const sel    = document.getElementById(`ai-ter-sel-${num}`);
+      const qtaEl  = document.getElementById(`ai-ter-qta-${num}`);
+      const prezEl = document.getElementById(`ai-ter-prezzo-${num}`);
+      if (!sel || !sel.value) return;
+
+      const tid    = sel.value;
+      const qta    = parseFloat(qtaEl?.value || 1) || 1;
+      const prezzo = parseFloat(prezEl?.value || 0) || 0;
+      const t      = findTR(tid);
+
+      // Aggiungi al piano odontogramma
+      if (!teethPiano[parseInt(num)]) teethPiano[parseInt(num)] = [];
+      const already = teethPiano[parseInt(num)].find(x => x.tid === tid);
+      if (!already) {
+        teethPiano[parseInt(num)].push({ tid, stato: 'dafare' });
+        modifiche++;
+      }
+
+      // Aggiungi al preventivo
+      const existingPrev = prevRows.find(r => r.dente == num && r.tid === tid);
+      if (!existingPrev && t) {
+        prevRows.push({
+          id:     'ai_' + Date.now() + '_' + num,
+          dente:  num,
+          tid,
+          label:  t.label,
+          qta,
+          prezzo,
+          sconto: 0
+        });
+      }
+    });
+    refreshOdonto('piano');
+    renderPianoRiepilogo();
+    renderPrevRows();
+  }
+
+  if (modifiche > 0) {
+    scheduleOdoSave();
+    notify(`${modifiche} elementi applicati all'odontogramma e al preventivo ✓`, 'ok');
+    // Mostra badge successo
+    document.getElementById('ai-btn-conferma').textContent = '✓ Applicato';
+    document.getElementById('ai-btn-conferma').style.background = 'var(--teal)';
+    document.getElementById('ai-btn-conferma').disabled = true;
+  } else {
+    notify('Nessuna modifica da applicare (selezioni vuote)', 'i');
+  }
+}
 </script>
 </body>
 </html>
