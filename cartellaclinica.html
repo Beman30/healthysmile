@@ -690,10 +690,14 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--gray-50);color:
           </div>
 
           <!-- Pulsante analisi -->
-          <div style="display:flex;justify-content:flex-end;margin-bottom:1rem">
+          <div style="display:flex;justify-content:flex-end;gap:8px;margin-bottom:1rem">
             <button class="ai-btn ai-btn-primary" id="ai-btn-analizza" onclick="aiAvviaAnalisi()" style="padding:10px 22px;font-size:13px">
               <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 1.5C3.7 1.5 1.5 3.7 1.5 6.5S3.7 11.5 6.5 11.5 11.5 9.3 11.5 6.5" stroke="white" stroke-width="1.6" stroke-linecap="round"/><path d="M9 2.5l2.5-.5-.5 2.5" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
               Analizza con AI
+            </button>
+            <button class="ai-btn" id="ai-btn-piano-auto" onclick="aiProponePiano()" style="padding:10px 22px;font-size:13px;background:var(--purple);color:white" title="L'AI analizza la situazione attuale e propone un piano di cura completo">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2z"/><path d="M12 8v4l3 3"/></svg>
+              Proponi piano di cura
             </button>
           </div>
 
@@ -738,6 +742,27 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--gray-50);color:
             </div>
 
           </div><!-- /ai-results -->
+
+          <!-- Piano di cura automatico -->
+          <div id="ai-piano-auto" style="display:none">
+            <div class="ai-proposal-box">
+              <div class="ai-prop-head" style="background:var(--purple-light)">
+                <span style="color:var(--purple);font-weight:700">🧠 Piano di cura proposto dall'AI</span>
+                <div class="ai-status" id="ai-badge-piano" style="background:var(--purple-light);color:var(--purple)"><div class="ai-dot"></div><span>Elaborazione…</span></div>
+              </div>
+              <div class="ai-prop-body">
+                <div id="ai-piano-sommario"></div>
+                <div id="ai-table-piano"><div style="display:flex;align-items:center;gap:8px;padding:20px;color:var(--gray-500);font-size:13px"><div class="ai-spin"></div>L'AI sta analizzando la situazione clinica…</div></div>
+              </div>
+            </div>
+            <div style="display:flex;justify-content:flex-end;gap:8px;margin-bottom:2rem">
+              <button class="ai-btn ai-btn-outline" onclick="document.getElementById('ai-piano-auto').style.display='none'">Annulla</button>
+              <button class="ai-btn ai-btn-primary" id="ai-btn-conferma-piano" onclick="aiConfermaPiano()" style="padding:10px 22px;font-size:13px;background:var(--purple)">
+                <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 6.5l3.5 3.5 5.5-6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                Applica piano all'odontogramma e al preventivo
+              </button>
+            </div>
+          </div><!-- /ai-piano-auto -->
 
         </div><!-- /tab-ai -->
 
@@ -3280,6 +3305,210 @@ async function aiConferma() {
     aiSalvaMapping(correzioni);
   } else {
     notify('Nessuna modifica da applicare (selezioni vuote)', 'i');
+  }
+}
+
+// ════════════════════════════════════════════════════════════
+// AI — Proponi piano di cura automatico
+// ════════════════════════════════════════════════════════════
+async function aiProponePiano() {
+  if (!currentId) { notify('Nessun paziente aperto', 'err'); return; }
+
+  // Costruisci il riepilogo testuale della situazione attuale confermata
+  const dentiAttuale = Object.entries(teethAttuale);
+  if (!dentiAttuale.length) {
+    notify('Prima conferma la situazione attuale (odontogramma → attuale)', 'i');
+    return;
+  }
+
+  const righe = dentiAttuale.map(([num, tids]) => {
+    const labels = (Array.isArray(tids) ? tids : [tids])
+      .map(tid => { const t = TR_ATTUALE.find(x => x.id === tid); return t ? t.label : tid; })
+      .filter(Boolean);
+    return `Dente ${num}: ${labels.join(', ')}`;
+  }).join('\n');
+
+  const pazCodice = gv('f-codice') || currentId;
+  const listino = TR_PIANO.map(t => ({ id: t.id, label: t.label, ...(t.prezzo != null ? { prezzo: t.prezzo } : {}) }));
+  const esempi  = await aiCaricaMapping('terapie_da_attuare');
+
+  // Mostra sezione risultato
+  const box = document.getElementById('ai-piano-auto');
+  box.style.display = '';
+  document.getElementById('ai-btn-conferma-piano').disabled = true;
+  document.getElementById('ai-piano-sommario').innerHTML = '';
+  document.getElementById('ai-table-piano').innerHTML = '<div style="padding:14px;text-align:center;color:var(--gray-300);font-size:12px">Analisi in corso…</div>';
+  aiBadge('piano', 'loading', 'Analisi…');
+  box.scrollIntoView({ behavior: 'smooth' });
+
+  try {
+    const resp = await fetch(AI_WORKER_STRUTTURA, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        codice_paziente: pazCodice,
+        tipo: 'proposta_piano',
+        trascrizione: righe,
+        listino,
+        esempi
+      })
+    });
+    if (!resp.ok) { const e = await resp.json().catch(()=>({})); throw new Error(e.error || `HTTP ${resp.status}`); }
+    const data = await resp.json();
+    aiProposta._pianoProposto = data;
+    aiRenderPianoProposto(data);
+    aiBadge('piano', 'done', 'Pronto');
+    document.getElementById('ai-btn-conferma-piano').disabled = false;
+  } catch(e) {
+    aiBadge('piano', 'idle', 'Errore');
+    document.getElementById('ai-table-piano').innerHTML =
+      `<div style="padding:12px;background:var(--red-light);color:var(--red);border-radius:var(--r-sm);font-size:12px">Errore: ${esc(e.message)}</div>`;
+    notify('Errore proposta piano: ' + e.message, 'err');
+  }
+}
+
+function aiRenderPianoProposto(data) {
+  const denti  = data.denti || {};
+  const avvisi = data.avvisi || [];
+  const sommario = data.sommario || '';
+  const tableEl  = document.getElementById('ai-table-piano');
+  const sommEl   = document.getElementById('ai-piano-sommario');
+
+  if (sommario) {
+    sommEl.innerHTML = `<div style="background:var(--purple-light);border:1px solid var(--purple);border-radius:var(--r-sm);padding:10px 14px;margin-bottom:10px;font-size:12px;color:var(--purple)">
+      <strong>📋 Sommario AI:</strong> ${esc(sommario)}</div>`;
+  }
+
+  if (!Object.keys(denti).length) {
+    tableEl.innerHTML = '<div style="padding:14px;text-align:center;color:var(--gray-300);font-size:12px">Nessuna terapia proposta.</div>';
+    return;
+  }
+
+  const avvisiHtml = avvisi.length
+    ? `<div style="background:#fef9c3;border:1px solid #fde68a;border-radius:var(--r-sm);padding:8px 12px;margin-bottom:10px;font-size:12px">
+        <strong style="color:#92400e">⚠ Note AI:</strong>
+        <ul style="margin:4px 0 0 16px;color:#78350f">${avvisi.map(a=>`<li>${esc(a)}</li>`).join('')}</ul>
+       </div>` : '';
+
+  const _terRows = [];
+
+  const rows = Object.entries(denti)
+    .sort((a,b) => parseInt(a[0])-parseInt(b[0]))
+    .flatMap(([num, d]) => {
+      const terapieArr = Array.isArray(d.terapie) && d.terapie.length ? d.terapie : [{ stato: d.stato, id_listino: d.id_listino }];
+      return terapieArr.map((ter, idx) => {
+        const rowKey = `${num}_${idx}`;
+        _terRows.push({ rowKey, num });
+        const matchedId  = ter.id_listino || '';
+        const matched    = TR_PIANO.find(t => t.id === matchedId);
+        const prezzo     = matched ? (matched.prezzo || 0) : 0;
+        const priorita   = ter.priorita || d.priorita || '';
+        const prioLabel  = priorita === 'urgente' ? '🔴 Urgente' : priorita === 'programmabile' ? '🟡 Programmabile' : priorita === 'estetico' ? '🟢 Estetico' : '';
+
+        const opts = `<option value="">— non aggiungere —</option>${TR_PIANO.map(t=>`<option value="${t.id}" data-prezzo="${t.prezzo||0}"${t.id===matchedId?' selected':''}>${t.label} — €${t.prezzo||0}</option>`).join('')}`;
+
+        return `<tr>
+          <td style="text-align:center;padding:4px 6px">
+            <input id="ai-ppr-num-${rowKey}" type="number" min="11" max="48" value="${esc(num)}" style="width:52px;text-align:center;border:1px solid var(--gray-200);border-radius:4px;padding:2px 4px;font-size:12px">
+          </td>
+          <td style="padding:4px 6px;font-size:11px;color:var(--gray-400)">${esc(ter.stato || ter.id_listino || '—')}</td>
+          ${prioLabel ? `<td style="padding:4px 6px;font-size:11px">${prioLabel}</td>` : '<td></td>'}
+          <td style="padding:4px 6px">
+            <select id="ai-ppr-sel-${rowKey}" onchange="this.closest('tr').querySelector('.ppr-prezzo').value=this.selectedOptions[0]?.dataset?.prezzo||0" style="width:100%;font-size:12px;border:1px solid var(--gray-200);border-radius:4px;padding:2px 4px">${opts}</select>
+          </td>
+          <td style="padding:4px 6px">
+            <input id="ai-ppr-qta-${rowKey}" type="number" min="1" value="1" style="width:44px;font-size:12px;border:1px solid var(--gray-200);border-radius:4px;padding:2px 4px;text-align:center">
+          </td>
+          <td style="padding:4px 6px">
+            <input class="ppr-prezzo" id="ai-ppr-prezzo-${rowKey}" type="number" min="0" value="${prezzo}" style="width:64px;font-size:12px;border:1px solid var(--gray-200);border-radius:4px;padding:2px 4px;text-align:right">
+          </td>
+        </tr>`;
+      });
+    }).join('');
+
+  tableEl.innerHTML = `${avvisiHtml}<table style="width:100%;border-collapse:collapse">
+    <thead><tr style="font-size:11px;color:var(--gray-400);border-bottom:1px solid var(--gray-100)">
+      <th style="padding:4px 6px;text-align:center">Dente</th>
+      <th style="padding:4px 6px;text-align:left">AI propone</th>
+      <th style="padding:4px 6px;text-align:left">Priorità</th>
+      <th style="padding:4px 6px;text-align:left">Prestazione</th>
+      <th style="padding:4px 6px;text-align:center">Qta</th>
+      <th style="padding:4px 6px;text-align:right">€</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+
+  aiProposta._pianoProposto._terRowsPiano = _terRows;
+}
+
+// ════════════════════════════════════════════════════════════
+// AI — Applica piano di cura proposto
+// ════════════════════════════════════════════════════════════
+async function aiConfermaPiano() {
+  if (!currentId) return;
+  const data = aiProposta._pianoProposto;
+  if (!data) return;
+
+  const _terRows = data._terRowsPiano || [];
+  const aiRowData = {};
+  Object.entries(data.denti || {}).forEach(([num, d]) => {
+    const terapieArr = Array.isArray(d.terapie) && d.terapie.length ? d.terapie : [{ stato: d.stato, id_listino: d.id_listino }];
+    terapieArr.forEach((ter, idx) => { aiRowData[`${num}_${idx}`] = ter; });
+  });
+
+  let modifiche = 0;
+  const correzioni = [];
+
+  _terRows.forEach(({ rowKey, num: numOrig }) => {
+    const sel    = document.getElementById(`ai-ppr-sel-${rowKey}`);
+    const qtaEl  = document.getElementById(`ai-ppr-qta-${rowKey}`);
+    const prezEl = document.getElementById(`ai-ppr-prezzo-${rowKey}`);
+    const numEl  = document.getElementById(`ai-ppr-num-${rowKey}`);
+    const num    = (numEl && numEl.value) ? numEl.value : numOrig;
+    if (!sel || !sel.value) return;
+
+    const tid    = sel.value;
+    const qta    = parseFloat(qtaEl?.value || 1) || 1;
+    const prezzo = parseFloat(prezEl?.value || 0) || 0;
+    const t      = findTR(tid);
+
+    if (!teethPiano[parseInt(num)]) teethPiano[parseInt(num)] = [];
+    const already = teethPiano[parseInt(num)].find(x => x.tid === tid);
+    if (!already) {
+      teethPiano[parseInt(num)].push({ tid, stato: 'dafare' });
+      modifiche++;
+    }
+
+    const existingPrev = prevRows.find(r => r.dente == num && r.tid === tid);
+    if (!existingPrev && t) {
+      prevRows.push({ id: 'aipp_'+Date.now()+'_'+rowKey, dente: num, tid, label: t.label, qta, prezzo, sconto: 0 });
+    }
+
+    const aiTer = aiRowData[rowKey];
+    if (aiTer) {
+      correzioni.push({
+        tipo:          'terapie_da_attuare',
+        stato_ai:      aiTer.stato || aiTer.id_listino || '',
+        id_listino:    tid,
+        label_listino: t ? t.label : tid,
+        prezzo
+      });
+    }
+  });
+
+  if (modifiche > 0) {
+    refreshOdonto('piano');
+    renderPianoRiepilogo();
+    renderPrevRows();
+    scheduleOdoSave();
+    notify(`Piano applicato: ${modifiche} terapie aggiunte ✓`, 'ok');
+    const btn = document.getElementById('ai-btn-conferma-piano');
+    btn.textContent = '✓ Piano applicato';
+    btn.style.background = 'var(--teal)';
+    btn.disabled = true;
+    aiSalvaMapping(correzioni);
+  } else {
+    notify('Nessuna terapia da applicare (selezioni vuote)', 'i');
   }
 }
 </script>
