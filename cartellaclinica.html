@@ -2965,35 +2965,44 @@ function aiRenderPiano(data) {
         <ul style="margin:4px 0 0 16px;color:#78350f">${avvisi.map(a=>`<li>${esc(a)}</li>`).join('')}</ul>
        </div>` : '';
 
-  const optsPiano = TR_PIANO.map(t => `<option value="${t.id}">${t.label} — €${t.prezzo||0}</option>`).join('');
-
+  // Costruisce righe supportando sia formato array (terapie[]) che singolo stato
   const rows = Object.entries(denti)
     .sort((a,b) => parseInt(a[0])-parseInt(b[0]))
-    .map(([num, d]) => {
-      const stato = d.stato || '';
-      // Try to match the therapy name to the listino
-      const matchName = d.problema || stato || d.note || '';
-      let matched = aiMatchPiano(matchName) || aiMatchPiano(stato);
-      const daConfermare = !matched;
-      const matchedId = matched ? matched.id : '';
-      const matchedPrezzo = matched ? (matched.prezzo || 0) : 0;
-      const confWarnHtml = daConfermare
-        ? `<span class="ai-conf-warn" title="Prestazione non trovata nel listino">⚠ da confermare</span>` : '';
-      const rowCls = daConfermare ? 'ai-row-conf' : '';
+    .flatMap(([num, d]) => {
+      // Nuovo formato: d.terapie = [{stato, note, confidence}, ...]
+      const terapieArr = Array.isArray(d.terapie) && d.terapie.length
+        ? d.terapie
+        : [{ stato: d.stato || '', note: d.problema || d.note || '', confidence: d.confidence || 'media' }];
 
-      const opts = `<option value="">— non aggiungere —</option>${TR_PIANO.map(t=>`<option value="${t.id}" data-prezzo="${t.prezzo||0}"${t.id===matchedId?' selected':''}>${t.label} — €${t.prezzo||0}</option>`).join('')}`;
+      return terapieArr.map((ter, idx) => {
+        const rowKey = `${num}_${idx}`;
+        const matchName = ter.note || ter.stato || '';
+        let matched = aiMatchPiano(ter.stato) || aiMatchPiano(matchName);
+        const daConfermare = !matched;
+        const matchedId = matched ? matched.id : '';
+        const matchedPrezzo = matched ? (matched.prezzo || 0) : 0;
+        const confWarnHtml = daConfermare
+          ? `<span class="ai-conf-warn" title="Prestazione non trovata nel listino — seleziona manualmente">⚠ da confermare</span>` : '';
+        const rowBg = daConfermare ? 'background:var(--amber-light)' : '';
+        const opts = `<option value="">— non aggiungere —</option>${TR_PIANO.map(t=>`<option value="${t.id}" data-prezzo="${t.prezzo||0}"${t.id===matchedId?' selected':''}>${t.label} — €${t.prezzo||0}</option>`).join('')}`;
 
-      return `<tr class="${rowCls}" id="ai-ter-row-${num}">
-        <td style="font-weight:700;font-family:'DM Mono',monospace;font-size:14px;color:var(--gray-900)">${num}</td>
-        <td style="font-size:11px;color:var(--gray-500);max-width:140px">${esc(matchName)}</td>
-        <td>
-          ${confWarnHtml}
-          <select id="ai-ter-sel-${num}" class="ai-prest-sel" onchange="aiAggiornaPrezzoRiga('${num}',this)">${opts}</select>
-        </td>
-        <td><input type="number" id="ai-ter-qta-${num}" value="1" min="1" style="width:50px"></td>
-        <td><input type="number" id="ai-ter-prezzo-${num}" value="${matchedPrezzo}" step="0.01" min="0" style="width:80px" placeholder="€"></td>
-      </tr>`;
+        return `<tr style="${rowBg}" id="ai-ter-row-${rowKey}">
+          <td style="font-weight:700;font-family:'DM Mono',monospace;font-size:14px;color:var(--gray-900)">${idx===0?num:''}</td>
+          <td style="font-size:11px;color:var(--gray-500);max-width:140px">${esc(ter.stato)}${matchName&&matchName!==ter.stato?' — '+esc(matchName):''}</td>
+          <td>${confWarnHtml}<select id="ai-ter-sel-${rowKey}" class="ai-prest-sel" onchange="aiAggiornaPrezzoRiga('${rowKey}',this)">${opts}</select></td>
+          <td><input type="number" id="ai-ter-qta-${rowKey}" value="1" min="1" style="width:50px"></td>
+          <td><input type="number" id="ai-ter-prezzo-${rowKey}" value="${matchedPrezzo}" step="0.01" min="0" style="width:80px" placeholder="€"></td>
+        </tr>`;
+      });
     }).join('');
+
+  // Salva la mappa rowKey → num per il confirm
+  aiProposta._terRows = Object.entries(denti)
+    .sort((a,b) => parseInt(a[0])-parseInt(b[0]))
+    .flatMap(([num, d]) => {
+      const terapieArr = Array.isArray(d.terapie) && d.terapie.length ? d.terapie : [{ stato: d.stato }];
+      return terapieArr.map((_, idx) => ({ rowKey: `${num}_${idx}`, num }));
+    });
 
   container.innerHTML = `
     ${avvisiHtml}
@@ -3005,15 +3014,13 @@ function aiRenderPiano(data) {
         <tbody>${rows}</tbody>
       </table>
     </div>
-    <div style="font-size:11px;color:var(--amber);margin-top:8px">
-      ⚠ Le righe evidenziate non hanno trovato corrispondenza nel listino: seleziona manualmente la prestazione.
-    </div>`;
+    ${rows.includes('da confermare') ? '<div style="font-size:11px;color:var(--amber);margin-top:8px">⚠ Le righe arancioni non hanno trovato corrispondenza nel listino: seleziona manualmente la prestazione.</div>' : ''}`;
 }
 
-function aiAggiornaPrezzoRiga(num, sel) {
+function aiAggiornaPrezzoRiga(rowKey, sel) {
   const opt = sel.options[sel.selectedIndex];
   const prezzo = opt ? parseFloat(opt.getAttribute('data-prezzo') || 0) : 0;
-  const prezzoEl = document.getElementById(`ai-ter-prezzo-${num}`);
+  const prezzoEl = document.getElementById(`ai-ter-prezzo-${rowKey}`);
   if (prezzoEl && prezzo > 0) prezzoEl.value = prezzo;
 }
 
@@ -3041,10 +3048,11 @@ function aiConferma() {
 
   // ── Applica piano terapie ───────────────────────────────────
   if (aiProposta.ter && aiProposta.ter.denti) {
-    Object.keys(aiProposta.ter.denti).forEach(num => {
-      const sel    = document.getElementById(`ai-ter-sel-${num}`);
-      const qtaEl  = document.getElementById(`ai-ter-qta-${num}`);
-      const prezEl = document.getElementById(`ai-ter-prezzo-${num}`);
+    const terRows = aiProposta._terRows || Object.keys(aiProposta.ter.denti).map(num => ({ rowKey: `${num}_0`, num }));
+    terRows.forEach(({ rowKey, num }) => {
+      const sel    = document.getElementById(`ai-ter-sel-${rowKey}`);
+      const qtaEl  = document.getElementById(`ai-ter-qta-${rowKey}`);
+      const prezEl = document.getElementById(`ai-ter-prezzo-${rowKey}`);
       if (!sel || !sel.value) return;
 
       const tid    = sel.value;
@@ -3064,7 +3072,7 @@ function aiConferma() {
       const existingPrev = prevRows.find(r => r.dente == num && r.tid === tid);
       if (!existingPrev && t) {
         prevRows.push({
-          id:     'ai_' + Date.now() + '_' + num,
+          id:     'ai_' + Date.now() + '_' + rowKey,
           dente:  num,
           tid,
           label:  t.label,
