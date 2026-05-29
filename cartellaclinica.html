@@ -757,7 +757,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--gray-50);color:
   <div class="modal" style="max-width:620px;max-height:88vh;overflow-y:auto">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
       <h3 style="font-size:15px;font-weight:600">Gestisci prestazioni</h3>
-      <button class="btn-sec" onclick="document.getElementById('prest-modal').classList.remove('open')">✕</button>
+      <button class="btn-sec" onclick="document.getElementById('prest-modal').classList.remove('open');document.getElementById('pe-ai-rowkey').value=''">✕</button>
     </div>
 
     <!-- Form modifica/aggiungi -->
@@ -765,6 +765,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--gray-50);color:
       <div style="font-size:12px;font-weight:600;margin-bottom:.8rem" id="prest-form-title">Nuova prestazione</div>
       <input type="hidden" id="pe-tipo">
       <input type="hidden" id="pe-idx">
+      <input type="hidden" id="pe-ai-rowkey" value="">
 
       <!-- Destinazione: dove / per cosa -->
       <div id="pe-dest-row" style="margin-bottom:.8rem">
@@ -823,7 +824,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--gray-50);color:
 
     <div style="display:flex;justify-content:flex-end;gap:8px;padding-top:.8rem;border-top:var(--border)">
       <button class="btn-sec" onclick="resetPrestazioniDefault()" style="color:var(--amber);border-color:var(--amber)" title="Ripristina lista predefinita">↺ Ripristina predefiniti</button>
-      <button class="btn-sec" onclick="document.getElementById('prest-modal').classList.remove('open')">Chiudi senza salvare</button>
+      <button class="btn-sec" onclick="document.getElementById('prest-modal').classList.remove('open');document.getElementById('pe-ai-rowkey').value=''">Chiudi senza salvare</button>
       <button class="btn-save" onclick="saveAndClosePrestazioni()">💾 Salva su tutti i PC</button>
     </div>
   </div>
@@ -2155,7 +2156,6 @@ function editPrestazione(tipo, idx) {
 
 function savePrestazioneLine() {
   const idx   = parseInt(document.getElementById('pe-idx').value);
-  // Per le nuove voci leggi il radio; per le modifiche usa il hidden field
   const tipo  = idx < 0
     ? (document.querySelector('input[name="pe-dest"]:checked')?.value || 'attuale')
     : document.getElementById('pe-tipo').value;
@@ -2166,13 +2166,36 @@ function savePrestazioneLine() {
   if (!label || !sym) { notify('Inserisci nome e simbolo','err'); return; }
   const arr = tipo==='attuale' ? TR_ATTUALE : tipo==='piano' ? TR_PIANO : tipo==='arcata' ? ARCH_TR : QUAD_TR;
   const prezzo = parseFloat(document.getElementById('pe-prezzo').value) || 0;
-  const entry = {id: idx>=0 ? arr[idx].id : 'c_'+Date.now(), label, sym, color, bg, prezzo};
+  const id = idx>=0 ? arr[idx].id : 'c_'+Date.now();
+  const entry = { id, label, sym, color, bg, prezzo };
   if (tipo==='attuale' || tipo==='piano') entry.tipo = tipo;
   if (idx>=0) arr[idx] = entry; else arr.push(entry);
   document.getElementById('prest-form').style.display = 'none';
   renderPrestazioniModal();
   buildLegend();
   setTimeout(() => savePrestazioni().catch(e => notify('Errore salvataggio: '+e.message,'err')), 300);
+
+  // Se era stato aperto da una riga AI, aggiorna quella select
+  const aiRowKey = document.getElementById('pe-ai-rowkey')?.value;
+  if (aiRowKey && idx < 0 && (tipo === 'piano' || tipo === 'arcata' || tipo === 'quadrante')) {
+    const sel = document.getElementById(`ai-ter-sel-${aiRowKey}`);
+    if (sel) {
+      const opt = document.createElement('option');
+      opt.value = id;
+      opt.setAttribute('data-prezzo', prezzo);
+      opt.textContent = `${label} — €${prezzo}`;
+      opt.selected = true;
+      sel.appendChild(opt);
+      sel.value = id;
+      sel.closest('tr').style.background = '';
+      // Aggiorna prezzo
+      const prezEl = document.getElementById(`ai-ter-prezzo-${aiRowKey}`);
+      if (prezEl && prezzo > 0) prezEl.value = prezzo;
+    }
+    document.getElementById('prest-modal').classList.remove('open');
+    notify(`"${label}" aggiunta al listino e selezionata ✓`, 'ok');
+  }
+  document.getElementById('pe-ai-rowkey').value = '';
 }
 
 function deletePrestazione(tipo, idx) {
@@ -3025,6 +3048,26 @@ function aiRenderSituazione(data) {
 }
 
 // ════════════════════════════════════════════════════════════
+// AI — Apri modal Gestisci prestazioni per nuova voce da riga AI
+// ════════════════════════════════════════════════════════════
+function aiApriModalNuovaPrestazione(rowKey, label) {
+  document.getElementById('pe-ai-rowkey').value = rowKey;
+  document.querySelector('input[name="pe-dest"][value="piano"]').checked = true;
+  document.getElementById('pe-tipo').value   = 'piano';
+  document.getElementById('pe-idx').value    = '-1';
+  document.getElementById('pe-label').value  = label;
+  document.getElementById('pe-sym').value    = label.slice(0,3).toUpperCase().replace(/\s/g,'');
+  document.getElementById('pe-color').value  = '#686864';
+  document.getElementById('pe-bg').value     = '#EFEDE7';
+  document.getElementById('pe-prezzo').value = '';
+  document.getElementById('pe-dest-row').style.display = 'block';
+  document.getElementById('prest-form-title').textContent = 'Nuova prestazione';
+  updatePrestDest();
+  document.getElementById('prest-form').style.display = 'block';
+  document.getElementById('prest-modal').classList.add('open');
+}
+
+// ════════════════════════════════════════════════════════════
 // AI — Render proposta piano terapie con listino
 // ════════════════════════════════════════════════════════════
 function aiRenderPiano(data) {
@@ -3063,12 +3106,13 @@ function aiRenderPiano(data) {
         const rowBg = daConfermare ? 'background:var(--amber-light)' : '';
         const opts = `<option value="">— non aggiungere —</option>${TR_PIANO.map(t=>`<option value="${t.id}" data-prezzo="${t.prezzo||0}"${t.id===matchedId?' selected':''}>${t.label} — €${t.prezzo||0}</option>`).join('')}`;
 
-        // Riga non trovata: mostra campo testo pre-compilato → verrà auto-salvato al confirm
+        // Riga non trovata: bottone che apre il modal prestazioni pre-compilato
         const nuovaPrestazioneHtml = daConfermare
-          ? `<div style="margin-top:5px;display:flex;align-items:center;gap:4px">
-               <span style="font-size:10px;color:var(--amber);font-weight:600">Salva come nuova:</span>
-               <input id="ai-ter-newlabel-${rowKey}" type="text" value="${esc(ter.stato)}" placeholder="Nome prestazione" style="flex:1;border:1px solid var(--amber);border-radius:4px;padding:3px 6px;font-size:11px;outline:none">
-               <input id="ai-ter-newsym-${rowKey}" type="text" value="${(ter.stato||'').slice(0,2).toUpperCase()}" placeholder="SYM" maxlength="3" style="width:36px;border:1px solid var(--amber);border-radius:4px;padding:3px 4px;font-size:11px;text-align:center;outline:none">
+          ? `<div style="margin-top:5px">
+               <button onclick="aiApriModalNuovaPrestazione('${rowKey}','${esc(ter.stato)}')"
+                 style="background:var(--teal);color:white;border:none;border-radius:4px;padding:3px 10px;font-size:11px;cursor:pointer;font-weight:600">
+                 + Aggiungi al listino
+               </button>
              </div>`
           : '';
 
@@ -3392,32 +3436,6 @@ async function aiConferma() {
     // Raccoglie per dente tutte le terapie confermate → per salvare protocolli
     const terapiePerDente = {}; // num → [{tid, label, wasAI: bool}]
 
-    // Prima passa: auto-crea prestazioni nuove (righe senza match listino)
-    for (const { rowKey } of terRows) {
-      const sel       = document.getElementById(`ai-ter-sel-${rowKey}`);
-      const labelEl   = document.getElementById(`ai-ter-newlabel-${rowKey}`);
-      const symEl     = document.getElementById(`ai-ter-newsym-${rowKey}`);
-      const prezEl    = document.getElementById(`ai-ter-prezzo-${rowKey}`);
-      if (!sel || sel.value || !labelEl) continue; // ha già una corrispondenza
-      if (!document.getElementById(`ai-ter-row-${rowKey}`)) continue; // rimossa
-      const label  = (labelEl.value || '').trim();
-      const sym    = (symEl?.value || label.slice(0,2)).trim().toUpperCase();
-      const prezzo = parseFloat(prezEl?.value || 0) || 0;
-      if (!label) continue;
-      const id = 'ai_' + label.toLowerCase().replace(/[^a-z0-9]+/g,'_').slice(0,30) + '_' + Date.now().toString(36);
-      const nuova = { id, label, sym, color: '#686864', bg: '#EFEDE7', prezzo, tipo: 'piano' };
-      TR_PIANO.push(nuova);
-      // Seleziona la nuova voce nella select
-      const opt = document.createElement('option');
-      opt.value = id; opt.selected = true;
-      opt.setAttribute('data-prezzo', prezzo);
-      opt.textContent = label + ` — €${prezzo}`;
-      sel.appendChild(opt);
-      sel.value = id;
-      sel.closest('tr').style.background = '';
-    }
-    // Salva listino aggiornato in background
-    savePrestazioni().catch(() => {});
     buildLegend();
 
     terRows.forEach(({ rowKey, num: numOrig }) => {
