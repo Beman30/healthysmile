@@ -2991,6 +2991,7 @@ function aiRenderPiano(data) {
           </td>
           <td><input type="number" id="ai-ter-qta-${rowKey}" value="1" min="1" style="width:50px"></td>
           <td><input type="number" id="ai-ter-prezzo-${rowKey}" value="${matchedPrezzo}" step="0.01" min="0" style="width:80px" placeholder="€"></td>
+          <td><button onclick="this.closest('tr').remove()" style="background:none;border:none;cursor:pointer;color:var(--gray-300);font-size:14px;padding:2px 6px" title="Rimuovi riga">✕</button></td>
         </tr>`;
       });
     }).join('');
@@ -3008,11 +3009,12 @@ function aiRenderPiano(data) {
     <div style="overflow-x:auto">
       <table class="ai-table">
         <thead><tr>
-          <th>Dente</th><th>AI terapia</th><th>Prestazione listino</th><th>Q.tà</th><th>€ Unit.</th>
+          <th>Dente</th><th>AI terapia</th><th>Prestazione listino</th><th>Q.tà</th><th>€ Unit.</th><th></th>
         </tr></thead>
-        <tbody>${rows}</tbody>
+        <tbody id="ai-ter-tbody">${rows}</tbody>
       </table>
     </div>
+    <button onclick="aiAggiungiRigaLibera()" style="margin-top:8px;background:none;border:1px dashed var(--gray-300);border-radius:var(--r-sm);padding:6px 14px;font-size:12px;color:var(--gray-400);cursor:pointer;width:100%">+ Aggiungi riga manuale</button>
     ${rows.includes('da confermare') ? '<div style="font-size:11px;color:var(--amber);margin-top:8px">⚠ Le righe arancioni non hanno trovato corrispondenza nel listino: seleziona manualmente la prestazione.</div>' : ''}`;
 }
 
@@ -3021,6 +3023,34 @@ function aiAggiornaPrezzoRiga(rowKey, sel) {
   const prezzo = opt ? parseFloat(opt.getAttribute('data-prezzo') || 0) : 0;
   const prezzoEl = document.getElementById(`ai-ter-prezzo-${rowKey}`);
   if (prezzoEl && prezzo > 0) prezzoEl.value = prezzo;
+}
+
+// ════════════════════════════════════════════════════════════
+// AI — Aggiungi riga manuale al piano terapie
+// ════════════════════════════════════════════════════════════
+let _aiRigaLibIdx = 0;
+function aiAggiungiRigaLibera() {
+  const tbody = document.getElementById('ai-ter-tbody');
+  if (!tbody) return;
+  const idx = 'lib_' + (++_aiRigaLibIdx);
+  const opts = `<option value="">— seleziona —</option>${TR_PIANO.map(t=>`<option value="${t.id}" data-prezzo="${t.prezzo||0}">${t.label} — €${t.prezzo||0}</option>`).join('')}`;
+  const tr = document.createElement('tr');
+  tr.id = `ai-ter-row-${idx}`;
+  tr.style.background = 'var(--amber-light)';
+  tr.innerHTML = `
+    <td><input type="number" id="ai-ter-num-${idx}" placeholder="dente" min="11" max="48" style="width:52px;border:var(--border);border-radius:4px;padding:4px 6px;font-size:13px;font-family:'DM Mono',monospace;font-weight:700;text-align:center;outline:none"></td>
+    <td style="font-size:11px;color:var(--gray-400);font-style:italic">riga aggiunta</td>
+    <td>
+      <select id="ai-ter-sel-${idx}" class="ai-prest-sel" onchange="aiAggiornaPrezzoRiga('${idx}',this);if(this.value)this.closest('tr').style.background=''">${opts}</select>
+    </td>
+    <td><input type="number" id="ai-ter-qta-${idx}" value="1" min="1" style="width:50px"></td>
+    <td><input type="number" id="ai-ter-prezzo-${idx}" value="0" step="0.01" min="0" style="width:80px" placeholder="€"></td>
+    <td><button onclick="this.closest('tr').remove()" style="background:none;border:none;cursor:pointer;color:var(--gray-300);font-size:14px;padding:2px 6px" title="Rimuovi riga">✕</button></td>`;
+  tbody.appendChild(tr);
+  // Registra la riga nei _terRows così aiConferma la gestisce
+  if (!aiProposta._terRows) aiProposta._terRows = [];
+  aiProposta._terRows.push({ rowKey: idx, num: '' });
+  tr.querySelector(`#ai-ter-num-${idx}`).focus();
 }
 
 // ════════════════════════════════════════════════════════════
