@@ -2873,11 +2873,13 @@ async function aiProcessSezione(sec, testo) {
   const listino = (sec === 'sit' ? TR_ATTUALE : TR_PIANO).map(t => ({
     id: t.id, label: t.label, ...(t.prezzo != null ? { prezzo: t.prezzo } : {})
   }));
+  // Carica mapping appresi dai medici (esempi per il prompt AI)
+  const esempi = await aiCaricaMapping(tipo);
   try {
     const resp = await fetch(AI_WORKER_STRUTTURA, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ codice_paziente: pazCodice, tipo, trascrizione: testo, listino })
+      body: JSON.stringify({ codice_paziente: pazCodice, tipo, trascrizione: testo, listino, esempi })
     });
     if (!resp.ok) { const e = await resp.json().catch(()=>({})); throw new Error(e.error || `HTTP ${resp.status}`); }
     const data = await resp.json();
@@ -3120,22 +3122,91 @@ function aiOnSelChange(key, sec, sel) {
 }
 
 // ════════════════════════════════════════════════════════════
+// AI LEARNING — Salva/carica mapping su Firestore
+// Collezione: ai_mapping/{tipo}__{stato_ai}__{id_listino}
+// ════════════════════════════════════════════════════════════
+
+// Cache locale dei mapping caricati, per non rifetcharli ad ogni analisi
+let _aiMappingCache = { attuale: null, piano: null, ts: 0 };
+
+async function aiCaricaMapping(tipo) {
+  const cacheKey = tipo === 'situazione_attuale' ? 'attuale' : 'piano';
+  // Usa cache se fresca (< 5 minuti)
+  if (_aiMappingCache[cacheKey] && Date.now() - _aiMappingCache.ts < 5 * 60 * 1000) {
+    return _aiMappingCache[cacheKey];
+  }
+  try {
+    const snap = await db.collection('ai_mapping')
+      .where('tipo', '==', tipo)
+      .orderBy('count', 'desc')
+      .limit(60)
+      .get();
+    const mapping = snap.docs.map(d => d.data());
+    _aiMappingCache[cacheKey] = mapping;
+    _aiMappingCache.ts = Date.now();
+    return mapping;
+  } catch(e) {
+    console.warn('ai_mapping load error:', e.message);
+    return [];
+  }
+}
+
+async function aiSalvaMapping(correzioni) {
+  // correzioni = [{tipo, stato_ai, id_listino, label_listino, prezzo}]
+  if (!correzioni.length) return;
+  const batch = db.batch();
+  correzioni.forEach(c => {
+    const docId = `${c.tipo}__${(c.stato_ai||'').replace(/[^a-z0-9_]/g,'_')}__${c.id_listino}`;
+    const ref = db.collection('ai_mapping').doc(docId);
+    batch.set(ref, {
+      tipo:          c.tipo,
+      stato_ai:      c.stato_ai || '',
+      id_listino:    c.id_listino,
+      label_listino: c.label_listino || '',
+      prezzo:        c.prezzo || 0,
+      count:         firebase.firestore.FieldValue.increment(1),
+      ts:            firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+  });
+  try {
+    await batch.commit();
+    // Invalida cache
+    _aiMappingCache.attuale = null;
+    _aiMappingCache.piano   = null;
+  } catch(e) {
+    console.warn('ai_mapping save error:', e.message);
+  }
+}
+
+// ════════════════════════════════════════════════════════════
 // AI — Conferma e applica
 // ════════════════════════════════════════════════════════════
-function aiConferma() {
+async function aiConferma() {
   if (!currentId) { notify('Nessun paziente aperto', 'err'); return; }
   let modifiche = 0;
+  const correzioni = []; // da salvare in Firestore per il learning
 
   // ── Applica situazione attuale ──────────────────────────────
   if (aiProposta.sit && aiProposta.sit.denti) {
-    Object.keys(aiProposta.sit.denti).forEach(num => {
+    Object.entries(aiProposta.sit.denti).forEach(([num, d]) => {
       const sel = document.getElementById(`ai-sit-sel-${num}`);
       if (!sel || !sel.value) return;
       const tid = sel.value;
+      const t   = TR_ATTUALE.find(x => x.id === tid);
       if (!teethAttuale[num]) teethAttuale[num] = [];
       if (!teethAttuale[num].includes(tid)) {
         teethAttuale[num].push(tid);
         modifiche++;
+      }
+      // Salva mapping per learning
+      if (d.stato || d.id_listino) {
+        correzioni.push({
+          tipo:          'situazione_attuale',
+          stato_ai:      d.stato || d.id_listino || '',
+          id_listino:    tid,
+          label_listino: t ? t.label : tid,
+          prezzo:        0
+        });
       }
     });
     refreshOdonto('attuale');
@@ -3144,6 +3215,13 @@ function aiConferma() {
   // ── Applica piano terapie ───────────────────────────────────
   if (aiProposta.ter && aiProposta.ter.denti) {
     const terRows = aiProposta._terRows || Object.keys(aiProposta.ter.denti).map(num => ({ rowKey: `${num}_0`, num }));
+    // Ricostruisci mappa rowKey → dato AI (stato_ai originale)
+    const aiRowData = {};
+    Object.entries(aiProposta.ter.denti).forEach(([num, d]) => {
+      const terapieArr = Array.isArray(d.terapie) && d.terapie.length ? d.terapie : [{ stato: d.stato, id_listino: d.id_listino }];
+      terapieArr.forEach((ter, idx) => { aiRowData[`${num}_${idx}`] = ter; });
+    });
+
     terRows.forEach(({ rowKey, num }) => {
       const sel    = document.getElementById(`ai-ter-sel-${rowKey}`);
       const qtaEl  = document.getElementById(`ai-ter-qta-${rowKey}`);
@@ -3166,14 +3244,18 @@ function aiConferma() {
       // Aggiungi al preventivo
       const existingPrev = prevRows.find(r => r.dente == num && r.tid === tid);
       if (!existingPrev && t) {
-        prevRows.push({
-          id:     'ai_' + Date.now() + '_' + rowKey,
-          dente:  num,
-          tid,
-          label:  t.label,
-          qta,
-          prezzo,
-          sconto: 0
+        prevRows.push({ id: 'ai_'+Date.now()+'_'+rowKey, dente: num, tid, label: t.label, qta, prezzo, sconto: 0 });
+      }
+
+      // Salva mapping per learning
+      const aiTer = aiRowData[rowKey];
+      if (aiTer) {
+        correzioni.push({
+          tipo:          'terapie_da_attuare',
+          stato_ai:      aiTer.stato || aiTer.id_listino || '',
+          id_listino:    tid,
+          label_listino: t ? t.label : tid,
+          prezzo
         });
       }
     });
@@ -3184,11 +3266,12 @@ function aiConferma() {
 
   if (modifiche > 0) {
     scheduleOdoSave();
-    notify(`${modifiche} elementi applicati all'odontogramma e al preventivo ✓`, 'ok');
-    // Mostra badge successo
+    notify(`${modifiche} elementi applicati ✓`, 'ok');
     document.getElementById('ai-btn-conferma').textContent = '✓ Applicato';
     document.getElementById('ai-btn-conferma').style.background = 'var(--teal)';
     document.getElementById('ai-btn-conferma').disabled = true;
+    // Salva learning in background — non blocca l'utente
+    aiSalvaMapping(correzioni);
   } else {
     notify('Nessuna modifica da applicare (selezioni vuote)', 'i');
   }
