@@ -3257,20 +3257,21 @@ async function aiConferma() {
 
   // ── Applica situazione attuale ──────────────────────────────
   if (aiProposta.sit && aiProposta.sit.denti) {
+    const dentiMenzionati = new Set();
+
     Object.entries(aiProposta.sit.denti).forEach(([numOrig, d]) => {
       const sel    = document.getElementById(`ai-sit-sel-${numOrig}`);
       if (!sel || !sel.value) return;
       const tid    = sel.value;
       const t      = TR_ATTUALE.find(x => x.id === tid);
-      // Leggi il numero dente dall'input (potrebbe essere stato corretto dal medico)
       const numEl  = document.getElementById(`ai-sit-num-${numOrig}`);
       const num    = (numEl && numEl.value) ? numEl.value : numOrig;
+      dentiMenzionati.add(String(num));
       if (!teethAttuale[num]) teethAttuale[num] = [];
       if (!teethAttuale[num].includes(tid)) {
         teethAttuale[num].push(tid);
         modifiche++;
       }
-      // Salva mapping per learning
       if (d.stato || d.id_listino) {
         correzioni.push({
           tipo:          'situazione_attuale',
@@ -3281,6 +3282,20 @@ async function aiConferma() {
         });
       }
     });
+
+    // Denti non menzionati → sano (verde)
+    const tuttiiDenti = [];
+    [1,2,3,4].forEach(q => {
+      for (let d = 1; d <= 8; d++) tuttiiDenti.push(String(q * 10 + d));
+    });
+    const sanoId = TR_ATTUALE.find(t => t.id === 'sano')?.id || 'sano';
+    tuttiiDenti.forEach(num => {
+      if (!dentiMenzionati.has(num) && !teethAttuale[num]?.length) {
+        teethAttuale[num] = [sanoId];
+        modifiche++;
+      }
+    });
+
     refreshOdonto('attuale');
   }
 
