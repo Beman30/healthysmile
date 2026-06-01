@@ -96,6 +96,8 @@
         '<a href="https://healthysmile.it/salva-il-tuo-dente">Non estrarre</a>' +
         '<a href="https://www.instagram.com/healthy.smile.by.n" target="_blank" rel="noopener">Instagram</a>' +
         '<a href="tel:+390112488248">011 2488248</a>' +
+        '<a href="https://healthysmile.it/privacy-policy">Privacy</a>' +
+        '<a href="https://healthysmile.it/cookie-policy">Cookie</a>' +
       '</div>' +
     '</div>' +
     '<div class="hs-footer-legal">' +
