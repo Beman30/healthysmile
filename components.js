@@ -90,7 +90,7 @@
       '</div>' +
     '</div>' +
     '<div class="hs-footer-legal">' +
-      '&copy; ' + new Date().getFullYear() + ' Healthy Smile By N &nbsp;&middot;&nbsp; P.IVA 12923420017' +
+      '&copy; ' + new Date().getFullYear() + ' Dominus Srl &nbsp;&middot;&nbsp; Via Lagrange 10, Torino &nbsp;&middot;&nbsp; P.IVA 12923420017' +
     '</div>';
 
   // ── INJECT ───────────────────────────────────────────────────────────
