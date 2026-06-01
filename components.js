@@ -31,12 +31,12 @@
     ".hs-drawer-close{position:absolute;top:16px;right:16px;background:none;border:none;color:#666;font-size:1.5rem;cursor:pointer;padding:8px;line-height:1;transition:color 0.15s}",
     ".hs-drawer-close:hover{color:#fff}",
     "@media(max-width:768px){.hs-hamburger{display:flex}#hs-nav .hs-nav-links{display:none}#hs-nav{padding:0 16px}}",
-    "#hs-footer{background:#0a0a0a;padding:28px 24px;border-top:1px solid #1e1e1e;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}",
-    "#hs-footer .hs-footer-logo{font-family:var(--hs-serif);font-size:16px;color:#555}",
+    "#hs-footer{background:#0a0a0a;padding:28px 24px;border-top:1px solid #2a2a2a;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}",
+    "#hs-footer .hs-footer-logo{font-family:var(--hs-serif);font-size:16px;color:#888}",
     "#hs-footer .hs-footer-logo em{font-style:italic;color:#f0a0c0}",
     "#hs-footer .hs-footer-links{display:flex;gap:16px;flex-wrap:wrap}",
-    "#hs-footer .hs-footer-links a{font-size:13px;color:#555;text-decoration:none;transition:color 0.15s}",
-    "#hs-footer .hs-footer-links a:hover{color:#aaa}",
+    "#hs-footer .hs-footer-links a{font-size:13px;color:#888;text-decoration:none;transition:color 0.15s}",
+    "#hs-footer .hs-footer-links a:hover{color:#ccc}",
     "@media(max-width:768px){#hs-footer{flex-direction:column;align-items:flex-start}}"
   ].join('');
   document.head.appendChild(style);
@@ -83,7 +83,7 @@
       '<a href="https://healthysmile.it/prevenzione">Prevenzione</a>' +
       '<a href="https://healthysmile.it/salva-il-tuo-dente">Non estrarre</a>' +
       '<a href="https://www.instagram.com/healthy.smile.by.n" target="_blank" rel="noopener">Instagram</a>' +
-      '<a href="tel:+393924076794">+39 392 407 6794</a>' +
+      '<a href="tel:+390112488248">011 2488248</a>' +
     '</div>';
 
   // ── INJECT ───────────────────────────────────────────────────────────
