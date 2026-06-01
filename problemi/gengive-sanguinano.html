@@ -328,41 +328,11 @@ footer{background:#0a0a0a;padding:28px 24px;border-top:1px solid #1e1e1e;display
   .page-body{padding:48px 16px}
 }
 </style>
+<script src="../components.js"></script>
 </head>
 <body>
 
-<nav>
-  <a href="https://healthysmile.it" class="nav-logo">
-    <img src="data:image/png;base64,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" alt="Healthy Smile By N" style="height:44px;width:auto;display:block;">
-  </a>
-  <div class="nav-links">
-    <a href="https://healthysmile.it/prevenzione">Prevenzione</a>
-    <a href="https://healthysmile.it/salva-il-tuo-dente">Non estrarre</a>
-    <a href="https://wa.me/393924076794?text=Ciao,%20ho%20visto%20il%20sito%20e%20vorrei%20informazioni%20sulle%20gengive" class="nav-cta">Scrivici</a>
-  </div>
-  <button class="hamburger" id="hamburger" aria-label="Menu">
-    <span></span><span></span><span></span>
-  </button>
-</nav>
-<div class="mobile-drawer-overlay" id="drawerOverlay"></div>
-<div class="mobile-drawer" id="mobileDrawer">
-  <button class="drawer-close" id="drawerClose">✕</button>
-  <a href="https://healthysmile.it/prevenzione">Prevenzione</a>
-  <a href="https://healthysmile.it">Chi siamo</a>
-  <a href="https://healthysmile.it/salva-il-tuo-dente">Non estrarre</a>
-  <a href="https://wa.me/393924076794?text=Ciao,%20vorrei%20informazioni%20sulle%20gengive" class="drawer-cta">Scrivici su WhatsApp</a>
-</div>
-
 <!-- BREADCRUMB -->
-<nav class="breadcrumb" aria-label="Breadcrumb">
-  <div class="breadcrumb-inner">
-    <a href="https://healthysmile.it">Home</a>
-    <span class="breadcrumb-sep">›</span>
-    <a href="https://healthysmile.it/problemi">Problemi</a>
-    <span class="breadcrumb-sep">›</span>
-    <span>Gengive che sanguinano a Torino</span>
-  </div>
-</nav>
 
 <!-- HERO -->
 <div class="hero">
@@ -687,15 +657,6 @@ footer{background:#0a0a0a;padding:28px 24px;border-top:1px solid #1e1e1e;display
 </div>
 
 <!-- FOOTER -->
-<footer>
-  <span class="footer-logo">Healthy Smile <em>By N</em> · Torino</span>
-  <div class="footer-links">
-    <a href="https://healthysmile.it">Home</a>
-    <a href="https://healthysmile.it/prevenzione">Prevenzione</a>
-    <a href="https://healthysmile.it/salva-il-tuo-dente">Non estrarre</a>
-    <a href="https://wa.me/393924076794">WhatsApp</a>
-  </div>
-</footer>
 
 <script>
 (function(){

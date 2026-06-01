@@ -266,6 +266,7 @@ footer{background:#0a0a0a;padding:24px 32px;border-top:1px solid #1e1e1e;display
   footer{flex-direction:column;align-items:flex-start;padding:20px 16px}
 }
 </style>
+<script src="../components.js"></script>
 </head>
 <body>
 
@@ -277,24 +278,6 @@ footer{background:#0a0a0a;padding:24px 32px;border-top:1px solid #1e1e1e;display
 </svg>
 
 <!-- NAV -->
-<nav>
-  <a href="https://healthysmile.it" class="nav-logo">Healthy <strong>Smile</strong> By N</a>
-  <div class="nav-links">
-    <a href="https://healthysmile.it/prevenzione">Prevenzione</a>
-    <a href="https://healthysmile.it/salva-il-tuo-dente">Non estrarre</a>
-    <a href="https://wa.me/393924076794?text=Ciao,%20ho%20visto%20il%20sito%20e%20vorrei%20informazioni%20sulle%20gengive" class="nav-cta">Scrivici</a>
-  </div>
-  <button class="hamburger" id="hamburger" aria-label="Menu">
-    <span></span><span></span><span></span>
-  </button>
-</nav>
-<div class="mobile-drawer-overlay" id="drawerOverlay"></div>
-<div class="mobile-drawer" id="mobileDrawer">
-  <button class="drawer-close" id="drawerClose">✕</button>
-  <a href="https://healthysmile.it/prevenzione">Prevenzione</a>
-  <a href="https://healthysmile.it/salva-il-tuo-dente">Non estrarre</a>
-  <a href="https://wa.me/393924076794?text=Ciao,%20vorrei%20informazioni%20sulle%20gengive" class="drawer-cta">Scrivici su WhatsApp</a>
-</div>
 
 <!-- HERO -->
 <section class="hero">
@@ -647,14 +630,6 @@ footer{background:#0a0a0a;padding:24px 32px;border-top:1px solid #1e1e1e;display
 </div>
 
 <!-- FOOTER -->
-<footer>
-  <span class="footer-logo">Healthy Smile <em>By N</em> · Torino</span>
-  <div class="footer-links">
-    <a href="https://healthysmile.it/prevenzione">Prevenzione</a>
-    <a href="https://healthysmile.it/salva-il-tuo-dente">Non estrarre</a>
-    <a href="https://www.instagram.com/healthy.smile.by.n" target="_blank" rel="noopener">Instagram</a>
-  </div>
-</footer>
 
 <script>
 /* CONFIG AGENTE */
@@ -789,7 +764,6 @@ document.querySelectorAll('.cs-continue').forEach(function(btn) {
     } catch(_) {}
   });
 });
-
 
 /* TRACKING WHATSAPP */
 document.querySelectorAll('a[href*="wa.me"]:not(.conv-wa-skip):not(.conv-response-wa)').forEach(function(el) {
