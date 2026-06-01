@@ -63,8 +63,11 @@
       '<img src="' + LOGO_SRC + '" alt="Healthy Smile By N" style="height:44px;width:auto;display:block;">' +
     '</a>' +
     '<div class="hs-nav-links">' +
-      '<a href="https://healthysmile.it/prevenzione">Prevenzione</a>' +
+      '<a href="https://healthysmile.it/problemi/gengivite">Problemi gengive</a>' +
+      '<a href="https://healthysmile.it/sbiancamento-dentale-torino">Sbiancamento</a>' +
       '<a href="https://healthysmile.it/salva-il-tuo-dente">Non estrarre</a>' +
+      '<a href="https://healthysmile.it">Chi siamo</a>' +
+      '<a href="https://healthysmile.it/prevenzione">Prevenzione</a>' +
       '<a href="' + WA_URL + '" class="hs-nav-cta">Scrivici</a>' +
     '</div>' +
     '<button class="hs-hamburger" id="hs-hamburger" aria-label="Menu">' +
@@ -80,9 +83,11 @@
   drawer.id = 'hs-drawer';
   drawer.innerHTML =
     '<button class="hs-drawer-close" id="hs-drawer-close">&#x2715;</button>' +
-    '<a href="https://healthysmile.it/prevenzione">Prevenzione</a>' +
-    '<a href="https://healthysmile.it">Chi siamo</a>' +
+    '<a href="https://healthysmile.it/problemi/gengivite">Problemi gengive</a>' +
+    '<a href="https://healthysmile.it/sbiancamento-dentale-torino">Sbiancamento</a>' +
     '<a href="https://healthysmile.it/salva-il-tuo-dente">Non estrarre</a>' +
+    '<a href="https://healthysmile.it">Chi siamo</a>' +
+    '<a href="https://healthysmile.it/prevenzione">Prevenzione</a>' +
     '<a href="' + WA_URL + '" class="hs-drawer-cta">Scrivici su WhatsApp</a>';
 
   // ── FOOTER ───────────────────────────────────────────────────────────
