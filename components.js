@@ -39,7 +39,16 @@
     "#hs-footer .hs-footer-links a{font-size:13px;color:#888;text-decoration:none;transition:color 0.15s}",
     "#hs-footer .hs-footer-links a:hover{color:#ccc}",
     "#hs-footer .hs-footer-legal{font-size:12px;color:#555;border-top:1px solid #1e1e1e;padding-top:16px}",
-    "@media(max-width:768px){#hs-footer .hs-footer-top{flex-direction:column;align-items:flex-start}}"
+    "@media(max-width:768px){#hs-footer .hs-footer-top{flex-direction:column;align-items:flex-start}}",
+    "#hs-cookie{position:fixed;bottom:0;left:0;right:0;z-index:500;background:#111;border-top:1px solid #2a2a2a;padding:16px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;box-shadow:0 -4px 24px rgba(0,0,0,0.4)}",
+    "#hs-cookie p{font-size:13px;color:#aaa;margin:0;line-height:1.6;flex:1;min-width:200px}",
+    "#hs-cookie a{color:#f0a0c0;text-decoration:underline}",
+    "#hs-cookie .hs-cookie-btns{display:flex;gap:8px;flex-shrink:0}",
+    "#hs-cookie .hs-cookie-accept{font-family:var(--hs-sans);font-size:13px;font-weight:500;background:#C8005C;color:#fff;border:none;padding:9px 20px;border-radius:6px;cursor:pointer;transition:opacity 0.15s}",
+    "#hs-cookie .hs-cookie-accept:hover{opacity:0.85}",
+    "#hs-cookie .hs-cookie-reject{font-family:var(--hs-sans);font-size:13px;font-weight:400;background:transparent;color:#888;border:1px solid #3a3a3a;padding:9px 20px;border-radius:6px;cursor:pointer;transition:border-color 0.15s,color 0.15s}",
+    "#hs-cookie .hs-cookie-reject:hover{border-color:#666;color:#ccc}",
+    "@media(max-width:600px){#hs-cookie{flex-direction:column;align-items:flex-start}#hs-cookie .hs-cookie-btns{width:100%}#hs-cookie .hs-cookie-accept,#hs-cookie .hs-cookie-reject{flex:1;text-align:center}}"
   ].join('');
   document.head.appendChild(style);
 
@@ -123,6 +132,54 @@
     ovl.addEventListener('click', closeDrawer);
   }
 
-  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', inject);
-  else inject();
+  // ── COOKIE BANNER ────────────────────────────────────────────────────
+  var CONSENT_KEY = 'hs_cookie_consent';
+
+  function setGtag(granted){
+    if(typeof gtag === 'function'){
+      var v = granted ? 'granted' : 'denied';
+      gtag('consent','update',{analytics_storage:v, ad_storage:v});
+    }
+    if(!granted){
+      window['ga-disable-G-SRMDX8JXL5'] = true;
+      window['ga-disable-AW-947982327']  = true;
+    }
+  }
+
+  function injectCookieBanner(){
+    var existing = localStorage.getItem(CONSENT_KEY);
+    if(existing === 'accepted'){ setGtag(true);  return; }
+    if(existing === 'rejected'){ setGtag(false); return; }
+
+    var banner = document.createElement('div');
+    banner.id = 'hs-cookie';
+    banner.innerHTML =
+      '<p>Usiamo cookie analitici e di marketing per migliorare l\'esperienza sul sito. ' +
+      'Puoi accettarli o rifiutarli. Per maggiori informazioni consulta la nostra ' +
+      '<a href="https://healthysmile.it/cookie-policy">Cookie Policy</a>.</p>' +
+      '<div class="hs-cookie-btns">' +
+        '<button class="hs-cookie-reject" id="hs-cookie-reject">Rifiuta</button>' +
+        '<button class="hs-cookie-accept" id="hs-cookie-accept">Accetta</button>' +
+      '</div>';
+    document.body.appendChild(banner);
+
+    document.getElementById('hs-cookie-accept').addEventListener('click', function(){
+      localStorage.setItem(CONSENT_KEY, 'accepted');
+      setGtag(true);
+      banner.remove();
+    });
+    document.getElementById('hs-cookie-reject').addEventListener('click', function(){
+      localStorage.setItem(CONSENT_KEY, 'rejected');
+      setGtag(false);
+      banner.remove();
+    });
+  }
+
+  function init(){
+    inject();
+    injectCookieBanner();
+  }
+
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
 })();
