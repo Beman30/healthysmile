@@ -687,7 +687,10 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--gray-50);color:
             <div class="ai-proposal-box" id="ai-prop-sit">
               <div class="ai-prop-head blue">
                 <span>Situazione attuale — proposta AI</span>
-                <div class="ai-status ai-s-proc" id="ai-badge-sit"><div class="ai-dot"></div><span>Elaborazione…</span></div>
+                <div style="display:flex;align-items:center;gap:8px">
+                  <button onclick="aiApriModalNuovaPrestazioneTipo('attuale')" style="background:white;color:#2563eb;border:1px solid #93c5fd;border-radius:4px;padding:2px 9px;font-size:11px;cursor:pointer;font-weight:600">+ Nuova prestazione</button>
+                  <div class="ai-status ai-s-proc" id="ai-badge-sit"><div class="ai-dot"></div><span>Elaborazione…</span></div>
+                </div>
               </div>
               <div class="ai-prop-body">
                 <div id="ai-table-sit"><div style="display:flex;align-items:center;gap:8px;padding:20px;color:var(--gray-500);font-size:13px"><div class="ai-spin"></div>Analisi in corso…</div></div>
@@ -698,11 +701,19 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--gray-50);color:
             <div class="ai-proposal-box" id="ai-prop-ter">
               <div class="ai-prop-head amber">
                 <span>Piano terapie proposto — modificabile</span>
-                <div class="ai-status ai-s-proc" id="ai-badge-ter"><div class="ai-dot"></div><span>Elaborazione…</span></div>
+                <div style="display:flex;align-items:center;gap:8px">
+                  <button onclick="aiApriModalNuovaPrestazioneTipo('piano')" style="background:white;color:#92400e;border:1px solid #fcd34d;border-radius:4px;padding:2px 9px;font-size:11px;cursor:pointer;font-weight:600">+ Nuova prestazione</button>
+                  <div class="ai-status ai-s-proc" id="ai-badge-ter"><div class="ai-dot"></div><span>Elaborazione…</span></div>
+                </div>
               </div>
               <div class="ai-prop-body">
                 <div id="ai-sommario-nota" style="margin-bottom:10px"></div>
+                <!-- Trattamenti per dente singolo -->
                 <div id="ai-table-ter"><div style="display:flex;align-items:center;gap:8px;padding:20px;color:var(--gray-500);font-size:13px"><div class="ai-spin"></div>Analisi in corso…</div></div>
+                <!-- Trattamenti generali (arcata, quadrante, visita, TAC, ecc.) -->
+                <div id="ai-table-gen" style="margin-top:14px"></div>
+                <!-- Verifica clinica dipendenze -->
+                <div id="ai-dependency-suggestions"></div>
               </div>
             </div>
 
@@ -757,7 +768,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--gray-50);color:
   <div class="modal" style="max-width:620px;max-height:88vh;overflow-y:auto">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
       <h3 style="font-size:15px;font-weight:600">Gestisci prestazioni</h3>
-      <button class="btn-sec" onclick="document.getElementById('prest-modal').classList.remove('open')">✕</button>
+      <button class="btn-sec" onclick="document.getElementById('prest-modal').classList.remove('open');document.getElementById('pe-ai-rowkey').value=''">✕</button>
     </div>
 
     <!-- Form modifica/aggiungi -->
@@ -765,6 +776,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--gray-50);color:
       <div style="font-size:12px;font-weight:600;margin-bottom:.8rem" id="prest-form-title">Nuova prestazione</div>
       <input type="hidden" id="pe-tipo">
       <input type="hidden" id="pe-idx">
+      <input type="hidden" id="pe-ai-rowkey" value="">
 
       <!-- Destinazione: dove / per cosa -->
       <div id="pe-dest-row" style="margin-bottom:.8rem">
@@ -823,7 +835,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--gray-50);color:
 
     <div style="display:flex;justify-content:flex-end;gap:8px;padding-top:.8rem;border-top:var(--border)">
       <button class="btn-sec" onclick="resetPrestazioniDefault()" style="color:var(--amber);border-color:var(--amber)" title="Ripristina lista predefinita">↺ Ripristina predefiniti</button>
-      <button class="btn-sec" onclick="document.getElementById('prest-modal').classList.remove('open')">Chiudi senza salvare</button>
+      <button class="btn-sec" onclick="document.getElementById('prest-modal').classList.remove('open');document.getElementById('pe-ai-rowkey').value=''">Chiudi senza salvare</button>
       <button class="btn-save" onclick="saveAndClosePrestazioni()">💾 Salva su tutti i PC</button>
     </div>
   </div>
@@ -2155,7 +2167,6 @@ function editPrestazione(tipo, idx) {
 
 function savePrestazioneLine() {
   const idx   = parseInt(document.getElementById('pe-idx').value);
-  // Per le nuove voci leggi il radio; per le modifiche usa il hidden field
   const tipo  = idx < 0
     ? (document.querySelector('input[name="pe-dest"]:checked')?.value || 'attuale')
     : document.getElementById('pe-tipo').value;
@@ -2166,13 +2177,54 @@ function savePrestazioneLine() {
   if (!label || !sym) { notify('Inserisci nome e simbolo','err'); return; }
   const arr = tipo==='attuale' ? TR_ATTUALE : tipo==='piano' ? TR_PIANO : tipo==='arcata' ? ARCH_TR : QUAD_TR;
   const prezzo = parseFloat(document.getElementById('pe-prezzo').value) || 0;
-  const entry = {id: idx>=0 ? arr[idx].id : 'c_'+Date.now(), label, sym, color, bg, prezzo};
+  const id = idx>=0 ? arr[idx].id : 'c_'+Date.now();
+  const entry = { id, label, sym, color, bg, prezzo };
   if (tipo==='attuale' || tipo==='piano') entry.tipo = tipo;
   if (idx>=0) arr[idx] = entry; else arr.push(entry);
   document.getElementById('prest-form').style.display = 'none';
   renderPrestazioniModal();
   buildLegend();
   setTimeout(() => savePrestazioni().catch(e => notify('Errore salvataggio: '+e.message,'err')), 300);
+
+  // Aggiorna tutte le select AI già renderizzate con la nuova voce
+  if (idx < 0) {
+    if (tipo === 'piano' || tipo === 'arcata' || tipo === 'quadrante') {
+      document.querySelectorAll('[id^="ai-ter-sel-"]').forEach(sel => {
+        if (!sel.querySelector(`option[value="${id}"]`)) {
+          const opt = document.createElement('option');
+          opt.value = id; opt.setAttribute('data-prezzo', prezzo);
+          opt.textContent = `${label} — €${prezzo}`;
+          sel.appendChild(opt);
+        }
+      });
+    }
+    if (tipo === 'attuale') {
+      document.querySelectorAll('[id^="ai-sit-sel-"]').forEach(sel => {
+        if (!sel.querySelector(`option[value="${id}"]`)) {
+          const opt = document.createElement('option');
+          opt.value = id; opt.textContent = label;
+          sel.appendChild(opt);
+        }
+      });
+    }
+  }
+
+  // Se era stato aperto da una riga AI specifica, seleziona la voce e chiudi
+  const aiRowKey = document.getElementById('pe-ai-rowkey')?.value;
+  if (aiRowKey && idx < 0) {
+    const selTer = document.getElementById(`ai-ter-sel-${aiRowKey}`);
+    if (selTer && selTer.querySelector(`option[value="${id}"]`)) {
+      selTer.value = id;
+      selTer.closest('tr').style.background = '';
+      const prezEl = document.getElementById(`ai-ter-prezzo-${aiRowKey}`);
+      if (prezEl && prezzo > 0) prezEl.value = prezzo;
+    }
+    document.getElementById('prest-modal').classList.remove('open');
+    notify(`"${label}" aggiunta al listino e selezionata ✓`, 'ok');
+  } else if (!aiRowKey && idx < 0) {
+    notify(`"${label}" aggiunta al listino ✓`, 'ok');
+  }
+  document.getElementById('pe-ai-rowkey').value = '';
 }
 
 function deletePrestazione(tipo, idx) {
@@ -2880,6 +2932,11 @@ async function aiAvviaAnalisi() {
   document.getElementById('ai-orig-nota').textContent = nota;
   document.getElementById('ai-table-sit').innerHTML = '<div style="display:flex;align-items:center;gap:8px;padding:20px;color:var(--gray-500);font-size:13px"><div class="ai-spin"></div>Analisi in corso…</div>';
   document.getElementById('ai-table-ter').innerHTML  = '<div style="display:flex;align-items:center;gap:8px;padding:20px;color:var(--gray-500);font-size:13px"><div class="ai-spin"></div>Analisi in corso…</div>';
+  const _genContainer = document.getElementById('ai-table-gen');
+  if (_genContainer) _genContainer.innerHTML = '';
+  const _depContainer = document.getElementById('ai-dependency-suggestions');
+  if (_depContainer) _depContainer.innerHTML = '';
+  aiProposta._genRows = [];
   document.getElementById('ai-sommario-nota').innerHTML = '';
   aiBadge('sit', 'proc', 'Elaborazione…');
   aiBadge('ter', 'proc', 'Elaborazione…');
@@ -2889,7 +2946,7 @@ async function aiAvviaAnalisi() {
   const listinoAtt = TR_ATTUALE.map(t => ({ id: t.id, label: t.label }));
   const listinoPia = TR_PIANO.map(t => ({ id: t.id, label: t.label, ...(t.prezzo != null ? { prezzo: t.prezzo } : {}) }));
 
-  // Carica esempi e protocolli — errori non bloccano l'analisi
+  // Carica esempi, protocolli e dipendenze cliniche — errori non bloccano l'analisi
   const [esempiSit, esempiTer] = await Promise.all([
     aiCaricaMapping('situazione_attuale').catch(() => []),
     aiCaricaMapping('terapie_da_attuare').catch(() => [])
@@ -2901,6 +2958,7 @@ async function aiAvviaAnalisi() {
     varianti:      varianti.map(v => ({ terapie: v.terapie, count: v.count || 1 }))
                            .sort((a,b) => b.count - a.count)
   }));
+  const clinicalDeps = await aiCaricaClinicalDeps().catch(() => []);
 
   // Unica chiamata al Worker con tipo nota_completa
   try {
@@ -2915,7 +2973,8 @@ async function aiAvviaAnalisi() {
         listino_piano: listinoPia,
         esempi_attuale: esempiSit,
         esempi_piano: esempiTer,
-        protocolli
+        protocolli,
+        clinical_deps: clinicalDeps
       })
     });
     if (!resp.ok) { const e = await resp.json().catch(()=>({})); throw new Error(e.error || `HTTP ${resp.status}`); }
@@ -2934,6 +2993,7 @@ async function aiAvviaAnalisi() {
     if (data.terapie_da_attuare) {
       aiProposta.ter = data.terapie_da_attuare;
       aiRenderPiano(data.terapie_da_attuare);
+      clinicalDependencyCheck(data.terapie_da_attuare, data.suggerimenti_clinici || []);
       aiBadge('ter', 'done', 'Pronto');
       if (data.sommario) {
         document.getElementById('ai-sommario-nota').innerHTML =
@@ -3025,15 +3085,290 @@ function aiRenderSituazione(data) {
 }
 
 // ════════════════════════════════════════════════════════════
-// AI — Render proposta piano terapie con listino
+// AI — Apri modal Gestisci prestazioni per nuova voce da riga AI
+// ════════════════════════════════════════════════════════════
+function aiApriModalNuovaPrestazione(rowKey, label) {
+  _apriModalNuovaPrestazione(rowKey, label, 'piano');
+}
+
+function aiApriModalNuovaPrestazioneTipo(tipo) {
+  _apriModalNuovaPrestazione('', '', tipo);
+}
+
+function _apriModalNuovaPrestazione(rowKey, label, tipo) {
+  renderPrestazioniModal();
+  document.getElementById('pe-ai-rowkey').value = rowKey || '';
+  const destVal = (tipo === 'piano') ? 'piano' : 'attuale';
+  const destRadio = document.querySelector(`input[name="pe-dest"][value="${destVal}"]`);
+  if (destRadio) destRadio.checked = true;
+  document.getElementById('pe-tipo').value   = destVal;
+  document.getElementById('pe-idx').value    = '-1';
+  document.getElementById('pe-label').value  = label || '';
+  document.getElementById('pe-sym').value    = label ? label.slice(0,3).toUpperCase().replace(/\s/g,'') : '';
+  document.getElementById('pe-color').value  = '#686864';
+  document.getElementById('pe-bg').value     = '#EFEDE7';
+  document.getElementById('pe-prezzo').value = '';
+  document.getElementById('pe-dest-row').style.display = 'block';
+  document.getElementById('prest-form-title').textContent = 'Nuova prestazione';
+  updatePrestDest();
+  document.getElementById('prest-form').style.display = 'block';
+  document.getElementById('prest-modal').classList.add('open');
+}
+
+// ════════════════════════════════════════════════════════════
+// AI — Verifica clinica dipendenze (clinicalDependencyCheck)
+// ════════════════════════════════════════════════════════════
+const AI_CLINICAL_RULES = [
+  {
+    id: 'corona_provvisorio',
+    triggerKw:  ['corona', 'crown', 'protesi fissa'],
+    excludeTrigger: ['provvisorio', 'temporaneo'],
+    missingKw:  ['provvisorio', 'temporaneo', 'provisional'],
+    label:  'Provvisorio',
+    idListino: 'provvisorio',
+    motivo: 'La corona definitiva richiede solitamente un provvisorio durante la fase di preparazione'
+  },
+  {
+    id: 'endo_ricostruzione',
+    triggerKw:  ['canalare', 'devitalizzazione', 'devitaliz', 'endodonzia', 'ritrattamento'],
+    excludeTrigger: [],
+    missingKw:  ['ricostruzione', 'perno', 'moncone', 'post-endo', 'build-up'],
+    label:  'Ricostruzione post-endodontica',
+    idListino: 'ricostruzione',
+    motivo: 'Una terapia canalare richiede una ricostruzione post-endodontica'
+  },
+  {
+    id: 'impianto_protesi',
+    triggerKw:  ['impianto', 'implant'],
+    excludeTrigger: ['fase protesica', 'corona su impianto', 'abutment'],
+    missingKw:  ['corona', 'abutment', 'moncone', 'fase protesica'],
+    label:  'Fase protesica (abutment + corona su impianto)',
+    idListino: 'corona_su_impianto',
+    motivo: "L'impianto richiede la fase protesica: abutment e corona definitiva"
+  },
+  {
+    id: 'estrazione_controllo',
+    triggerKw:  ['estrazione', 'avulsione', 'chirurgica'],
+    excludeTrigger: [],
+    missingKw:  ['controllo', 'post-estrattivo', 'sutura rimozione'],
+    label:  'Controllo post-estrattivo',
+    idListino: 'visita_controllo',
+    motivo: "Un'estrazione richiede un controllo post-estrattivo"
+  }
+];
+
+function _depMatch(text, keywords) {
+  const t = text.toLowerCase();
+  return keywords.some(kw => t.includes(kw.toLowerCase()));
+}
+
+function clinicalDependencyCheck(data, workerSuggerimenti) {
+  const container = document.getElementById('ai-dependency-suggestions');
+  if (!container) return;
+  const denti = data?.denti || {};
+
+  // 1. Suggerimenti provenienti dal Worker (già filtrati dall'AI)
+  const suggestions = (workerSuggerimenti || []).map((s, i) => ({
+    ruleId: 'ws_' + i,
+    num: s.dente || '',
+    label: s.prestazione || s.label || '',
+    idListino: s.id_listino || '',
+    motivo: s.motivo || ''
+  })).filter(s => s.label);
+
+  // 2. Regole hardcoded locali come fallback/integrazione
+  const seenKeys = new Set(suggestions.map(s => `${s.num}__${s.idListino}`));
+  Object.entries(denti).forEach(([num, d]) => {
+    const terapieArr = Array.isArray(d.terapie) && d.terapie.length
+      ? d.terapie : [{ stato: d.stato || '', id_listino: d.id_listino || '' }];
+    const allText = terapieArr.map(t =>
+      (t.stato || '') + ' ' + (t.id_listino || '') + ' ' +
+      (TR_PIANO.find(p => p.id === t.id_listino)?.label || '')
+    ).join(' ').toLowerCase();
+
+    AI_CLINICAL_RULES.forEach(rule => {
+      const hasTrigger = _depMatch(allText, rule.triggerKw) &&
+                         !_depMatch(allText, rule.excludeTrigger);
+      if (!hasTrigger) return;
+      if (_depMatch(allText, rule.missingKw)) return;
+      const key = `${num}__${rule.idListino}`;
+      if (seenKeys.has(key)) return; // già suggerito dal Worker
+      seenKeys.add(key);
+      suggestions.push({ ruleId: rule.id, num, label: rule.label, idListino: rule.idListino, motivo: rule.motivo });
+    });
+  });
+
+  if (!suggestions.length) { container.innerHTML = ''; return; }
+
+  container.innerHTML = `
+    <div style="margin-top:14px;border:1px solid #fbbf24;border-radius:var(--r-sm);overflow:hidden">
+      <div style="background:#fef3c7;padding:8px 14px;font-size:12px;font-weight:700;color:#92400e;display:flex;align-items:center;gap:7px">
+        <span>💡</span> Verifica clinica — prestazioni accessorie potenzialmente mancanti
+      </div>
+      <div id="ai-dep-list" style="padding:8px 14px;display:flex;flex-direction:column;gap:6px">
+        ${suggestions.map((s, i) => `
+          <div id="ai-dep-${i}" style="display:flex;align-items:flex-start;gap:10px;padding:8px 10px;background:white;border-radius:var(--r-sm);border:var(--border)">
+            <div style="flex:1">
+              <div style="font-size:12px;font-weight:600;color:var(--gray-700)">
+                <span style="font-family:'DM Mono',monospace;font-weight:700;color:var(--teal)">Dente ${esc(s.num)}</span>
+                &nbsp;— ${esc(s.label)}
+              </div>
+              <div style="font-size:11px;color:var(--gray-400);margin-top:2px">${esc(s.motivo)}</div>
+            </div>
+            <div style="display:flex;gap:6px;flex-shrink:0;margin-top:2px">
+              <button onclick="aiDepAggiungi(${i},'${esc(s.num)}','${esc(s.label)}','${esc(s.idListino)}')"
+                style="background:var(--teal);color:white;border:none;border-radius:4px;padding:4px 11px;font-size:11px;font-weight:600;cursor:pointer">+ Aggiungi</button>
+              <button onclick="document.getElementById('ai-dep-${i}').remove();aiDepCheckEmpty()"
+                style="background:none;border:1px solid var(--gray-200);border-radius:4px;padding:4px 10px;font-size:11px;color:var(--gray-500);cursor:pointer">Ignora</button>
+            </div>
+          </div>`).join('')}
+      </div>
+    </div>`;
+}
+
+function aiDepCheckEmpty() {
+  const list = document.getElementById('ai-dep-list');
+  if (list && !list.children.length) {
+    const c = document.getElementById('ai-dependency-suggestions');
+    if (c) c.innerHTML = '';
+  }
+}
+
+function aiDepAggiungi(idx, num, label, idListino) {
+  const tbody = document.getElementById('ai-ter-tbody');
+  if (!tbody) return;
+  const rowKey = 'dep_' + Date.now();
+  const matched = TR_PIANO.find(t => t.id === idListino);
+  const prezzo  = matched ? (matched.prezzo || 0) : 0;
+  const opts = `<option value="">— non aggiungere —</option>` +
+    TR_PIANO.map(t => `<option value="${t.id}" data-prezzo="${t.prezzo||0}"${t.id===idListino?' selected':''}>${t.label} — €${t.prezzo||0}</option>`).join('');
+  const tr = document.createElement('tr');
+  tr.id = `ai-ter-row-${rowKey}`;
+  tr.style.background = '#f0fdf4';
+  tr.innerHTML = `
+    <td><input type="number" id="ai-ter-num-${rowKey}" value="${num}" min="11" max="48"
+      style="width:52px;border:var(--border);border-radius:4px;padding:4px 6px;font-size:13px;font-family:'DM Mono',monospace;font-weight:700;text-align:center;outline:none"></td>
+    <td style="font-size:11px;color:var(--teal);font-style:italic">💡 suggerito</td>
+    <td><select id="ai-ter-sel-${rowKey}" class="ai-prest-sel"
+        onchange="aiAggiornaPrezzoRiga('${rowKey}',this)">${opts}</select></td>
+    <td><input type="number" id="ai-ter-qta-${rowKey}" value="1" min="1" style="width:50px"></td>
+    <td><input type="number" id="ai-ter-prezzo-${rowKey}" value="${prezzo}" step="0.01" min="0" style="width:80px" placeholder="€"></td>
+    <td><button onclick="this.closest('tr').remove()" style="background:none;border:none;cursor:pointer;color:var(--gray-300);font-size:14px;padding:2px 6px">✕</button></td>`;
+  tbody.appendChild(tr);
+  if (!aiProposta._terRows) aiProposta._terRows = [];
+  aiProposta._terRows.push({ rowKey, num });
+  document.getElementById(`ai-dep-${idx}`)?.remove();
+  aiDepCheckEmpty();
+  notify(`"${label}" aggiunto al piano per dente ${num}`, 'ok');
+}
+
+// ════════════════════════════════════════════════════════════
+// AI — Render proposta trattamenti generali (arcata/quadrante/visita/TAC)
+// ════════════════════════════════════════════════════════════
+let _aiGenIdx = 0;
+function aiRenderGenerali(generali) {
+  const container = document.getElementById('ai-table-gen');
+  if (!container) return;
+  if (!generali || !generali.length) { container.innerHTML = ''; return; }
+
+  const _allPiano = [...TR_PIANO,
+    {id:'arcata_superiore',label:'ARCATA SUPERIORE COMPLETA',prezzo:0},
+    {id:'arcata_inferiore',label:'ARCATA INFERIORE COMPLETA',prezzo:0},
+    {id:'primo_quadrante', label:'I QUADRANTE',prezzo:0},
+    {id:'secondo_quadrante',label:'II QUADRANTE',prezzo:0},
+    {id:'terzo_quadrante', label:'III QUADRANTE',prezzo:0},
+    {id:'quarto_quadrante',label:'IV QUADRANTE',prezzo:0},
+  ].filter((t,i,a) => a.findIndex(x=>x.id===t.id)===i);
+
+  const makeOpts = (matchedId) =>
+    `<option value="">— non aggiungere —</option>` +
+    _allPiano.map(t=>`<option value="${t.id}" data-prezzo="${t.prezzo||0}"${t.id===matchedId?' selected':''}>${t.label} — €${t.prezzo||0}</option>`).join('');
+
+  if (!aiProposta._genRows) aiProposta._genRows = [];
+  aiProposta._genRows = [];
+
+  const rows = generali.map((g, i) => {
+    const rowKey = 'gen_' + i;
+    const matchedId = g.id_listino || (aiMatchPiano(g.stato)?.id) || '';
+    const daConfermare = !matchedId;
+    const matched = _allPiano.find(t => t.id === matchedId);
+    const matchedPrezzo = matched ? (matched.prezzo || 0) : 0;
+    const rowBg = daConfermare ? 'background:var(--amber-light)' : '';
+    const nuovaHtml = daConfermare
+      ? `<div class="ai-ter-new" style="margin-top:5px"><button onclick="aiApriModalNuovaPrestazione('${rowKey}','${esc(g.stato)}')" style="background:var(--teal);color:white;border:none;border-radius:4px;padding:3px 10px;font-size:11px;cursor:pointer;font-weight:600">+ Aggiungi al listino</button></div>`
+      : '';
+    aiProposta._genRows.push({ rowKey, stato: g.stato });
+    return `<tr style="${rowBg}" id="ai-gen-row-${rowKey}">
+      <td style="font-size:11px;color:var(--gray-500);max-width:160px">${esc(g.stato)}${g.note&&g.note!==g.stato?' — '+esc(g.note):''}</td>
+      <td>
+        <select id="ai-gen-sel-${rowKey}" class="ai-prest-sel" onchange="aiAggiornaGenPrezzo('${rowKey}',this);if(this.value)this.closest('td').querySelector('.ai-ter-new')?.remove()">${makeOpts(matchedId)}</select>
+        ${daConfermare ? nuovaHtml : ''}
+      </td>
+      <td><input type="number" id="ai-gen-qta-${rowKey}" value="1" min="1" style="width:50px"></td>
+      <td><input type="number" id="ai-gen-prezzo-${rowKey}" value="${matchedPrezzo}" step="0.01" min="0" style="width:80px" placeholder="€"></td>
+      <td><button onclick="this.closest('tr').remove()" style="background:none;border:none;cursor:pointer;color:var(--gray-300);font-size:14px;padding:2px 6px" title="Rimuovi">✕</button></td>
+    </tr>`;
+  }).join('');
+
+  container.innerHTML = `
+    <div style="font-size:11px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;padding-bottom:4px;border-bottom:2px solid var(--amber)">
+      Trattamenti generali (arcata / quadrante / visita / TAC…)
+    </div>
+    <div style="overflow-x:auto">
+      <table class="ai-table">
+        <thead><tr><th>Trattamento AI</th><th>Prestazione listino</th><th>Q.tà</th><th>€ Unit.</th><th></th></tr></thead>
+        <tbody id="ai-gen-tbody">${rows}</tbody>
+      </table>
+    </div>
+    <button onclick="aiAggiungiRigaLiberaGenerale()" style="margin-top:6px;background:none;border:1px dashed var(--gray-300);border-radius:var(--r-sm);padding:5px 14px;font-size:12px;color:var(--gray-400);cursor:pointer;width:100%">+ Aggiungi trattamento generale manuale</button>`;
+}
+
+function aiAggiornaGenPrezzo(rowKey, sel) {
+  const prezzo = parseFloat(sel.options[sel.selectedIndex]?.getAttribute('data-prezzo') || 0);
+  const el = document.getElementById(`ai-gen-prezzo-${rowKey}`);
+  if (el && prezzo > 0) el.value = prezzo;
+}
+
+function aiAggiungiRigaLiberaGenerale() {
+  const tbody = document.getElementById('ai-gen-tbody');
+  if (!tbody) return;
+  const rowKey = 'gen_lib_' + (++_aiGenIdx);
+  const _allPiano = [...TR_PIANO,
+    {id:'arcata_superiore',label:'ARCATA SUPERIORE COMPLETA',prezzo:0},
+    {id:'arcata_inferiore',label:'ARCATA INFERIORE COMPLETA',prezzo:0},
+    {id:'primo_quadrante', label:'I QUADRANTE',prezzo:0},
+    {id:'secondo_quadrante',label:'II QUADRANTE',prezzo:0},
+    {id:'terzo_quadrante', label:'III QUADRANTE',prezzo:0},
+    {id:'quarto_quadrante',label:'IV QUADRANTE',prezzo:0},
+  ].filter((t,i,a) => a.findIndex(x=>x.id===t.id)===i);
+  const opts = `<option value="">— seleziona —</option>${_allPiano.map(t=>`<option value="${t.id}" data-prezzo="${t.prezzo||0}">${t.label} — €${t.prezzo||0}</option>`).join('')}`;
+  const tr = document.createElement('tr');
+  tr.id = `ai-gen-row-${rowKey}`;
+  tr.style.background = 'var(--amber-light)';
+  tr.innerHTML = `
+    <td style="font-size:11px;color:var(--gray-400);font-style:italic">riga aggiunta</td>
+    <td><select id="ai-gen-sel-${rowKey}" class="ai-prest-sel" onchange="aiAggiornaGenPrezzo('${rowKey}',this);if(this.value)this.closest('tr').style.background=''">${opts}</select></td>
+    <td><input type="number" id="ai-gen-qta-${rowKey}" value="1" min="1" style="width:50px"></td>
+    <td><input type="number" id="ai-gen-prezzo-${rowKey}" value="0" step="0.01" min="0" style="width:80px" placeholder="€"></td>
+    <td><button onclick="this.closest('tr').remove()" style="background:none;border:none;cursor:pointer;color:var(--gray-300);font-size:14px;padding:2px 6px">✕</button></td>`;
+  tbody.appendChild(tr);
+  if (!aiProposta._genRows) aiProposta._genRows = [];
+  aiProposta._genRows.push({ rowKey, stato: '' });
+}
+
+// ════════════════════════════════════════════════════════════
+// AI — Render proposta piano terapie con listino (denti singoli)
 // ════════════════════════════════════════════════════════════
 function aiRenderPiano(data) {
   const container = document.getElementById('ai-table-ter');
   const denti = data.denti || {};
   const avvisi = data.avvisi || [];
 
+  // Render trattamenti generali (arcata/quadrante) in sezione separata
+  aiRenderGenerali(data.generali || []);
+
   if (!Object.keys(denti).length) {
-    container.innerHTML = '<div style="padding:14px;text-align:center;color:var(--gray-300);font-size:12px">Nessuna terapia identificata.</div>';
+    container.innerHTML = '<div style="padding:14px;text-align:center;color:var(--gray-300);font-size:12px">Nessuna terapia per dente identificata.</div>';
     return;
   }
 
@@ -3063,12 +3398,13 @@ function aiRenderPiano(data) {
         const rowBg = daConfermare ? 'background:var(--amber-light)' : '';
         const opts = `<option value="">— non aggiungere —</option>${TR_PIANO.map(t=>`<option value="${t.id}" data-prezzo="${t.prezzo||0}"${t.id===matchedId?' selected':''}>${t.label} — €${t.prezzo||0}</option>`).join('')}`;
 
-        // Riga non trovata: mostra campo testo pre-compilato → verrà auto-salvato al confirm
+        // Riga non trovata: bottone che apre il modal prestazioni pre-compilato
         const nuovaPrestazioneHtml = daConfermare
-          ? `<div style="margin-top:5px;display:flex;align-items:center;gap:4px">
-               <span style="font-size:10px;color:var(--amber);font-weight:600">Salva come nuova:</span>
-               <input id="ai-ter-newlabel-${rowKey}" type="text" value="${esc(ter.stato)}" placeholder="Nome prestazione" style="flex:1;border:1px solid var(--amber);border-radius:4px;padding:3px 6px;font-size:11px;outline:none">
-               <input id="ai-ter-newsym-${rowKey}" type="text" value="${(ter.stato||'').slice(0,2).toUpperCase()}" placeholder="SYM" maxlength="3" style="width:36px;border:1px solid var(--amber);border-radius:4px;padding:3px 4px;font-size:11px;text-align:center;outline:none">
+          ? `<div style="margin-top:5px">
+               <button onclick="aiApriModalNuovaPrestazione('${rowKey}','${esc(ter.stato)}')"
+                 style="background:var(--teal);color:white;border:none;border-radius:4px;padding:3px 10px;font-size:11px;cursor:pointer;font-weight:600">
+                 + Aggiungi al listino
+               </button>
              </div>`
           : '';
 
@@ -3328,6 +3664,50 @@ async function aiSalvaProtocolli(protocolli) {
   }
 }
 
+// ── Dipendenze cliniche apprese ──────────────────────────────
+// Doc ID: {trigger_id}__{suggested_id}
+// Ogni volta che il dottore aggiunge Y su un dente che aveva già X proposto dall'AI
+// → si incrementa il contatore della coppia X→Y
+let _aiClinicalDepsCache = null;
+let _aiClinicalDepsCacheTs = 0;
+
+async function aiCaricaClinicalDeps() {
+  if (_aiClinicalDepsCache && Date.now() - _aiClinicalDepsCacheTs < 5 * 60 * 1000)
+    return _aiClinicalDepsCache;
+  try {
+    const snap = await db.collection('ai_clinical_deps').orderBy('count','desc').limit(80).get();
+    _aiClinicalDepsCache = snap.docs.map(d => d.data());
+    _aiClinicalDepsCacheTs = Date.now();
+    return _aiClinicalDepsCache;
+  } catch(e) {
+    console.warn('ai_clinical_deps load error:', e.message);
+    return [];
+  }
+}
+
+async function aiSalvaClinicalDeps(pairs) {
+  // pairs = [{ trigger_id, trigger_label, suggested_id, suggested_label }]
+  if (!pairs.length) return;
+  const batch = db.batch();
+  pairs.forEach(p => {
+    const docId = `${p.trigger_id}__${p.suggested_id}`;
+    batch.set(db.collection('ai_clinical_deps').doc(docId), {
+      trigger_id:     p.trigger_id,
+      trigger_label:  p.trigger_label || '',
+      suggested_id:   p.suggested_id,
+      suggested_label: p.suggested_label || '',
+      count:          firebase.firestore.FieldValue.increment(1),
+      ts:             firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+  });
+  try {
+    await batch.commit();
+    _aiClinicalDepsCache = null;
+  } catch(e) {
+    console.warn('ai_clinical_deps save error:', e.message);
+  }
+}
+
 // ════════════════════════════════════════════════════════════
 // AI — Conferma e applica
 // ════════════════════════════════════════════════════════════
@@ -3392,32 +3772,6 @@ async function aiConferma() {
     // Raccoglie per dente tutte le terapie confermate → per salvare protocolli
     const terapiePerDente = {}; // num → [{tid, label, wasAI: bool}]
 
-    // Prima passa: auto-crea prestazioni nuove (righe senza match listino)
-    for (const { rowKey } of terRows) {
-      const sel       = document.getElementById(`ai-ter-sel-${rowKey}`);
-      const labelEl   = document.getElementById(`ai-ter-newlabel-${rowKey}`);
-      const symEl     = document.getElementById(`ai-ter-newsym-${rowKey}`);
-      const prezEl    = document.getElementById(`ai-ter-prezzo-${rowKey}`);
-      if (!sel || sel.value || !labelEl) continue; // ha già una corrispondenza
-      if (!document.getElementById(`ai-ter-row-${rowKey}`)) continue; // rimossa
-      const label  = (labelEl.value || '').trim();
-      const sym    = (symEl?.value || label.slice(0,2)).trim().toUpperCase();
-      const prezzo = parseFloat(prezEl?.value || 0) || 0;
-      if (!label) continue;
-      const id = 'ai_' + label.toLowerCase().replace(/[^a-z0-9]+/g,'_').slice(0,30) + '_' + Date.now().toString(36);
-      const nuova = { id, label, sym, color: '#686864', bg: '#EFEDE7', prezzo, tipo: 'piano' };
-      TR_PIANO.push(nuova);
-      // Seleziona la nuova voce nella select
-      const opt = document.createElement('option');
-      opt.value = id; opt.selected = true;
-      opt.setAttribute('data-prezzo', prezzo);
-      opt.textContent = label + ` — €${prezzo}`;
-      sel.appendChild(opt);
-      sel.value = id;
-      sel.closest('tr').style.background = '';
-    }
-    // Salva listino aggiornato in background
-    savePrestazioni().catch(() => {});
     buildLegend();
 
     terRows.forEach(({ rowKey, num: numOrig }) => {
@@ -3481,10 +3835,62 @@ async function aiConferma() {
 
     refreshOdonto('piano');
     renderPianoRiepilogo();
-    renderPrevRows();
 
     if (protocolli.length) aiSalvaProtocolli(protocolli);
+
+    // ── Apprendi dipendenze cliniche ────────────────────────────
+    // Per ogni dente: se l'AI aveva proposto T_ai e il dottore ha confermato
+    // anche T_extra (non proposto dall'AI) → salva la coppia T_ai → T_extra
+    const aiProposedPerTooth = {}; // num → Set(tid) proposti dall'AI
+    Object.entries(aiProposta.ter.denti).forEach(([num, d]) => {
+      const arr = Array.isArray(d.terapie) && d.terapie.length ? d.terapie : [d];
+      aiProposedPerTooth[num] = new Set(arr.map(t => t.id_listino).filter(Boolean));
+    });
+    const depPairs = [];
+    Object.entries(terapiePerDente).forEach(([num, lista]) => {
+      if (lista.length < 2) return;
+      const aiProposed = aiProposedPerTooth[num] || new Set();
+      const aiConfirmed = lista.filter(x => x.wasAI || aiProposed.has(x.tid));
+      const extras      = lista.filter(x => !aiProposed.has(x.tid));
+      if (!aiConfirmed.length || !extras.length) return;
+      aiConfirmed.forEach(trigger => {
+        extras.forEach(extra => {
+          depPairs.push({
+            trigger_id:     trigger.tid,
+            trigger_label:  trigger.label,
+            suggested_id:   extra.tid,
+            suggested_label: extra.label
+          });
+        });
+      });
+    });
+    if (depPairs.length) aiSalvaClinicalDeps(depPairs);
   }
+
+  // ── Applica trattamenti generali (arcata/quadrante/TAC/visita ecc.) ─────────
+  const genRows = aiProposta._genRows || [];
+  genRows.forEach(({ rowKey, stato }) => {
+    const sel    = document.getElementById(`ai-gen-sel-${rowKey}`);
+    const qtaEl  = document.getElementById(`ai-gen-qta-${rowKey}`);
+    const prezEl = document.getElementById(`ai-gen-prezzo-${rowKey}`);
+    if (!sel || !sel.value || !document.getElementById(`ai-gen-row-${rowKey}`)) return;
+    const tid    = sel.value;
+    const qta    = parseFloat(qtaEl?.value || 1) || 1;
+    const prezzo = parseFloat(prezEl?.value || 0) || 0;
+    const t      = findTR(tid) || TR_PIANO.find(x=>x.id===tid);
+    const label  = t ? t.label : tid;
+    // Preventivo: aggiungi una sola volta (dente = '')
+    const existingPrev = prevRows.find(r => !r.dente && r.tid === tid);
+    if (!existingPrev) {
+      prevRows.push({ id: 'ai_gen_'+Date.now()+'_'+rowKey, dente: '', tid, label, qta, prezzo, sconto: 0 });
+      modifiche++;
+    }
+    if (stato) {
+      correzioni.push({ tipo: 'terapie_da_attuare', stato_ai: stato, id_listino: tid, label_listino: label, prezzo });
+    }
+  });
+
+  renderPrevRows();
 
   if (modifiche > 0) {
     scheduleOdoSave();
