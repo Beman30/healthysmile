@@ -3261,16 +3261,8 @@ const AI_CLINICAL_RULES = [
     label:  'Fase protesica (abutment + corona su impianto)',
     idListino: 'corona_su_impianto',
     motivo: "L'impianto richiede la fase protesica: abutment e corona definitiva"
-  },
-  {
-    id: 'estrazione_controllo',
-    triggerKw:  ['estrazione', 'avulsione', 'chirurgica'],
-    excludeTrigger: [],
-    missingKw:  ['controllo', 'post-estrattivo', 'sutura rimozione'],
-    label:  'Controllo post-estrattivo',
-    idListino: 'visita_controllo',
-    motivo: "Un'estrazione richiede un controllo post-estrattivo"
   }
+  // Regola estrazione_controllo rimossa — gestita solo dal Worker (extraction_followup_check, defaultEnabled:false)
 ];
 
 function _depMatch(text, keywords) {
