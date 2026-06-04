@@ -1,339 +1,298 @@
 // ════════════════════════════════════════════════════════════════════════════
 // Worker Cloudflare — odontogramma.nicolapalmia.workers.dev  v2
-// Flusso: audio → trascrizione → correzione → estrazione clinica → QC → JSON
+// Path A: POST multipart/form-data { audio, listino_attuale?, listino_piano?, ... }
+//         → Whisper + GPT-4.1 estrazione + QC → unified response
+// Path B: POST application/json { tipo:'nota_completa', trascrizione, listino_*, ... }
+//         → backward compat con frontend esistente → stessa risposta arricchita
 // ════════════════════════════════════════════════════════════════════════════
 
-const WHISPER_MODEL  = 'whisper-1';
-const REASON_MODEL   = 'gpt-4.1';        // ragionamento clinico
-const FAST_MODEL     = 'gpt-4.1-mini';   // QC leggero
+const WHISPER_MODEL = 'whisper-1';
+const REASON_MODEL  = 'gpt-4.1';
+const FAST_MODEL    = 'gpt-4.1-mini';
 
-// ─────────────────────────────────────────────────────────────────────────────
-// CORS helpers
-// ─────────────────────────────────────────────────────────────────────────────
+// ─── CORS ────────────────────────────────────────────────────────────────────
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin':  '*',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type',
 };
 
-function corsResponse(body, status = 200, extra = {}) {
-  return new Response(
-    typeof body === 'string' ? body : JSON.stringify(body),
-    {
-      status,
-      headers: {
-        'Content-Type': 'application/json',
-        ...CORS_HEADERS,
-        ...extra,
-      },
-    }
-  );
+function jsonResp(body, status = 200) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { 'Content-Type': 'application/json', ...CORS_HEADERS },
+  });
+}
+function errResp(message, status = 400, extra = {}) {
+  return jsonResp({ ok: false, error: message, ...extra }, status);
 }
 
-function errResponse(message, status = 400, detail = null) {
-  return corsResponse({ ok: false, error: message, detail }, status);
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// STEP 1 — Trascrizione Whisper
-// ─────────────────────────────────────────────────────────────────────────────
+// ─── STEP 1: Trascrizione Whisper ────────────────────────────────────────────
 async function transcribeAudio(audioBlob, filename, apiKey) {
   const form = new FormData();
   form.append('file', audioBlob, filename || 'recording.webm');
   form.append('model', WHISPER_MODEL);
   form.append('language', 'it');
-  form.append('response_format', 'verbose_json'); // include segments + confidence
+  form.append('response_format', 'verbose_json');
 
   const resp = await fetch('https://api.openai.com/v1/audio/transcriptions', {
     method: 'POST',
     headers: { Authorization: `Bearer ${apiKey}` },
     body: form,
   });
-
-  if (!resp.ok) {
-    const err = await resp.text();
-    throw new Error(`Whisper error ${resp.status}: ${err.slice(0, 200)}`);
-  }
-
-  const data = await resp.json();
-  return {
-    text: data.text || '',
-    duration: data.duration || null,
-    language: data.language || 'it',
-    segments: data.segments || [],
-  };
+  if (!resp.ok) throw new Error(`Whisper ${resp.status}: ${(await resp.text()).slice(0,200)}`);
+  const d = await resp.json();
+  return { text: d.text || '', duration: d.duration || null, language: d.language || 'it' };
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// STEP 2 — Correzione trascrizione + estrazione clinica
-// ─────────────────────────────────────────────────────────────────────────────
-const SYSTEM_CLINICAL = `Sei un assistente clinico odontoiatrico esperto.
-Il dentista parla a voce libera, con pause, ripensamenti, frasi incomplete, errori di pronuncia e parole trascritte male da Whisper.
-Comportati come un collega odontoiatra che legge il dettato e lo trasforma in cartella clinica precisa.
+// ─── STEP 2 + 3: Estrazione clinica unificata con mapping listino ─────────────
+// Questo prompt fa UNA sola chiamata e restituisce ENTRAMBI gli schemi:
+// - nuovo schema ricco (current_situation, treatment_plan, warnings, quality_check)
+// - vecchio schema (situazione_attuale, terapie_da_attuare) per compatibilità frontend
+function buildExtractionPrompt(listinoAttuale, listinoPiano, esempiAttuale, esempiPiano, protocolli, clinicalDeps, rulePrefs) {
 
-═══════════════════════════════════════════
-REGOLE DI INTERPRETAZIONE CLINICA
-═══════════════════════════════════════════
+  const listinoAttBlock = listinoAttuale?.length
+    ? listinoAttuale.map(t => `  ${t.id}: "${t.label}"`).join('\n')
+    : '  (usa testo libero)';
 
-NUMERAZIONE DENTI (FDI):
-- Riconosci i denti anche se espressi verbalmente: "undici"→11, "ventidue"→22, "due due"→22, "quattro sette"→47, "il sette"→37 o 47 (se ambiguo, warning)
-- Arcata superiore: 11-18, 21-28. Inferiore: 31-38, 41-48
-- "giudizio" o "ottavo" → dente 18/28/38/48 in base al contesto
-- Se il numero è ambiguo (es. "il tredici" può essere 13 o 43), segnala con warning
+  const listinoPianoTooth = listinoPiano?.filter(t => !t.scope || t.scope === 'TOOTH_LEVEL') || [];
+  const listinoPianoArch  = listinoPiano?.filter(t => t.scope === 'ARCH_LEVEL') || [];
+  const listinoPianoCase  = listinoPiano?.filter(t => t.scope === 'CASE_LEVEL') || [];
+  const listinoPianoSess  = listinoPiano?.filter(t => t.scope === 'SESSION_LEVEL') || [];
 
-SUPERFICI:
-- mesiale, distale, occlusale, vestibolare, buccale, palatale, linguale, cervicale, interapprossimale
-- "MOD" = mesio-occlusale-distale, "MO" = mesio-occlusale, "DO" = disto-occlusale
+  const fmtL = arr => arr.length ? arr.map(t => `  ${t.id}: "${t.label}"`).join('\n') : '  (nessuno)';
 
-CORREZIONI TRASCRIZIONE:
-- "digitalizzazione" → "devitalizzazione" SOLO se il contesto lo supporta (es. vicino a carie/dolore)
-- "occusale" / "occlusale" / "okklusale" → "occlusale"
-- "carriato" / "carietto" → "cariato"
-- "impianto a carico immediato" → mantieni esatto
-- "provvisorietto" → "provvisorio"
-- Parole completamente fuori contesto dentale: NON interpretare, inserire in warnings
-- Se una parola sembra un errore grave di Whisper, metti [?] nella trascrizione corretta e warning
+  const esempiBlock = [
+    ...(esempiAttuale||[]).slice(0,10).map(e => `  [attuale] "${e.stato_ai}" → ${e.id_listino}`),
+    ...(esempiPiano||[]).slice(0,10).map(e => `  [piano]   "${e.stato_ai}" → ${e.id_listino}`),
+  ].join('\n');
 
-INTERPRETAZIONE DIAGNOSI:
-- "endo" / "devitalizzazione" / "canalare" / "terapia canalare" → terapia endodontica
-- "prima classe" / "I classe" → otturazione Classe I (occlusale)
-- "seconda classe" / "II classe" → otturazione Classe II (approssimale)
-- "otturazione complessa" / "multisuperficie" → mantieni come otturazione complessa
-- Carie profonda/grande/estesa: metti priorità alta, MA non dedurre endodonzia automaticamente → solo possible_treatment se il medico lo suggerisce
-- "da estrarre" / "estratto" / "manca" → estrazione o dente assente
+  const protocolliBlock = (protocolli||[]).slice(0,10).map(p => {
+    const v = p.varianti?.[0]; if (!v) return '';
+    return `  ${p.trigger_label}: ${(v.terapie||[]).map(t=>t.label||t.id).join(' + ')}`;
+  }).filter(Boolean).join('\n');
 
-CLASSIFICAZIONE SITUAZIONE ATTUALE vs PIANO:
-- current_situation = stato presente del dente (già esistente: otturazione, corona, impianto, carie rilevata all'esame, dente assente)
-- treatment_plan = ciò che il medico propone di fare
+  const depsBlock = (clinicalDeps||[]).slice(0,15).map(d =>
+    `  ${d.trigger_label||d.trigger_id} → suggerisci ${d.suggested_label||d.suggested_id}`
+  ).join('\n');
 
-INCERTEZZA — REGOLA FONDAMENTALE:
-- Se il medico dice "potrebbe essere", "forse", "da valutare", "non sono sicuro", "vedremo" → possible_treatment + needs_review: true + warning
-- Se il medico NON specifica terapia → non inventare; lascia proposed_treatment vuoto, aggiungi warning
-- Se confidence < 0.7 → needs_review: true SEMPRE
-- Meglio scrivere "da verificare" che inventare qualcosa di sbagliato
+  // Regole cliniche abilitate
+  const BASE_RULES = [
+    { id:'crown_temporary',       text:'Corona definitiva → suggerisci provvisorio se assente', enabled: true },
+    { id:'root_canal_reconstruction', text:'Endodonzia → suggerisci ricostruzione post-endo se assente', enabled: true },
+    { id:'implant_abutment_crown',text:'Impianto → suggerisci abutment + corona se assenti', enabled: true },
+    { id:'implant_tac',           text:'Caso implantare → TAC una sola volta (CASE_LEVEL), mai per dente', enabled: true },
+    { id:'extraction_followup_check', text:'Estrazione → controllo post-estrattivo', enabled: false },
+  ];
+  const prefs = rulePrefs || [];
+  const enabledRules = BASE_RULES.filter(r => {
+    const p = prefs.find(x => x.rule_id === r.id);
+    if (p?.enabled === false) return false;
+    if (p?.enabled === true)  return true;
+    return r.enabled;
+  });
+  const rulesBlock = enabledRules.map(r => `  [${r.id}] ${r.text}`).join('\n');
 
-SINTOMI E SEGNI:
-- "fa male quando mangia" / "dolore alla masticazione" → symptoms: ["dolore alla masticazione"]
-- "non pulsa" / "non dà fastidio" → symptoms: ["assenza di dolore spontaneo"]
-- "sensibile al freddo/caldo" → symptoms: ["sensibilità termica"]
-- "gonfiore" / "fistola" → symptoms: ["gonfiore", "possibile fistola"] — warning
+  return `Sei un assistente clinico odontoiatrico esperto.
+Il dentista parla a voce libera, con pause, ripensamenti, frasi incomplete ed errori di Whisper.
+Comportati come un collega odontoiatra: leggi il dettato e produci cartella clinica precisa.
 
-PRIORITÀ:
-- urgente: dolore spontaneo, ascesso, frattura con esposizione pulpare
-- alta: carie profonda, dolore alla masticazione, lesione periapicale sospetta
-- media: carie media, vecchia otturazione da sostituire, sensibilità lieve
-- bassa: igiene, controllo, piccola carie iniziale
+════ REGOLE DI INTERPRETAZIONE ════
 
-PREVENTIVO (quote_items):
-- Includi solo ciò che il medico menziona esplicitamente o che è chiaramente implicito dal piano
-- Usa nomi semplici e stabili: "Otturazione I classe", "Otturazione II classe", "Devitalizzazione", "Ricostruzione", "Estrazione", "Corona", "Impianto", "Igiene", "Visita", "RX", "OPT", "TAC"
-- Non aggiungere voci non citate
+FDI: "undici"→11, "ventidue"→22, "due due"→22, "quattro sette"→47, "il sette"→37 o 47 (ambiguo → warning)
+Superfici: mesiale, distale, occlusale, vestibolare, palatale, linguale, cervicale, MOD, MO, DO
+Correzioni Whisper: "digitalizzazione"→"devitalizzazione" solo se contesto lo giustifica; "carriato"→"cariato"; "occusale"→"occlusale"
+"prima classe"→ I cl., "seconda classe"→ II cl., "endo/canalare/devitalizzazione"→ terapia endodontica
+Carie profonda ≠ endodonzia automatica: solo possible_treatment se il medico lo suggerisce
+"potrebbe essere / forse / da valutare" → possible_treatment + needs_review:true + warning
+Non inventare terapie non dette. Se incerto → confidence bassa + warning.
 
-DIARIO CLINICO:
-- Scrivi un testo fluido in prima persona plurale ("Alla visita odierna...")
-- Includi: denti visitati, diagnosi, sintomi, decisioni terapeutiche
-- Tono professionale, conciso, max 5-6 righe
+════ LISTINO SITUAZIONE ATTUALE ════
+${listinoAttBlock}
 
-MEMORY LEARNING:
-- Segnala pattern utili per il futuro (abbreviazioni usate dal medico, termini locali, preferenze terapeutiche)
-- Tipo: "abbreviation", "preference", "terminology", "protocol"
+════ LISTINO PIANO TERAPIE ════
+TOOTH_LEVEL (si ripete per dente):
+${fmtL(listinoPianoTooth)}
 
-═══════════════════════════════════════════
-SCHEMA JSON OBBLIGATORIO — RISPONDI SOLO CON JSON VALIDO
-═══════════════════════════════════════════
+ARCH_LEVEL (una volta per arcata, non per ogni dente):
+${fmtL(listinoPianoArch)}
+
+CASE_LEVEL (una volta per caso):
+${fmtL(listinoPianoCase)}
+
+SESSION_LEVEL (una volta per seduta):
+${fmtL(listinoPianoSess)}
+
+${esempiBlock ? `════ MAPPING APPRESI ════\n${esempiBlock}` : ''}
+${protocolliBlock ? `════ PROTOCOLLI STUDIO ════\n${protocolliBlock}` : ''}
+${depsBlock ? `════ DIPENDENZE CLINICHE APPRESE ════\n${depsBlock}` : ''}
+
+════ REGOLE CLINICHE ATTIVE ════
+${rulesBlock || '  Nessuna regola attiva'}
+
+════ REGOLE SCOPE ════
+TOOTH_LEVEL → "denti" con numero FDI (es.:"36") — si ripete per ogni dente
+ARCH_LEVEL / CASE_LEVEL / SESSION_LEVEL → "generali" — una sola volta
+TAC, bite, ablazione → generali; impianto, abutment, corona su impianto → denti
+
+════ ISTRUZIONI OUTPUT ════
+Restituisci SOLO JSON valido con esattamente questi campi.
+Per ogni suggerimento_clinico includi rule_id.
+confidence tra 0.0 e 1.0. needs_review:true se confidence < 0.70.
 
 {
-  "ok": true,
-  "transcription_raw": "testo originale Whisper",
-  "transcription_corrected": "testo corretto con [?] per parole dubbie",
+  "transcription_corrected": "testo corretto, [?] per parole dubbie",
+
+  "situazione_attuale": {
+    "denti": {
+      "11": { "stato": "cariato", "id_listino": "cariato", "note": "" }
+    }
+  },
+
+  "terapie_da_attuare": {
+    "valutazione": "riassunto clinico 1-2 frasi",
+    "denti": {
+      "11": { "terapie": [
+        { "id_listino": "otturazione_composito", "label": "Otturazione composito", "qta": 1 }
+      ]}
+    },
+    "generali": [
+      { "id_listino": "tac_cone_beam", "label": "TAC Cone Beam", "arcata": "", "scope": "CASE_LEVEL", "qta": 1 }
+    ]
+  },
+
+  "suggerimenti_clinici": [
+    { "rule_id": "crown_temporary", "dente": "11", "prestazione": "Provvisorio", "id_listino": "provvisorio", "motivo": "...", "scope": "TOOTH_LEVEL" }
+  ],
+
   "current_situation": [
-    {
-      "tooth": "11",
-      "finding": "carie mesiale",
-      "surfaces": ["mesiale"],
-      "status": "presente|assente|impianto|ignoto",
-      "notes": "",
-      "confidence": 0.95
-    }
+    { "tooth": "11", "finding": "carie mesiale", "surfaces": ["mesiale"], "status": "presente", "notes": "", "confidence": 0.95 }
   ],
+
   "treatment_plan": [
-    {
-      "tooth": "11",
-      "diagnosis": "carie mesiale",
-      "proposed_treatment": "otturazione II classe",
-      "possible_treatment": "",
-      "surfaces": ["mesiale"],
-      "priority": "media",
-      "symptoms": ["dolore alla masticazione"],
-      "notes": "",
-      "status": "da fare",
-      "confidence": 0.92,
-      "needs_review": false
-    }
+    { "tooth": "11", "diagnosis": "carie mesiale", "proposed_treatment": "otturazione II classe", "possible_treatment": "", "surfaces": ["mesiale"], "priority": "media", "symptoms": [], "notes": "", "status": "da fare", "confidence": 0.92, "needs_review": false }
   ],
+
   "quote_items": [
-    {
-      "tooth": "11",
-      "item": "Otturazione II classe",
-      "quantity": 1,
-      "notes": "",
-      "confidence": 0.92
-    }
+    { "tooth": "11", "item": "Otturazione II classe", "quantity": 1, "notes": "", "confidence": 0.92 }
   ],
+
   "clinical_diary_entry": "Alla visita odierna...",
-  "summary": "Piano di 3 elementi: otturazione 11, valutazione 22, otturazione 26.",
+  "summary": "Piano di N elementi: ...",
+
   "warnings": [],
+
   "quality_check": {
     "overall_confidence": 0.90,
     "needs_human_review": false,
     "issues": []
   },
+
   "learning_memory": [
-    {
-      "type": "terminology",
-      "value": "prima classe = otturazione I cl.",
-      "reason": "medico usa abbreviazione verbale"
-    }
+    { "type": "terminology", "value": "prima classe = otturazione I cl.", "reason": "abbreviazione verbale" }
   ]
+}`;
 }
 
-REGOLE OUTPUT:
-- Rispondi SOLO con JSON valido. Nessun markdown. Nessuna spiegazione fuori dal JSON.
-- Se un campo non è applicabile usa stringa vuota "" o array vuoto [].
-- confidence sempre tra 0.0 e 1.0
-- tooth sempre come stringa: "11", "22", "AS" (arcata superiore), "AI" (arcata inferiore)
-- Aggrega le informazioni dello stesso dente in un solo elemento (non duplicare lo stesso dente)
-`;
+// ─── Chiamata AI unificata ────────────────────────────────────────────────────
+async function extractAndBuild(trascrizione, context, apiKey) {
+  const systemPrompt = buildExtractionPrompt(
+    context.listino_attuale,
+    context.listino_piano,
+    context.esempi_attuale,
+    context.esempi_piano,
+    context.protocolli,
+    context.clinical_deps,
+    context.ai_rule_preferences
+  );
 
-async function extractClinicalData(transcriptionRaw, apiKey) {
   const resp = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
-    headers: {
-      'Content-Type':  'application/json',
-      Authorization:   `Bearer ${apiKey}`,
-    },
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
     body: JSON.stringify({
       model:           REASON_MODEL,
-      temperature:     0.1,
-      response_format: { type: 'json_object' },
-      messages: [
-        { role: 'system', content: SYSTEM_CLINICAL },
-        {
-          role: 'user',
-          content:
-            `Trascrizione Whisper da correggere e analizzare:\n\n${transcriptionRaw}`,
-        },
-      ],
-    }),
-  });
-
-  if (!resp.ok) {
-    const err = await resp.text();
-    throw new Error(`OpenAI extraction error ${resp.status}: ${err.slice(0, 300)}`);
-  }
-
-  const data   = await resp.json();
-  const raw    = data.choices?.[0]?.message?.content || '{}';
-
-  let parsed;
-  try {
-    parsed = JSON.parse(raw);
-  } catch {
-    throw new Error(`JSON non valido dall'AI: ${raw.slice(0, 300)}`);
-  }
-
-  return parsed;
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// STEP 3 — Quality Check interno
-// ─────────────────────────────────────────────────────────────────────────────
-const SYSTEM_QC = `Sei un revisore di cartelle cliniche odontoiatriche.
-Ricevi un JSON clinico generato da un AI di primo passaggio.
-Devi fare un controllo qualità veloce e restituire lo STESSO JSON corretto.
-
-CONTROLLI DA FARE:
-1. Numeri FDI validi (11-18, 21-28, 31-38, 41-48). Se trovi numeri fuori range: correggili se puoi intuire il dente, altrimenti aggiungi warning e imposta confidence bassa.
-2. needs_review: true per tutti gli item con confidence < 0.70
-3. Se overall_confidence < 0.75 → needs_human_review: true
-4. Se ci sono denti con proposed_treatment vuoto ma diagnosis presente → aggiungi al quality_check.issues
-5. Se trovi duplicati dello stesso dente nel treatment_plan → uniscili
-6. Non aggiungere MAI informazioni non presenti nel JSON originale
-7. Non rimuovere warnings esistenti, puoi solo aggiungerne
-
-Restituisci il JSON completo corretto. Nessun testo extra.`;
-
-async function qualityCheck(clinicalJson, apiKey) {
-  const resp = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization:  `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model:           FAST_MODEL,
       temperature:     0,
       response_format: { type: 'json_object' },
       messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user',   content: `Studio: ${context.studio_id||''} | Paziente: ${context.codice_paziente||''}\n\nNOTA CLINICA:\n${trascrizione.trim()}` },
+      ],
+    }),
+  });
+
+  if (!resp.ok) throw new Error(`OpenAI ${resp.status}: ${(await resp.text()).slice(0,300)}`);
+  const d   = await resp.json();
+  const raw = d.choices?.[0]?.message?.content || '{}';
+  try { return JSON.parse(raw); } catch { throw new Error(`JSON non valido: ${raw.slice(0,300)}`); }
+}
+
+// ─── QC leggero ───────────────────────────────────────────────────────────────
+async function quickQC(json, apiKey) {
+  const SYSTEM_QC = `Sei un revisore di cartelle cliniche odontoiatriche. Ricevi un JSON clinico e devi fare un QC rapido.
+Controlla:
+1. Numeri FDI validi (11-18, 21-28, 31-38, 41-48). Fuori range → warning + confidence bassa
+2. needs_review: true per tutti gli item con confidence < 0.70
+3. Se overall_confidence < 0.75 → needs_human_review: true
+4. Denti duplicati nel treatment_plan → uniscili
+5. NON aggiungere informazioni non presenti. NON rimuovere warnings.
+Restituisci il JSON completo corretto. Nessun testo extra.`;
+
+  const resp = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
+    body: JSON.stringify({
+      model: FAST_MODEL, temperature: 0,
+      response_format: { type: 'json_object' },
+      messages: [
         { role: 'system', content: SYSTEM_QC },
-        {
-          role: 'user',
-          content: `JSON da revisionare:\n\n${JSON.stringify(clinicalJson, null, 2)}`,
-        },
+        { role: 'user', content: JSON.stringify(json, null, 2) },
       ],
     }),
   });
 
   if (!resp.ok) {
-    // QC fallito: restituiamo il JSON originale con warning
-    clinicalJson.warnings = clinicalJson.warnings || [];
-    clinicalJson.warnings.push('Quality check interno fallito — revisione manuale raccomandata');
-    return clinicalJson;
+    json.warnings = json.warnings || [];
+    json.warnings.push('QC interno fallito — revisione manuale raccomandata');
+    return json;
   }
-
-  const data = await resp.json();
-  const raw  = data.choices?.[0]?.message?.content || '{}';
-
-  try {
-    return JSON.parse(raw);
-  } catch {
-    // Se il QC restituisce JSON non parsabile, usiamo l'originale
-    clinicalJson.warnings = clinicalJson.warnings || [];
-    clinicalJson.warnings.push('Quality check output non parsabile — usato risultato di primo passaggio');
-    return clinicalJson;
-  }
+  const d = await resp.json();
+  try { return JSON.parse(d.choices?.[0]?.message?.content || '{}'); }
+  catch { return json; }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// STEP 4 — Normalizza e valida output finale
-// ─────────────────────────────────────────────────────────────────────────────
-function normalizeOutput(json, transcriptionRaw) {
+// ─── Normalizza output finale ─────────────────────────────────────────────────
+function normalize(json, transcriptionRaw) {
   const out = {
     ok:                      true,
     transcription_raw:       json.transcription_raw       || transcriptionRaw || '',
     transcription_corrected: json.transcription_corrected || transcriptionRaw || '',
-    current_situation:       Array.isArray(json.current_situation)  ? json.current_situation  : [],
-    treatment_plan:          Array.isArray(json.treatment_plan)     ? json.treatment_plan     : [],
-    quote_items:             Array.isArray(json.quote_items)        ? json.quote_items        : [],
-    clinical_diary_entry:    json.clinical_diary_entry || '',
-    summary:                 json.summary              || '',
-    warnings:                Array.isArray(json.warnings) ? json.warnings : [],
+
+    // Vecchio schema (compatibilità frontend)
+    situazione_attuale:  json.situazione_attuale  || { denti: {} },
+    terapie_da_attuare:  json.terapie_da_attuare  || { valutazione: '', denti: {}, generali: [] },
+    suggerimenti_clinici: Array.isArray(json.suggerimenti_clinici) ? json.suggerimenti_clinici : [],
+    sommario:            json.terapie_da_attuare?.valutazione || json.summary || '',
+
+    // Nuovo schema ricco
+    current_situation: Array.isArray(json.current_situation)  ? json.current_situation  : [],
+    treatment_plan:    Array.isArray(json.treatment_plan)     ? json.treatment_plan     : [],
+    quote_items:       Array.isArray(json.quote_items)        ? json.quote_items        : [],
+    clinical_diary_entry: json.clinical_diary_entry || '',
+    summary:           json.summary              || '',
+    warnings:          Array.isArray(json.warnings) ? json.warnings : [],
     quality_check: {
       overall_confidence: typeof json.quality_check?.overall_confidence === 'number'
         ? json.quality_check.overall_confidence : 0.8,
       needs_human_review: json.quality_check?.needs_human_review ?? false,
-      issues:             Array.isArray(json.quality_check?.issues) ? json.quality_check.issues : [],
+      issues: Array.isArray(json.quality_check?.issues) ? json.quality_check.issues : [],
     },
     learning_memory: Array.isArray(json.learning_memory) ? json.learning_memory : [],
   };
 
-  // Forza needs_review = true se confidence < 0.70
-  out.treatment_plan = out.treatment_plan.map(item => ({
-    ...item,
-    needs_review: item.needs_review || (item.confidence != null && item.confidence < 0.70),
+  // Forza needs_review se confidence bassa
+  out.treatment_plan = out.treatment_plan.map(i => ({
+    ...i, needs_review: i.needs_review || (i.confidence != null && i.confidence < 0.70),
   }));
-
-  // needs_human_review se almeno un item chiede revisione o confidence globale bassa
   if (out.treatment_plan.some(i => i.needs_review) || out.quality_check.overall_confidence < 0.75) {
     out.quality_check.needs_human_review = true;
   }
@@ -341,111 +300,123 @@ function normalizeOutput(json, transcriptionRaw) {
   return out;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Handler principale
-// ─────────────────────────────────────────────────────────────────────────────
+// ─── Handler ──────────────────────────────────────────────────────────────────
 export default {
   async fetch(request, env) {
 
-    // CORS preflight
-    if (request.method === 'OPTIONS') {
-      return new Response(null, { headers: CORS_HEADERS });
-    }
-
-    if (request.method !== 'POST') {
-      return errResponse('Method not allowed', 405);
-    }
+    if (request.method === 'OPTIONS') return new Response(null, { headers: CORS_HEADERS });
+    if (request.method !== 'POST')    return errResp('Method not allowed', 405);
 
     const apiKey = env.OPENAI_API_KEY;
-    if (!apiKey) {
-      return errResponse('OPENAI_API_KEY non configurata nel Worker', 500);
+    if (!apiKey) return errResp('OPENAI_API_KEY non configurata', 500);
+
+    const contentType = request.headers.get('Content-Type') || '';
+
+    // ══════════════════════════════════════════════════════════════
+    // PATH B — JSON body (compatibilità con frontend esistente)
+    //          tipo:'nota_completa' + trascrizione + listino + ...
+    // ══════════════════════════════════════════════════════════════
+    if (contentType.includes('application/json')) {
+      let body;
+      try { body = await request.json(); } catch { return errResp('JSON non valido', 400); }
+
+      const {
+        tipo = 'nota_completa', trascrizione = '',
+        studio_id = 'default_studio', doctor_id = 'default_doctor',
+        codice_paziente = '',
+        listino_attuale = [], listino_piano = [],
+        esempi_attuale = [], esempi_piano = [],
+        protocolli = [], clinical_deps = [], ai_rule_preferences = []
+      } = body;
+
+      if (!trascrizione.trim()) return errResp('Trascrizione vuota', 400);
+
+      const context = { studio_id, doctor_id, codice_paziente, listino_attuale, listino_piano, esempi_attuale, esempi_piano, protocolli, clinical_deps, ai_rule_preferences };
+
+      let extracted;
+      try { extracted = await extractAndBuild(trascrizione, context, apiKey); }
+      catch (e) { return errResp(`Estrazione fallita: ${e.message}`, 502); }
+
+      let checked;
+      try { checked = await quickQC(extracted, apiKey); } catch { checked = extracted; }
+
+      const output = normalize(checked, trascrizione);
+      output._meta = { studio_id, doctor_id, codice_paziente, generated_at: new Date().toISOString() };
+      return jsonResp(output);
     }
 
-    // ── Leggi form-data ──────────────────────────────────────────────────────
+    // ══════════════════════════════════════════════════════════════
+    // PATH A — FormData con audio
+    // ══════════════════════════════════════════════════════════════
     let formData;
-    try {
-      formData = await request.formData();
-    } catch {
-      return errResponse('Body non è multipart/form-data valido', 400);
-    }
+    try { formData = await request.formData(); }
+    catch { return errResp('Body non è multipart/form-data valido', 400); }
 
-    // Supporta sia campo "audio" che "file" (compatibilità con vecchio frontend)
     const audioField = formData.get('audio') || formData.get('file');
-    if (!audioField) {
-      return errResponse('Campo "audio" mancante nel form-data', 400);
-    }
+    if (!audioField) return errResp('Campo "audio" mancante', 400);
 
-    // Metadati opzionali dal frontend
-    const studioId  = formData.get('studio_id')  || 'default_studio';
-    const doctorId  = formData.get('doctor_id')  || 'default_doctor';
-    const patientId = formData.get('patient_id') || '';
+    const studioId      = formData.get('studio_id')      || 'default_studio';
+    const doctorId      = formData.get('doctor_id')      || 'default_doctor';
+    const patientId     = formData.get('patient_id')     || '';
+    const codicePaz     = formData.get('codice_paziente') || '';
 
-    // audioField può essere un File (Blob con name) o una stringa base64
-    let audioBlob;
-    let audioFilename = 'recording.webm';
+    // Listino e contesto opzionali
+    const safeParse = (s, def) => { try { return s ? JSON.parse(s) : def; } catch { return def; } };
+    const listinoAtt   = safeParse(formData.get('listino_attuale'),    []);
+    const listinoPia   = safeParse(formData.get('listino_piano'),      []);
+    const esempiAtt    = safeParse(formData.get('esempi_attuale'),     []);
+    const esempiPia    = safeParse(formData.get('esempi_piano'),       []);
+    const protocolli   = safeParse(formData.get('protocolli'),         []);
+    const clinDeps     = safeParse(formData.get('clinical_deps'),      []);
+    const rulePrefs    = safeParse(formData.get('ai_rule_preferences'), []);
 
+    // Audio blob
+    let audioBlob, audioFilename = 'recording.webm';
     if (typeof audioField === 'string') {
-      // Base64 fallback
       try {
         const b64 = audioField.includes(',') ? audioField.split(',')[1] : audioField;
         const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
         audioBlob = new Blob([bytes], { type: 'audio/webm' });
-      } catch {
-        return errResponse('Campo "audio" non è un file valido né base64 valido', 400);
-      }
+      } catch { return errResp('Campo audio non è un file valido né base64', 400); }
     } else {
-      audioBlob     = audioField;
+      audioBlob = audioField;
       audioFilename = audioField.name || 'recording.webm';
     }
+    if (!audioBlob || audioBlob.size === 0) return errResp('File audio vuoto', 400);
 
-    if (!audioBlob || audioBlob.size === 0) {
-      return errResponse('File audio vuoto', 400);
-    }
-
-    // ── STEP 1: Trascrizione ────────────────────────────────────────────────
+    // Step 1: Trascrizione
     let transcription;
-    try {
-      transcription = await transcribeAudio(audioBlob, audioFilename, apiKey);
-    } catch (e) {
-      return errResponse(`Trascrizione fallita: ${e.message}`, 502);
-    }
+    try { transcription = await transcribeAudio(audioBlob, audioFilename, apiKey); }
+    catch (e) { return errResp(`Trascrizione fallita: ${e.message}`, 502); }
 
-    if (!transcription.text || transcription.text.trim().length < 3) {
-      return errResponse('Trascrizione troppo breve o vuota — riprova con audio più chiaro', 400);
-    }
+    if (!transcription.text?.trim() || transcription.text.trim().length < 3)
+      return errResp('Trascrizione vuota o troppo breve — riprova con audio più chiaro', 400);
 
-    // ── STEP 2: Estrazione clinica ─────────────────────────────────────────
-    let clinicalData;
-    try {
-      clinicalData = await extractClinicalData(transcription.text, apiKey);
-    } catch (e) {
-      return errResponse(`Estrazione clinica fallita: ${e.message}`, 502, { raw: transcription.text });
-    }
-
-    // Inietta la trascrizione raw se l'AI non l'ha inclusa
-    clinicalData.transcription_raw = clinicalData.transcription_raw || transcription.text;
-
-    // ── STEP 3: Quality Check ───────────────────────────────────────────────
-    let checkedData;
-    try {
-      checkedData = await qualityCheck(clinicalData, apiKey);
-    } catch {
-      checkedData = clinicalData;
-    }
-
-    // ── STEP 4: Normalizza ─────────────────────────────────────────────────
-    const output = normalizeOutput(checkedData, transcription.text);
-
-    // Aggiungi metadati di contesto (non modificano la logica clinica)
-    output._meta = {
-      studio_id:    studioId,
-      doctor_id:    doctorId,
-      patient_id:   patientId,
-      audio_duration_sec: transcription.duration,
-      whisper_language:   transcription.language,
-      generated_at:       new Date().toISOString(),
+    // Step 2+3: Estrazione + QC
+    const context = {
+      studio_id: studioId, doctor_id: doctorId, codice_paziente: codicePaz,
+      listino_attuale: listinoAtt, listino_piano: listinoPia,
+      esempi_attuale: esempiAtt, esempi_piano: esempiPia,
+      protocolli, clinical_deps: clinDeps, ai_rule_preferences: rulePrefs
     };
 
-    return corsResponse(output, 200);
+    let extracted;
+    try { extracted = await extractAndBuild(transcription.text, context, apiKey); }
+    catch (e) { return errResp(`Estrazione clinica fallita: ${e.message}`, 502, { transcription_raw: transcription.text }); }
+
+    extracted.transcription_raw = extracted.transcription_raw || transcription.text;
+
+    let checked;
+    try { checked = await quickQC(extracted, apiKey); } catch { checked = extracted; }
+
+    const output = normalize(checked, transcription.text);
+    output._meta = {
+      studio_id: studioId, doctor_id: doctorId, patient_id: patientId,
+      audio_duration_sec: transcription.duration,
+      whisper_language: transcription.language,
+      generated_at: new Date().toISOString(),
+    };
+
+    return jsonResp(output);
   },
 };
