@@ -806,6 +806,24 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--gray-50);color:
         <div class="fg"><label>Colore testo</label><input id="pe-color" type="color" value="#686864" style="height:36px;padding:2px"></div>
         <div class="fg"><label>Colore sfondo</label><input id="pe-bg" type="color" value="#EFEDE7" style="height:36px;padding:2px"></div>
       </div>
+      <!-- Scope — frequenza di inserimento (solo per piano trattamenti) -->
+      <div id="pe-scope-row" style="display:none;margin-bottom:.8rem">
+        <label style="font-size:11px;font-weight:600;color:var(--gray-500);display:block;margin-bottom:.4rem">Frequenza di inserimento nel preventivo</label>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;padding:4px 9px;border-radius:var(--r-sm);border:var(--border);background:white">
+            <input type="radio" name="pe-scope" value="TOOTH_LEVEL" checked> 🦷 Per dente
+          </label>
+          <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;padding:4px 9px;border-radius:var(--r-sm);border:var(--border);background:white">
+            <input type="radio" name="pe-scope" value="ARCH_LEVEL"> Per arcata
+          </label>
+          <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;padding:4px 9px;border-radius:var(--r-sm);border:var(--border);background:white">
+            <input type="radio" name="pe-scope" value="CASE_LEVEL"> Per caso
+          </label>
+          <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;padding:4px 9px;border-radius:var(--r-sm);border:var(--border);background:white">
+            <input type="radio" name="pe-scope" value="SESSION_LEVEL"> Per seduta
+          </label>
+        </div>
+      </div>
       <div style="display:flex;gap:6px;justify-content:flex-end">
         <button class="btn-sec" onclick="document.getElementById('prest-form').style.display='none'">Annulla</button>
         <button class="btn-save" onclick="savePrestazioneLine()">Salva voce</button>
@@ -919,130 +937,130 @@ const TR_ATTUALE_DEFAULT = [
 ];
 
 const TR_PIANO_DEFAULT = [
-  {id:'ablazione_pediatrica_fino_agli', label:'Ablazione pediatrica(fino agli 11 anni compiuti)', color:'#1D9E75', sym:'ABP', bg:'#E1F5EE', tipo:'piano', prezzo:70},
-  {id:'abutment', label:'ABUTMENT', color:'#0F6E56', sym:'ABU', bg:'#D0F0E6', tipo:'piano', prezzo:190},
-  {id:'abutment_zigomatico', label:'ABUTMENT ZIGOMATICO', color:'#0F6E56', sym:'ABZ', bg:'#D0F0E6', tipo:'piano', prezzo:250},
-  {id:'aggiunta_dente_su_protesi', label:'AGGIUNTA DENTE SU PROTESI', color:'#C05621', sym:'AD', bg:'#FEF0E7', tipo:'piano', prezzo:130},
-  {id:'aggiunta_locator', label:'AGGIUNTA LOCATOR', color:'#C05621', sym:'AL', bg:'#FEF0E7', tipo:'piano', prezzo:120},
-  {id:'allineatori_ortodontici', label:'ALLINEATORI ORTODONTICI', color:'#1A5EA8', sym:'ALI', bg:'#E8F1FD', tipo:'piano', prezzo:150},
-  {id:'anestesista', label:'ANESTESISTA', color:'#686864', sym:'ANE', bg:'#EFEDE7', tipo:'piano', prezzo:1000},
-  {id:'apicectomia', label:'APICECTOMIA', color:'#5B4BBF', sym:'API', bg:'#EEEDFB', tipo:'piano', prezzo:300},
-  {id:'apparecchio_pcf', label:'Apparecchio PCF', color:'#1A5EA8', sym:'PCF', bg:'#E8F1FD', tipo:'piano', prezzo:1800},
-  {id:'barra_di_rinforzo_in_titanio', label:'Barra di rinforzo in titanio', color:'#686864', sym:'BAR', bg:'#EFEDE7', tipo:'piano', prezzo:190},
-  {id:'barra_per_trazionamento_ortodo', label:'Barra per trazionamento ortodontico', color:'#1A5EA8', sym:'BT', bg:'#E8F1FD', tipo:'piano', prezzo:600},
-  {id:'bite', label:'BITE', color:'#686864', sym:'BIT', bg:'#EFEDE7', tipo:'piano', prezzo:250},
-  {id:'bonifica_arcata', label:'BONIFICA ARCATA', color:'#1D9E75', sym:'BON', bg:'#E1F5EE', tipo:'piano', prezzo:550},
-  {id:'byte', label:'BYTE', color:'#686864', sym:'BYT', bg:'#EFEDE7', tipo:'piano', prezzo:300},
-  {id:'cambio_archi_ortodontici', label:'CAMBIO ARCHI ORTODONTICI', color:'#1A5EA8', sym:'ARC', bg:'#E8F1FD', tipo:'piano', prezzo:50},
-  {id:'cambio_gommini_e_cappette', label:'CAMBIO GOMMINI E CAPPETTE', color:'#1A5EA8', sym:'GOM', bg:'#E8F1FD', tipo:'piano', prezzo:25},
-  {id:'cambio_protesi_da_rimovibile_a', label:'CAMBIO PROTESI DA RIMOVIBILE A FISSA', color:'#C05621', sym:'CPF', bg:'#FEF0E7', tipo:'piano', prezzo:1200},
-  {id:'circolare_in_composito', label:'CIRCOLARE IN COMPOSITO', color:'#B7651A', sym:'CC', bg:'#FEF3E2', tipo:'piano', prezzo:1500},
-  {id:'circolare_provvisorio', label:'CIRCOLARE PROVVISORIO', color:'#B7651A', sym:'CP', bg:'#FEF3E2', tipo:'piano', prezzo:200},
-  {id:'circolare_provvisorio_digitale', label:'CIRCOLARE PROVVISORIO DIGITALE', color:'#B7651A', sym:'CPD', bg:'#FEF3E2', tipo:'piano', prezzo:200},
-  {id:'cistectomia', label:'CISTECTOMIA', color:'#C0392B', sym:'CIS', bg:'#FDECEA', tipo:'piano', prezzo:300},
-  {id:'componentistica_non_lookdental', label:'COMPONENTISTICA NON LOOKDENTAL', color:'#686864', sym:'COM', bg:'#EFEDE7', tipo:'piano', prezzo:300},
-  {id:'contenzione_ortodontica', label:'CONTENZIONE ORTODONTICA', color:'#1A5EA8', sym:'CON', bg:'#E8F1FD', tipo:'piano', prezzo:250},
-  {id:'copertura_elemento_in_composit', label:'Copertura elemento in composito', color:'#1A5EA8', sym:'COE', bg:'#E8F1FD', tipo:'piano', prezzo:70},
-  {id:'corona_provvisoria_a_carico_im', label:'CORONA PROVVISORIA A CARICO IMMEDIATO', color:'#5B4BBF', sym:'CCI', bg:'#EEEDFB', tipo:'piano', prezzo:300},
-  {id:'corona_provvisoria_in_resina', label:'CORONA PROVVISORIA IN RESINA', color:'#5B4BBF', sym:'CPR', bg:'#EEEDFB', tipo:'piano', prezzo:90},
-  {id:'corona_zirconio', label:'CORONA ZIRCONIO', color:'#5B4BBF', sym:'KZ', bg:'#EEEDFB', tipo:'piano', prezzo:700},
-  {id:'corona_zirconio_su_impianto', label:'CORONA ZIRCONIO SU IMPIANTO', color:'#0F6E56', sym:'KI', bg:'#D0F0E6', tipo:'piano', prezzo:700},
-  {id:'decementazione_ponte_a_quadran', label:'DECEMENTAZIONE PONTE A QUADRANTE', color:'#5B4BBF', sym:'DEC', bg:'#EEEDFB', tipo:'piano', prezzo:0},
-  {id:'dima_chirurgica_per_carico_imm', label:'Dima Chirurgica per carico immediato', color:'#0F6E56', sym:'DMC', bg:'#D0F0E6', tipo:'piano', prezzo:250},
-  {id:'dima_ortodontica', label:'Dima Ortodontica', color:'#1A5EA8', sym:'DMO', bg:'#E8F1FD', tipo:'piano', prezzo:250},
-  {id:'estrazione_complessa', label:'ESTRAZIONE COMPLESSA', color:'#C0392B', sym:'EC', bg:'#FDECEA', tipo:'piano', prezzo:130},
-  {id:'estrazione_dente_deciduo', label:'ESTRAZIONE DENTE DECIDUO', color:'#C0392B', sym:'EDD', bg:'#FDECEA', tipo:'piano', prezzo:80},
-  {id:'estrazione_dente_del_giudizio', label:'ESTRAZIONE DENTE DEL GIUDIZIO', color:'#C0392B', sym:'EG', bg:'#FDECEA', tipo:'piano', prezzo:200},
-  {id:'estrazione_elemento_incluso', label:'ESTRAZIONE ELEMENTO INCLUSO', color:'#C0392B', sym:'EI', bg:'#FDECEA', tipo:'piano', prezzo:600},
-  {id:'estrazione_elemento_semi_inclu', label:'ESTRAZIONE ELEMENTO SEMI INCLUSO', color:'#C0392B', sym:'ESI', bg:'#FDECEA', tipo:'piano', prezzo:300},
-  {id:'estrazione_semplice', label:'ESTRAZIONE SEMPLICE', color:'#C0392B', sym:'ES', bg:'#FDECEA', tipo:'piano', prezzo:100},
-  {id:'faccetta_in_ceramica', label:'FACCETTA IN CERAMICA', color:'#B7651A', sym:'FC', bg:'#FEF3E2', tipo:'piano', prezzo:600},
-  {id:'faccetta_in_composito', label:'FACCETTA IN COMPOSITO', color:'#B7651A', sym:'FCO', bg:'#FEF3E2', tipo:'piano', prezzo:400},
-  {id:'faccetta_provvisoria', label:'Faccetta provvisoria', color:'#B7651A', sym:'FPR', bg:'#FEF3E2', tipo:'piano', prezzo:100},
-  {id:'flexite', label:'FLEXITE', color:'#C05621', sym:'FLX', bg:'#FEF0E7', tipo:'piano', prezzo:1500},
-  {id:'frenulectomia', label:'FRENULECTOMIA', color:'#C0392B', sym:'FRE', bg:'#FDECEA', tipo:'piano', prezzo:250},
-  {id:'gancio_trasparente', label:'GANCIO TRASPARENTE', color:'#C05621', sym:'GAN', bg:'#FEF0E7', tipo:'piano', prezzo:150},
-  {id:'gbr', label:'GBR', color:'#0F6E56', sym:'GBR', bg:'#D0F0E6', tipo:'piano', prezzo:2000},
-  {id:'grande_rialzo_seno_mascellare', label:'GRANDE RIALZO SENO MASCELLARE', color:'#0F6E56', sym:'RGR', bg:'#D0F0E6', tipo:'piano', prezzo:1600},
-  {id:'griglia_ossea_in_titanio', label:'Griglia ossea in titanio', color:'#0F6E56', sym:'GRI', bg:'#D0F0E6', tipo:'piano', prezzo:2500},
-  {id:'ibrida_in_zirconia', label:'IBRIDA IN ZIRCONIA', color:'#C05621', sym:'IBZ', bg:'#FEF0E7', tipo:'piano', prezzo:5500},
-  {id:'igiene_arcata_protesica', label:'Igiene arcata protesica', color:'#C05621', sym:'IGA', bg:'#FEF0E7', tipo:'piano', prezzo:50},
-  {id:'impianto_osteointegrabile', label:'IMPIANTO OSTEOINTEGRABILE', color:'#0F6E56', sym:'IMP', bg:'#D0F0E6', tipo:'piano', prezzo:550},
-  {id:'impianto_zigomatico', label:'IMPIANTO ZIGOMATICO', color:'#0F6E56', sym:'IMZ', bg:'#D0F0E6', tipo:'piano', prezzo:2000},
-  {id:'intarsio_in_ceramica', label:'INTARSIO in ceramica', color:'#1A5EA8', sym:'INT', bg:'#E8F1FD', tipo:'piano', prezzo:400},
-  {id:'levigatura_radicolare_singolo_', label:'LEVIGATURA RADICOLARE SINGOLO ELEMENTO', color:'#1D9E75', sym:'LRS', bg:'#E1F5EE', tipo:'piano', prezzo:22},
-  {id:'levigature_radicolari', label:'LEVIGATURE RADICOLARI', color:'#686864', sym:'LR', bg:'#EFEDE7', tipo:'piano', prezzo:130},
-  {id:'maryland', label:'MARYLAND', color:'#5B4BBF', sym:'MAR', bg:'#EEEDFB', tipo:'piano', prezzo:370},
-  {id:'mascherina_contenzione', label:'MASCHERINA CONTENZIONE', color:'#1A5EA8', sym:'MSC', bg:'#E8F1FD', tipo:'piano', prezzo:180},
-  {id:'mascherine_ortodontiche', label:'MASCHERINE ORTODONTICHE', color:'#1A5EA8', sym:'MSO', bg:'#E8F1FD', tipo:'piano', prezzo:250},
-  {id:'meryland', label:'Meryland', color:'#5B4BBF', sym:'MER', bg:'#EEEDFB', tipo:'piano', prezzo:750},
-  {id:'mini_rialzo_seno_mascellare', label:'MINI RIALZO SENO MASCELLARE', color:'#0F6E56', sym:'RMI', bg:'#D0F0E6', tipo:'piano', prezzo:800},
-  {id:'ortodonzia_all_inclusive', label:'ORTODONZIA ALL INCLUSIVE', color:'#1A5EA8', sym:'OAI', bg:'#E8F1FD', tipo:'piano', prezzo:4800},
-  {id:'otturazione_a_rischio_devitali', label:'OTTURAZIONE A RISCHIO DEVITALIZZAZIONE', color:'#1A5EA8', sym:'OR', bg:'#E8F1FD', tipo:'piano', prezzo:170},
-  {id:'otturazione_dente_da_latte', label:'OTTURAZIONE DENTE DA LATTE', color:'#1A5EA8', sym:'OL', bg:'#E8F1FD', tipo:'piano', prezzo:80},
-  {id:'otturazione_i_classe', label:'OTTURAZIONE I CLASSE', color:'#1A5EA8', sym:'O1', bg:'#E8F1FD', tipo:'piano', prezzo:120},
-  {id:'otturazione_ii_classe', label:'OTTURAZIONE II CLASSE', color:'#1A5EA8', sym:'O2', bg:'#E8F1FD', tipo:'piano', prezzo:170},
-  {id:'otturazione_v_classe', label:'OTTURAZIONE V CLASSE', color:'#1A5EA8', sym:'O5', bg:'#E8F1FD', tipo:'piano', prezzo:90},
-  {id:'overdenture', label:'OVERDENTURE', color:'#C05621', sym:'OVD', bg:'#FEF0E7', tipo:'piano', prezzo:2600},
-  {id:'prestazioni_odontoiatriche_pre', label:'Prestazioni odontoiatriche presso vostra sede di Via Servais 125 ', color:'#686864', sym:'PRE', bg:'#EFEDE7', tipo:'piano', prezzo:0},
-  {id:'protesi_ibrida', label:'PROTESI IBRIDA', color:'#C05621', sym:'IBR', bg:'#FEF0E7', tipo:'piano', prezzo:3800},
-  {id:'protesi_ibrida_su_4_impianti', label:'PROTESI IBRIDA SU 4 IMPIANTI', color:'#C05621', sym:'IH4', bg:'#FEF0E7', tipo:'piano', prezzo:3000},
-  {id:'protesi_ibrida_su_locator', label:'PROTESI IBRIDA SU LOCATOR', color:'#C05621', sym:'IHL', bg:'#FEF0E7', tipo:'piano', prezzo:3300},
-  {id:'protesi_mobile_provvisoria', label:'PROTESI MOBILE PROVVISORIA', color:'#C05621', sym:'PMP', bg:'#FEF0E7', tipo:'piano', prezzo:550},
-  {id:'protesi_overdenture_fissa_su_i', label:'Protesi overdenture fissa su impianti', color:'#C05621', sym:'OFI', bg:'#FEF0E7', tipo:'piano', prezzo:3100},
-  {id:'protesi_provvisoria_avvitata_a', label:'PROTESI PROVVISORIA AVVITATA A CARICO IMMEDIATO', color:'#C05621', sym:'PPA', bg:'#FEF0E7', tipo:'piano', prezzo:1500},
-  {id:'protesi_scheletrica_definitiva', label:'PROTESI SCHELETRICA DEFINITIVA', color:'#C05621', sym:'PSD', bg:'#FEF0E7', tipo:'piano', prezzo:1300},
-  {id:'protesi_scheletrica_provvisori', label:'PROTESI SCHELETRICA PROVVISORIA', color:'#C05621', sym:'PSP', bg:'#FEF0E7', tipo:'piano', prezzo:350},
-  {id:'protesi_totale_definitiva', label:'PROTESI TOTALE DEFINITIVA', color:'#C05621', sym:'PTD', bg:'#FEF0E7', tipo:'piano', prezzo:1200},
-  {id:'ragnetto', label:'RAGNETTO', color:'#C05621', sym:'RAG', bg:'#FEF0E7', tipo:'piano', prezzo:300},
-  {id:'reinserimento_impianto', label:'Reinserimento impianto', color:'#0F6E56', sym:'REI', bg:'#D0F0E6', tipo:'piano', prezzo:150},
-  {id:'ri_resinatura_protesi', label:'RI RESINATURA PROTESI', color:'#C05621', sym:'RIR', bg:'#FEF0E7', tipo:'piano', prezzo:650},
-  {id:'rialzo_occlusale', label:'RIALZO OCCLUSALE', color:'#686864', sym:'ROC', bg:'#EFEDE7', tipo:'piano', prezzo:1000},
-  {id:'ribasatura_diretta_protesi', label:'RIBASATURA DIRETTA PROTESI', color:'#C05621', sym:'RBD', bg:'#FEF0E7', tipo:'piano', prezzo:180},
-  {id:'ribasatura_in_laboratorio', label:'RIBASATURA IN LABORATORIO', color:'#C05621', sym:'RBL', bg:'#FEF0E7', tipo:'piano', prezzo:300},
-  {id:'ricementazione_ponte', label:'Ricementazione ponte', color:'#5B4BBF', sym:'RIC', bg:'#EEEDFB', tipo:'piano', prezzo:250},
-  {id:'richiamo_rapido_sbiancamento', label:'RICHIAMO RAPIDO SBIANCAMENTO', color:'#1D9E75', sym:'RRS', bg:'#E1F5EE', tipo:'piano', prezzo:100},
-  {id:'richiamo_sbiancamento', label:'RICHIAMO SBIANCAMENTO', color:'#1D9E75', sym:'RSB', bg:'#E1F5EE', tipo:'piano', prezzo:200},
-  {id:'ricostruzione_moncone_in_compo', label:'RICOSTRUZIONE MONCONE IN COMPOSITO', color:'#1A5EA8', sym:'RMC', bg:'#E8F1FD', tipo:'piano', prezzo:120},
-  {id:'ricostruzione_moncone_perno_in', label:'RICOSTRUZIONE MONCONE PERNO IN FIBRA', color:'#1A5EA8', sym:'PF', bg:'#E8F1FD', tipo:'piano', prezzo:200},
-  {id:'rifacimento_corona_in_zirconia', label:'RIFACIMENTO CORONA IN ZIRCONIA', color:'#5B4BBF', sym:'RFC', bg:'#EEEDFB', tipo:'piano', prezzo:200},
-  {id:'rifacimento_overdenture', label:'RIFACIMENTO OVERDENTURE', color:'#C05621', sym:'OVD', bg:'#FEF0E7', tipo:'piano', prezzo:500},
-  {id:'rifacimento_protesi_ibrida', label:'RIFACIMENTO PROTESI IBRIDA', color:'#C05621', sym:'IBR', bg:'#FEF0E7', tipo:'piano', prezzo:600},
-  {id:'rifacimento_protesi_totale', label:'RIFACIMENTO PROTESI TOTALE', color:'#C05621', sym:'RFT', bg:'#FEF0E7', tipo:'piano', prezzo:350},
-  {id:'rimozione_corona', label:'RIMOZIONE CORONA', color:'#5B4BBF', sym:'RMK', bg:'#EEEDFB', tipo:'piano', prezzo:40},
-  {id:'rimozione_impianto', label:'Rimozione impianto', color:'#0F6E56', sym:'RMI2', bg:'#D0F0E6', tipo:'piano', prezzo:150},
-  {id:'riparazione_circolare', label:'RIPARAZIONE CIRCOLARE', color:'#C05621', sym:'RPC', bg:'#FEF0E7', tipo:'piano', prezzo:400},
-  {id:'riparazione_protesi_indiretta', label:'RIPARAZIONE PROTESI INDIRETTA', color:'#C05621', sym:'RPI', bg:'#FEF0E7', tipo:'piano', prezzo:200},
-  {id:'riparazione_scheletrato_aggiun', label:'RIPARAZIONE SCHELETRATO+AGGIUNTA GANCIO+AGGIUNTA DENTE', color:'#C05621', sym:'AD', bg:'#FEF0E7', tipo:'piano', prezzo:300},
-  {id:'ritrattamento_monocanalare', label:'RITRATTAMENTO MONOCANALARE', color:'#5B4BBF', sym:'RT1', bg:'#EEEDFB', tipo:'piano', prezzo:280},
-  {id:'ritrattamento_pluricanalare', label:'RITRATTAMENTO PLURICANALARE', color:'#5B4BBF', sym:'RTP', bg:'#EEEDFB', tipo:'piano', prezzo:400},
-  {id:'sbiancamento_americano_con_lam', label:'SBIANCAMENTO AMERICANO CON LAMPADA', color:'#1D9E75', sym:'SBA', bg:'#E1F5EE', tipo:'piano', prezzo:250},
-  {id:'sbiancamento_domiciliare_2_sed', label:'SBIANCAMENTO DOMICILIARE: 2 sedute in poltrona', color:'#1D9E75', sym:'SBD', bg:'#E1F5EE', tipo:'piano', prezzo:140},
-  {id:'sbiancamento_domiciliare_dose_', label:'SBIANCAMENTO DOMICILIARE: dose iniziale liquido sbiancante', color:'#1D9E75', sym:'SBI', bg:'#E1F5EE', tipo:'piano', prezzo:100},
-  {id:'sbiancamento_domiciliare_masch', label:'SBIANCAMENTO DOMICILIARE: mascherine', color:'#1D9E75', sym:'SBM', bg:'#E1F5EE', tipo:'piano', prezzo:150},
-  {id:'sbiancamento_domiciliare_refil', label:'SBIANCAMENTO DOMICILIARE: refill', color:'#1D9E75', sym:'SBR', bg:'#E1F5EE', tipo:'piano', prezzo:45},
-  {id:'sbiancamento_rapido_post_igien', label:'SBIANCAMENTO RAPIDO POST IGIENE', color:'#1D9E75', sym:'SBP', bg:'#E1F5EE', tipo:'piano', prezzo:50},
-  {id:'scappucciamento_canino_incluso', label:'Scappucciamento canino incluso', color:'#1A5EA8', sym:'SCA', bg:'#E8F1FD', tipo:'piano', prezzo:500},
-  {id:'sigillatura', label:'Sigillatura', color:'#1A5EA8', sym:'SIG', bg:'#E8F1FD', tipo:'piano', prezzo:100},
-  {id:'sondaggio', label:'SONDAGGIO', color:'#1D9E75', sym:'SON', bg:'#E1F5EE', tipo:'piano', prezzo:150},
-  {id:'splintaggio', label:'SPLINTAGGIO', color:'#1D9E75', sym:'SPL', bg:'#E1F5EE', tipo:'piano', prezzo:220},
-  {id:'splintaggio_ortodontico', label:'SPLINTAGGIO ORTODONTICO', color:'#1A5EA8', sym:'SPO', bg:'#E8F1FD', tipo:'piano', prezzo:280},
-  {id:'stripping', label:'STRIPPING', color:'#1A5EA8', sym:'STR', bg:'#E8F1FD', tipo:'piano', prezzo:500},
-  {id:'studio_del_caso_ortodontico', label:'Studio del caso ortodontico', color:'#1A5EA8', sym:'STU', bg:'#E8F1FD', tipo:'piano', prezzo:350},
-  {id:'svuotamento_e_pulizia_protesi', label:'Svuotamento e pulizia protesi', color:'#C05621', sym:'SVU', bg:'#FEF0E7', tipo:'piano', prezzo:150},
-  {id:'terapia_endodontica_bicanalare', label:'TERAPIA ENDODONTICA BICANALARE', color:'#5B4BBF', sym:'E2', bg:'#EEEDFB', tipo:'piano', prezzo:180},
-  {id:'terapia_endodontica_monocanala', label:'TERAPIA ENDODONTICA MONOCANALARE', color:'#5B4BBF', sym:'E1', bg:'#EEEDFB', tipo:'piano', prezzo:150},
-  {id:'terapia_endodontica_pluricanal', label:'TERAPIA ENDODONTICA PLURICANALARE', color:'#5B4BBF', sym:'EP', bg:'#EEEDFB', tipo:'piano', prezzo:290},
-  {id:'trattamento_locale_per_algia', label:'Trattamento locale per algia', color:'#686864', sym:'TRA', bg:'#EFEDE7', tipo:'piano', prezzo:20},
-  {id:'trazionamento_canino_incluso', label:'Trazionamento Canino incluso', color:'#1A5EA8', sym:'TRA', bg:'#E8F1FD', tipo:'piano', prezzo:1000},
-  {id:'valutazione_paradontale', label:'VALUTAZIONE PARADONTALE', color:'#1D9E75', sym:'VAL', bg:'#E1F5EE', tipo:'piano', prezzo:150},
+  {id:'ablazione_pediatrica_fino_agli', label:'Ablazione pediatrica(fino agli 11 anni compiuti)', color:'#1D9E75', sym:'ABP', bg:'#E1F5EE', tipo:'piano', prezzo:70, scope:'SESSION_LEVEL'},
+  {id:'abutment', label:'ABUTMENT', color:'#0F6E56', sym:'ABU', bg:'#D0F0E6', tipo:'piano', prezzo:190, scope:'TOOTH_LEVEL'},
+  {id:'abutment_zigomatico', label:'ABUTMENT ZIGOMATICO', color:'#0F6E56', sym:'ABZ', bg:'#D0F0E6', tipo:'piano', prezzo:250, scope:'TOOTH_LEVEL'},
+  {id:'aggiunta_dente_su_protesi', label:'AGGIUNTA DENTE SU PROTESI', color:'#C05621', sym:'AD', bg:'#FEF0E7', tipo:'piano', prezzo:130, scope:'SESSION_LEVEL'},
+  {id:'aggiunta_locator', label:'AGGIUNTA LOCATOR', color:'#C05621', sym:'AL', bg:'#FEF0E7', tipo:'piano', prezzo:120, scope:'TOOTH_LEVEL'},
+  {id:'allineatori_ortodontici', label:'ALLINEATORI ORTODONTICI', color:'#1A5EA8', sym:'ALI', bg:'#E8F1FD', tipo:'piano', prezzo:150, scope:'CASE_LEVEL'},
+  {id:'anestesista', label:'ANESTESISTA', color:'#686864', sym:'ANE', bg:'#EFEDE7', tipo:'piano', prezzo:1000, scope:'SESSION_LEVEL'},
+  {id:'apicectomia', label:'APICECTOMIA', color:'#5B4BBF', sym:'API', bg:'#EEEDFB', tipo:'piano', prezzo:300, scope:'TOOTH_LEVEL'},
+  {id:'apparecchio_pcf', label:'Apparecchio PCF', color:'#1A5EA8', sym:'PCF', bg:'#E8F1FD', tipo:'piano', prezzo:1800, scope:'CASE_LEVEL'},
+  {id:'barra_di_rinforzo_in_titanio', label:'Barra di rinforzo in titanio', color:'#686864', sym:'BAR', bg:'#EFEDE7', tipo:'piano', prezzo:190, scope:'ARCH_LEVEL'},
+  {id:'barra_per_trazionamento_ortodo', label:'Barra per trazionamento ortodontico', color:'#1A5EA8', sym:'BT', bg:'#E8F1FD', tipo:'piano', prezzo:600, scope:'TOOTH_LEVEL'},
+  {id:'bite', label:'BITE', color:'#686864', sym:'BIT', bg:'#EFEDE7', tipo:'piano', prezzo:250, scope:'CASE_LEVEL'},
+  {id:'bonifica_arcata', label:'BONIFICA ARCATA', color:'#1D9E75', sym:'BON', bg:'#E1F5EE', tipo:'piano', prezzo:550, scope:'ARCH_LEVEL'},
+  {id:'byte', label:'BYTE', color:'#686864', sym:'BYT', bg:'#EFEDE7', tipo:'piano', prezzo:300, scope:'CASE_LEVEL'},
+  {id:'cambio_archi_ortodontici', label:'CAMBIO ARCHI ORTODONTICI', color:'#1A5EA8', sym:'ARC', bg:'#E8F1FD', tipo:'piano', prezzo:50, scope:'SESSION_LEVEL'},
+  {id:'cambio_gommini_e_cappette', label:'CAMBIO GOMMINI E CAPPETTE', color:'#1A5EA8', sym:'GOM', bg:'#E8F1FD', tipo:'piano', prezzo:25, scope:'SESSION_LEVEL'},
+  {id:'cambio_protesi_da_rimovibile_a', label:'CAMBIO PROTESI DA RIMOVIBILE A FISSA', color:'#C05621', sym:'CPF', bg:'#FEF0E7', tipo:'piano', prezzo:1200, scope:'CASE_LEVEL'},
+  {id:'circolare_in_composito', label:'CIRCOLARE IN COMPOSITO', color:'#B7651A', sym:'CC', bg:'#FEF3E2', tipo:'piano', prezzo:1500, scope:'ARCH_LEVEL'},
+  {id:'circolare_provvisorio', label:'CIRCOLARE PROVVISORIO', color:'#B7651A', sym:'CP', bg:'#FEF3E2', tipo:'piano', prezzo:200, scope:'ARCH_LEVEL'},
+  {id:'circolare_provvisorio_digitale', label:'CIRCOLARE PROVVISORIO DIGITALE', color:'#B7651A', sym:'CPD', bg:'#FEF3E2', tipo:'piano', prezzo:200, scope:'ARCH_LEVEL'},
+  {id:'cistectomia', label:'CISTECTOMIA', color:'#C0392B', sym:'CIS', bg:'#FDECEA', tipo:'piano', prezzo:300, scope:'TOOTH_LEVEL'},
+  {id:'componentistica_non_lookdental', label:'COMPONENTISTICA NON LOOKDENTAL', color:'#686864', sym:'COM', bg:'#EFEDE7', tipo:'piano', prezzo:300, scope:'TOOTH_LEVEL'},
+  {id:'contenzione_ortodontica', label:'CONTENZIONE ORTODONTICA', color:'#1A5EA8', sym:'CON', bg:'#E8F1FD', tipo:'piano', prezzo:250, scope:'CASE_LEVEL'},
+  {id:'copertura_elemento_in_composit', label:'Copertura elemento in composito', color:'#1A5EA8', sym:'COE', bg:'#E8F1FD', tipo:'piano', prezzo:70, scope:'TOOTH_LEVEL'},
+  {id:'corona_provvisoria_a_carico_im', label:'CORONA PROVVISORIA A CARICO IMMEDIATO', color:'#5B4BBF', sym:'CCI', bg:'#EEEDFB', tipo:'piano', prezzo:300, scope:'TOOTH_LEVEL'},
+  {id:'corona_provvisoria_in_resina', label:'CORONA PROVVISORIA IN RESINA', color:'#5B4BBF', sym:'CPR', bg:'#EEEDFB', tipo:'piano', prezzo:90, scope:'TOOTH_LEVEL'},
+  {id:'corona_zirconio', label:'CORONA ZIRCONIO', color:'#5B4BBF', sym:'KZ', bg:'#EEEDFB', tipo:'piano', prezzo:700, scope:'TOOTH_LEVEL'},
+  {id:'corona_zirconio_su_impianto', label:'CORONA ZIRCONIO SU IMPIANTO', color:'#0F6E56', sym:'KI', bg:'#D0F0E6', tipo:'piano', prezzo:700, scope:'TOOTH_LEVEL'},
+  {id:'decementazione_ponte_a_quadran', label:'DECEMENTAZIONE PONTE A QUADRANTE', color:'#5B4BBF', sym:'DEC', bg:'#EEEDFB', tipo:'piano', prezzo:0, scope:'ARCH_LEVEL'},
+  {id:'dima_chirurgica_per_carico_imm', label:'Dima Chirurgica per carico immediato', color:'#0F6E56', sym:'DMC', bg:'#D0F0E6', tipo:'piano', prezzo:250, scope:'ARCH_LEVEL'},
+  {id:'dima_ortodontica', label:'Dima Ortodontica', color:'#1A5EA8', sym:'DMO', bg:'#E8F1FD', tipo:'piano', prezzo:250, scope:'CASE_LEVEL'},
+  {id:'estrazione_complessa', label:'ESTRAZIONE COMPLESSA', color:'#C0392B', sym:'EC', bg:'#FDECEA', tipo:'piano', prezzo:130, scope:'TOOTH_LEVEL'},
+  {id:'estrazione_dente_deciduo', label:'ESTRAZIONE DENTE DECIDUO', color:'#C0392B', sym:'EDD', bg:'#FDECEA', tipo:'piano', prezzo:80, scope:'TOOTH_LEVEL'},
+  {id:'estrazione_dente_del_giudizio', label:'ESTRAZIONE DENTE DEL GIUDIZIO', color:'#C0392B', sym:'EG', bg:'#FDECEA', tipo:'piano', prezzo:200, scope:'TOOTH_LEVEL'},
+  {id:'estrazione_elemento_incluso', label:'ESTRAZIONE ELEMENTO INCLUSO', color:'#C0392B', sym:'EI', bg:'#FDECEA', tipo:'piano', prezzo:600, scope:'TOOTH_LEVEL'},
+  {id:'estrazione_elemento_semi_inclu', label:'ESTRAZIONE ELEMENTO SEMI INCLUSO', color:'#C0392B', sym:'ESI', bg:'#FDECEA', tipo:'piano', prezzo:300, scope:'TOOTH_LEVEL'},
+  {id:'estrazione_semplice', label:'ESTRAZIONE SEMPLICE', color:'#C0392B', sym:'ES', bg:'#FDECEA', tipo:'piano', prezzo:100, scope:'TOOTH_LEVEL'},
+  {id:'faccetta_in_ceramica', label:'FACCETTA IN CERAMICA', color:'#B7651A', sym:'FC', bg:'#FEF3E2', tipo:'piano', prezzo:600, scope:'TOOTH_LEVEL'},
+  {id:'faccetta_in_composito', label:'FACCETTA IN COMPOSITO', color:'#B7651A', sym:'FCO', bg:'#FEF3E2', tipo:'piano', prezzo:400, scope:'TOOTH_LEVEL'},
+  {id:'faccetta_provvisoria', label:'Faccetta provvisoria', color:'#B7651A', sym:'FPR', bg:'#FEF3E2', tipo:'piano', prezzo:100, scope:'TOOTH_LEVEL'},
+  {id:'flexite', label:'FLEXITE', color:'#C05621', sym:'FLX', bg:'#FEF0E7', tipo:'piano', prezzo:1500, scope:'CASE_LEVEL'},
+  {id:'frenulectomia', label:'FRENULECTOMIA', color:'#C0392B', sym:'FRE', bg:'#FDECEA', tipo:'piano', prezzo:250, scope:'TOOTH_LEVEL'},
+  {id:'gancio_trasparente', label:'GANCIO TRASPARENTE', color:'#C05621', sym:'GAN', bg:'#FEF0E7', tipo:'piano', prezzo:150, scope:'CASE_LEVEL'},
+  {id:'gbr', label:'GBR', color:'#0F6E56', sym:'GBR', bg:'#D0F0E6', tipo:'piano', prezzo:2000, scope:'TOOTH_LEVEL'},
+  {id:'grande_rialzo_seno_mascellare', label:'GRANDE RIALZO SENO MASCELLARE', color:'#0F6E56', sym:'RGR', bg:'#D0F0E6', tipo:'piano', prezzo:1600, scope:'ARCH_LEVEL'},
+  {id:'griglia_ossea_in_titanio', label:'Griglia ossea in titanio', color:'#0F6E56', sym:'GRI', bg:'#D0F0E6', tipo:'piano', prezzo:2500, scope:'TOOTH_LEVEL'},
+  {id:'ibrida_in_zirconia', label:'IBRIDA IN ZIRCONIA', color:'#C05621', sym:'IBZ', bg:'#FEF0E7', tipo:'piano', prezzo:5500, scope:'ARCH_LEVEL'},
+  {id:'igiene_arcata_protesica', label:'Igiene arcata protesica', color:'#C05621', sym:'IGA', bg:'#FEF0E7', tipo:'piano', prezzo:50, scope:'SESSION_LEVEL'},
+  {id:'impianto_osteointegrabile', label:'IMPIANTO OSTEOINTEGRABILE', color:'#0F6E56', sym:'IMP', bg:'#D0F0E6', tipo:'piano', prezzo:550, scope:'TOOTH_LEVEL'},
+  {id:'impianto_zigomatico', label:'IMPIANTO ZIGOMATICO', color:'#0F6E56', sym:'IMZ', bg:'#D0F0E6', tipo:'piano', prezzo:2000, scope:'TOOTH_LEVEL'},
+  {id:'intarsio_in_ceramica', label:'INTARSIO in ceramica', color:'#1A5EA8', sym:'INT', bg:'#E8F1FD', tipo:'piano', prezzo:400, scope:'TOOTH_LEVEL'},
+  {id:'levigatura_radicolare_singolo_', label:'LEVIGATURA RADICOLARE SINGOLO ELEMENTO', color:'#1D9E75', sym:'LRS', bg:'#E1F5EE', tipo:'piano', prezzo:22, scope:'TOOTH_LEVEL'},
+  {id:'levigature_radicolari', label:'LEVIGATURE RADICOLARI', color:'#686864', sym:'LR', bg:'#EFEDE7', tipo:'piano', prezzo:130, scope:'SESSION_LEVEL'},
+  {id:'maryland', label:'MARYLAND', color:'#5B4BBF', sym:'MAR', bg:'#EEEDFB', tipo:'piano', prezzo:370, scope:'TOOTH_LEVEL'},
+  {id:'mascherina_contenzione', label:'MASCHERINA CONTENZIONE', color:'#1A5EA8', sym:'MSC', bg:'#E8F1FD', tipo:'piano', prezzo:180, scope:'CASE_LEVEL'},
+  {id:'mascherine_ortodontiche', label:'MASCHERINE ORTODONTICHE', color:'#1A5EA8', sym:'MSO', bg:'#E8F1FD', tipo:'piano', prezzo:250, scope:'CASE_LEVEL'},
+  {id:'meryland', label:'Meryland', color:'#5B4BBF', sym:'MER', bg:'#EEEDFB', tipo:'piano', prezzo:750, scope:'TOOTH_LEVEL'},
+  {id:'mini_rialzo_seno_mascellare', label:'MINI RIALZO SENO MASCELLARE', color:'#0F6E56', sym:'RMI', bg:'#D0F0E6', tipo:'piano', prezzo:800, scope:'TOOTH_LEVEL'},
+  {id:'ortodonzia_all_inclusive', label:'ORTODONZIA ALL INCLUSIVE', color:'#1A5EA8', sym:'OAI', bg:'#E8F1FD', tipo:'piano', prezzo:4800, scope:'CASE_LEVEL'},
+  {id:'otturazione_a_rischio_devitali', label:'OTTURAZIONE A RISCHIO DEVITALIZZAZIONE', color:'#1A5EA8', sym:'OR', bg:'#E8F1FD', tipo:'piano', prezzo:170, scope:'TOOTH_LEVEL'},
+  {id:'otturazione_dente_da_latte', label:'OTTURAZIONE DENTE DA LATTE', color:'#1A5EA8', sym:'OL', bg:'#E8F1FD', tipo:'piano', prezzo:80, scope:'TOOTH_LEVEL'},
+  {id:'otturazione_i_classe', label:'OTTURAZIONE I CLASSE', color:'#1A5EA8', sym:'O1', bg:'#E8F1FD', tipo:'piano', prezzo:120, scope:'TOOTH_LEVEL'},
+  {id:'otturazione_ii_classe', label:'OTTURAZIONE II CLASSE', color:'#1A5EA8', sym:'O2', bg:'#E8F1FD', tipo:'piano', prezzo:170, scope:'TOOTH_LEVEL'},
+  {id:'otturazione_v_classe', label:'OTTURAZIONE V CLASSE', color:'#1A5EA8', sym:'O5', bg:'#E8F1FD', tipo:'piano', prezzo:90, scope:'TOOTH_LEVEL'},
+  {id:'overdenture', label:'OVERDENTURE', color:'#C05621', sym:'OVD', bg:'#FEF0E7', tipo:'piano', prezzo:2600, scope:'ARCH_LEVEL'},
+  {id:'prestazioni_odontoiatriche_pre', label:'Prestazioni odontoiatriche presso vostra sede di Via Servais 125 ', color:'#686864', sym:'PRE', bg:'#EFEDE7', tipo:'piano', prezzo:0, scope:'CASE_LEVEL'},
+  {id:'protesi_ibrida', label:'PROTESI IBRIDA', color:'#C05621', sym:'IBR', bg:'#FEF0E7', tipo:'piano', prezzo:3800, scope:'ARCH_LEVEL'},
+  {id:'protesi_ibrida_su_4_impianti', label:'PROTESI IBRIDA SU 4 IMPIANTI', color:'#C05621', sym:'IH4', bg:'#FEF0E7', tipo:'piano', prezzo:3000, scope:'ARCH_LEVEL'},
+  {id:'protesi_ibrida_su_locator', label:'PROTESI IBRIDA SU LOCATOR', color:'#C05621', sym:'IHL', bg:'#FEF0E7', tipo:'piano', prezzo:3300, scope:'ARCH_LEVEL'},
+  {id:'protesi_mobile_provvisoria', label:'PROTESI MOBILE PROVVISORIA', color:'#C05621', sym:'PMP', bg:'#FEF0E7', tipo:'piano', prezzo:550, scope:'ARCH_LEVEL'},
+  {id:'protesi_overdenture_fissa_su_i', label:'Protesi overdenture fissa su impianti', color:'#C05621', sym:'OFI', bg:'#FEF0E7', tipo:'piano', prezzo:3100, scope:'ARCH_LEVEL'},
+  {id:'protesi_provvisoria_avvitata_a', label:'PROTESI PROVVISORIA AVVITATA A CARICO IMMEDIATO', color:'#C05621', sym:'PPA', bg:'#FEF0E7', tipo:'piano', prezzo:1500, scope:'ARCH_LEVEL'},
+  {id:'protesi_scheletrica_definitiva', label:'PROTESI SCHELETRICA DEFINITIVA', color:'#C05621', sym:'PSD', bg:'#FEF0E7', tipo:'piano', prezzo:1300, scope:'ARCH_LEVEL'},
+  {id:'protesi_scheletrica_provvisori', label:'PROTESI SCHELETRICA PROVVISORIA', color:'#C05621', sym:'PSP', bg:'#FEF0E7', tipo:'piano', prezzo:350, scope:'ARCH_LEVEL'},
+  {id:'protesi_totale_definitiva', label:'PROTESI TOTALE DEFINITIVA', color:'#C05621', sym:'PTD', bg:'#FEF0E7', tipo:'piano', prezzo:1200, scope:'ARCH_LEVEL'},
+  {id:'ragnetto', label:'RAGNETTO', color:'#C05621', sym:'RAG', bg:'#FEF0E7', tipo:'piano', prezzo:300, scope:'CASE_LEVEL'},
+  {id:'reinserimento_impianto', label:'Reinserimento impianto', color:'#0F6E56', sym:'REI', bg:'#D0F0E6', tipo:'piano', prezzo:150, scope:'TOOTH_LEVEL'},
+  {id:'ri_resinatura_protesi', label:'RI RESINATURA PROTESI', color:'#C05621', sym:'RIR', bg:'#FEF0E7', tipo:'piano', prezzo:650, scope:'ARCH_LEVEL'},
+  {id:'rialzo_occlusale', label:'RIALZO OCCLUSALE', color:'#686864', sym:'ROC', bg:'#EFEDE7', tipo:'piano', prezzo:1000, scope:'CASE_LEVEL'},
+  {id:'ribasatura_diretta_protesi', label:'RIBASATURA DIRETTA PROTESI', color:'#C05621', sym:'RBD', bg:'#FEF0E7', tipo:'piano', prezzo:180, scope:'ARCH_LEVEL'},
+  {id:'ribasatura_in_laboratorio', label:'RIBASATURA IN LABORATORIO', color:'#C05621', sym:'RBL', bg:'#FEF0E7', tipo:'piano', prezzo:300, scope:'ARCH_LEVEL'},
+  {id:'ricementazione_ponte', label:'Ricementazione ponte', color:'#5B4BBF', sym:'RIC', bg:'#EEEDFB', tipo:'piano', prezzo:250, scope:'TOOTH_LEVEL'},
+  {id:'richiamo_rapido_sbiancamento', label:'RICHIAMO RAPIDO SBIANCAMENTO', color:'#1D9E75', sym:'RRS', bg:'#E1F5EE', tipo:'piano', prezzo:100, scope:'SESSION_LEVEL'},
+  {id:'richiamo_sbiancamento', label:'RICHIAMO SBIANCAMENTO', color:'#1D9E75', sym:'RSB', bg:'#E1F5EE', tipo:'piano', prezzo:200, scope:'SESSION_LEVEL'},
+  {id:'ricostruzione_moncone_in_compo', label:'RICOSTRUZIONE MONCONE IN COMPOSITO', color:'#1A5EA8', sym:'RMC', bg:'#E8F1FD', tipo:'piano', prezzo:120, scope:'TOOTH_LEVEL'},
+  {id:'ricostruzione_moncone_perno_in', label:'RICOSTRUZIONE MONCONE PERNO IN FIBRA', color:'#1A5EA8', sym:'PF', bg:'#E8F1FD', tipo:'piano', prezzo:200, scope:'TOOTH_LEVEL'},
+  {id:'rifacimento_corona_in_zirconia', label:'RIFACIMENTO CORONA IN ZIRCONIA', color:'#5B4BBF', sym:'RFC', bg:'#EEEDFB', tipo:'piano', prezzo:200, scope:'TOOTH_LEVEL'},
+  {id:'rifacimento_overdenture', label:'RIFACIMENTO OVERDENTURE', color:'#C05621', sym:'OVD', bg:'#FEF0E7', tipo:'piano', prezzo:500, scope:'ARCH_LEVEL'},
+  {id:'rifacimento_protesi_ibrida', label:'RIFACIMENTO PROTESI IBRIDA', color:'#C05621', sym:'IBR', bg:'#FEF0E7', tipo:'piano', prezzo:600, scope:'ARCH_LEVEL'},
+  {id:'rifacimento_protesi_totale', label:'RIFACIMENTO PROTESI TOTALE', color:'#C05621', sym:'RFT', bg:'#FEF0E7', tipo:'piano', prezzo:350, scope:'ARCH_LEVEL'},
+  {id:'rimozione_corona', label:'RIMOZIONE CORONA', color:'#5B4BBF', sym:'RMK', bg:'#EEEDFB', tipo:'piano', prezzo:40, scope:'TOOTH_LEVEL'},
+  {id:'rimozione_impianto', label:'Rimozione impianto', color:'#0F6E56', sym:'RMI2', bg:'#D0F0E6', tipo:'piano', prezzo:150, scope:'TOOTH_LEVEL'},
+  {id:'riparazione_circolare', label:'RIPARAZIONE CIRCOLARE', color:'#C05621', sym:'RPC', bg:'#FEF0E7', tipo:'piano', prezzo:400, scope:'ARCH_LEVEL'},
+  {id:'riparazione_protesi_indiretta', label:'RIPARAZIONE PROTESI INDIRETTA', color:'#C05621', sym:'RPI', bg:'#FEF0E7', tipo:'piano', prezzo:200, scope:'ARCH_LEVEL'},
+  {id:'riparazione_scheletrato_aggiun', label:'RIPARAZIONE SCHELETRATO+AGGIUNTA GANCIO+AGGIUNTA DENTE', color:'#C05621', sym:'AD', bg:'#FEF0E7', tipo:'piano', prezzo:300, scope:'ARCH_LEVEL'},
+  {id:'ritrattamento_monocanalare', label:'RITRATTAMENTO MONOCANALARE', color:'#5B4BBF', sym:'RT1', bg:'#EEEDFB', tipo:'piano', prezzo:280, scope:'TOOTH_LEVEL'},
+  {id:'ritrattamento_pluricanalare', label:'RITRATTAMENTO PLURICANALARE', color:'#5B4BBF', sym:'RTP', bg:'#EEEDFB', tipo:'piano', prezzo:400, scope:'TOOTH_LEVEL'},
+  {id:'sbiancamento_americano_con_lam', label:'SBIANCAMENTO AMERICANO CON LAMPADA', color:'#1D9E75', sym:'SBA', bg:'#E1F5EE', tipo:'piano', prezzo:250, scope:'SESSION_LEVEL'},
+  {id:'sbiancamento_domiciliare_2_sed', label:'SBIANCAMENTO DOMICILIARE: 2 sedute in poltrona', color:'#1D9E75', sym:'SBD', bg:'#E1F5EE', tipo:'piano', prezzo:140, scope:'SESSION_LEVEL'},
+  {id:'sbiancamento_domiciliare_dose_', label:'SBIANCAMENTO DOMICILIARE: dose iniziale liquido sbiancante', color:'#1D9E75', sym:'SBI', bg:'#E1F5EE', tipo:'piano', prezzo:100, scope:'SESSION_LEVEL'},
+  {id:'sbiancamento_domiciliare_masch', label:'SBIANCAMENTO DOMICILIARE: mascherine', color:'#1D9E75', sym:'SBM', bg:'#E1F5EE', tipo:'piano', prezzo:150, scope:'SESSION_LEVEL'},
+  {id:'sbiancamento_domiciliare_refil', label:'SBIANCAMENTO DOMICILIARE: refill', color:'#1D9E75', sym:'SBR', bg:'#E1F5EE', tipo:'piano', prezzo:45, scope:'SESSION_LEVEL'},
+  {id:'sbiancamento_rapido_post_igien', label:'SBIANCAMENTO RAPIDO POST IGIENE', color:'#1D9E75', sym:'SBP', bg:'#E1F5EE', tipo:'piano', prezzo:50, scope:'SESSION_LEVEL'},
+  {id:'scappucciamento_canino_incluso', label:'Scappucciamento canino incluso', color:'#1A5EA8', sym:'SCA', bg:'#E8F1FD', tipo:'piano', prezzo:500, scope:'TOOTH_LEVEL'},
+  {id:'sigillatura', label:'Sigillatura', color:'#1A5EA8', sym:'SIG', bg:'#E8F1FD', tipo:'piano', prezzo:100, scope:'TOOTH_LEVEL'},
+  {id:'sondaggio', label:'SONDAGGIO', color:'#1D9E75', sym:'SON', bg:'#E1F5EE', tipo:'piano', prezzo:150, scope:'SESSION_LEVEL'},
+  {id:'splintaggio', label:'SPLINTAGGIO', color:'#1D9E75', sym:'SPL', bg:'#E1F5EE', tipo:'piano', prezzo:220, scope:'TOOTH_LEVEL'},
+  {id:'splintaggio_ortodontico', label:'SPLINTAGGIO ORTODONTICO', color:'#1A5EA8', sym:'SPO', bg:'#E8F1FD', tipo:'piano', prezzo:280, scope:'CASE_LEVEL'},
+  {id:'stripping', label:'STRIPPING', color:'#1A5EA8', sym:'STR', bg:'#E8F1FD', tipo:'piano', prezzo:500, scope:'SESSION_LEVEL'},
+  {id:'studio_del_caso_ortodontico', label:'Studio del caso ortodontico', color:'#1A5EA8', sym:'STU', bg:'#E8F1FD', tipo:'piano', prezzo:350, scope:'CASE_LEVEL'},
+  {id:'svuotamento_e_pulizia_protesi', label:'Svuotamento e pulizia protesi', color:'#C05621', sym:'SVU', bg:'#FEF0E7', tipo:'piano', prezzo:150, scope:'SESSION_LEVEL'},
+  {id:'terapia_endodontica_bicanalare', label:'TERAPIA ENDODONTICA BICANALARE', color:'#5B4BBF', sym:'E2', bg:'#EEEDFB', tipo:'piano', prezzo:180, scope:'TOOTH_LEVEL'},
+  {id:'terapia_endodontica_monocanala', label:'TERAPIA ENDODONTICA MONOCANALARE', color:'#5B4BBF', sym:'E1', bg:'#EEEDFB', tipo:'piano', prezzo:150, scope:'TOOTH_LEVEL'},
+  {id:'terapia_endodontica_pluricanal', label:'TERAPIA ENDODONTICA PLURICANALARE', color:'#5B4BBF', sym:'EP', bg:'#EEEDFB', tipo:'piano', prezzo:290, scope:'TOOTH_LEVEL'},
+  {id:'trattamento_locale_per_algia', label:'Trattamento locale per algia', color:'#686864', sym:'TRA', bg:'#EFEDE7', tipo:'piano', prezzo:20, scope:'TOOTH_LEVEL'},
+  {id:'trazionamento_canino_incluso', label:'Trazionamento Canino incluso', color:'#1A5EA8', sym:'TRA', bg:'#E8F1FD', tipo:'piano', prezzo:1000, scope:'TOOTH_LEVEL'},
+  {id:'valutazione_paradontale', label:'VALUTAZIONE PARADONTALE', color:'#1D9E75', sym:'VAL', bg:'#E1F5EE', tipo:'piano', prezzo:150, scope:'SESSION_LEVEL'},
   // ── Arcate e quadranti ──────────────────────────────────────
-  {id:'arcata_superiore', label:'ARCATA SUPERIORE COMPLETA', color:'#1D9E75', sym:'AS', bg:'#E1F5EE', tipo:'piano', prezzo:0},
-  {id:'arcata_inferiore', label:'ARCATA INFERIORE COMPLETA', color:'#1D9E75', sym:'AI', bg:'#E1F5EE', tipo:'piano', prezzo:0},
-  {id:'primo_quadrante', label:'I QUADRANTE', color:'#1D9E75', sym:'Q1', bg:'#E1F5EE', tipo:'piano', prezzo:0},
-  {id:'secondo_quadrante', label:'II QUADRANTE', color:'#1D9E75', sym:'Q2', bg:'#E1F5EE', tipo:'piano', prezzo:0},
-  {id:'terzo_quadrante', label:'III QUADRANTE', color:'#1D9E75', sym:'Q3', bg:'#E1F5EE', tipo:'piano', prezzo:0},
-  {id:'quarto_quadrante', label:'IV QUADRANTE', color:'#1D9E75', sym:'Q4', bg:'#E1F5EE', tipo:'piano', prezzo:0},
+  {id:'arcata_superiore', label:'ARCATA SUPERIORE COMPLETA', color:'#1D9E75', sym:'AS', bg:'#E1F5EE', tipo:'piano', prezzo:0, scope:'ARCH_LEVEL'},
+  {id:'arcata_inferiore', label:'ARCATA INFERIORE COMPLETA', color:'#1D9E75', sym:'AI', bg:'#E1F5EE', tipo:'piano', prezzo:0, scope:'ARCH_LEVEL'},
+  {id:'primo_quadrante', label:'I QUADRANTE', color:'#1D9E75', sym:'Q1', bg:'#E1F5EE', tipo:'piano', prezzo:0, scope:'ARCH_LEVEL'},
+  {id:'secondo_quadrante', label:'II QUADRANTE', color:'#1D9E75', sym:'Q2', bg:'#E1F5EE', tipo:'piano', prezzo:0, scope:'ARCH_LEVEL'},
+  {id:'terzo_quadrante', label:'III QUADRANTE', color:'#1D9E75', sym:'Q3', bg:'#E1F5EE', tipo:'piano', prezzo:0, scope:'ARCH_LEVEL'},
+  {id:'quarto_quadrante', label:'IV QUADRANTE', color:'#1D9E75', sym:'Q4', bg:'#E1F5EE', tipo:'piano', prezzo:0, scope:'ARCH_LEVEL'},
 ];
 
 let TR_ATTUALE = [...TR_ATTUALE_DEFAULT];
@@ -1050,6 +1068,17 @@ let TR_PIANO   = [...TR_PIANO_DEFAULT];
 
 function findTR(id) {
   return TR_ATTUALE.find(t=>t.id===id) || TR_PIANO.find(t=>t.id===id) || null;
+}
+
+const SCOPE_INFO = {
+  TOOTH_LEVEL:   { label: 'Per dente',  color: '#1A5EA8' },
+  ARCH_LEVEL:    { label: 'Per arcata', color: '#1D9E75' },
+  CASE_LEVEL:    { label: 'Per caso',   color: '#686864' },
+  SESSION_LEVEL: { label: 'Per seduta', color: '#C05621' }
+};
+
+function getTRScope(id) {
+  return findTR(id)?.scope || 'TOOTH_LEVEL';
 }
 
 const ARCH_TR = [
@@ -2103,14 +2132,21 @@ function openPrestazioniModal() {
 }
 
 function renderPrestazioniModal() {
-  const renderSet = (arr, tipo) => arr.map((t,i) => `
+  const renderSet = (arr, tipo) => arr.map((t,i) => {
+    const si = SCOPE_INFO[t.scope] || SCOPE_INFO['TOOTH_LEVEL'];
+    const scopeBadge = tipo === 'piano'
+      ? `<span style="font-size:9px;font-weight:700;color:${si.color};background:${si.color}18;border-radius:3px;padding:1px 5px;white-space:nowrap">${si.label}</span>`
+      : '';
+    return `
     <div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:var(--border)">
       <div style="width:28px;height:22px;border-radius:3px;background:${t.bg||t.color+'22'};color:${t.color};font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">${t.sym}</div>
       <span style="flex:1;font-size:12px">${t.label}</span>
+      ${scopeBadge}
       ${t.prezzo!=null?`<span style="font-size:11px;color:var(--gray-500);font-family:'DM Mono',monospace;min-width:50px;text-align:right">€${t.prezzo}</span>`:''}
       <button onclick="editPrestazione('${tipo}',${i})" style="background:none;border:var(--border);border-radius:4px;padding:3px 8px;font-size:11px;cursor:pointer;color:var(--gray-500)">✎</button>
       <button onclick="deletePrestazione('${tipo}',${i})" style="background:none;border:none;cursor:pointer;color:var(--gray-300);font-size:13px;padding:2px 5px">✕</button>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 
   document.getElementById('prest-list-attuale').innerHTML   = renderSet(TR_ATTUALE, 'attuale');
   document.getElementById('prest-list-piano').innerHTML     = renderSet(TR_PIANO,   'piano');
@@ -2129,6 +2165,8 @@ function updatePrestDest() {
   const dest = document.querySelector('input[name="pe-dest"]:checked')?.value || 'attuale';
   document.getElementById('pe-tipo').value = dest;
   document.getElementById('pe-dest-hint').textContent = DEST_HINTS[dest] || '';
+  const scopeRow = document.getElementById('pe-scope-row');
+  if (scopeRow) scopeRow.style.display = (dest === 'piano') ? 'block' : 'none';
 }
 
 function newPrestazioneUnified() {
@@ -2160,8 +2198,14 @@ function editPrestazione(tipo, idx) {
   document.getElementById('pe-color').value  = t.color;
   document.getElementById('pe-bg').value     = t.bg || '#EFEDE7';
   document.getElementById('pe-prezzo').value = t.prezzo != null ? t.prezzo : '';
-  document.getElementById('pe-dest-row').style.display = 'none'; // non cambiare destinazione in modifica
+  document.getElementById('pe-dest-row').style.display = 'none';
   document.getElementById('prest-form-title').textContent = 'Modifica prestazione';
+  // Set scope radio
+  const scope = t.scope || 'TOOTH_LEVEL';
+  const scopeRadio = document.querySelector(`input[name="pe-scope"][value="${scope}"]`);
+  if (scopeRadio) scopeRadio.checked = true;
+  const scopeRow = document.getElementById('pe-scope-row');
+  if (scopeRow) scopeRow.style.display = (tipo === 'piano') ? 'block' : 'none';
   document.getElementById('prest-form').style.display = 'block';
 }
 
@@ -2178,8 +2222,12 @@ function savePrestazioneLine() {
   const arr = tipo==='attuale' ? TR_ATTUALE : tipo==='piano' ? TR_PIANO : tipo==='arcata' ? ARCH_TR : QUAD_TR;
   const prezzo = parseFloat(document.getElementById('pe-prezzo').value) || 0;
   const id = idx>=0 ? arr[idx].id : 'c_'+Date.now();
+  const scope = (tipo === 'piano')
+    ? (document.querySelector('input[name="pe-scope"]:checked')?.value || 'TOOTH_LEVEL')
+    : undefined;
   const entry = { id, label, sym, color, bg, prezzo };
   if (tipo==='attuale' || tipo==='piano') entry.tipo = tipo;
+  if (scope) entry.scope = scope;
   if (idx>=0) arr[idx] = entry; else arr.push(entry);
   document.getElementById('prest-form').style.display = 'none';
   renderPrestazioniModal();
@@ -3794,9 +3842,13 @@ async function aiConferma() {
         modifiche++;
       }
 
-      const existingPrev = prevRows.find(r => r.dente == num && r.tid === tid);
+      const scope = getTRScope(tid);
+      const existingPrev = scope === 'TOOTH_LEVEL'
+        ? prevRows.find(r => r.dente == num && r.tid === tid)
+        : prevRows.find(r => r.tid === tid);
       if (!existingPrev && t) {
-        prevRows.push({ id: 'ai_'+Date.now()+'_'+rowKey, dente: num, tid, label: t.label, qta, prezzo, sconto: 0 });
+        const denteVal = scope === 'TOOTH_LEVEL' ? num : '';
+        prevRows.push({ id: 'ai_'+Date.now()+'_'+rowKey, dente: denteVal, tid, label: t.label, qta, prezzo, sconto: 0, scope });
       }
 
       // Mapping singolo
