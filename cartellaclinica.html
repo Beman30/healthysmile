@@ -566,7 +566,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--gray-50);color:
               </div>
               <div style="display:flex;gap:6px">
                 <button class="btn-s" onclick="importDaOdonto()">⟳ Da odontogramma</button>
-                <button class="btn-s c" onclick="addPrevRowConScelta(event)">+ Riga</button>
+                <button class="btn-s c" onclick="addPrevRowConScelta(event);event.stopPropagation()">+ Riga</button>
                 <button class="btn-s" onclick="prevNuovaVoceInline(this)" style="background:var(--teal-light);color:var(--teal);border-color:var(--teal)">+ Nuova voce listino</button>
                 <button class="btn-s" onclick="stampaPrev()" style="background:var(--blue-light);color:var(--blue);border-color:var(--blue)">🖨 Stampa / PDF</button>
               </div>
@@ -2505,26 +2505,36 @@ function addPrevRow(dente) {
   }, 50);
 }
 
-function addPrevRowConScelta() {
+function addPrevRowConScelta(e) {
   const existing = document.getElementById('prev-row-scelta');
   if (existing) { existing.remove(); return; }
   const div = document.createElement('div');
   div.id = 'prev-row-scelta';
-  div.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);z-index:9999;background:white;border:1px solid var(--teal);border-radius:var(--r);padding:12px 16px;box-shadow:0 4px 20px rgba(0,0,0,.15);min-width:320px';
+  // Posiziona sotto il pulsante se disponibile
+  let posStyle = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%)';
+  if (e && e.currentTarget) {
+    const r = e.currentTarget.getBoundingClientRect();
+    posStyle = `position:fixed;top:${r.bottom+6}px;left:${r.left}px`;
+  }
+  div.style.cssText = posStyle+';z-index:9999;background:white;border:1px solid var(--teal);border-radius:var(--r);padding:12px 16px;box-shadow:0 4px 20px rgba(0,0,0,.2);min-width:300px';
   div.innerHTML = `
     <div style="font-size:12px;font-weight:700;color:var(--teal);margin-bottom:10px">Aggiungi riga per:</div>
     <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">
-      <button onclick="addPrevRow('');document.getElementById('prev-row-scelta').remove()" style="background:var(--teal);color:white;border:none;border-radius:4px;padding:5px 12px;font-size:12px;cursor:pointer;font-weight:600">🦷 Dente singolo</button>
-      <button onclick="addPrevRow('AS');document.getElementById('prev-row-scelta').remove()" style="background:#1D9E75;color:white;border:none;border-radius:4px;padding:5px 12px;font-size:12px;cursor:pointer;font-weight:600">Arcata Sup.</button>
-      <button onclick="addPrevRow('AI');document.getElementById('prev-row-scelta').remove()" style="background:#1D9E75;color:white;border:none;border-radius:4px;padding:5px 12px;font-size:12px;cursor:pointer;font-weight:600">Arcata Inf.</button>
-      <button onclick="addPrevRow('Q1');document.getElementById('prev-row-scelta').remove()" style="background:#B45309;color:white;border:none;border-radius:4px;padding:5px 12px;font-size:12px;cursor:pointer;font-weight:600">Q1</button>
-      <button onclick="addPrevRow('Q2');document.getElementById('prev-row-scelta').remove()" style="background:#B45309;color:white;border:none;border-radius:4px;padding:5px 12px;font-size:12px;cursor:pointer;font-weight:600">Q2</button>
-      <button onclick="addPrevRow('Q3');document.getElementById('prev-row-scelta').remove()" style="background:#B45309;color:white;border:none;border-radius:4px;padding:5px 12px;font-size:12px;cursor:pointer;font-weight:600">Q3</button>
-      <button onclick="addPrevRow('Q4');document.getElementById('prev-row-scelta').remove()" style="background:#B45309;color:white;border:none;border-radius:4px;padding:5px 12px;font-size:12px;cursor:pointer;font-weight:600">Q4</button>
+      <button onclick="addPrevRow('');document.getElementById('prev-row-scelta').remove()" style="background:var(--teal);color:white;border:none;border-radius:4px;padding:6px 14px;font-size:12px;cursor:pointer;font-weight:600">🦷 Dente singolo</button>
+      <button onclick="addPrevRow('AS');document.getElementById('prev-row-scelta').remove()" style="background:#1D9E75;color:white;border:none;border-radius:4px;padding:6px 14px;font-size:12px;cursor:pointer;font-weight:600">Arcata Sup.</button>
+      <button onclick="addPrevRow('AI');document.getElementById('prev-row-scelta').remove()" style="background:#1D9E75;color:white;border:none;border-radius:4px;padding:6px 14px;font-size:12px;cursor:pointer;font-weight:600">Arcata Inf.</button>
+      <button onclick="addPrevRow('Q1');document.getElementById('prev-row-scelta').remove()" style="background:#B45309;color:white;border:none;border-radius:4px;padding:6px 14px;font-size:12px;cursor:pointer;font-weight:600">Q1</button>
+      <button onclick="addPrevRow('Q2');document.getElementById('prev-row-scelta').remove()" style="background:#B45309;color:white;border:none;border-radius:4px;padding:6px 14px;font-size:12px;cursor:pointer;font-weight:600">Q2</button>
+      <button onclick="addPrevRow('Q3');document.getElementById('prev-row-scelta').remove()" style="background:#B45309;color:white;border:none;border-radius:4px;padding:6px 14px;font-size:12px;cursor:pointer;font-weight:600">Q3</button>
+      <button onclick="addPrevRow('Q4');document.getElementById('prev-row-scelta').remove()" style="background:#B45309;color:white;border:none;border-radius:4px;padding:6px 14px;font-size:12px;cursor:pointer;font-weight:600">Q4</button>
     </div>
-    <button onclick="document.getElementById('prev-row-scelta').remove()" style="font-size:11px;color:var(--gray-400);background:none;border:none;cursor:pointer">Annulla</button>`;
+    <button onclick="document.getElementById('prev-row-scelta').remove()" style="font-size:11px;color:var(--gray-400);background:none;border:none;cursor:pointer">✕ Annulla</button>`;
   document.body.appendChild(div);
-  setTimeout(() => document.addEventListener('click', function h(e){ if(!div.contains(e.target)){div.remove();document.removeEventListener('click',h);} }), 100);
+  // Chiudi cliccando fuori — con ritardo per non catturare il click corrente
+  const closeOutside = function(ev) {
+    if (!div.contains(ev.target)) { div.remove(); document.removeEventListener('click', closeOutside); }
+  };
+  setTimeout(() => document.addEventListener('click', closeOutside), 200);
 }
 
 function renderPrevRows() {
