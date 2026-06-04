@@ -2946,7 +2946,7 @@ async function aiAvviaAnalisi() {
   const listinoAtt = TR_ATTUALE.map(t => ({ id: t.id, label: t.label }));
   const listinoPia = TR_PIANO.map(t => ({ id: t.id, label: t.label, ...(t.prezzo != null ? { prezzo: t.prezzo } : {}) }));
 
-  // Carica esempi e protocolli — errori non bloccano l'analisi
+  // Carica esempi, protocolli e dipendenze cliniche — errori non bloccano l'analisi
   const [esempiSit, esempiTer] = await Promise.all([
     aiCaricaMapping('situazione_attuale').catch(() => []),
     aiCaricaMapping('terapie_da_attuare').catch(() => [])
@@ -2958,6 +2958,7 @@ async function aiAvviaAnalisi() {
     varianti:      varianti.map(v => ({ terapie: v.terapie, count: v.count || 1 }))
                            .sort((a,b) => b.count - a.count)
   }));
+  const clinicalDeps = await aiCaricaClinicalDeps().catch(() => []);
 
   // Unica chiamata al Worker con tipo nota_completa
   try {
@@ -2972,7 +2973,8 @@ async function aiAvviaAnalisi() {
         listino_piano: listinoPia,
         esempi_attuale: esempiSit,
         esempi_piano: esempiTer,
-        protocolli
+        protocolli,
+        clinical_deps: clinicalDeps
       })
     });
     if (!resp.ok) { const e = await resp.json().catch(()=>({})); throw new Error(e.error || `HTTP ${resp.status}`); }
@@ -2991,7 +2993,7 @@ async function aiAvviaAnalisi() {
     if (data.terapie_da_attuare) {
       aiProposta.ter = data.terapie_da_attuare;
       aiRenderPiano(data.terapie_da_attuare);
-      clinicalDependencyCheck(data.terapie_da_attuare);
+      clinicalDependencyCheck(data.terapie_da_attuare, data.suggerimenti_clinici || []);
       aiBadge('ter', 'done', 'Pronto');
       if (data.sommario) {
         document.getElementById('ai-sommario-nota').innerHTML =
@@ -3160,18 +3162,25 @@ function _depMatch(text, keywords) {
   return keywords.some(kw => t.includes(kw.toLowerCase()));
 }
 
-function clinicalDependencyCheck(data) {
+function clinicalDependencyCheck(data, workerSuggerimenti) {
   const container = document.getElementById('ai-dependency-suggestions');
   if (!container) return;
   const denti = data?.denti || {};
-  const suggestions = [];
 
+  // 1. Suggerimenti provenienti dal Worker (già filtrati dall'AI)
+  const suggestions = (workerSuggerimenti || []).map((s, i) => ({
+    ruleId: 'ws_' + i,
+    num: s.dente || '',
+    label: s.prestazione || s.label || '',
+    idListino: s.id_listino || '',
+    motivo: s.motivo || ''
+  })).filter(s => s.label);
+
+  // 2. Regole hardcoded locali come fallback/integrazione
+  const seenKeys = new Set(suggestions.map(s => `${s.num}__${s.idListino}`));
   Object.entries(denti).forEach(([num, d]) => {
     const terapieArr = Array.isArray(d.terapie) && d.terapie.length
-      ? d.terapie
-      : [{ stato: d.stato || '', id_listino: d.id_listino || '' }];
-
-    // Testo unificato di tutte le terapie previste per quel dente
+      ? d.terapie : [{ stato: d.stato || '', id_listino: d.id_listino || '' }];
     const allText = terapieArr.map(t =>
       (t.stato || '') + ' ' + (t.id_listino || '') + ' ' +
       (TR_PIANO.find(p => p.id === t.id_listino)?.label || '')
@@ -3181,11 +3190,10 @@ function clinicalDependencyCheck(data) {
       const hasTrigger = _depMatch(allText, rule.triggerKw) &&
                          !_depMatch(allText, rule.excludeTrigger);
       if (!hasTrigger) return;
-      if (_depMatch(allText, rule.missingKw)) return; // già presente
-
-      // Evita duplicati per stesso dente + stessa regola
-      if (suggestions.find(s => s.num === num && s.ruleId === rule.id)) return;
-
+      if (_depMatch(allText, rule.missingKw)) return;
+      const key = `${num}__${rule.idListino}`;
+      if (seenKeys.has(key)) return; // già suggerito dal Worker
+      seenKeys.add(key);
       suggestions.push({ ruleId: rule.id, num, label: rule.label, idListino: rule.idListino, motivo: rule.motivo });
     });
   });
@@ -3656,6 +3664,50 @@ async function aiSalvaProtocolli(protocolli) {
   }
 }
 
+// ── Dipendenze cliniche apprese ──────────────────────────────
+// Doc ID: {trigger_id}__{suggested_id}
+// Ogni volta che il dottore aggiunge Y su un dente che aveva già X proposto dall'AI
+// → si incrementa il contatore della coppia X→Y
+let _aiClinicalDepsCache = null;
+let _aiClinicalDepsCacheTs = 0;
+
+async function aiCaricaClinicalDeps() {
+  if (_aiClinicalDepsCache && Date.now() - _aiClinicalDepsCacheTs < 5 * 60 * 1000)
+    return _aiClinicalDepsCache;
+  try {
+    const snap = await db.collection('ai_clinical_deps').orderBy('count','desc').limit(80).get();
+    _aiClinicalDepsCache = snap.docs.map(d => d.data());
+    _aiClinicalDepsCacheTs = Date.now();
+    return _aiClinicalDepsCache;
+  } catch(e) {
+    console.warn('ai_clinical_deps load error:', e.message);
+    return [];
+  }
+}
+
+async function aiSalvaClinicalDeps(pairs) {
+  // pairs = [{ trigger_id, trigger_label, suggested_id, suggested_label }]
+  if (!pairs.length) return;
+  const batch = db.batch();
+  pairs.forEach(p => {
+    const docId = `${p.trigger_id}__${p.suggested_id}`;
+    batch.set(db.collection('ai_clinical_deps').doc(docId), {
+      trigger_id:     p.trigger_id,
+      trigger_label:  p.trigger_label || '',
+      suggested_id:   p.suggested_id,
+      suggested_label: p.suggested_label || '',
+      count:          firebase.firestore.FieldValue.increment(1),
+      ts:             firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+  });
+  try {
+    await batch.commit();
+    _aiClinicalDepsCache = null;
+  } catch(e) {
+    console.warn('ai_clinical_deps save error:', e.message);
+  }
+}
+
 // ════════════════════════════════════════════════════════════
 // AI — Conferma e applica
 // ════════════════════════════════════════════════════════════
@@ -3785,6 +3837,34 @@ async function aiConferma() {
     renderPianoRiepilogo();
 
     if (protocolli.length) aiSalvaProtocolli(protocolli);
+
+    // ── Apprendi dipendenze cliniche ────────────────────────────
+    // Per ogni dente: se l'AI aveva proposto T_ai e il dottore ha confermato
+    // anche T_extra (non proposto dall'AI) → salva la coppia T_ai → T_extra
+    const aiProposedPerTooth = {}; // num → Set(tid) proposti dall'AI
+    Object.entries(aiProposta.ter.denti).forEach(([num, d]) => {
+      const arr = Array.isArray(d.terapie) && d.terapie.length ? d.terapie : [d];
+      aiProposedPerTooth[num] = new Set(arr.map(t => t.id_listino).filter(Boolean));
+    });
+    const depPairs = [];
+    Object.entries(terapiePerDente).forEach(([num, lista]) => {
+      if (lista.length < 2) return;
+      const aiProposed = aiProposedPerTooth[num] || new Set();
+      const aiConfirmed = lista.filter(x => x.wasAI || aiProposed.has(x.tid));
+      const extras      = lista.filter(x => !aiProposed.has(x.tid));
+      if (!aiConfirmed.length || !extras.length) return;
+      aiConfirmed.forEach(trigger => {
+        extras.forEach(extra => {
+          depPairs.push({
+            trigger_id:     trigger.tid,
+            trigger_label:  trigger.label,
+            suggested_id:   extra.tid,
+            suggested_label: extra.label
+          });
+        });
+      });
+    });
+    if (depPairs.length) aiSalvaClinicalDeps(depPairs);
   }
 
   // ── Applica trattamenti generali (arcata/quadrante/TAC/visita ecc.) ─────────
