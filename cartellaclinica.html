@@ -566,7 +566,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--gray-50);color:
               </div>
               <div style="display:flex;gap:6px">
                 <button class="btn-s" onclick="importDaOdonto()">⟳ Da odontogramma</button>
-                <button class="btn-s c" onclick="addPrevRow()">+ Riga</button>
+                <button class="btn-s c" onclick="addPrevRowConScelta(event)">+ Riga</button>
                 <button class="btn-s" onclick="prevNuovaVoceInline(this)" style="background:var(--teal-light);color:var(--teal);border-color:var(--teal)">+ Nuova voce listino</button>
                 <button class="btn-s" onclick="stampaPrev()" style="background:var(--blue-light);color:var(--blue);border-color:var(--blue)">🖨 Stampa / PDF</button>
               </div>
@@ -2485,10 +2485,10 @@ async function prevSalvaNuovaVoce() {
   document.getElementById('prev-nuova-voce-form')?.remove();
 }
 
-function addPrevRow() {
+function addPrevRow(dente) {
   prevRows.push({
     id:     'pr_'+Date.now(),
-    dente:  '',
+    dente:  dente || '',
     tid:    '',
     label:  '',
     qta:    1,
@@ -2497,6 +2497,34 @@ function addPrevRow() {
     prezzoScontato: null
   });
   renderPrevRows();
+  // Focus sull'ultimo campo label
+  setTimeout(() => {
+    const rows = document.querySelectorAll('#prev-body tr');
+    const last = rows[rows.length - 1];
+    last?.querySelectorAll('input')[1]?.focus();
+  }, 50);
+}
+
+function addPrevRowConScelta() {
+  const existing = document.getElementById('prev-row-scelta');
+  if (existing) { existing.remove(); return; }
+  const div = document.createElement('div');
+  div.id = 'prev-row-scelta';
+  div.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);z-index:9999;background:white;border:1px solid var(--teal);border-radius:var(--r);padding:12px 16px;box-shadow:0 4px 20px rgba(0,0,0,.15);min-width:320px';
+  div.innerHTML = `
+    <div style="font-size:12px;font-weight:700;color:var(--teal);margin-bottom:10px">Aggiungi riga per:</div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">
+      <button onclick="addPrevRow('');document.getElementById('prev-row-scelta').remove()" style="background:var(--teal);color:white;border:none;border-radius:4px;padding:5px 12px;font-size:12px;cursor:pointer;font-weight:600">🦷 Dente singolo</button>
+      <button onclick="addPrevRow('AS');document.getElementById('prev-row-scelta').remove()" style="background:#1D9E75;color:white;border:none;border-radius:4px;padding:5px 12px;font-size:12px;cursor:pointer;font-weight:600">Arcata Sup.</button>
+      <button onclick="addPrevRow('AI');document.getElementById('prev-row-scelta').remove()" style="background:#1D9E75;color:white;border:none;border-radius:4px;padding:5px 12px;font-size:12px;cursor:pointer;font-weight:600">Arcata Inf.</button>
+      <button onclick="addPrevRow('Q1');document.getElementById('prev-row-scelta').remove()" style="background:#B45309;color:white;border:none;border-radius:4px;padding:5px 12px;font-size:12px;cursor:pointer;font-weight:600">Q1</button>
+      <button onclick="addPrevRow('Q2');document.getElementById('prev-row-scelta').remove()" style="background:#B45309;color:white;border:none;border-radius:4px;padding:5px 12px;font-size:12px;cursor:pointer;font-weight:600">Q2</button>
+      <button onclick="addPrevRow('Q3');document.getElementById('prev-row-scelta').remove()" style="background:#B45309;color:white;border:none;border-radius:4px;padding:5px 12px;font-size:12px;cursor:pointer;font-weight:600">Q3</button>
+      <button onclick="addPrevRow('Q4');document.getElementById('prev-row-scelta').remove()" style="background:#B45309;color:white;border:none;border-radius:4px;padding:5px 12px;font-size:12px;cursor:pointer;font-weight:600">Q4</button>
+    </div>
+    <button onclick="document.getElementById('prev-row-scelta').remove()" style="font-size:11px;color:var(--gray-400);background:none;border:none;cursor:pointer">Annulla</button>`;
+  document.body.appendChild(div);
+  setTimeout(() => document.addEventListener('click', function h(e){ if(!div.contains(e.target)){div.remove();document.removeEventListener('click',h);} }), 100);
 }
 
 function renderPrevRows() {
@@ -2504,9 +2532,17 @@ function renderPrevRows() {
   if (!tbody) return;
   tbody.innerHTML = prevRows.map((r,i) => {
     const tot = calcTotRow(r);
+    const denteDisplay = r.dente || '';
+    const isGen = ['AS','AI','Q1','Q2','Q3','Q4'].includes(String(r.dente).toUpperCase()) || (!r.dente && r.scope && r.scope !== 'TOOTH_LEVEL');
+    const denteBg = isGen ? 'background:#f0fdf4;color:#1D9E75;font-weight:700' : 'background:transparent';
     return `<tr style="border-bottom:var(--border)">
-      <td style="padding:6px 8px"><input value="${r.dente||''}" onchange="updatePrevRow(${i},'dente',this.value)"
-        style="width:48px;border:1px solid transparent;border-radius:4px;padding:4px 5px;font-size:12px;font-family:'DM Mono',monospace;background:transparent;outline:none" onfocus="this.style.borderColor='var(--gray-300)'" onblur="this.style.borderColor='transparent'"></td>
+      <td style="padding:6px 4px;white-space:nowrap">
+        <input value="${denteDisplay}" onchange="updatePrevRow(${i},'dente',this.value)"
+          list="prev-dente-list"
+          style="width:54px;border:1px solid transparent;border-radius:4px;padding:4px 5px;font-size:12px;font-family:'DM Mono',monospace;${denteBg};outline:none"
+          onfocus="this.style.borderColor='var(--gray-300)'" onblur="this.style.borderColor='transparent'"
+          placeholder="№" title="Numero dente FDI o: AS AI Q1 Q2 Q3 Q4">
+      </td>
       <td style="padding:6px 8px"><input value="${esc(r.label||'')}" onchange="updatePrevRow(${i},'label',this.value)"
         list="prev-prest-list" style="width:100%;border:1px solid transparent;border-radius:4px;padding:4px 5px;font-size:12px;background:transparent;outline:none" onfocus="this.style.borderColor='var(--gray-300)'" onblur="this.style.borderColor='transparent'"></td>
       <td style="padding:6px 8px;text-align:right"><input type="number" value="${r.qta||1}" min="1" onchange="updatePrevRow(${i},'qta',this.value)"
@@ -2532,6 +2568,17 @@ function renderPrevRows() {
   if (!document.getElementById('prev-prest-list')) {
     const dl = document.createElement('datalist'); dl.id='prev-prest-list';
     [...TR_ATTUALE,...TR_PIANO].forEach(t=>{ const o=document.createElement('option'); o.value=t.label; dl.appendChild(o); });
+    document.body.appendChild(dl);
+  }
+  if (!document.getElementById('prev-dente-list')) {
+    const dl = document.createElement('datalist'); dl.id='prev-dente-list';
+    // Denti FDI singoli
+    [1,2,3,4].forEach(q => { for(let d=1;d<=8;d++) { const o=document.createElement('option'); o.value=String(q*10+d); dl.appendChild(o); } });
+    // Arcate e quadranti
+    [{v:'AS',l:'AS — Arcata Superiore'},{v:'AI',l:'AI — Arcata Inferiore'},
+     {v:'Q1',l:'Q1 — I Quadrante'},{v:'Q2',l:'Q2 — II Quadrante'},
+     {v:'Q3',l:'Q3 — III Quadrante'},{v:'Q4',l:'Q4 — IV Quadrante'}
+    ].forEach(({v,l})=>{ const o=document.createElement('option'); o.value=v; o.label=l; dl.appendChild(o); });
     document.body.appendChild(dl);
   }
   updatePrevTotals();
