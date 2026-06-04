@@ -876,6 +876,13 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 const storage = firebase.storage();
 
+// ── Identità studio (separazione memoria AI per studio) ──────
+const STUDIO_ID  = "healthy_smile_torino";
+const DOCTOR_ID  = "default_doctor";
+// Riferimenti Firestore per memoria AI dello studio
+function studioRef()    { return db.collection('studios').doc(STUDIO_ID); }
+function aiCol(name)    { return studioRef().collection(name); }
+
 function startApp() {
   loadPrestazioni()
     .then(() => loadPatients())
@@ -3063,7 +3070,8 @@ async function aiAvviaAnalisi() {
     varianti:      varianti.map(v => ({ terapie: v.terapie, count: v.count || 1 }))
                            .sort((a,b) => b.count - a.count)
   }));
-  const clinicalDeps = await aiCaricaClinicalDeps().catch(() => []);
+  const clinicalDeps  = await aiCaricaClinicalDeps().catch(() => []);
+  const rulePrefs     = await aiCaricaRulePrefs().catch(() => []);
 
   // Unica chiamata al Worker con tipo nota_completa
   try {
@@ -3074,12 +3082,15 @@ async function aiAvviaAnalisi() {
         codice_paziente: pazCodice,
         tipo: 'nota_completa',
         trascrizione: nota,
+        studio_id: STUDIO_ID,
+        doctor_id: DOCTOR_ID,
         listino_attuale: listinoAtt,
         listino_piano: listinoPia,
         esempi_attuale: esempiSit,
         esempi_piano: esempiTer,
         protocolli,
-        clinical_deps: clinicalDeps
+        clinical_deps: clinicalDeps,
+        ai_rule_preferences: rulePrefs
       })
     });
     if (!resp.ok) { const e = await resp.json().catch(()=>({})); throw new Error(e.error || `HTTP ${resp.status}`); }
@@ -3272,13 +3283,14 @@ function clinicalDependencyCheck(data, workerSuggerimenti) {
   if (!container) return;
   const denti = data?.denti || {};
 
-  // 1. Suggerimenti provenienti dal Worker (già filtrati dall'AI)
+  // 1. Suggerimenti provenienti dal Worker (già filtrati dall'AI) — ora con rule_id
   const suggestions = (workerSuggerimenti || []).map((s, i) => ({
-    ruleId: 'ws_' + i,
+    ruleId: s.rule_id || ('ws_' + i),
     num: s.dente || '',
     label: s.prestazione || s.label || '',
     idListino: s.id_listino || '',
-    motivo: s.motivo || ''
+    motivo: s.motivo || '',
+    scope: s.scope || 'TOOTH_LEVEL'
   })).filter(s => s.label);
 
   // 2. Regole hardcoded locali come fallback/integrazione
@@ -3315,15 +3327,14 @@ function clinicalDependencyCheck(data, workerSuggerimenti) {
           <div id="ai-dep-${i}" style="display:flex;align-items:flex-start;gap:10px;padding:8px 10px;background:white;border-radius:var(--r-sm);border:var(--border)">
             <div style="flex:1">
               <div style="font-size:12px;font-weight:600;color:var(--gray-700)">
-                <span style="font-family:'DM Mono',monospace;font-weight:700;color:var(--teal)">Dente ${esc(s.num)}</span>
-                &nbsp;— ${esc(s.label)}
+                ${s.num ? `<span style="font-family:'DM Mono',monospace;font-weight:700;color:var(--teal)">Dente ${esc(s.num)}</span> &nbsp;— ` : ''}${esc(s.label)}
               </div>
               <div style="font-size:11px;color:var(--gray-400);margin-top:2px">${esc(s.motivo)}</div>
             </div>
             <div style="display:flex;gap:6px;flex-shrink:0;margin-top:2px">
-              <button onclick="aiDepAggiungi(${i},'${esc(s.num)}','${esc(s.label)}','${esc(s.idListino)}')"
+              <button onclick="aiDepAggiungi(${i},'${esc(s.num)}','${esc(s.label)}','${esc(s.idListino)}','${esc(s.ruleId)}','${esc(s.scope)}')"
                 style="background:var(--teal);color:white;border:none;border-radius:4px;padding:4px 11px;font-size:11px;font-weight:600;cursor:pointer">+ Aggiungi</button>
-              <button onclick="document.getElementById('ai-dep-${i}').remove();aiDepCheckEmpty()"
+              <button onclick="aiDepIgnora(${i},'${esc(s.ruleId)}','${esc(s.label)}','${esc(s.num)}','${esc(s.scope)}')"
                 style="background:none;border:1px solid var(--gray-200);border-radius:4px;padding:4px 10px;font-size:11px;color:var(--gray-500);cursor:pointer">Ignora</button>
             </div>
           </div>`).join('')}
@@ -3339,7 +3350,15 @@ function aiDepCheckEmpty() {
   }
 }
 
-function aiDepAggiungi(idx, num, label, idListino) {
+function aiDepIgnora(idx, ruleId, label, tooth, scope) {
+  document.getElementById(`ai-dep-${idx}`)?.remove();
+  aiDepCheckEmpty();
+  if (ruleId && !ruleId.startsWith('ws_')) {
+    aiSalvaSuggestionEvent({ rule_id: ruleId, suggested_treatment: label, action: 'ignored', tooth, scope });
+  }
+}
+
+function aiDepAggiungi(idx, num, label, idListino, ruleId, scope) {
   const tbody = document.getElementById('ai-ter-tbody');
   if (!tbody) return;
   const rowKey = 'dep_' + Date.now();
@@ -3351,8 +3370,8 @@ function aiDepAggiungi(idx, num, label, idListino) {
   tr.id = `ai-ter-row-${rowKey}`;
   tr.style.background = '#f0fdf4';
   tr.innerHTML = `
-    <td><input type="number" id="ai-ter-num-${rowKey}" value="${num}" min="11" max="48"
-      style="width:52px;border:var(--border);border-radius:4px;padding:4px 6px;font-size:13px;font-family:'DM Mono',monospace;font-weight:700;text-align:center;outline:none"></td>
+    <td><input type="text" id="ai-ter-num-${rowKey}" value="${esc(num)}" list="prev-dente-list"
+      style="width:54px;border:var(--border);border-radius:4px;padding:4px 6px;font-size:13px;font-family:'DM Mono',monospace;font-weight:700;text-align:center;outline:none"></td>
     <td style="font-size:11px;color:var(--teal);font-style:italic">💡 suggerito</td>
     <td><select id="ai-ter-sel-${rowKey}" class="ai-prest-sel"
         onchange="aiAggiornaPrezzoRiga('${rowKey}',this)">${opts}</select></td>
@@ -3364,7 +3383,11 @@ function aiDepAggiungi(idx, num, label, idListino) {
   aiProposta._terRows.push({ rowKey, num });
   document.getElementById(`ai-dep-${idx}`)?.remove();
   aiDepCheckEmpty();
-  notify(`"${label}" aggiunto al piano per dente ${num}`, 'ok');
+  // Traccia accettazione
+  if (ruleId && !ruleId.startsWith('ws_')) {
+    aiSalvaSuggestionEvent({ rule_id: ruleId, suggested_treatment: label, action: 'accepted', tooth: num, scope: scope || '' });
+  }
+  notify(`"${label}" aggiunto al piano${num ? ' per dente ' + num : ''}`, 'ok');
 }
 
 // ════════════════════════════════════════════════════════════
@@ -3672,16 +3695,16 @@ let _aiMappingCache = { attuale: null, piano: null, ts: 0 };
 
 async function aiCaricaMapping(tipo) {
   const cacheKey = tipo === 'situazione_attuale' ? 'attuale' : 'piano';
-  // Usa cache se fresca (< 5 minuti)
   if (_aiMappingCache[cacheKey] && Date.now() - _aiMappingCache.ts < 5 * 60 * 1000) {
     return _aiMappingCache[cacheKey];
   }
   try {
-    const snap = await db.collection('ai_mapping')
-      .where('tipo', '==', tipo)
-      .orderBy('count', 'desc')
-      .limit(60)
-      .get();
+    // Prima legge dalla collection dello studio
+    let snap = await aiCol('ai_mapping').where('tipo','==',tipo).orderBy('count','desc').limit(60).get();
+    // Fallback alla collection globale se lo studio non ha ancora dati
+    if (snap.empty) {
+      snap = await db.collection('ai_mapping').where('tipo','==',tipo).orderBy('count','desc').limit(60).get();
+    }
     const mapping = snap.docs.map(d => d.data());
     _aiMappingCache[cacheKey] = mapping;
     _aiMappingCache.ts = Date.now();
@@ -3697,7 +3720,7 @@ async function aiSalvaMapping(correzioni) {
   const batch = db.batch();
   correzioni.forEach(c => {
     const docId = `${c.tipo}__${(c.stato_ai||'').replace(/[^a-z0-9_]/g,'_')}__${c.id_listino}`;
-    const ref = db.collection('ai_mapping').doc(docId);
+    const ref = aiCol('ai_mapping').doc(docId);
     batch.set(ref, {
       tipo:          c.tipo,
       stato_ai:      c.stato_ai || '',
@@ -3730,7 +3753,8 @@ function _protocolloHash(terapie) {
 async function aiCaricaProtocolli() {
   if (_aiProtocolliCache && Date.now() - _aiProtocolliCacheTs < 5 * 60 * 1000) return _aiProtocolliCache;
   try {
-    const snap = await db.collection('ai_protocols').orderBy('count','desc').limit(60).get();
+    let snap = await aiCol('ai_protocols').orderBy('count','desc').limit(60).get();
+    if (snap.empty) snap = await db.collection('ai_protocols').orderBy('count','desc').limit(60).get();
     const docs = snap.docs.map(d => d.data());
     // Raggruppa per trigger_id, ordinate per count desc
     const grouped = {};
@@ -3748,14 +3772,12 @@ async function aiCaricaProtocolli() {
 }
 
 async function aiSalvaProtocolli(protocolli) {
-  // protocolli = [{ trigger_id, trigger_label, terapie: [{id, label}] }]
   if (!protocolli.length) return;
   const batch = db.batch();
   protocolli.forEach(p => {
-    // Doc ID univoco per variante: trigger + hash del pacchetto
     const hash  = _protocolloHash(p.terapie);
     const docId = `${p.trigger_id}__${hash}`;
-    const ref   = db.collection('ai_protocols').doc(docId);
+    const ref   = aiCol('ai_protocols').doc(docId);
     batch.set(ref, {
       trigger_id:    p.trigger_id,
       trigger_label: p.trigger_label || '',
@@ -3783,7 +3805,8 @@ async function aiCaricaClinicalDeps() {
   if (_aiClinicalDepsCache && Date.now() - _aiClinicalDepsCacheTs < 5 * 60 * 1000)
     return _aiClinicalDepsCache;
   try {
-    const snap = await db.collection('ai_clinical_deps').orderBy('count','desc').limit(80).get();
+    let snap = await aiCol('ai_clinical_deps').orderBy('count','desc').limit(80).get();
+    if (snap.empty) snap = await db.collection('ai_clinical_deps').orderBy('count','desc').limit(80).get();
     _aiClinicalDepsCache = snap.docs.map(d => d.data());
     _aiClinicalDepsCacheTs = Date.now();
     return _aiClinicalDepsCache;
@@ -3794,12 +3817,11 @@ async function aiCaricaClinicalDeps() {
 }
 
 async function aiSalvaClinicalDeps(pairs) {
-  // pairs = [{ trigger_id, trigger_label, suggested_id, suggested_label }]
   if (!pairs.length) return;
   const batch = db.batch();
   pairs.forEach(p => {
     const docId = `${p.trigger_id}__${p.suggested_id}`;
-    batch.set(db.collection('ai_clinical_deps').doc(docId), {
+    batch.set(aiCol('ai_clinical_deps').doc(docId), {
       trigger_id:     p.trigger_id,
       trigger_label:  p.trigger_label || '',
       suggested_id:   p.suggested_id,
@@ -3814,6 +3836,74 @@ async function aiSalvaClinicalDeps(pairs) {
   } catch(e) {
     console.warn('ai_clinical_deps save error:', e.message);
   }
+}
+
+// ════════════════════════════════════════════════════════════
+// AI — Preferenze regole (memoria negativa / positiva)
+// ════════════════════════════════════════════════════════════
+let _aiRulePrefsCache = null;
+let _aiRulePrefsCacheTs = 0;
+
+async function aiCaricaRulePrefs() {
+  if (_aiRulePrefsCache && Date.now() - _aiRulePrefsCacheTs < 5 * 60 * 1000)
+    return _aiRulePrefsCache;
+  try {
+    const snap = await aiCol('ai_rule_preferences').get();
+    _aiRulePrefsCache = snap.docs.map(d => ({ rule_id: d.id, ...d.data() }));
+    _aiRulePrefsCacheTs = Date.now();
+    return _aiRulePrefsCache;
+  } catch(e) {
+    console.warn('ai_rule_preferences load error:', e.message);
+    return [];
+  }
+}
+
+async function aiSalvaSuggestionEvent({ rule_id, suggested_treatment, action, tooth = '', scope = '' }) {
+  const FV = firebase.firestore.FieldValue;
+  const now = FV.serverTimestamp();
+  // 1. Salva evento raw
+  try {
+    await aiCol('ai_suggestion_events').add({
+      studio_id: STUDIO_ID, doctor_id: DOCTOR_ID,
+      rule_id, suggested_treatment, action,
+      tooth, scope, created_at: now
+    });
+  } catch(e) { console.warn('ai_suggestion_events save error:', e.message); }
+
+  // 2. Aggiorna contatori in ai_rule_preferences
+  const prefRef = aiCol('ai_rule_preferences').doc(rule_id);
+  const update = { last_action_at: now };
+  if (action === 'accepted') {
+    update.accepted_count = FV.increment(1);
+    update.enabled = true;
+    // confidence aumenta (max 1.0) — letta poi e aggiornata
+    try {
+      const doc = await prefRef.get();
+      const d = doc.exists ? doc.data() : {};
+      update.confidence = Math.min(1.0, ((d.confidence || 0.5) + 0.1));
+    } catch(_) {}
+  } else if (action === 'ignored') {
+    update.ignored_count = FV.increment(1);
+  } else if (action === 'removed') {
+    update.removed_count = FV.increment(1);
+  } else if (action === 'disabled') {
+    update.enabled = false;
+  }
+  try {
+    await prefRef.set(update, { merge: true });
+    // Disabilita automaticamente se troppo ignorata/rimossa e mai accettata
+    const doc = await prefRef.get();
+    const d = doc.data() || {};
+    const accepted = d.accepted_count || 0;
+    if (accepted === 0) {
+      const ignored = d.ignored_count || 0;
+      const removed = d.removed_count || 0;
+      if (ignored >= 5 || removed >= 3) {
+        await prefRef.set({ enabled: false }, { merge: true });
+      }
+    }
+    _aiRulePrefsCache = null; // invalida cache
+  } catch(e) { console.warn('ai_rule_preferences update error:', e.message); }
 }
 
 // ════════════════════════════════════════════════════════════
