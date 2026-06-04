@@ -3569,7 +3569,10 @@ function aiAggiungiRigaLibera() {
   tr.id = `ai-ter-row-${idx}`;
   tr.style.background = 'var(--amber-light)';
   tr.innerHTML = `
-    <td><input type="number" id="ai-ter-num-${idx}" placeholder="dente" min="11" max="48" style="width:52px;border:var(--border);border-radius:4px;padding:4px 6px;font-size:13px;font-family:'DM Mono',monospace;font-weight:700;text-align:center;outline:none"></td>
+    <td><input type="text" id="ai-ter-num-${idx}" placeholder="dente" list="prev-dente-list"
+      style="width:54px;border:var(--border);border-radius:4px;padding:4px 6px;font-size:13px;font-family:'DM Mono',monospace;font-weight:700;text-align:center;outline:none"
+      title="Numero dente FDI oppure: AS AI Q1 Q2 Q3 Q4"
+      oninput="const v=this.value.toUpperCase();const isG=['AS','AI','Q1','Q2','Q3','Q4'].includes(v);this.style.background=isG?'#f0fdf4':'';this.style.color=isG?'#1D9E75':'';"></td>
     <td style="font-size:11px;color:var(--gray-400);font-style:italic">riga aggiunta</td>
     <td>
       <select id="ai-ter-sel-${idx}" class="ai-prest-sel" onchange="aiAggiornaPrezzoRiga('${idx}',this);if(this.value)this.closest('tr').style.background=''">${opts}</select>
@@ -3884,28 +3887,33 @@ async function aiConferma() {
       const qtaEl  = document.getElementById(`ai-ter-qta-${rowKey}`);
       const prezEl = document.getElementById(`ai-ter-prezzo-${rowKey}`);
       const numEl  = document.getElementById(`ai-ter-num-${rowKey}`);
-      const num    = (numEl && numEl.value) ? numEl.value : numOrig;
+      const num    = (numEl && numEl.value) ? String(numEl.value).toUpperCase() : String(numOrig).toUpperCase();
       if (!sel || !sel.value || !document.getElementById(`ai-ter-row-${rowKey}`)) return;
 
       const tid    = sel.value;
       const qta    = parseFloat(qtaEl?.value || 1) || 1;
       const prezzo = parseFloat(prezEl?.value || 0) || 0;
       const t      = findTR(tid);
+      const isArchRow = ['AS','AI','Q1','Q2','Q3','Q4'].includes(num);
 
-      if (!teethPiano[parseInt(num)]) teethPiano[parseInt(num)] = [];
-      const already = teethPiano[parseInt(num)].find(x => x.tid === tid);
-      if (!already) {
-        teethPiano[parseInt(num)].push({ tid, stato: 'dafare' });
+      if (!isArchRow) {
+        const numInt = parseInt(num);
+        if (numInt) {
+          if (!teethPiano[numInt]) teethPiano[numInt] = [];
+          const already = teethPiano[numInt].find(x => x.tid === tid);
+          if (!already) { teethPiano[numInt].push({ tid, stato: 'dafare' }); modifiche++; }
+        }
+      } else {
         modifiche++;
       }
 
       const scope = getTRScope(tid);
-      const existingPrev = scope === 'TOOTH_LEVEL'
-        ? prevRows.find(r => r.dente == num && r.tid === tid)
+      const denteVal = isArchRow ? num : (scope === 'TOOTH_LEVEL' ? num : '');
+      const existingPrev = scope === 'TOOTH_LEVEL' || isArchRow
+        ? prevRows.find(r => String(r.dente).toUpperCase() === num && r.tid === tid)
         : prevRows.find(r => r.tid === tid);
       if (!existingPrev && t) {
-        const denteVal = scope === 'TOOTH_LEVEL' ? num : '';
-        prevRows.push({ id: 'ai_'+Date.now()+'_'+rowKey, dente: denteVal, tid, label: t.label, qta, prezzo, sconto: 0, scope });
+        prevRows.push({ id: 'ai_'+Date.now()+'_'+rowKey, dente: denteVal, tid, label: t.label, qta, prezzo, sconto: 0, scope: isArchRow ? 'ARCH_LEVEL' : scope });
       }
 
       // Mapping singolo
