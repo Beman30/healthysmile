@@ -712,6 +712,8 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--gray-50);color:
                 <div id="ai-table-ter"><div style="display:flex;align-items:center;gap:8px;padding:20px;color:var(--gray-500);font-size:13px"><div class="ai-spin"></div>Analisi in corso…</div></div>
                 <!-- Trattamenti generali (arcata, quadrante, visita, TAC, ecc.) -->
                 <div id="ai-table-gen" style="margin-top:14px"></div>
+                <!-- Verifica clinica dipendenze -->
+                <div id="ai-dependency-suggestions"></div>
               </div>
             </div>
 
@@ -2932,6 +2934,8 @@ async function aiAvviaAnalisi() {
   document.getElementById('ai-table-ter').innerHTML  = '<div style="display:flex;align-items:center;gap:8px;padding:20px;color:var(--gray-500);font-size:13px"><div class="ai-spin"></div>Analisi in corso…</div>';
   const _genContainer = document.getElementById('ai-table-gen');
   if (_genContainer) _genContainer.innerHTML = '';
+  const _depContainer = document.getElementById('ai-dependency-suggestions');
+  if (_depContainer) _depContainer.innerHTML = '';
   aiProposta._genRows = [];
   document.getElementById('ai-sommario-nota').innerHTML = '';
   aiBadge('sit', 'proc', 'Elaborazione…');
@@ -2987,6 +2991,7 @@ async function aiAvviaAnalisi() {
     if (data.terapie_da_attuare) {
       aiProposta.ter = data.terapie_da_attuare;
       aiRenderPiano(data.terapie_da_attuare);
+      clinicalDependencyCheck(data.terapie_da_attuare);
       aiBadge('ter', 'done', 'Pronto');
       if (data.sommario) {
         document.getElementById('ai-sommario-nota').innerHTML =
@@ -3106,6 +3111,147 @@ function _apriModalNuovaPrestazione(rowKey, label, tipo) {
   updatePrestDest();
   document.getElementById('prest-form').style.display = 'block';
   document.getElementById('prest-modal').classList.add('open');
+}
+
+// ════════════════════════════════════════════════════════════
+// AI — Verifica clinica dipendenze (clinicalDependencyCheck)
+// ════════════════════════════════════════════════════════════
+const AI_CLINICAL_RULES = [
+  {
+    id: 'corona_provvisorio',
+    triggerKw:  ['corona', 'crown', 'protesi fissa'],
+    excludeTrigger: ['provvisorio', 'temporaneo'],
+    missingKw:  ['provvisorio', 'temporaneo', 'provisional'],
+    label:  'Provvisorio',
+    idListino: 'provvisorio',
+    motivo: 'La corona definitiva richiede solitamente un provvisorio durante la fase di preparazione'
+  },
+  {
+    id: 'endo_ricostruzione',
+    triggerKw:  ['canalare', 'devitalizzazione', 'devitaliz', 'endodonzia', 'ritrattamento'],
+    excludeTrigger: [],
+    missingKw:  ['ricostruzione', 'perno', 'moncone', 'post-endo', 'build-up'],
+    label:  'Ricostruzione post-endodontica',
+    idListino: 'ricostruzione',
+    motivo: 'Una terapia canalare richiede una ricostruzione post-endodontica'
+  },
+  {
+    id: 'impianto_protesi',
+    triggerKw:  ['impianto', 'implant'],
+    excludeTrigger: ['fase protesica', 'corona su impianto', 'abutment'],
+    missingKw:  ['corona', 'abutment', 'moncone', 'fase protesica'],
+    label:  'Fase protesica (abutment + corona su impianto)',
+    idListino: 'corona_su_impianto',
+    motivo: "L'impianto richiede la fase protesica: abutment e corona definitiva"
+  },
+  {
+    id: 'estrazione_controllo',
+    triggerKw:  ['estrazione', 'avulsione', 'chirurgica'],
+    excludeTrigger: [],
+    missingKw:  ['controllo', 'post-estrattivo', 'sutura rimozione'],
+    label:  'Controllo post-estrattivo',
+    idListino: 'visita_controllo',
+    motivo: "Un'estrazione richiede un controllo post-estrattivo"
+  }
+];
+
+function _depMatch(text, keywords) {
+  const t = text.toLowerCase();
+  return keywords.some(kw => t.includes(kw.toLowerCase()));
+}
+
+function clinicalDependencyCheck(data) {
+  const container = document.getElementById('ai-dependency-suggestions');
+  if (!container) return;
+  const denti = data?.denti || {};
+  const suggestions = [];
+
+  Object.entries(denti).forEach(([num, d]) => {
+    const terapieArr = Array.isArray(d.terapie) && d.terapie.length
+      ? d.terapie
+      : [{ stato: d.stato || '', id_listino: d.id_listino || '' }];
+
+    // Testo unificato di tutte le terapie previste per quel dente
+    const allText = terapieArr.map(t =>
+      (t.stato || '') + ' ' + (t.id_listino || '') + ' ' +
+      (TR_PIANO.find(p => p.id === t.id_listino)?.label || '')
+    ).join(' ').toLowerCase();
+
+    AI_CLINICAL_RULES.forEach(rule => {
+      const hasTrigger = _depMatch(allText, rule.triggerKw) &&
+                         !_depMatch(allText, rule.excludeTrigger);
+      if (!hasTrigger) return;
+      if (_depMatch(allText, rule.missingKw)) return; // già presente
+
+      // Evita duplicati per stesso dente + stessa regola
+      if (suggestions.find(s => s.num === num && s.ruleId === rule.id)) return;
+
+      suggestions.push({ ruleId: rule.id, num, label: rule.label, idListino: rule.idListino, motivo: rule.motivo });
+    });
+  });
+
+  if (!suggestions.length) { container.innerHTML = ''; return; }
+
+  container.innerHTML = `
+    <div style="margin-top:14px;border:1px solid #fbbf24;border-radius:var(--r-sm);overflow:hidden">
+      <div style="background:#fef3c7;padding:8px 14px;font-size:12px;font-weight:700;color:#92400e;display:flex;align-items:center;gap:7px">
+        <span>💡</span> Verifica clinica — prestazioni accessorie potenzialmente mancanti
+      </div>
+      <div id="ai-dep-list" style="padding:8px 14px;display:flex;flex-direction:column;gap:6px">
+        ${suggestions.map((s, i) => `
+          <div id="ai-dep-${i}" style="display:flex;align-items:flex-start;gap:10px;padding:8px 10px;background:white;border-radius:var(--r-sm);border:var(--border)">
+            <div style="flex:1">
+              <div style="font-size:12px;font-weight:600;color:var(--gray-700)">
+                <span style="font-family:'DM Mono',monospace;font-weight:700;color:var(--teal)">Dente ${esc(s.num)}</span>
+                &nbsp;— ${esc(s.label)}
+              </div>
+              <div style="font-size:11px;color:var(--gray-400);margin-top:2px">${esc(s.motivo)}</div>
+            </div>
+            <div style="display:flex;gap:6px;flex-shrink:0;margin-top:2px">
+              <button onclick="aiDepAggiungi(${i},'${esc(s.num)}','${esc(s.label)}','${esc(s.idListino)}')"
+                style="background:var(--teal);color:white;border:none;border-radius:4px;padding:4px 11px;font-size:11px;font-weight:600;cursor:pointer">+ Aggiungi</button>
+              <button onclick="document.getElementById('ai-dep-${i}').remove();aiDepCheckEmpty()"
+                style="background:none;border:1px solid var(--gray-200);border-radius:4px;padding:4px 10px;font-size:11px;color:var(--gray-500);cursor:pointer">Ignora</button>
+            </div>
+          </div>`).join('')}
+      </div>
+    </div>`;
+}
+
+function aiDepCheckEmpty() {
+  const list = document.getElementById('ai-dep-list');
+  if (list && !list.children.length) {
+    const c = document.getElementById('ai-dependency-suggestions');
+    if (c) c.innerHTML = '';
+  }
+}
+
+function aiDepAggiungi(idx, num, label, idListino) {
+  const tbody = document.getElementById('ai-ter-tbody');
+  if (!tbody) return;
+  const rowKey = 'dep_' + Date.now();
+  const matched = TR_PIANO.find(t => t.id === idListino);
+  const prezzo  = matched ? (matched.prezzo || 0) : 0;
+  const opts = `<option value="">— non aggiungere —</option>` +
+    TR_PIANO.map(t => `<option value="${t.id}" data-prezzo="${t.prezzo||0}"${t.id===idListino?' selected':''}>${t.label} — €${t.prezzo||0}</option>`).join('');
+  const tr = document.createElement('tr');
+  tr.id = `ai-ter-row-${rowKey}`;
+  tr.style.background = '#f0fdf4';
+  tr.innerHTML = `
+    <td><input type="number" id="ai-ter-num-${rowKey}" value="${num}" min="11" max="48"
+      style="width:52px;border:var(--border);border-radius:4px;padding:4px 6px;font-size:13px;font-family:'DM Mono',monospace;font-weight:700;text-align:center;outline:none"></td>
+    <td style="font-size:11px;color:var(--teal);font-style:italic">💡 suggerito</td>
+    <td><select id="ai-ter-sel-${rowKey}" class="ai-prest-sel"
+        onchange="aiAggiornaPrezzoRiga('${rowKey}',this)">${opts}</select></td>
+    <td><input type="number" id="ai-ter-qta-${rowKey}" value="1" min="1" style="width:50px"></td>
+    <td><input type="number" id="ai-ter-prezzo-${rowKey}" value="${prezzo}" step="0.01" min="0" style="width:80px" placeholder="€"></td>
+    <td><button onclick="this.closest('tr').remove()" style="background:none;border:none;cursor:pointer;color:var(--gray-300);font-size:14px;padding:2px 6px">✕</button></td>`;
+  tbody.appendChild(tr);
+  if (!aiProposta._terRows) aiProposta._terRows = [];
+  aiProposta._terRows.push({ rowKey, num });
+  document.getElementById(`ai-dep-${idx}`)?.remove();
+  aiDepCheckEmpty();
+  notify(`"${label}" aggiunto al piano per dente ${num}`, 'ok');
 }
 
 // ════════════════════════════════════════════════════════════
