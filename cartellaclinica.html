@@ -717,6 +717,9 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--gray-50);color:
               </div>
             </div>
 
+            <!-- Quality check / warnings v2 -->
+            <div id="ai-quality-box" style="display:none;margin-bottom:12px"></div>
+
             <!-- Pulsante conferma -->
             <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:4px;margin-bottom:2rem">
               <button class="ai-btn ai-btn-outline" onclick="document.getElementById('ai-results').style.display='none'">Annulla</button>
@@ -882,6 +885,7 @@ const DOCTOR_ID  = "default_doctor";
 // Riferimenti Firestore per memoria AI dello studio
 function studioRef()    { return db.collection('studios').doc(STUDIO_ID); }
 function aiCol(name)    { return studioRef().collection(name); }
+function patientsCol()  { return studioRef().collection('pazienti'); }
 
 function startApp() {
   loadPrestazioni()
@@ -1170,9 +1174,22 @@ window.addEventListener('load', () => {
 async function loadPatients() {
   setSyncPill('sy');
   try {
-    const snap = await db.collection('pazienti').get();
+    let snap = await patientsCol().get();
+    // Migrazione automatica: se la collection dello studio è vuota, leggi dalla globale e copia
+    if (snap.empty) {
+      const globalSnap = await db.collection('pazienti').get();
+      if (!globalSnap.empty) {
+        console.log(`[migrazione] Copio ${globalSnap.size} pazienti in studios/${STUDIO_ID}/pazienti`);
+        const batch = db.batch();
+        globalSnap.docs.forEach(d => {
+          batch.set(patientsCol().doc(d.id), d.data());
+        });
+        await batch.commit();
+        snap = await patientsCol().get();
+        notify(`Migrazione completata: ${globalSnap.size} pazienti spostati nello studio`, 'ok');
+      }
+    }
     patients = snap.docs.map(d => ({...d.data(), id: d.id}));
-    // Sort by codice
     patients.sort((a,b)=>(a.codice||'').localeCompare(b.codice||''));
     renderList(patients);
     setSyncPill('ok');
@@ -1216,7 +1233,7 @@ async function openPatient(id) {
   renderList(patients);
   setSyncPill('sy');
   try {
-    const doc = await db.collection('pazienti').doc(id).get();
+    const doc = await patientsCol().doc(id).get();
     if (!doc.exists) { notify('Paziente non trovato','err'); setSyncPill('er'); return; }
     const p = doc.data();
     setSyncPill('ok');
@@ -1266,7 +1283,7 @@ async function openPatient(id) {
 
   // Listener real-time: aggiorna odontogramma se un altro PC salva
   if (_patListener) { _patListener(); _patListener = null; }
-  _patListener = db.collection('pazienti').doc(id).onSnapshot(snap => {
+  _patListener = patientsCol().doc(id).onSnapshot(snap => {
     if (!snap.exists) return;
     if (snap.metadata.hasPendingWrites) return;
     if (Date.now() - _lastSaveTime < 4000) return;
@@ -1335,7 +1352,7 @@ async function savePatient() {
   try {
     _lastSaveTime = Date.now();
     const data = collectData();
-    await db.collection('pazienti').doc(currentId).set(data);
+    await patientsCol().doc(currentId).set(data);
     setSyncPill('ok');
     notify('Salvato!','ok');
     await loadPatients();
@@ -1373,7 +1390,7 @@ async function createPatient() {
   const today = new Date().toISOString().split('T')[0];
   setSyncPill('sy');
   try {
-    await db.collection('pazienti').doc(id).set({
+    await patientsCol().doc(id).set({
       id,
       codice:  codiceFinale,
       nome,
@@ -1400,7 +1417,7 @@ async function confirmDelete() {
   if (!confirm('Eliminare questa cartella?')) return;
   setSyncPill('sy');
   try {
-    await db.collection('pazienti').doc(currentId).delete();
+    await patientsCol().doc(currentId).delete();
     currentId = null;
     document.getElementById('record').style.display = 'none';
     document.getElementById('welcome').style.display = 'flex';
@@ -2876,7 +2893,7 @@ function closeSidebar() {
 // ════════════════════════════════════════════════════════════
 // AI DETTATURA — Worker URLs
 // ════════════════════════════════════════════════════════════
-const AI_WORKER_TRASCRIZIONE = 'https://trascrittore.nicolapalmia.workers.dev';
+// Worker unificato v2: gestisce sia audio (FormData) che testo (JSON)
 const AI_WORKER_STRUTTURA    = 'https://odontogramma.nicolapalmia.workers.dev';
 
 // ════════════════════════════════════════════════════════════
@@ -2924,22 +2941,58 @@ async function aiStartRec() {
     }
 
     const blob = new Blob(AIR.chunks, { type: AIR.recorder.mimeType || 'audio/webm' });
-    aiSetStatus('nota', 'proc', 'Trascrizione…');
+    aiSetStatus('nota', 'proc', 'Trascrizione e analisi…');
 
     try {
+      // Costruisci contesto listino e memoria AI
+      const listinoAtt = TR_ATTUALE.map(t => ({ id: t.id, label: t.label }));
+      const listinoPia = TR_PIANO.map(t => ({ id: t.id, label: t.label, ...(t.scope ? { scope: t.scope } : {}), ...(t.prezzo != null ? { prezzo: t.prezzo } : {}) }));
+      const [esempiSit, esempiTer] = await Promise.all([
+        aiCaricaMapping('situazione_attuale').catch(() => []),
+        aiCaricaMapping('terapie_da_attuare').catch(() => [])
+      ]);
+      const protocolliGrouped = await aiCaricaProtocolli().catch(() => ({}));
+      const protocolli = Object.values(protocolliGrouped).map(varianti => ({
+        trigger_id: varianti[0].trigger_id, trigger_label: varianti[0].trigger_label,
+        varianti: varianti.map(v => ({ terapie: v.terapie, count: v.count || 1 })).sort((a,b) => b.count - a.count)
+      }));
+      const clinicalDeps = await aiCaricaClinicalDeps().catch(() => []);
+      const rulePrefs    = await aiCaricaRulePrefs().catch(() => []);
+
+      // Invia audio + contesto al Worker v2 (FormData)
       const fd = new FormData();
       fd.append('audio', blob, 'recording.webm');
-      const resp = await fetch(AI_WORKER_TRASCRIZIONE, { method: 'POST', body: fd });
+      fd.append('studio_id',           STUDIO_ID);
+      fd.append('doctor_id',           DOCTOR_ID);
+      fd.append('codice_paziente',     gv('f-codice') || currentId || '');
+      fd.append('listino_attuale',     JSON.stringify(listinoAtt));
+      fd.append('listino_piano',       JSON.stringify(listinoPia));
+      fd.append('esempi_attuale',      JSON.stringify(esempiSit));
+      fd.append('esempi_piano',        JSON.stringify(esempiTer));
+      fd.append('protocolli',          JSON.stringify(protocolli));
+      fd.append('clinical_deps',       JSON.stringify(clinicalDeps));
+      fd.append('ai_rule_preferences', JSON.stringify(rulePrefs));
+
+      const resp = await fetch(AI_WORKER_STRUTTURA, { method: 'POST', body: fd });
       if (!resp.ok) { const e = await resp.json().catch(() => ({})); throw new Error(e.error || `HTTP ${resp.status}`); }
-      const text = (await resp.json()).transcription || '';
-      if (!text.trim()) { aiShowErr('nota', 'Nessun testo riconosciuto. Riprova.'); aiSetStatus('nota', 'idle', 'Inattivo'); return; }
+      const data = await resp.json();
+
+      // Mostra trascrizione corretta in textarea
+      const transcribed = data.transcription_corrected || data.transcription_raw || '';
+      if (!transcribed.trim()) { aiShowErr('nota', 'Nessun testo riconosciuto. Riprova.'); aiSetStatus('nota', 'idle', 'Inattivo'); return; }
       const ta = document.getElementById('ai-tx-nota');
       const existing = ta.value.trim();
-      ta.value = existing ? existing + '\n\n' + text : text;
-      aiSetStatus('nota', 'done', 'Completata');
-      notify('Trascrizione completata', 'ok');
+      ta.value = existing ? existing + '\n\n' + transcribed : transcribed;
+
+      aiSetStatus('nota', 'done', 'Pronto');
+      notify('Trascrizione e analisi completate', 'ok');
+
+      // Se il Worker ha restituito anche l'analisi strutturata, renderizzala subito
+      if (data.situazione_attuale || data.terapie_da_attuare) {
+        aiApplicaRisposta(data);
+      }
     } catch(e) {
-      aiShowErr('nota', 'Errore trascrizione: ' + e.message);
+      aiShowErr('nota', 'Errore: ' + e.message);
       aiSetStatus('nota', 'idle', 'Inattivo');
     }
   };
@@ -3048,6 +3101,8 @@ async function aiAvviaAnalisi() {
   if (_genContainer) _genContainer.innerHTML = '';
   const _depContainer = document.getElementById('ai-dependency-suggestions');
   if (_depContainer) _depContainer.innerHTML = '';
+  const _qcBox = document.getElementById('ai-quality-box');
+  if (_qcBox) _qcBox.style.display = 'none';
   aiProposta._genRows = [];
   document.getElementById('ai-sommario-nota').innerHTML = '';
   aiBadge('sit', 'proc', 'Elaborazione…');
@@ -3056,7 +3111,7 @@ async function aiAvviaAnalisi() {
 
   const pazCodice = gv('f-codice') || currentId;
   const listinoAtt = TR_ATTUALE.map(t => ({ id: t.id, label: t.label }));
-  const listinoPia = TR_PIANO.map(t => ({ id: t.id, label: t.label, ...(t.prezzo != null ? { prezzo: t.prezzo } : {}) }));
+  const listinoPia = TR_PIANO.map(t => ({ id: t.id, label: t.label, ...(t.scope ? { scope: t.scope } : {}), ...(t.prezzo != null ? { prezzo: t.prezzo } : {}) }));
 
   // Carica esempi, protocolli e dipendenze cliniche — errori non bloccano l'analisi
   const [esempiSit, esempiTer] = await Promise.all([
@@ -3095,35 +3150,7 @@ async function aiAvviaAnalisi() {
     });
     if (!resp.ok) { const e = await resp.json().catch(()=>({})); throw new Error(e.error || `HTTP ${resp.status}`); }
     const data = await resp.json();
-
-    // data.situazione_attuale e data.terapie_da_attuare
-    if (data.situazione_attuale) {
-      aiProposta.sit = data.situazione_attuale;
-      aiRenderSituazione(data.situazione_attuale);
-      aiBadge('sit', 'done', 'Pronto');
-    } else {
-      aiBadge('sit', 'idle', 'Nessun dato');
-      document.getElementById('ai-table-sit').innerHTML = '<div style="padding:16px;text-align:center;color:var(--gray-300);font-size:12px">Nessuna situazione attuale identificata.</div>';
-    }
-
-    if (data.terapie_da_attuare) {
-      aiProposta.ter = data.terapie_da_attuare;
-      aiRenderPiano(data.terapie_da_attuare);
-      clinicalDependencyCheck(data.terapie_da_attuare, data.suggerimenti_clinici || []);
-      aiBadge('ter', 'done', 'Pronto');
-      if (data.sommario) {
-        document.getElementById('ai-sommario-nota').innerHTML =
-          `<div style="background:#fef9c3;border:1px solid #fde68a;border-radius:var(--r-sm);padding:8px 12px;font-size:12px;color:#78350f">
-            <strong>📋 Valutazione AI:</strong> ${esc(data.sommario)}</div>`;
-      }
-    } else {
-      aiBadge('ter', 'idle', 'Nessun dato');
-      document.getElementById('ai-table-ter').innerHTML = '<div style="padding:16px;text-align:center;color:var(--gray-300);font-size:12px">Nessun piano terapie identificato.</div>';
-    }
-
-    if (aiProposta.sit || aiProposta.ter) {
-      document.getElementById('ai-btn-conferma').disabled = false;
-    }
+    aiApplicaRisposta(data);
   } catch(e) {
     aiBadge('sit', 'idle', 'Errore'); aiBadge('ter', 'idle', 'Errore');
     document.getElementById('ai-table-sit').innerHTML =
@@ -3131,6 +3158,92 @@ async function aiAvviaAnalisi() {
     document.getElementById('ai-table-ter').innerHTML = '';
     notify('Errore AI: ' + e.message, 'err');
   }
+}
+
+// ════════════════════════════════════════════════════════════
+// AI — Applica risposta Worker (riutilizzata da audio e testo)
+// ════════════════════════════════════════════════════════════
+function aiApplicaRisposta(data) {
+  const results = document.getElementById('ai-results');
+  if (results) results.style.display = 'block';
+  document.getElementById('ai-btn-conferma').disabled = true;
+  aiProposta.sit = null; aiProposta.ter = null;
+
+  // Nota originale (usa trascrizione corretta se disponibile)
+  const notaDisplay = data.transcription_corrected || data.transcription_raw
+    || document.getElementById('ai-tx-nota')?.value || '';
+  document.getElementById('ai-orig-nota').textContent = notaDisplay;
+
+  if (data.situazione_attuale) {
+    aiProposta.sit = data.situazione_attuale;
+    aiRenderSituazione(data.situazione_attuale);
+    aiBadge('sit', 'done', 'Pronto');
+  } else {
+    aiBadge('sit', 'idle', 'Nessun dato');
+    document.getElementById('ai-table-sit').innerHTML =
+      '<div style="padding:16px;text-align:center;color:var(--gray-300);font-size:12px">Nessuna situazione attuale identificata.</div>';
+  }
+
+  if (data.terapie_da_attuare) {
+    aiProposta.ter = data.terapie_da_attuare;
+    aiRenderPiano(data.terapie_da_attuare);
+    clinicalDependencyCheck(data.terapie_da_attuare, data.suggerimenti_clinici || []);
+    aiBadge('ter', 'done', 'Pronto');
+    const sommario = data.sommario || data.terapie_da_attuare?.valutazione || '';
+    if (sommario) {
+      document.getElementById('ai-sommario-nota').innerHTML =
+        `<div style="background:#fef9c3;border:1px solid #fde68a;border-radius:var(--r-sm);padding:8px 12px;font-size:12px;color:#78350f">
+          <strong>📋 Valutazione AI:</strong> ${esc(sommario)}</div>`;
+    }
+  } else {
+    aiBadge('ter', 'idle', 'Nessun dato');
+    document.getElementById('ai-table-ter').innerHTML =
+      '<div style="padding:16px;text-align:center;color:var(--gray-300);font-size:12px">Nessun piano terapie identificato.</div>';
+  }
+
+  if (aiProposta.sit || aiProposta.ter) {
+    document.getElementById('ai-btn-conferma').disabled = false;
+  }
+
+  // Mostra warnings e quality check del v2
+  aiMostraQuality(data);
+
+  results?.scrollIntoView({ behavior: 'smooth' });
+}
+
+function aiMostraQuality(data) {
+  const box = document.getElementById('ai-quality-box');
+  if (!box) return;
+
+  const warnings  = data.warnings || [];
+  const qc        = data.quality_check || {};
+  const needsRev  = qc.needs_human_review || warnings.length > 0;
+  const conf      = typeof qc.overall_confidence === 'number'
+    ? Math.round(qc.overall_confidence * 100) : null;
+  const issues    = qc.issues || [];
+
+  if (!needsRev && !warnings.length && !issues.length) {
+    box.style.display = 'none'; return;
+  }
+
+  const confBadge = conf !== null
+    ? `<span style="font-size:11px;background:${conf >= 85 ? '#d1fae5' : conf >= 70 ? '#fef3c7' : '#fee2e2'};color:${conf >= 85 ? '#065f46' : conf >= 70 ? '#78350f' : '#991b1b'};border-radius:4px;padding:2px 7px;font-weight:700">${conf}% confidenza</span>`
+    : '';
+
+  const allItems = [
+    ...warnings.map(w => `<li style="color:#92400e">⚠ ${esc(w)}</li>`),
+    ...issues.map(i => `<li style="color:#991b1b">✗ ${esc(i)}</li>`),
+  ].join('');
+
+  box.style.display = 'block';
+  box.innerHTML = `
+    <div style="border:1px solid #fcd34d;border-radius:var(--r-sm);overflow:hidden">
+      <div style="background:#fef3c7;padding:7px 12px;display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;color:#78350f">
+        ⚡ Verifica richiesta ${confBadge}
+        ${needsRev ? '<span style="margin-left:auto;font-size:10px;background:#fde68a;border-radius:3px;padding:1px 6px">REVISIONE MEDICO</span>' : ''}
+      </div>
+      <ul style="padding:8px 12px 8px 28px;font-size:11px;line-height:1.7;background:white;margin:0">${allItems}</ul>
+    </div>`;
 }
 
 function aiBadge(sec, cls, txt) {
@@ -3261,16 +3374,8 @@ const AI_CLINICAL_RULES = [
     label:  'Fase protesica (abutment + corona su impianto)',
     idListino: 'corona_su_impianto',
     motivo: "L'impianto richiede la fase protesica: abutment e corona definitiva"
-  },
-  {
-    id: 'estrazione_controllo',
-    triggerKw:  ['estrazione', 'avulsione', 'chirurgica'],
-    excludeTrigger: [],
-    missingKw:  ['controllo', 'post-estrattivo', 'sutura rimozione'],
-    label:  'Controllo post-estrattivo',
-    idListino: 'visita_controllo',
-    motivo: "Un'estrazione richiede un controllo post-estrattivo"
   }
+  // Regola estrazione_controllo rimossa — gestita solo dal Worker (extraction_followup_check, defaultEnabled:false)
 ];
 
 function _depMatch(text, keywords) {
