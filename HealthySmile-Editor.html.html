@@ -1,0 +1,2136 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+  <meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Healthy Smile — Editor Schede</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #080c0a;
+  --surface: #0f1712;
+  --surface2: #141f17;
+  --surface3: #1a2820;
+  --border: #1c2d22;
+  --border2: #243829;
+  --green: #2dff7a;
+  --green-dim: #1a9447;
+  --green-glow: rgba(45,255,122,0.15);
+  --yellow: #ffd166;
+  --yellow-glow: rgba(255,209,102,0.15);
+  --red: #ff4d6d;
+  --red-glow: rgba(255,77,109,0.15);
+  --text: #e2ede6;
+  --text-dim: #6b8a74;
+  --text-muted: #344d3c;
+  --accent: #2dff7a;
+  --grey: #4a5568;
+  --grey-glow: rgba(74,85,104,0.15);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Subtle noise + grid */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image:
+    linear-gradient(rgba(45,255,122,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(45,255,122,0.025) 1px, transparent 1px);
+  background-size: 48px 48px;
+  pointer-events: none; z-index: 0;
+}
+
+/* ─── LAYOUT ─── */
+.shell {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  min-height: 100vh;
+  position: relative; z-index: 1;
+}
+
+/* ─── SIDEBAR ─── */
+.sidebar {
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  position: sticky; top: 0; height: 100vh;
+  overflow-y: auto;
+}
+
+.sidebar::-webkit-scrollbar { width: 4px; }
+.sidebar::-webkit-scrollbar-track { background: transparent; }
+.sidebar::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+.sidebar-header {
+  padding: 28px 24px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.brand {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 6px;
+}
+
+.brand-dot {
+  width: 8px; height: 8px;
+  background: var(--green); border-radius: 50%;
+  box-shadow: 0 0 10px var(--green);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+.brand-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 15px; color: var(--text);
+  letter-spacing: -0.01em;
+}
+
+.sidebar-subtitle {
+  font-size: 11px; color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: 0.12em;
+}
+
+/* Nav tabs */
+.nav-tabs {
+  display: flex; gap: 2px;
+  padding: 16px 16px 0;
+}
+
+.nav-tab {
+  flex: 1; padding: 8px 4px;
+  font-size: 11px; text-align: center;
+  color: var(--text-dim);
+  border-bottom: 2px solid transparent;
+  cursor: pointer; transition: all 0.2s;
+  text-transform: uppercase; letter-spacing: 0.1em;
+  font-weight: 500;
+}
+
+.nav-tab.active { color: var(--green); border-bottom-color: var(--green); }
+.nav-tab:hover:not(.active) { color: var(--text); }
+
+/* Panels */
+.panel { display: none; padding: 20px; flex: 1; }
+.panel.active { display: block; }
+
+/* Form elements */
+.field { margin-bottom: 16px; }
+
+.field label {
+  display: block;
+  font-size: 10px; text-transform: uppercase;
+  letter-spacing: 0.12em; color: var(--text-dim);
+  margin-bottom: 6px; font-weight: 600;
+}
+
+.field input, .field textarea, .field select {
+  width: 100%; padding: 10px 12px;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  color: var(--text); font-family: 'DM Sans', sans-serif;
+  font-size: 13px; outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.field input:focus, .field textarea:focus {
+  border-color: rgba(45,255,122,0.4);
+  box-shadow: 0 0 0 3px rgba(45,255,122,0.08);
+}
+
+.field textarea { resize: vertical; min-height: 64px; line-height: 1.5; }
+
+.field select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b8a74' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 32px; cursor: pointer;
+}
+
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+/* Dente list */
+.dente-list { display: flex; flex-direction: column; gap: 6px; }
+
+.dente-item {
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: 10px;
+  padding: 10px 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex; align-items: center; gap: 10px;
+}
+
+.dente-item:hover { border-color: var(--border2); background: var(--surface3); }
+.dente-item.selected { border-color: rgba(45,255,122,0.4); background: rgba(45,255,122,0.05); }
+
+.dente-item-dot {
+  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+}
+.dente-item-dot.low { background: var(--green); }
+.dente-item-dot.medium { background: var(--yellow); }
+.dente-item-dot.high { background: var(--red); }
+.dente-item-dot.absent { background: var(--grey); opacity: 0.5; }
+
+
+.dente-item-info { flex: 1; min-width: 0; }
+.dente-item-num {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px; color: var(--text-dim);
+}
+.dente-item-nome {
+  font-size: 12px; color: var(--text);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.dente-item-price {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px; color: var(--text-dim);
+  flex-shrink: 0;
+}
+
+/* ─── MAIN AREA ─── */
+.main { display: flex; flex-direction: column; }
+
+.topbar {
+  padding: 20px 32px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--surface);
+  position: sticky; top: 0; z-index: 100;
+}
+
+.topbar-left { display: flex; align-items: center; gap: 16px; }
+
+.topbar-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 18px; color: var(--text);
+  letter-spacing: -0.02em;
+}
+
+.topbar-code {
+  font-family: 'DM Mono', monospace;
+  font-size: 12px; color: var(--text-dim);
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  padding: 4px 10px; border-radius: 6px;
+}
+
+.topbar-actions { display: flex; gap: 10px; }
+
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 20px; border-radius: 10px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: all 0.2s;
+  border: none; text-decoration: none;
+}
+
+.btn-ghost {
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  color: var(--text-dim);
+}
+.btn-ghost:hover { border-color: var(--green); color: var(--green); }
+
+.btn-primary {
+  background: var(--green);
+  color: #040a06;
+  box-shadow: 0 4px 20px rgba(45,255,122,0.3);
+}
+.btn-primary:hover { box-shadow: 0 6px 28px rgba(45,255,122,0.5); transform: translateY(-1px); }
+
+/* Editor area */
+.editor-area {
+  flex: 1; padding: 32px;
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 24px; align-content: start;
+}
+
+/* Dente editor panel */
+.dente-editor {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.dente-editor-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+
+.dente-editor-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 18px; color: var(--text);
+}
+
+.dente-editor-body { padding: 24px; }
+
+/* Bocca map (mini arcata) */
+.bocca-map {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px;
+}
+
+.bocca-map-title {
+  font-size: 11px; text-transform: uppercase;
+  letter-spacing: 0.12em; color: var(--text-dim);
+  margin-bottom: 16px; font-weight: 600;
+}
+
+.arcata-map {
+  display: -webkit-flex;
+  display: flex;
+  -webkit-justify-content: center;
+  justify-content: center;
+  -webkit-flex-wrap: wrap;
+  flex-wrap: wrap;
+  gap: 3px;
+  margin-bottom: 6px;
+  min-height: 42px;
+}
+
+.dente-map-btn {
+  width: 32px; height: 38px;
+  border-radius: 6px;
+  border: 1.5px solid var(--border2);
+  background: var(--surface2);
+  cursor: pointer;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-direction: column;
+  flex-direction: column;
+  -webkit-align-items: center;
+  align-items: center;
+  -webkit-justify-content: center;
+  justify-content: center;
+  gap: 2px;
+  transition: all 0.15s;
+  position: relative;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+  flex-shrink: 0;
+  -webkit-flex-shrink: 0;
+}
+
+.dente-map-btn:hover { transform: translateY(-2px); }
+.dente-map-btn.selected { transform: translateY(-3px); }
+
+.dente-map-btn.low { border-color: rgba(45,255,122,0.35); }
+.dente-map-btn.low.selected { border-color: var(--green); background: rgba(45,255,122,0.1); box-shadow: 0 0 14px rgba(45,255,122,0.25); }
+.dente-map-btn.medium { border-color: rgba(255,209,102,0.35); }
+.dente-map-btn.medium.selected { border-color: var(--yellow); background: rgba(255,209,102,0.1); box-shadow: 0 0 14px rgba(255,209,102,0.25); }
+.dente-map-btn.high { border-color: rgba(255,77,109,0.35); }
+.dente-map-btn.high.selected { border-color: var(--red); background: rgba(255,77,109,0.1); box-shadow: 0 0 14px rgba(255,77,109,0.25); }
+.dente-map-btn.absent { border-color: rgba(74,85,104,0.25); opacity: 0.45; }
+.dente-map-btn.absent.selected { border-color: var(--grey); background: rgba(74,85,104,0.1); box-shadow: 0 0 14px rgba(74,85,104,0.25); opacity: 0.7; }
+
+
+.dente-map-num {
+  font-family: 'DM Mono', monospace;
+  font-size: 7px; color: var(--text-muted);
+}
+.dente-map-dot { width: 5px; height: 5px; border-radius: 50%; }
+.low .dente-map-dot { background: var(--green); }
+.medium .dente-map-dot { background: var(--yellow); }
+.high .dente-map-dot { background: var(--red); }
+.absent .dente-map-dot { background: var(--grey); }
+
+
+.imp-tag {
+  position: absolute; bottom: 1px;
+  font-size: 5px; color: var(--green);
+  font-family: 'DM Mono', monospace;
+  opacity: 0.7;
+}
+
+.map-label {
+  text-align: center; font-size: 9px;
+  color: var(--text-muted); text-transform: uppercase;
+  letter-spacing: 0.1em; margin: 4px 0 10px;
+}
+
+/* Stats overview */
+.stats-row {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 10px; margin-bottom: 24px;
+  grid-column: 1 / -1;
+}
+
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px; padding: 16px 20px;
+  position: relative; overflow: hidden;
+}
+.stat-card::before {
+  content: ''; position: absolute;
+  top: 0; left: 0; right: 0; height: 2px;
+}
+.stat-card.green::before { background: var(--green); }
+.stat-card.yellow::before { background: var(--yellow); }
+.stat-card.red::before { background: var(--red); }
+.stat-card.grey::before { background: var(--grey); }
+.stat-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-dim); margin-bottom: 6px; }
+.stat-value { font-family: 'Playfair Display', serif; font-size: 32px; font-weight: 700; line-height: 1; }
+.stat-card.green .stat-value { color: var(--green); }
+.stat-card.yellow .stat-value { color: var(--yellow); }
+.stat-card.red .stat-value { color: var(--red); }
+.stat-card.grey .stat-value { color: var(--grey); }
+
+/* Rischio toggle */
+.rischio-toggle { display: flex; gap: 6px; margin-bottom: 16px; }
+.rischio-btn {
+  flex: 1; padding: 8px;
+  border-radius: 8px; border: 1.5px solid var(--border2);
+  background: var(--surface2); cursor: pointer;
+  font-family: 'DM Sans', sans-serif; font-size: 12px;
+  font-weight: 600; color: var(--text-dim);
+  transition: all 0.15s; text-align: center;
+}
+.rischio-btn.active-low { border-color: var(--green); background: rgba(45,255,122,0.1); color: var(--green); }
+.rischio-btn.active-medium { border-color: var(--yellow); background: rgba(255,209,102,0.1); color: var(--yellow); }
+.rischio-btn.active-high { border-color: var(--red); background: rgba(255,77,109,0.1); color: var(--red); }
+.rischio-btn.active-absent { border-color: var(--grey); background: rgba(74,85,104,0.1); color: var(--grey); }
+
+
+/* Toggle switch */
+.toggle-row {
+  display: flex; align-items: center;
+  justify-content: space-between; margin-bottom: 16px;
+}
+.toggle-label { font-size: 12px; color: var(--text-dim); }
+.toggle {
+  width: 36px; height: 20px;
+  background: var(--surface3);
+  border: 1px solid var(--border2);
+  border-radius: 10px; cursor: pointer;
+  position: relative; transition: all 0.2s;
+}
+.toggle.on { background: rgba(45,255,122,0.2); border-color: var(--green); }
+.toggle::after {
+  content: '';
+  position: absolute; top: 2px; left: 2px;
+  width: 14px; height: 14px;
+  background: var(--text-dim);
+  border-radius: 50%; transition: all 0.2s;
+}
+.toggle.on::after { left: 18px; background: var(--green); }
+
+/* Section divider */
+.section-divider {
+  height: 1px; background: var(--border);
+  margin: 20px 0;
+}
+
+.section-label {
+  font-size: 10px; text-transform: uppercase;
+  letter-spacing: 0.12em; color: var(--text-muted);
+  margin-bottom: 14px; font-weight: 600;
+}
+
+/* Success toast */
+.toast {
+  position: fixed; bottom: 32px; right: 32px;
+  background: var(--green); color: #040a06;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 600; font-size: 14px;
+  padding: 14px 24px; border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(45,255,122,0.4);
+  transform: translateY(80px); opacity: 0;
+  transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1);
+  z-index: 9999;
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+
+/* Scrollbar main */
+.main::-webkit-scrollbar { width: 4px; }
+.main::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+/* Empty state */
+.empty-state {
+  grid-column: 1 / -1;
+  text-align: center; padding: 60px;
+  color: var(--text-muted);
+}
+.empty-state-icon { font-size: 40px; margin-bottom: 16px; opacity: 0.5; }
+.empty-state-text { font-size: 14px; line-height: 1.6; }
+
+/* Panoramica upload */
+.upload-area {
+  border: 2px dashed var(--border2);
+  border-radius: 12px; padding: 24px;
+  text-align: center; cursor: pointer;
+  transition: all 0.2s; position: relative;
+}
+.upload-area:hover, .upload-area.drag { border-color: var(--green); background: var(--green-glow); }
+.upload-area input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.upload-icon { font-size: 28px; margin-bottom: 8px; }
+.upload-text { font-size: 13px; color: var(--text-dim); }
+.upload-preview { max-width: 100%; border-radius: 8px; margin-top: 12px; display: none; filter: brightness(0.9) contrast(1.1); }
+
+/* Codice paziente display */
+.codice-display {
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: 10px; padding: 12px 16px;
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 16px;
+}
+.codice-value {
+  font-family: 'DM Mono', monospace;
+  font-size: 15px; color: var(--green);
+  letter-spacing: 0.05em;
+}
+.codice-refresh {
+  cursor: pointer; color: var(--text-muted);
+  font-size: 14px; transition: color 0.2s;
+}
+.codice-refresh:hover { color: var(--green); }
+
+@media (max-width: 1100px) {
+  .shell { grid-template-columns: 280px 1fr; }
+  .editor-area { grid-template-columns: 1fr; }
+}
+
+/* ─── AI DEBUG BOX ─── */
+#ai-debug-box {
+  display: none;
+  margin: 16px 0;
+  background: rgba(45,255,122,0.04);
+  border: 1px solid rgba(45,255,122,0.25);
+  border-radius: 12px;
+  padding: 16px;
+}
+#ai-debug-box .debug-title {
+  font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em;
+  color: var(--green); font-weight: 600; margin-bottom: 10px;
+  display: flex; align-items: center; gap: 8px;
+}
+#ai-debug-box .debug-title::before {
+  content: ''; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--green); box-shadow: 0 0 8px var(--green);
+  display: inline-block;
+}
+#ai-debug-box pre {
+  font-family: 'DM Mono', monospace; font-size: 11px;
+  color: var(--text-dim); white-space: pre-wrap; word-break: break-all;
+  max-height: 320px; overflow-y: auto; line-height: 1.6;
+}
+#ai-debug-box .debug-status {
+  font-size: 11px; color: var(--text-dim); margin-top: 8px;
+}
+</style>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+</head>
+<body>
+
+<div class="shell">
+
+  <!-- ═══ SIDEBAR ═══ -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="brand">
+        <div class="brand-dot"></div>
+        <div class="brand-name">Healthy Smile By N</div>
+      </div>
+      <div class="sidebar-subtitle">Editor Schede Paziente</div>
+    </div>
+
+    <div class="nav-tabs">
+      <div class="nav-tab active" onclick="switchTab('paziente')">Paziente</div>
+      <div class="nav-tab" onclick="switchTab('denti')">Denti</div>
+      <div class="nav-tab" onclick="switchTab('testi')">Testi</div>
+    </div>
+
+    <!-- PANEL: PAZIENTE -->
+    <div class="panel active" id="panel-paziente">
+
+      <div class="section-label">Codice Paziente</div>
+      <div class="codice-display">
+        <span class="codice-value" id="codice-display">HS-2026-——</span>
+        <span class="codice-refresh" onclick="generaCodice()" title="Genera nuovo codice">↻</span>
+      </div>
+
+      <div class="field">
+        <label>Data visita</label>
+        <input type="date" id="data-visita">
+      </div>
+
+      <div class="section-divider"></div>
+      <div class="section-label">Radiografia Panoramica</div>
+
+      <div class="upload-area" id="upload-area">
+        <input type="file" id="upload-input" accept="image/*" onchange="handleUpload(this)">
+        <div class="upload-icon">🦷</div>
+        <div class="upload-text">Carica panoramica OPT<br><span style="font-size:11px;color:var(--text-muted)">JPG, PNG · clicca o trascina</span></div>
+        <img class="upload-preview" id="upload-preview">
+      </div>
+
+      <div class="section-divider"></div>
+      <div class="section-label">Quadro generale</div>
+
+      <div class="field">
+        <label>Testo introduttivo</label>
+        <textarea id="overview-text" rows="5" placeholder="Descrivi il quadro clinico generale del paziente..."></textarea>
+      </div>
+
+      <div class="field">
+        <label>Punti di forza (uno per riga)</label>
+        <textarea id="punti-forza" rows="4" placeholder="Impianti stabili su entrambe le arcate&#10;Settore anteriore in ottimo stato"></textarea>
+      </div>
+
+      <div class="field">
+        <label>Aree da trattare (uno per riga)</label>
+        <textarea id="punti-critici" rows="4" placeholder="17: otturazione infiltrata&#10;26: lesione occlusale piccola"></textarea>
+      </div>
+
+    </div>
+
+    <!-- PANEL: DENTI -->
+    <div class="panel" id="panel-denti">
+      <div class="section-label">Seleziona dente da modificare</div>
+      <div class="dente-list" id="dente-list"></div>
+    </div>
+
+    <!-- PANEL: TESTI -->
+    <div class="panel" id="panel-testi">
+      <div class="section-label">Messaggio WhatsApp</div>
+      <div class="field">
+        <textarea id="wa-text" rows="5">Ciao! 👋 Ecco la tua scheda dentale personale Healthy Smile — trovi l'analisi completa della tua bocca con i consigli del nostro team. Clicca il link per vederla:</textarea>
+      </div>
+
+      <div class="section-divider"></div>
+      <div class="section-label">Filosofia (banner)</div>
+      <div class="field">
+        <label>Testo filosofia</label>
+        <textarea id="filosofia-text" rows="4">Il nostro obiettivo è fare la miglior prevenzione possibile per evitare che i problemi si presentino. Per questo ogni dente mappato oggi è già protetto.</textarea>
+      </div>
+    </div>
+
+  </aside>
+
+  <!-- ═══ MAIN ═══ -->
+  <main class="main">
+    <div class="topbar">
+      <div class="topbar-left">
+        <div class="topbar-title" id="topbar-title">Nuova Scheda</div>
+        <div class="topbar-code" id="topbar-code">HS-2026-——</div>
+      </div>
+      <div class="topbar-actions">
+        <button class="btn btn-ghost" onclick="resetAll()">↺ Reset</button>
+        <button class="btn btn-ghost" id="btn-import" style="display:none;border-color:rgba(45,255,122,0.4);color:var(--green)">✦ Importato dalla cartella</button>
+        <button class="btn btn-ghost" id="btn-ai" onclick="compilaSchedaConAI()" style="border-color:rgba(45,255,122,0.5);color:var(--green);gap:6px" title="Legge i dati Firebase e prepara il JSON per l'AI">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg>
+          Compila scheda con AI
+        </button>
+        <button class="btn btn-primary" onclick="generaScheda()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+          Genera Scheda
+        </button>
+      </div>
+    </div>
+
+    <div class="editor-area" id="editor-area">
+
+      <!-- Stats -->
+      <div class="stats-row">
+        <div class="stat-card green">
+          <div class="stat-label">Stabili</div>
+          <div class="stat-value" id="stat-green">—</div>
+        </div>
+        <div class="stat-card yellow">
+          <div class="stat-label">Osservazione</div>
+          <div class="stat-value" id="stat-yellow">—</div>
+        </div>
+        <div class="stat-card red">
+          <div class="stat-label">Intervento</div>
+          <div class="stat-value" id="stat-red">—</div>
+        </div>
+        <div class="stat-card grey">
+          <div class="stat-label">Assenti</div>
+          <div class="stat-value" id="stat-grey">—</div>
+        </div>
+      </div>
+
+      <!-- AI Debug Box -->
+      <div id="ai-debug-box">
+        <div class="debug-title">patientClinicalSummary — JSON debug</div>
+        <pre id="ai-debug-pre"></pre>
+        <div class="debug-status" id="ai-debug-status"></div>
+      </div>
+
+      <!-- Bocca map -->
+      <div class="bocca-map">
+        <div class="bocca-map-title">Mappa arcate — clicca un dente</div>
+        <div class="arcata-map" id="map-sup"></div>
+        <div class="map-label">Arcata superiore</div>
+        <div class="map-label">Arcata inferiore</div>
+        <div class="arcata-map" id="map-inf"></div>
+      </div>
+
+      <!-- Dente editor -->
+      <div class="dente-editor" id="dente-editor">
+        <div class="dente-editor-header">
+          <div class="dente-editor-title" id="editor-title">Seleziona un dente</div>
+          <div id="editor-badge"></div>
+        </div>
+        <div class="dente-editor-body" id="editor-body">
+          <div class="empty-state">
+            <div class="empty-state-icon">👆</div>
+            <div class="empty-state-text">Clicca un dente sulla mappa<br>o nella lista a sinistra per modificarlo</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<div class="toast" id="toast">✓ Scheda generata!</div>
+
+<script>
+// ─── DATI BASE ───
+const DENTI_BASE = [
+  // SUP
+  { num: 18, nome: "Ottavo sup. dx", arcata: "sup", pos: 0, rischio: "absent", implant: false, presente: false, note: "Non presente.", consiglio: "Elemento non presente in arcata." },
+  { num: 17, nome: "Settimo sup. dx", arcata: "sup", pos: 1, rischio: "medium", implant: false, presente: true, note: "Otturazione infiltrata — sotto osservazione.", consiglio: "L'otturazione su questo dente mostra segni di infiltrazione. Lo teniamo sotto osservazione — se i segni progrediscono, interverremo subito a costo convenzionato." },
+  { num: 16, nome: "Sesto sup. dx", arcata: "sup", pos: 2, rischio: "low", implant: false, presente: true, note: "Dente stabile.", consiglio: "Dente stabile. Nessun intervento previsto." },
+  { num: 15, nome: "Quinto sup. dx", arcata: "sup", pos: 3, rischio: "medium", implant: false, presente: true, note: "Otturazioni non eseguite da noi — stabili.", consiglio: "Restauro già presente ma non nostro. Stabile al momento — lo monitoriamo ad ogni visita." },
+  { num: 14, nome: "Quarto sup. dx", arcata: "sup", pos: 4, rischio: "medium", implant: false, presente: true, note: "Otturazioni non eseguite da noi — stabili.", consiglio: "Restauro già presente ma non nostro. Stabile al momento — lo monitoriamo ad ogni visita." },
+  { num: 13, nome: "Canino sup. dx", arcata: "sup", pos: 5, rischio: "low", implant: false, presente: true, note: "Ottimo stato.", consiglio: "Canino perfettamente sano. Continua così." },
+  { num: 12, nome: "Laterale sup. dx", arcata: "sup", pos: 6, rischio: "low", implant: false, presente: true, note: "Nessuna anomalia.", consiglio: "Dente sano. Nessun intervento previsto." },
+  { num: 11, nome: "Centrale sup. dx", arcata: "sup", pos: 7, rischio: "low", implant: false, presente: true, note: "Ottimo stato.", consiglio: "Perfetto. Nessuna azione necessaria." },
+  { num: 21, nome: "Centrale sup. sx", arcata: "sup", pos: 8, rischio: "low", implant: true, presente: true, note: "Impianto osteointegrato.", consiglio: "Impianto ben integrato. Igiene con scovolino ogni giorno." },
+  { num: 22, nome: "Laterale sup. sx", arcata: "sup", pos: 9, rischio: "low", implant: true, presente: true, note: "Impianto osteointegrato.", consiglio: "Impianto stabile. Igiene con scovolino ogni sera." },
+  { num: 23, nome: "Canino sup. sx", arcata: "sup", pos: 10, rischio: "low", implant: true, presente: true, note: "Impianto osteointegrato.", consiglio: "Impianto in posizione canina — integrato e funzionale. Scovolino quotidiano." },
+  { num: 24, nome: "Quarto sup. sx", arcata: "sup", pos: 11, rischio: "low", implant: true, presente: true, note: "Impianto osteointegrato.", consiglio: "Impianto stabile. Mantieni l'igiene con scovolino ogni giorno." },
+  { num: 25, nome: "Quinto sup. sx", arcata: "sup", pos: 12, rischio: "low", implant: true, presente: true, note: "Impianto osteointegrato.", consiglio: "Impianto integrato e funzionale. Ottima situazione." },
+  { num: 26, nome: "Sesto sup. sx", arcata: "sup", pos: 13, rischio: "high", implant: false, presente: true, note: "Lesione occlusale piccola.", consiglio: "⚠ C'è una carie piccola sulla superficie di masticazione. In questo stadio l'intervento è semplice e poco costoso. Se aspetti, la lesione si approfondisce." },
+  { num: 27, nome: "Settimo sup. sx", arcata: "sup", pos: 14, rischio: "high", implant: false, presente: true, note: "Otturazione distale profonda.", consiglio: "⚠ Otturazione distale profonda — la profondità è la variabile critica. Monitoraggio stretto; se notiamo evoluzione, interverremo subito." },
+  { num: 28, nome: "Ottavo sup. sx", arcata: "sup", pos: 15, rischio: "absent", implant: false, presente: false, note: "Non presente.", consiglio: "Elemento non presente in arcata." },
+  // INF
+  { num: 48, nome: "Ottavo inf. dx", arcata: "inf", pos: 0, rischio: "absent", implant: false, presente: false, note: "Non presente.", consiglio: "Elemento non presente in arcata." },
+  { num: 47, nome: "Settimo inf. dx", arcata: "inf", pos: 1, rischio: "low", implant: true, presente: true, note: "Impianto osteointegrato.", consiglio: "Impianto stabile. Mantieni l'igiene con scovolino ogni sera." },
+  { num: 46, nome: "Sesto inf. dx", arcata: "inf", pos: 2, rischio: "low", implant: true, presente: true, note: "Impianto osteointegrato.", consiglio: "Impianto ben osteointegrato. Scovolino ogni giorno." },
+  { num: 45, nome: "Quinto inf. dx", arcata: "inf", pos: 3, rischio: "high", implant: false, presente: true, note: "Perno in fibra + provvisorio. Completare con corona definitiva.", consiglio: "⚠ Perno già posizionato con provvisorio in situ. Il provvisorio non è una soluzione definitiva — va completato con la corona per proteggere il dente a lungo termine." },
+  { num: 44, nome: "Quarto inf. dx", arcata: "inf", pos: 4, rischio: "high", implant: false, presente: true, note: "Carie mesiale piccola.", consiglio: "⚠ Piccola lesione sul lato mesiale. È il momento giusto per intervenire: una carie piccola oggi è un'otturazione semplice." },
+  { num: 43, nome: "Canino inf. dx", arcata: "inf", pos: 5, rischio: "low", implant: true, presente: true, note: "Impianto osteointegrato.", consiglio: "Impianto in posizione canina — integrato e funzionale. Scovolino quotidiano." },
+  { num: 42, nome: "Laterale inf. dx", arcata: "inf", pos: 6, rischio: "low", implant: true, presente: true, note: "Impianto osteointegrato.", consiglio: "Impianto stabile. Igiene con scovolino ogni giorno." },
+  { num: 41, nome: "Centrale inf. dx", arcata: "inf", pos: 7, rischio: "low", implant: true, presente: true, note: "Impianto osteointegrato.", consiglio: "Impianto centrale inferiore in ottimo stato. Scovolino ogni sera." },
+  { num: 31, nome: "Centrale inf. sx", arcata: "inf", pos: 8, rischio: "low", implant: true, presente: true, note: "Impianto osteointegrato.", consiglio: "Impianto perfettamente integrato. Routine di igiene quotidiana." },
+  { num: 32, nome: "Laterale inf. sx", arcata: "inf", pos: 9, rischio: "low", implant: true, presente: true, note: "Impianto osteointegrato.", consiglio: "Impianto stabile. Igiene con scovolino ogni sera." },
+  { num: 33, nome: "Canino inf. sx", arcata: "inf", pos: 10, rischio: "low", implant: true, presente: true, note: "Impianto osteointegrato.", consiglio: "Impianto in posizione canina — funzione e guidanza preservate. Scovolino quotidiano." },
+  { num: 34, nome: "Quarto inf. sx", arcata: "inf", pos: 11, rischio: "low", implant: false, presente: true, note: "Nessun problema.", consiglio: "Tutto bene. Mantieni l'igiene attuale." },
+  { num: 35, nome: "Quinto inf. sx", arcata: "inf", pos: 12, rischio: "low", implant: false, presente: true, note: "Stato stabile.", consiglio: "Dente sano. Nessuna azione richiesta." },
+  { num: 36, nome: "Sesto inf. sx", arcata: "inf", pos: 13, rischio: "low", implant: true, presente: true, note: "Impianto non eseguito da noi. Stabile.", consiglio: "Impianto presente ma non eseguito da noi. Stabile — lo monitoriamo ad ogni visita." },
+  { num: 37, nome: "Settimo inf. sx", arcata: "inf", pos: 14, rischio: "low", implant: true, presente: true, note: "Impianto non eseguito da noi. Stabile.", consiglio: "Impianto presente ma non eseguito da noi. Stabile al momento — monitoraggio periodico." },
+  { num: 38, nome: "Ottavo inf. sx", arcata: "inf", pos: 15, rischio: "absent", implant: false, presente: false, note: "Non presente.", consiglio: "Elemento non presente in arcata." },
+];
+
+let denti = JSON.parse(JSON.stringify(DENTI_BASE));
+let selectedNum = null;
+let panoramicaB64 = '';
+let codice = '';
+
+// ─── MAPPATURA TRATTAMENTI v3 → rischio editor ───
+// Trattamenti che implicano "intervento necessario" (high)
+const TR_HIGH = [
+  'cariato','da_estrarre','frattura','da_otturare',
+  'estrazione_semplice','estrazione_complessa','estrazione_dente_del_giudizio',
+  'estrazione_elemento_incluso','estrazione_elemento_semi_incluso','estrazione_dente_deciduo',
+  'apicectomia','cistectomia','exs','exc','exg','exi','esi','exd'
+];
+// Trattamenti che implicano "osservazione" (medium)
+const TR_MEDIUM = [
+  'erosione','provvisorio','endo_fare',
+  'terapia_endodontica_monocanalare','terapia_endodontica_bicanalare','terapia_endodontica_pluricanalare',
+  'ritrattamento_monocanalare','ritrattamento_pluricanalare','ritratt1','ritratt2','ritratt3',
+  'e1','e2','ep','devitaliz','ricostruzione_moncone_perno_in_fibra','perno'
+];
+// Trattamenti che = impianto
+const TR_IMPLANT = ['impianto','impianto_osteointegrabile','impianto_zigomatico','imp_fare'];
+// Trattamenti che = dente non presente
+const TR_ABSENT = ['estratto','estratto_assente','exs','exc','exg','exi','esi','exd','da_estrarre'];
+// Label leggibili per il consiglio
+const TR_LABEL = {
+  // ── Situazione attuale ──
+  sano:'Sano', otturato:'Otturato', devitaliz:'Devitalizzato',
+  impianto:'Impianto', corona:'Corona', ponte:'Ponte',
+  provvisorio:'Provvisorio', parziale:'Protesi parziale',
+  estratto:'Estratto/assente', frattura:'Frattura', erosione:'Erosione/abrasione',
+  bite_att:'Bite presente', igiene_att:'Igiene eseguita', sbianc_att:'Sbiancamento fatto',
+  cariato:'Cariato',
+  // ── Piano (ID vecchi) ──
+  da_otturare:'Da otturare', endo_fare:'Endodonzia', da_estrarre:'Da estrarre',
+  imp_fare:'Impianto', corona_fare:'Corona', ponte_fare:'Ponte',
+  igiene_fare:'Igiene', bite_fare:'Bite', sbianc_fare:'Sbiancamento',
+  controllo:'Controllo', altro_piano:'Altro',
+  // ── Abbreviazioni legacy ──
+  exs:'Estrazione semplice', exc:'Estrazione complessa',
+  exg:'Estrazione giudizio', exi:'Estrazione incluso',
+  esi:'Estrazione semi-incluso', exd:'Estrazione deciduo',
+  kzr:'Corona in zirconio', kzi:'Corona zirconio su impianto',
+  kprov:'Corona provvisoria', kprovc:'Corona provvisoria a carico imm.',
+  perno:'Perno in fibra', monc:'Moncone in composito',
+  ritratt1:'Ritrattamento monocanalare', ritratt2:'Ritrattamento bicanalare',
+  ritratt3:'Ritrattamento pluricanalare',
+  e1:'Endodonzia monocanalare', e2:'Endodonzia bicanalare', ep:'Endodonzia pluricanalare',
+  o1:'Otturazione I cl.', o2:'Otturazione II cl.', o5:'Otturazione V cl.',
+  ol:'Otturazione dente latte', or:'Otturazione a rischio devitaliz.',
+  sig:'Sigillatura', int:'Intarsio ceramica',
+  bite:'Bite/Ortodonzia',
+};
+
+
+// ─── MAPPA PREZZI (da listino) ───
+const TR_PRICE = {
+  // Igiene
+  ablazione_tartaro_igienista_in:90, ablazione_pediatrica_fino_agli:70,
+  igiene_fare:90, igiene_arcata_protesica:50,
+  levigature_radicolari:130, levigatura_radicolare_singolo:22,
+  bonifica_arcata:550, sondaggio:150, valutazione_parodontale:150,
+  // Otturazioni / restauri
+  da_otturare:170, ott1:120, ott2:170, ott5:90, ol:80, or:170,
+  otturazione_i_classe:120, otturazione_ii_classe:170, otturazione_v_classe:90,
+  otturazione_dente_da_latte:80, otturazione_a_rischio_devitaliz:170,
+  intarsio_in_ceramica:400, int:400, sigillatura:100, sig:100, copertura_elemento_in_composito:70,
+  ricostruzione_moncone_in_composito:120, ricostruzione_moncone_perno_in_fibra:200,
+  perno:200, monc:120,
+  // Endodonzia
+  endo_fare:180, e1:150, e2:180, ep:290,
+  terapia_endodontica_monocanalare:150, terapia_endodontica_bicanalare:180,
+  terapia_endodontica_pluricanalare:290, apicectomia:300, cistectomia:300,
+  ritratt1:280, ritratt2:350, ritratt3:400,
+  ritrattamento_monocanalare:280, ritrattamento_pluricanalare:400,
+  // Estrazioni
+  da_estrarre:100, exs:100, exc:130, exg:200, exi:600, esi:300, exd:80,
+  estrazione_semplice:100, estrazione_complessa:130,
+  estrazione_dente_del_giudizio:200, estrazione_elemento_incluso:600,
+  estrazione_elemento_semi_incluso:300, estrazione_dente_deciduo:80,
+  // Implantologia
+  imp_fare:550, impianto_osteointegrabile:550, impianto_zigomatico:2000,
+  abutment:190, abutment_zigomatico:250, grande_rialzo_seno_mascellare:1600,
+  mini_rialzo_seno:800, gbr:2000, griglia_ossea_in_titanio:2500,
+  dima_chirurgica_per_carico:250, reinserimento_impianto:150,
+  // Protesi fissa
+  corona_fare:700, kzr:700, kzi:700, kprov:90, kprovc:300,
+  corona_zirconio:700, corona_zirconio_su_impianto:700,
+  corona_provvisoria_in_resina:90, corona_provvisoria_a_carico:300,
+  rifacimento_corona_in_zirconia:200, rimozione_corona:40,
+  ponte_fare:700, faccetta_in_ceramica:600, faccetta_in_composito:400,
+  faccetta_provvisoria:100, maryland:370, meryland:750,
+  ricementazione_ponte:250, decementazione_ponte_a_quadrante:0,
+  // Protesi mobile
+  protesi_totale_definitiva:1200, protesi_scheletrica_definitiva:1300,
+  protesi_scheletrica_provvisoria:350, protesi_mobile_provvisoria:550,
+  overdenture:2600, protesi_ibrida:3800, protesi_ibrida_su_4_impianti:3000,
+  protesi_ibrida_su_locator:3300, ibrida_in_zirconia:5500,
+  flexite:1500, ragnetto:300, gancio_trasparente:150,
+  ribasatura_diretta_protesi:180, ribasatura_in_laboratorio:300,
+  // Ortodonzia
+  ortodonzia:3500, allineatori_ortodontici:150,
+  ortodonzia_fissa_durata_approssimativa_8:3000,
+  ortodonzia_fissa_durata_approssimativa_12:3500,
+  ortodonzia_fissa_durata_approssimativa_18:4000,
+  ortodonzia_fissa_durata_approssimativa_24:4800,
+  contenzione_ortodontica:250, mascherine_ortodontiche:250,
+  mascherina_contenzione:180, splintaggio_ortodontico:280, splintaggio:220,
+  studio_del_caso_ortodontico:350, stripping:500,
+  // Sbiancamento
+  sbianc_fare:140, sbiancamento_americano_con_lampada:250,
+  sbiancamento_domiciliare_2_sedute:140,
+  sbiancamento_rapido_post_igiene:50,
+  // Altro
+  bite_fare:250, bite:250, byte:300, rialzo_occlusale:1000,
+  circolare_in_composito:1500, circolare_provvisorio:200,
+  cambio_protesi_da_rimovibile:1200,
+};
+
+function prezzoTR(tid) {
+  if (!tid) return 0;
+  return TR_PRICE[tid] || 0;
+}
+
+// ─── TESTI CLINICI — regola fondamentale ───────────────────────────────────
+// attualeArr = situazione GIÀ presente in bocca (odontogramma attuale)
+// pianoItems = prestazioni da fare/in corso/eseguite (piano trattamenti)
+// Il consiglio descrive PRIMA lo stato attuale, POI le cure pianificate.
+// Non inventa mai prestazioni: usa solo ciò che è in pianoItems dafare.
+function generaConsiglioClinico(num, pianoItems, attualeArr) {
+  const daFare = pianoItems.filter(x => x.stato === 'dafare');
+  if (!daFare.length) return null;
+
+  const tids  = daFare.map(x => x.tid);
+  // Tutte le prestazioni da fare — nome leggibile, nessuna omissione
+  const nomiDaFare = daFare.map(x => labelTR(x.tid)).filter(Boolean);
+
+  // ── Stato attuale dal odontogramma ──
+  const attArr = Array.isArray(attualeArr) ? attualeArr : [];
+  const DEVITAL_IDS = ['devitaliz','terapia_endodontica_monocanalare',
+    'terapia_endodontica_bicanalare','terapia_endodontica_pluricanalare'];
+  const giaDevital  = attArr.some(t => DEVITAL_IDS.includes(t));
+  const giaImpianto = attArr.includes('impianto');
+  const giaCorona   = attArr.includes('corona');
+  const statoLabels = attArr.filter(t => t !== 'sano').map(t => labelTR(t)).filter(Boolean);
+  const prefissoStato = statoLabels.length
+    ? `Il dente ${num} (stato attuale: ${statoLabels.join(', ')}) `
+    : `Il dente ${num} `;
+
+  // ── Tipologie prestazioni pianificate ──
+  const EX_IDS  = ['da_estrarre','exs','exc','exg','exi','esi','exd',
+    'estrazione_semplice','estrazione_complessa','estrazione_dente_del_giudizio',
+    'estrazione_elemento_incluso','estrazione_elemento_semi_incluso'];
+  const ENDO_IDS = ['endo_fare','e1','e2','ep','terapia_endodontica_monocanalare',
+    'terapia_endodontica_bicanalare','terapia_endodontica_pluricanalare',
+    'ritratt1','ritratt2','ritratt3','ritrattamento_monocanalare','ritrattamento_pluricanalare'];
+  const K_IDS   = ['corona_fare','kzr','kzi','corona_zirconio','corona_zirconio_su_impianto',
+    'rifacimento_corona_in_zirconia'];
+  const IMP_IDS = ['imp_fare','impianto_osteointegrabile','impianto_zigomatico'];
+  const OTT_IDS = ['da_otturare','ott1','ott2','ott5','ol','or',
+    'otturazione_i_classe','otturazione_ii_classe','otturazione_v_classe',
+    'otturazione_dente_da_latte','otturazione_a_rischio_devitaliz'];
+
+  const hasEx   = tids.some(t => EX_IDS.includes(t));
+  const hasEndo = tids.some(t => ENDO_IDS.includes(t));
+  const hasK    = tids.some(t => K_IDS.includes(t));
+  const hasImp  = tids.some(t => IMP_IDS.includes(t));
+  const hasOtt  = tids.some(t => OTT_IDS.includes(t));
+
+  // Suffisso con piano completo quando ci sono più prestazioni
+  const pianoCompleto = nomiDaFare.length > 1
+    ? ` Piano completo: ${nomiDaFare.join(', ')}.`
+    : '';
+
+  // ── Estrazione ──
+  if (hasEx) {
+    const parts = [`${prefissoStato}necessita di estrazione.`];
+    if (hasImp) parts.push(`È già pianificato un impianto per ripristinare la funzione masticatoria.`);
+    else        parts.push(`Pianifichiamo subito la riabilitazione dello spazio.`);
+    return parts.join(' ') + pianoCompleto;
+  }
+
+  // ── Endodonzia su dente NON ancora devitalizzato ──
+  if (hasEndo && !giaDevital) {
+    const hasKAnche = hasK;
+    return `${prefissoStato}ha la polpa compromessa e necessita di terapia endodontica. ` +
+      `Il trattamento canalare elimina il tessuto infetto e salva il dente.` +
+      (hasKAnche ? ` Dopo la devitalizzazione, proteggeremo il dente con una corona in zirconio.` : '') +
+      pianoCompleto;
+  }
+
+  // ── Corona (anche su dente già devitalizzato o impianto) ──
+  if (hasK) {
+    const suImp = tids.some(t => ['kzi','corona_zirconio_su_impianto'].includes(t));
+    const contesto = giaDevital
+      ? `${prefissoStato}è già devitalizzato e necessita di una corona protettiva`
+      : giaImpianto
+        ? `Il dente ${num} ha un impianto e necessita della corona definitiva`
+        : `${prefissoStato}necessita di una corona in zirconio${suImp ? ' su impianto' : ''}`;
+    return `${contesto}. Lo zirconio garantisce resistenza e durata nel tempo.` + pianoCompleto;
+  }
+
+  // ── Impianto (senza estrazione abbinata) ──
+  if (hasImp) {
+    return `Il dente ${num} è assente e il piano prevede un impianto osteointegrato. ` +
+      `Soluzione conservativa che non intacca i denti adiacenti e mantiene l'osso in salute.` +
+      pianoCompleto;
+  }
+
+  // ── Otturazione su dente NON già devitalizzato ──
+  if (hasOtt && !giaDevital) {
+    const isRischio = tids.some(t => ['or','otturazione_a_rischio_devitaliz'].includes(t));
+    return isRischio
+      ? `${prefissoStato}presenta una carie profonda a rischio devitalizzazione. ` +
+        `Intervenire ora può ancora salvare la vitalità del nervo.` + pianoCompleto
+      : `${prefissoStato}presenta una lesione cariosa attiva. ` +
+        `Intervenire ora significa un'otturazione semplice — prima si agisce, più si risparmia.` +
+        pianoCompleto;
+  }
+
+  // ── Default: elenca tutte le prestazioni senza reinterpretare ──
+  return `${prefissoStato}ha in piano: ${nomiDaFare.join(', ')}.`;
+}
+
+// Calcola prezzo totale dei trattamenti da fare per un dente
+function calcolaPrezzo(pianoItems) {
+  return pianoItems
+    .filter(x => x.stato === 'dafare')
+    .reduce((sum, x) => sum + prezzoTR(x.tid), 0);
+}
+
+// Restituisce label leggibile per qualsiasi ID trattamento
+function labelTR(tid) {
+  if (!tid) return '';
+  if (TR_LABEL[tid]) return TR_LABEL[tid];
+  if (/^c_\d+$/.test(tid)) return 'Personalizzato';
+  // Prettify: underscore → spazio, prima lettera maiuscola
+  return tid.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()).replace(/\d+$/, '').trim();
+}
+
+// Genera un consiglio neutro e clinicamente corretto dall'odontogramma attuale,
+// senza usare mai i testi hardcoded di DENTI_BASE.
+function _consiglioBaseAttuale(arr, num) {
+  if (arr.includes('estratto'))
+    return `Elemento ${num} non presente in arcata.`;
+  if (arr.includes('impianto'))
+    return `Impianto osteointegrato sul dente ${num}. Igiene con scovolino interdentale quotidiana e controllo periodico.`;
+  const DEVITAL = ['devitaliz','terapia_endodontica_monocanalare','terapia_endodontica_bicanalare','terapia_endodontica_pluricanalare'];
+  if (arr.some(t => DEVITAL.includes(t)))
+    return `Dente ${num} già devitalizzato (trattamento endodontico pregresso). Da monitorare periodicamente — nessun intervento attivo previsto salvo nuove indicazioni.`;
+  if (arr.includes('corona'))
+    return `Dente ${num} con corona. Igiene accurata alle giunzioni gengiva-corona.`;
+  if (arr.includes('ponte'))
+    return `Ponte presente sul dente ${num}. Usa lo scovolino sotto al ponte ogni sera.`;
+  if (arr.includes('otturato'))
+    return `Dente ${num} già otturato. Mantieni l'igiene attuale e vieni ai controlli periodici.`;
+  if (arr.includes('cariato'))
+    return `Dente ${num} presenta una lesione cariosa. Richiede attenzione — più si aspetta, più complesso sarà l'intervento.`;
+  const labels = arr.filter(t => t !== 'sano').map(t => labelTR(t));
+  return labels.length
+    ? `Dente ${num}: ${labels.join(', ')}. Monitoraggio periodico.`
+    : `Dente ${num} in osservazione. Nessun intervento attivo previsto.`;
+}
+
+function _applicaDatiClinici(data) {
+  // ── Reset flag implant su tutti i denti: DENTI_BASE non deve mai emergere ──
+  // Solo l'odontogramma Firebase è fonte autorevole sull'impianto.
+  denti.forEach(d => { d.implant = false; });
+
+  // Codice paziente
+  if (data.codice) {
+    codice = data.codice;
+    document.getElementById('codice-display').textContent = codice;
+    document.getElementById('topbar-code').textContent = codice;
+    document.getElementById('topbar-title').textContent = codice;
+  }
+
+  const attuale = data.attuale || {};
+  const piano   = data.piano   || {};
+
+  // Struttura unificata per dente — fonte unica di verità
+  const dettaglio = _buildDentiDettaglio(attuale, piano);
+
+  // ── console.log per ogni dente con dati clinici ──
+  console.group(`[_applicaDatiClinici] Dettaglio denti (${Object.keys(dettaglio).length} denti)`);
+  Object.values(dettaglio).forEach(det => {
+    console.log(
+      `Dente ${det.num}` +
+      `\n  situazione_attuale:   [${det.situazione_attuale.join(', ') || '—'}]` +
+      `\n  prestazioni_da_fare:  [${det.prestazioni_da_fare.map(p => p.nome).join(', ') || '—'}]` +
+      `\n  prestazioni_in_corso: [${det.prestazioni_in_corso.map(p => p.nome).join(', ') || '—'}]` +
+      `\n  prestazioni_eseguite: [${det.prestazioni_eseguite.map(p => p.nome).join(', ') || '—'}]`
+    );
+  });
+  console.groupEnd();
+
+  // ── Aggiorna array denti ──
+  Object.values(dettaglio).forEach(det => {
+    const d = denti.find(x => x.num === det.num);
+    if (!d) return;
+
+    const arr = det._attArr;
+
+    // Presenza e flag impianto — SOLO dall'odontogramma
+    d.presente = !arr.includes('estratto');
+    d.implant  = arr.includes('impianto');
+
+    // Rischio da attuale (può essere sovrascritta sotto dal piano)
+    if (!d.presente)                                d.rischio = 'absent';
+    else if (arr.some(t => TR_HIGH.includes(t)))    d.rischio = 'high';
+    else if (arr.some(t => TR_MEDIUM.includes(t)))  d.rischio = 'medium';
+    else                                            d.rischio = 'low';
+
+    // Nota = situazione attuale; consiglio = base neutro (mai DENTI_BASE)
+    d.note      = det.situazione_attuale.join(' + ') || 'Sano';
+    d.consiglio = _consiglioBaseAttuale(arr, det.num);
+
+    // Piano: affina consiglio e aggiorna rischio/prezzi
+    const pianoItems = [
+      ...det.prestazioni_da_fare,
+      ...det.prestazioni_in_corso,
+      ...det.prestazioni_eseguite
+    ].map(p => ({ tid: p.tid, stato: p.stato }));
+
+    if (pianoItems.length) {
+      const consClinico = generaConsiglioClinico(det.num, pianoItems, arr);
+      if (consClinico) {
+        d.consiglio = consClinico;
+      } else if (det.prestazioni_in_corso.length || det.prestazioni_eseguite.length) {
+        const parti = [];
+        if (det.prestazioni_in_corso.length)
+          parti.push(`In corso: ${det.prestazioni_in_corso.map(p => p.nome).join(', ')}`);
+        if (det.prestazioni_eseguite.length)
+          parti.push(`Completato: ${det.prestazioni_eseguite.map(p => p.nome).join(', ')}`);
+        d.consiglio = parti.join('. ') + '.';
+      }
+
+      if (det.prestazioni_da_fare.length) {
+        d.rischio = d.presente ? 'high' : 'absent';
+      }
+    }
+  });
+
+  renderMappa();
+  renderDenteList();
+  updateStats();
+  generaTesti();
+  document.getElementById('btn-import').style.display = 'inline-flex';
+}
+
+function importaDaURL() {
+  const params = new URLSearchParams(window.location.search);
+  const raw = params.get('hs');
+  if (!raw) return;
+  try {
+    _applicaDatiClinici(JSON.parse(decodeURIComponent(raw)));
+    showToast('✦ Dati importati dalla cartella clinica!');
+  } catch(e) {
+    console.error('Import fallito:', e);
+  }
+}
+
+// ─── INIT ───
+function init() {
+  generaCodice();
+  setDataOggi();
+  renderMappa();
+  renderDenteList();
+  updateStats();
+  setDefaultTexts();
+  importaDaURL(); // legge params URL se presenti
+}
+
+function setDataOggi() {
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('data-visita').value = today;
+}
+
+function generaTesti() {
+  const nImpianti  = denti.filter(d => d.implant && d.presente).length;
+  const nSani      = denti.filter(d => d.rischio === 'low' && d.presente && !d.implant).length;
+  const nMedium    = denti.filter(d => d.rischio === 'medium').length;
+  const nHigh      = denti.filter(d => d.rischio === 'high').length;
+  const nAssenti   = denti.filter(d => !d.presente || d.rischio === 'absent').length;
+  const dentiHigh  = denti.filter(d => d.rischio === 'high');
+  const dentiMed   = denti.filter(d => d.rischio === 'medium');
+
+  // ── TESTO INTRODUTTIVO ──
+  let intro = '';
+  if (nImpianti >= 6) {
+    intro = `La tua bocca presenta una riabilitazione implantare importante, con ${nImpianti} impianti osteointegrati distribuiti sulle arcate. `;
+    intro += `È un lavoro clinico significativo che richiede una manutenzione attenta e costante. `;
+  } else if (nImpianti > 0) {
+    intro = `La tua bocca ha ${nImpianti} impianto${nImpianti>1?'i':''} osteointegrato${nImpianti>1?'i':''}, che si affiancano ai denti naturali residui. `;
+  } else {
+    intro = `La tua bocca è composta interamente da denti naturali. `;
+  }
+  if (nHigh === 0 && nMedium === 0) {
+    intro += `Il quadro clinico complessivo è ottimo: nessun dente richiede intervento immediato. `;
+    intro += `Continua con l'igiene domiciliare corretta e i controlli periodici per mantenere questo risultato.`;
+  } else if (nHigh === 0) {
+    intro += `Il quadro complessivo è positivo: i denti naturali sono in buono stato, con alcune aree da monitorare nel tempo. `;
+    intro += `Nessun intervento urgente — ma è importante non ritardare le cure pianificate per evitare che le situazioni si aggravino.`;
+  } else {
+    intro += `Esistono ${nHigh} elemento${nHigh>1?'i':''} che richied${nHigh>1?'ono':'e'} intervento a breve termine`;
+    if (nMedium > 0) intro += ` e ${nMedium} sotto osservazione`;
+    intro += `. Intervenire tempestivamente permette cure più conservative e meno costose.`;
+  }
+
+  // ── PUNTI DI FORZA ──
+  const forza = [];
+  if (nImpianti >= 4) forza.push(`${nImpianti} impianti osteointegrati stabili su entrambe le arcate`);
+  else if (nImpianti > 0) forza.push(`${nImpianti} impianto${nImpianti>1?'i':''} osteointegrato${nImpianti>1?'i':''} in buono stato`);
+  if (nSani >= 20) forza.push('La maggior parte dei denti naturali è in condizioni stabili');
+  else if (nSani >= 10) forza.push(`${nSani} denti naturali in ottime condizioni`);
+  const saniAnt = denti.filter(d => d.rischio==='low' && d.presente && [11,12,13,21,22,23,31,32,33,41,42,43].includes(d.num));
+  if (saniAnt.length >= 4) forza.push('Settore anteriore in ottimo stato estetico e funzionale');
+  const dentiMedStab = dentiMed.filter(d => d.note && d.note.toLowerCase().includes('stabil'));
+  if (dentiMedStab.length) forza.push(`Elementi sotto osservazione al momento stabili (${dentiMedStab.map(d=>d.num).join(', ')})`);
+  if (nAssenti === 0) forza.push('Arcate complete — nessun elemento mancante');
+  if (!forza.length) forza.push('Denti in condizioni accettabili con piano di cura pianificato');
+
+  // ── AREE DA TRATTARE ──
+  const critici = [];
+  dentiHigh.forEach(d => {
+    const tratt = d.consiglio.match(/^[^.]+/)?.[0] || '';
+    const nota = d.note && d.note !== 'Sano' ? ` — ${d.note.toLowerCase()}` : '';
+    critici.push(`${d.num}${nota}`);
+  });
+  dentiMed.forEach(d => {
+    const nota = d.note && d.note !== 'Sano' ? ` — ${d.note.toLowerCase()}` : ' — sotto osservazione';
+    critici.push(`${d.num}${nota}`);
+  });
+  if (!critici.length) critici.push('Nessuna area critica rilevata — mantenimento e prevenzione');
+
+  document.getElementById('overview-text').value  = intro;
+  document.getElementById('punti-forza').value    = forza.join('\n');
+  document.getElementById('punti-critici').value  = critici.join('\n');
+}
+
+function setDefaultTexts() {
+  document.getElementById('overview-text').value = 'La tua è una bocca con una storia clinica importante e ben gestita. La panoramica mostra multipli impianti osteointegrati distribuiti su entrambe le arcate — un lavoro riabilitativo significativo. La maggior parte dei denti naturali residui è in condizioni stabili. Esistono alcune aree che richiedono attenzione, ma il quadro complessivo è positivo.';
+  document.getElementById('punti-forza').value = 'Impianti osteointegrati stabili su entrambe le arcate\nSettore anteriore superiore e inferiore in ottimo stato\n14 e 15 monitorate e stabili';
+  document.getElementById('punti-critici').value = '17: otturazione infiltrata — sotto osservazione\n26: lesione occlusale piccola — da intercettare\n27: otturazione distale profonda — monitoraggio stretto\n45: perno in fibra + provvisorio — completamento necessario\n44: lesione mesiale piccola — da trattare';
+}
+
+function generaCodice() {
+  const hex = Math.random().toString(16).substr(2, 6).toUpperCase();
+  const year = new Date().getFullYear();
+  codice = `HS-${year}-${hex}`;
+  document.getElementById('codice-display').textContent = codice;
+  document.getElementById('topbar-code').textContent = codice;
+}
+
+// ─── TABS ───
+function switchTab(tab) {
+  document.querySelectorAll('.nav-tab').forEach((t, i) => {
+    const tabs = ['paziente','denti','testi'];
+    t.classList.toggle('active', tabs[i] === tab);
+  });
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + tab).classList.add('active');
+}
+
+// ─── MAPPA ───
+function renderMappa() {
+  ['sup','inf'].forEach(arcata => {
+    const container = document.getElementById('map-' + arcata);
+    container.innerHTML = '';
+    const filtered = denti.filter(d => d.arcata === arcata).sort((a,b) => a.pos - b.pos);
+    filtered.forEach(d => {
+      const btn = document.createElement('div');
+      btn.className = `dente-map-btn ${d.rischio}${selectedNum === d.num ? ' selected' : ''}`;
+      btn.dataset.num = d.num;
+      btn.style.margin = '2px'; // Safari gap fallback
+      btn.innerHTML = `<div class="dente-map-num">${d.num}</div><div class="dente-map-dot"></div>${d.implant ? '<div class="imp-tag">IMP</div>' : ''}`;
+      btn.onclick = () => selectDente(d.num);
+      container.appendChild(btn);
+    });
+  });
+}
+
+function renderDenteList() {
+  const list = document.getElementById('dente-list');
+  list.innerHTML = '';
+  const order = { high: 0, medium: 1, low: 2, absent: 3 };
+  const sorted = [...denti].sort((a,b) => order[a.rischio] - order[b.rischio]);
+  sorted.forEach(d => {
+    const item = document.createElement('div');
+    item.className = `dente-item${selectedNum === d.num ? ' selected' : ''}`;
+    item.innerHTML = `
+      <div class="dente-item-dot ${d.rischio}"></div>
+      <div class="dente-item-info">
+        <div class="dente-item-num">${d.num}${d.implant ? ' · IMP' : ''}</div>
+        <div class="dente-item-nome">${d.nome}</div>
+      </div>
+
+    `;
+    item.onclick = () => { selectDente(d.num); switchTab('denti'); };
+    list.appendChild(item);
+  });
+}
+
+function updateStats() {
+  document.getElementById('stat-green').textContent = denti.filter(d => d.rischio === 'low').length;
+  document.getElementById('stat-yellow').textContent = denti.filter(d => d.rischio === 'medium').length;
+  document.getElementById('stat-red').textContent = denti.filter(d => d.rischio === 'high').length;
+  document.getElementById('stat-grey').textContent = denti.filter(d => d.rischio === 'absent').length;
+}
+
+// ─── DENTE EDITOR ───
+function selectDente(num) {
+  selectedNum = num;
+  const d = denti.find(x => x.num === num);
+  renderMappa();
+  renderDenteList();
+  showDenteEditor(d);
+}
+
+function showDenteEditor(d) {
+  document.getElementById('editor-title').textContent = `${d.num} — ${d.nome}`;
+
+  const rischioColors = { low: 'var(--green)', medium: 'var(--yellow)', high: 'var(--red)', absent: 'var(--grey)' };
+  const rischioLabels = { low: 'Basso', medium: 'Osservazione', high: 'Intervento', absent: 'Assente' };
+  document.getElementById('editor-badge').innerHTML = `<span style="font-size:11px;font-weight:600;color:${rischioColors[d.rischio]};text-transform:uppercase;letter-spacing:0.1em">${rischioLabels[d.rischio]}</span>`;
+
+  document.getElementById('editor-body').innerHTML = `
+    <div class="section-label">Stato</div>
+    <div class="rischio-toggle">
+      <div class="rischio-btn ${d.rischio === 'low' ? 'active-low' : ''}" onclick="setRischio('low')">🟢 Basso</div>
+      <div class="rischio-btn ${d.rischio === 'medium' ? 'active-medium' : ''}" onclick="setRischio('medium')">🟡 Osservazione</div>
+      <div class="rischio-btn ${d.rischio === 'high' ? 'active-high' : ''}" onclick="setRischio('high')">🔴 Intervento</div>
+      <div class="rischio-btn ${d.rischio === 'absent' ? 'active-absent' : ''}" onclick="setRischio('absent')">⚫ Assente</div>
+    </div>
+
+    <div class="toggle-row">
+      <span class="toggle-label">Impianto</span>
+      <div class="toggle ${d.implant ? 'on' : ''}" id="toggle-implant" onclick="toggleImplant()"></div>
+    </div>
+    <div class="toggle-row">
+      <span class="toggle-label">Dente presente</span>
+      <div class="toggle ${d.presente ? 'on' : ''}" id="toggle-presente" onclick="togglePresente()"></div>
+    </div>
+
+
+    <div class="section-divider"></div>
+    <div class="section-label">Note cliniche interne</div>
+    <div class="field">
+      <textarea id="note-dente" rows="3" placeholder="Es: Otturazione infiltrata, carie mesiale…" oninput="aggiornaDente()">${d.note || ''}</textarea>
+    </div>
+    <div class="section-divider"></div>
+    <div class="section-label">Prestazioni / Trattamenti</div>
+    <div class="field">
+      <textarea id="prestazioni-dente" rows="3" placeholder="Es: Otturazione II cl., Endodonzia bicanalare…" oninput="aggiornaDente()">${d.prestazioni || ''}</textarea>
+    </div>
+    <div class="section-divider"></div>
+    <div class="section-label">Consiglio al paziente</div>
+    <div class="field">
+      <textarea id="consiglio" rows="7" oninput="aggiornaDente()">${d.consiglio}</textarea>
+    </div>
+  `;
+}
+
+function setRischio(r) {
+  if (!selectedNum) return;
+  aggiornaDente(); // salva modifiche in corso prima di ridisegnare
+  const d = denti.find(x => x.num === selectedNum);
+  d.rischio = r;
+  if (r === 'absent') d.presente = false;
+  showDenteEditor(d);
+  renderMappa();
+  renderDenteList();
+  updateStats();
+}
+
+function toggleImplant() {
+  if (!selectedNum) return;
+  const d = denti.find(x => x.num === selectedNum);
+  d.implant = !d.implant;
+  document.getElementById('toggle-implant').classList.toggle('on', d.implant);
+  renderMappa();
+  renderDenteList();
+}
+
+function togglePresente() {
+  if (!selectedNum) return;
+  const d = denti.find(x => x.num === selectedNum);
+  d.presente = !d.presente;
+  if (!d.presente && d.rischio !== 'absent') d.rischio = 'absent';
+  else if (d.presente && d.rischio === 'absent') d.rischio = 'low';
+  document.getElementById('toggle-presente').classList.toggle('on', d.presente);
+  showDenteEditor(d);
+  renderMappa();
+  renderDenteList();
+  updateStats();
+}
+
+function aggiornaDente() {
+  if (!selectedNum) return;
+  const d = denti.find(x => x.num === selectedNum);
+  if (document.getElementById('consiglio')) d.consiglio = document.getElementById('consiglio').value;
+  if (document.getElementById('note-dente')) d.note = document.getElementById('note-dente').value;
+  if (document.getElementById('prestazioni-dente')) d.prestazioni = document.getElementById('prestazioni-dente').value;
+  renderDenteList();
+  updateStats();
+}
+
+// ─── UPLOAD PANORAMICA ───
+function handleUpload(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const dataUrl = e.target.result;
+    panoramicaB64 = dataUrl.split(',')[1];
+    const preview = document.getElementById('upload-preview');
+    preview.src = dataUrl;
+    preview.style.display = 'block';
+    document.querySelector('.upload-icon').style.display = 'none';
+    document.querySelector('.upload-text').style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+
+// ─── RESET ───
+function resetAll() {
+  if (!confirm('Resettare tutto? I dati non salvati andranno persi.')) return;
+  denti = JSON.parse(JSON.stringify(DENTI_BASE));
+  selectedNum = null;
+  panoramicaB64 = '';
+  generaCodice();
+  setDataOggi();
+  renderMappa();
+  renderDenteList();
+  updateStats();
+  setDefaultTexts();
+  document.getElementById('editor-body').innerHTML = `<div class="empty-state"><div class="empty-state-icon">👆</div><div class="empty-state-text">Clicca un dente sulla mappa<br>o nella lista a sinistra per modificarlo</div></div>`;
+  document.getElementById('editor-title').textContent = 'Seleziona un dente';
+  document.getElementById('upload-preview').style.display = 'none';
+  document.querySelector('.upload-icon').style.display = '';
+  document.querySelector('.upload-text').style.display = '';
+}
+
+// ─── GENERA SCHEDA ───
+function generaScheda() {
+  // ── Debug: snapshot fedele di ciò che va nella scheda ──
+  console.group('[generaScheda] Snapshot denti al momento della generazione');
+  denti.forEach(d => {
+    console.log(
+      `%c${d.num} ${d.nome}` +
+      `  rischio=${d.rischio}  implant=${d.implant}  presente=${d.presente}` +
+      `\n  note: "${d.note}"` +
+      `\n  consiglio: "${(d.consiglio || '').slice(0, 100)}${(d.consiglio||'').length > 100 ? '…' : ''}"`,
+      d.rischio === 'high' ? 'color:#ff4d6d;font-weight:600'
+        : d.rischio === 'medium' ? 'color:#ffd166;font-weight:600'
+        : 'color:#6b8a74'
+    );
+  });
+  console.groupEnd();
+
+  const dataVisita = document.getElementById('data-visita').value;
+  const dataFormatted = dataVisita ? new Date(dataVisita).toLocaleDateString('it-IT') : new Date().toLocaleDateString('it-IT');
+  const overviewText = document.getElementById('overview-text').value;
+  const puntiForza = document.getElementById('punti-forza').value.split('\n').filter(x => x.trim());
+  const puntiCritici = document.getElementById('punti-critici').value.split('\n').filter(x => x.trim());
+  const filosofiaText = document.getElementById('filosofia-text').value;
+
+  const nGreen = denti.filter(d => d.rischio === 'low').length;
+  const nYellow = denti.filter(d => d.rischio === 'medium').length;
+  const nRed = denti.filter(d => d.rischio === 'high').length;
+  const nAbsent = denti.filter(d => d.rischio === 'absent').length;
+
+  const imgTag = panoramicaB64
+    ? `<img class="radio-img" src="data:image/jpeg;base64,${panoramicaB64}" alt="Panoramica OPT" />`
+    : `<div style="padding:48px;text-align:center;color:rgba(45,255,122,0.3);font-size:13px;text-transform:uppercase;letter-spacing:0.1em">Panoramica non caricata</div>`;
+
+  const html = buildScheda({ codice, dataFormatted, overviewText, puntiForza, puntiCritici, filosofiaText, nGreen, nYellow, nRed, nAbsent, imgTag, denti, panoramicaB64 });
+
+  const blob = new Blob([html], { type: 'text/html' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${codice}.html`;
+  a.click();
+  URL.revokeObjectURL(url);
+
+  showToast('✓ Scheda generata!');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ─── BUILD HTML OUTPUT ───
+function buildScheda({ codice, dataFormatted, overviewText, puntiForza, puntiCritici, filosofiaText, nGreen, nYellow, nRed, nAbsent, imgTag, denti, panoramicaB64 }) {
+  const dentiJS = JSON.stringify(denti);
+  const imgSrc = panoramicaB64 ? `data:image/jpeg;base64,${panoramicaB64}` : '';
+
+  return `<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Healthy Smile By N — ${codice}</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0f0d;--surface:#111a16;--surface2:#172018;--border:#1e2e24;--green:#2dff7a;--green-dim:#1a9447;--yellow:#ffd166;--red:#ff4d6d;--grey:#4a5568;--text:#e8f0eb;--text-dim:#6b8a74;--text-muted:#3a5542;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(45,255,122,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(45,255,122,0.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;}
+.container{max-width:1100px;margin:0 auto;padding:40px 24px;position:relative;z-index:1;}
+header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:48px;padding-bottom:32px;border-bottom:1px solid var(--border);}
+.brand{display:flex;align-items:center;gap:12px;}
+.brand-dot{width:10px;height:10px;background:var(--green);border-radius:50%;box-shadow:0 0 12px var(--green);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+.brand-name{font-family:'Playfair Display',serif;font-size:18px;color:var(--text);letter-spacing:-0.02em;}
+.patient-info{text-align:right;}
+.patient-name{font-family:'Playfair Display',serif;font-size:28px;font-weight:700;color:var(--text);letter-spacing:-0.03em;}
+.patient-meta{font-size:13px;color:var(--text-dim);margin-top:4px;font-family:'DM Mono',monospace;}
+.score-section{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:16px;margin-bottom:40px;}
+.score-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;position:relative;overflow:hidden;}
+.score-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.score-card.good::before{background:var(--green)}.score-card.warning::before{background:var(--yellow)}.score-card.alert::before{background:var(--red)}.score-card.absent::before{background:var(--grey)}
+.score-label{font-size:11px;text-transform:uppercase;letter-spacing:0.12em;color:var(--text-dim);margin-bottom:12px;}
+.score-value{font-family:'Playfair Display',serif;font-size:42px;font-weight:700;line-height:1;}
+.score-card.good .score-value{color:var(--green)}.score-card.warning .score-value{color:var(--yellow)}.score-card.alert .score-value{color:var(--red)}.score-card.absent .score-value{color:var(--grey)}
+.score-sub{font-size:12px;color:var(--text-dim);margin-top:8px;}
+.bocca-overview{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:32px;margin-bottom:24px;}
+.bocca-overview-title{font-family:'Playfair Display',serif;font-size:20px;margin-bottom:14px;color:var(--text);}
+.bocca-overview-text{font-size:15px;color:var(--text-dim);line-height:1.7;margin-bottom:24px;}
+.bocca-overview-text strong{color:var(--text);}
+.bocca-punti{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.bocca-punto{border-radius:14px;padding:20px 24px;}
+.bocca-punto.good{background:rgba(45,255,122,0.05);border:1px solid rgba(45,255,122,0.15);}
+.bocca-punto.bad{background:rgba(255,77,109,0.05);border:1px solid rgba(255,77,109,0.15);}
+.bocca-punto-label{font-size:11px;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:12px;font-weight:600;}
+.bocca-punto.good .bocca-punto-label{color:var(--green)}.bocca-punto.bad .bocca-punto-label{color:var(--red)}
+.bocca-punto ul{list-style:none;display:flex;flex-direction:column;gap:8px;}
+.bocca-punto ul li{font-size:13px;color:var(--text-dim);line-height:1.5;padding-left:12px;position:relative;}
+.bocca-punto ul li::before{content:'–';position:absolute;left:0;color:var(--text-muted);}
+.filosofia-banner{background:linear-gradient(135deg,rgba(45,255,122,0.06),rgba(45,255,122,0.02));border:1px solid rgba(45,255,122,0.15);border-radius:20px;padding:32px;margin-bottom:40px;}
+.filosofia-title{font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:var(--text);margin-bottom:12px;letter-spacing:-0.02em;}
+.filosofia-text{font-size:15px;color:var(--text-dim);line-height:1.7;margin-bottom:28px;}
+.filosofia-text strong{color:var(--text);}
+.filosofia-grid{display:flex;flex-direction:column;gap:14px;}
+.filosofia-item{display:flex;align-items:flex-start;gap:16px;padding:16px 20px;border-radius:14px;}
+.filosofia-item.green{background:rgba(45,255,122,0.05);border:1px solid rgba(45,255,122,0.15);}
+.filosofia-item.yellow{background:rgba(255,209,102,0.05);border:1px solid rgba(255,209,102,0.15);}
+.filosofia-item.red{background:rgba(255,77,109,0.05);border:1px solid rgba(255,77,109,0.15);}
+.filosofia-dot{width:12px;height:12px;border-radius:50%;margin-top:4px;flex-shrink:0;}
+.green-dot{background:var(--green);box-shadow:0 0 8px rgba(45,255,122,0.5);}
+.yellow-dot{background:var(--yellow);box-shadow:0 0 8px rgba(255,209,102,0.5);}
+.red-dot{background:var(--red);box-shadow:0 0 8px rgba(255,77,109,0.5);}
+.filosofia-label{font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.08em;}
+.filosofia-sub{font-size:13px;color:var(--text-dim);line-height:1.5;}
+.filosofia-sub strong{color:var(--text);}
+.arcata-section{margin-bottom:40px;}
+.section-title{font-family:'Playfair Display',serif;font-size:20px;margin-bottom:24px;color:var(--text);display:flex;align-items:center;gap:12px;}
+.section-title::after{content:'';flex:1;height:1px;background:var(--border);}
+.arcata{display:-webkit-flex;display:flex;-webkit-justify-content:center;justify-content:center;gap:6px;margin-bottom:8px;-webkit-flex-wrap:wrap;flex-wrap:wrap;min-height:56px;}
+.dente-btn{width:44px;height:52px;border-radius:8px;border:1.5px solid var(--border);background:var(--surface);cursor:pointer;display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;gap:3px;transition:all 0.2s;position:relative;-webkit-box-sizing:border-box;box-sizing:border-box;-webkit-flex-shrink:0;flex-shrink:0;}
+.dente-btn:hover{transform:translateY(-3px);}
+.dente-btn.low{border-color:rgba(45,255,122,0.4)}.dente-btn.low:hover{border-color:var(--green);box-shadow:0 0 16px rgba(45,255,122,0.2)}
+.dente-btn.medium{border-color:rgba(255,209,102,0.4)}.dente-btn.medium:hover{border-color:var(--yellow);box-shadow:0 0 16px rgba(255,209,102,0.2)}
+.dente-btn.high{border-color:rgba(255,77,109,0.4)}.dente-btn.high:hover{border-color:var(--red);box-shadow:0 0 16px rgba(255,77,109,0.2)}
+.dente-btn.absent{border-color:rgba(74,85,104,0.3);opacity:0.45}.dente-btn.absent:hover{border-color:var(--grey);opacity:0.7}
+
+.dente-btn.selected{transform:translateY(-4px);z-index:10;}
+.dente-btn.selected.low{background:rgba(45,255,122,0.1);border-color:var(--green);box-shadow:0 0 20px rgba(45,255,122,0.3)}
+.dente-btn.selected.medium{background:rgba(255,209,102,0.1);border-color:var(--yellow);box-shadow:0 0 20px rgba(255,209,102,0.3)}
+.dente-btn.selected.high{background:rgba(255,77,109,0.1);border-color:var(--red);box-shadow:0 0 20px rgba(255,77,109,0.3)}
+.dente-btn.selected.absent{background:rgba(74,85,104,0.1);border-color:var(--grey);box-shadow:0 0 20px rgba(74,85,104,0.3);opacity:0.7}
+
+.click-hint{text-align:center;margin:0 0 28px;font-size:13px;color:var(--text-dim);display:flex;align-items:center;justify-content:center;gap:8px;animation:hintPulse 2.5s infinite;}
+@keyframes hintPulse{0%,100%{opacity:0.4}50%{opacity:1}}
+.click-hint em{color:var(--green);font-style:normal;font-weight:500;}
+.dente-num{font-family:'DM Mono',monospace;font-size:10px;color:var(--text-dim);}
+.dente-dot{width:8px;height:8px;border-radius:50%;}
+.low .dente-dot{background:var(--green)}.medium .dente-dot{background:var(--yellow)}.high .dente-dot{background:var(--red)}.absent .dente-dot{background:var(--grey)}
+.imp-tag-small{font-size:7px;color:var(--green);font-family:'DM Mono',monospace;opacity:0.8;}
+.arcata-label{text-align:center;font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em;margin:6px 0 16px;}
+.dente-detail{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:32px;margin-bottom:40px;animation:fadeIn 0.3s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.dente-detail-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:28px;}
+.dente-detail-title{font-family:'Playfair Display',serif;font-size:24px;font-weight:700;}
+.rischio-badge{padding:6px 16px;border-radius:100px;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;}
+.rischio-badge.low{background:rgba(45,255,122,0.15);color:var(--green);border:1px solid rgba(45,255,122,0.3)}
+.rischio-badge.medium{background:rgba(255,209,102,0.15);color:var(--yellow);border:1px solid rgba(255,209,102,0.3)}
+.rischio-badge.high{background:rgba(255,77,109,0.15);color:var(--red);border:1px solid rgba(255,77,109,0.3)}
+.rischio-badge.absent{background:rgba(74,85,104,0.15);color:var(--grey);border:1px solid rgba(74,85,104,0.3)}
+
+.dente-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;}
+.detail-item{background:var(--surface2);border-radius:12px;padding:16px 20px;}
+.detail-item-label{font-size:11px;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-dim);margin-bottom:8px;}
+.detail-item-value{font-family:'Playfair Display',serif;font-size:22px;font-weight:600;}
+.detail-item-value.green{color:var(--green)}.detail-item-value.yellow{color:var(--yellow)}.detail-item-value.red{color:var(--red)}
+
+.detail-consiglio{background:linear-gradient(135deg,rgba(45,255,122,0.06),rgba(45,255,122,0.02));border:1px solid rgba(45,255,122,0.2);border-radius:14px;padding:20px 24px;margin-top:16px;}
+.detail-consiglio-label{font-size:11px;text-transform:uppercase;letter-spacing:0.12em;color:var(--green);font-weight:600;margin-bottom:10px;}
+.detail-consiglio-text{font-size:14px;color:var(--text);line-height:1.75;}
+.teeth-table{background:var(--surface);border:1px solid var(--border);border-radius:20px;overflow:hidden;margin-bottom:40px;}
+.teeth-table-header{display:grid;grid-template-columns:80px 1fr 120px 140px 140px 160px;padding:14px 24px;border-bottom:1px solid var(--border);font-size:11px;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);}
+.teeth-table-row{display:grid;grid-template-columns:80px 1fr 120px 140px 140px 160px;padding:16px 24px;border-bottom:1px solid var(--border);align-items:center;cursor:pointer;transition:background 0.15s;}
+.teeth-table-row:last-child{border-bottom:none}.teeth-table-row:hover{background:var(--surface2);}
+.teeth-table-row .dente-num-cell{font-family:'DM Mono',monospace;font-size:14px;color:var(--text-dim);}
+.teeth-table-row .dente-name{font-size:14px;color:var(--text);}
+.rischio-pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:500;}
+.rischio-pill .dot{width:6px;height:6px;border-radius:50%;}
+.rischio-pill.low{color:var(--green)}.rischio-pill.low .dot{background:var(--green)}
+.rischio-pill.medium{color:var(--yellow)}.rischio-pill.medium .dot{background:var(--yellow)}
+.rischio-pill.high{color:var(--red)}.rischio-pill.high .dot{background:var(--red)}
+.rischio-pill.absent{color:var(--grey)}.rischio-pill.absent .dot{background:var(--grey)}
+.table-consiglio-btn{font-size:12px;color:var(--green);cursor:pointer;font-weight:500;white-space:nowrap;opacity:0.7;transition:opacity 0.2s;}
+.teeth-table-row:hover .table-consiglio-btn{opacity:1;}
+.legend{display:flex;gap:24px;justify-content:center;margin:16px 0 32px;}
+.legend-item{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-dim);}
+.legend-dot{width:8px;height:8px;border-radius:50%;}
+.radio-grid{margin-bottom:40px;}
+.radio-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;cursor:pointer;transition:all 0.2s;position:relative;}
+.radio-card:hover{border-color:var(--green);box-shadow:0 0 20px rgba(45,255,122,0.15);transform:translateY(-2px);}
+.radio-img{width:100%;display:block;filter:brightness(0.9) contrast(1.1);}
+.radio-zoom-hint{position:absolute;top:10px;right:10px;background:rgba(0,0,0,0.6);border:1px solid var(--border);border-radius:6px;padding:4px 8px;font-size:11px;color:var(--text-dim);opacity:0;transition:opacity 0.2s;}
+.radio-card:hover .radio-zoom-hint{opacity:1;}
+.radio-info{padding:12px 16px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+.radio-label{font-size:12px;font-weight:600;color:var(--text);}
+.radio-date{font-family:'DM Mono',monospace;font-size:11px;color:var(--text-muted);}
+.lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:1000;align-items:center;justify-content:center;flex-direction:column;gap:16px;cursor:zoom-out;}
+.lightbox.open{display:flex;}
+.lightbox-img-wrap{max-width:95vw;max-height:85vh;border-radius:12px;overflow:hidden;border:1px solid var(--border);}
+.lightbox-img-wrap img{width:100%;height:100%;object-fit:contain;display:block;}
+.lightbox-label{color:var(--text-dim);font-size:14px;font-family:'DM Mono',monospace;}
+.lightbox-close{position:fixed;top:24px;right:24px;background:var(--surface);border:1px solid var(--border);color:var(--text);width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;transition:all 0.2s;}
+.lightbox-close:hover{border-color:var(--green);color:var(--green);}
+.wa-btn{display:inline-flex;align-items:center;gap:10px;background:#25D366;color:#fff;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;padding:14px 24px;border-radius:100px;text-decoration:none;box-shadow:0 4px 20px rgba(37,211,102,0.35);transition:all 0.2s;cursor:pointer;border:none;}
+.wa-btn:hover{transform:translateY(-2px);box-shadow:0 6px 28px rgba(37,211,102,0.5);}
+.wa-banner{background:linear-gradient(135deg,rgba(37,211,102,0.08),rgba(37,211,102,0.02));border:1px solid rgba(37,211,102,0.2);border-radius:20px;padding:28px 32px;margin-bottom:40px;display:flex;align-items:center;justify-content:space-between;gap:24px;}
+.wa-banner-text{font-size:15px;color:var(--text-dim);line-height:1.6;}
+.wa-banner-text strong{color:var(--text);}
+.wa-inline{text-align:center;margin:24px 0 0;}
+.footer-note{text-align:center;padding:32px;border-top:1px solid var(--border);font-size:13px;color:var(--text-muted);line-height:1.8;}
+.footer-note strong{color:var(--green);font-weight:500;}
+@media(max-width:768px){.score-section{grid-template-columns:1fr}.bocca-punti{grid-template-columns:1fr}.wa-banner{flex-direction:column}.teeth-table-header,.teeth-table-row{grid-template-columns:60px 1fr 100px}.teeth-table-header>*:nth-child(4),.teeth-table-header>*:nth-child(5),.teeth-table-row>*:nth-child(4),.teeth-table-row>*:nth-child(5){display:none}.dente-detail-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="container">
+
+<header>
+  <div class="brand">
+    <div class="brand-dot"></div>
+    <div class="brand-name">Healthy Smile By N</div>
+  </div>
+  <div class="patient-info">
+    <div class="patient-name">Codice ${codice}</div>
+    <div class="patient-meta">Visita: ${dataFormatted} &nbsp;·&nbsp; Aggiornamento: ${dataFormatted}</div>
+  </div>
+</header>
+
+<div class="bocca-overview">
+  <div class="bocca-overview-title">Quadro clinico generale</div>
+  <div class="bocca-overview-text">${overviewText}</div>
+  <div class="bocca-punti">
+    <div class="bocca-punto good">
+      <div class="bocca-punto-label">✓ Punti di forza</div>
+      <ul>${puntiForza.map(p => `<li>${p}</li>`).join('')}</ul>
+    </div>
+    <div class="bocca-punto bad">
+      <div class="bocca-punto-label">⚠ Aree da trattare</div>
+      <ul>${puntiCritici.map(p => `<li>${p}</li>`).join('')}</ul>
+    </div>
+  </div>
+</div>
+
+<div class="score-section">
+  <div class="score-card good">
+    <div class="score-label">Posizioni stabili</div>
+    <div class="score-value">${nGreen}</div>
+    <div class="score-sub">Nessun intervento previsto</div>
+  </div>
+  <div class="score-card warning">
+    <div class="score-label">Sotto osservazione</div>
+    <div class="score-value">${nYellow}</div>
+    <div class="score-sub">Monitoraggio programmato</div>
+  </div>
+  <div class="score-card alert">
+    <div class="score-label">Intervento consigliato</div>
+    <div class="score-value">${nRed}</div>
+    <div class="score-sub">Agire entro 30–90 giorni</div>
+  </div>
+  <div class="score-card absent">
+    <div class="score-label">Assenti</div>
+    <div class="score-value">${nAbsent}</div>
+    <div class="score-sub">Elementi non presenti</div>
+  </div>
+</div>
+
+<div class="filosofia-banner">
+  <div class="filosofia-title">La nostra filosofia</div>
+  <div class="filosofia-text">${filosofiaText}</div>
+  <div class="filosofia-grid">
+    <div class="filosofia-item green">
+      <div class="filosofia-dot green-dot"></div>
+      <div>
+        <div class="filosofia-label">Denti verdi — basso rischio</div>
+        <div class="filosofia-sub">Nessun intervento necessario — <strong>garanzia inclusa</strong></div>
+      </div>
+    </div>
+    <div class="filosofia-item yellow">
+      <div class="filosofia-dot yellow-dot"></div>
+      <div>
+        <div class="filosofia-label">Denti gialli — sotto osservazione</div>
+        <div class="filosofia-sub">Monitoriamo l'evoluzione — il preventivo è in cartella</div>
+      </div>
+    </div>
+    <div class="filosofia-item red">
+      <div class="filosofia-dot red-dot"></div>
+      <div>
+        <div class="filosofia-label">Denti rossi — intervento consigliato</div>
+        <div class="filosofia-sub">Intervento urgente — vedi preventivo in cartella</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="wa-banner">
+  <div class="wa-banner-text">
+    <strong>Hai domande sulla tua scheda?</strong><br>
+    Scrivici direttamente su WhatsApp — ti rispondiamo entro poche ore e prenotiamo la visita insieme.
+  </div>
+  <a href="https://wa.me/393461824965?text=Ciao%2C+ho+visto+la+scheda+Healthy+Smile+e+vorrei+prenotare" target="_blank" class="wa-btn">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.115.549 4.099 1.504 5.829L.057 23.428a.75.75 0 0 0 .921.921l5.599-1.447A11.944 11.944 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.75a9.705 9.705 0 0 1-4.953-1.355l-.355-.211-3.674.949.969-3.558-.232-.368A9.705 9.705 0 0 1 2.25 12C2.25 6.615 6.615 2.25 12 2.25S21.75 6.615 21.75 12 17.385 21.75 12 21.75z"/></svg>
+    Scrivici su WhatsApp
+  </a>
+</div>
+
+<div class="arcata-section">
+  <div class="section-title">La tua bocca</div>
+  <div class="arcata" id="arcata-sup"></div>
+  <div class="arcata-label">Arcata superiore</div>
+  <div class="arcata-label">Arcata inferiore</div>
+  <div class="arcata" id="arcata-inf"></div>
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div> Basso rischio</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--yellow)"></div> Sotto osservazione</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div> Intervento consigliato</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--grey)"></div> Assente</div>
+  </div>
+</div>
+
+<div class="click-hint">
+  <span style="color:var(--green);font-size:18px">👆</span>
+  <span>Clicca su ogni dente — trovi <em>i nostri consigli personalizzati</em></span>
+</div>
+
+<div id="dente-detail" style="display:none" class="dente-detail"></div>
+
+<div class="section-title">I nostri consigli per te</div>
+<div class="teeth-table">
+  <div class="teeth-table-header">
+    <span>N°</span><span>Dente</span><span>Rischio</span>
+    <span>Prezzo mercato</span><span>Con convenzione</span>
+  </div>
+  <div id="teeth-table-body"></div>
+</div>
+
+${imgSrc ? `
+<div class="section-title" style="margin-top:40px">Panoramica OPT</div>
+<div class="radio-grid">
+  <div class="radio-card" onclick="openLightbox()">
+    <img class="radio-img" src="${imgSrc}" alt="Panoramica OPT" />
+    <div class="radio-zoom-hint">🔍 Ingrandisci</div>
+    <div class="radio-info">
+      <span class="radio-label">Panoramica OPT — Arcata completa</span>
+      <span class="radio-date">${dataFormatted}</span>
+    </div>
+  </div>
+</div>
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <div class="lightbox-close" onclick="closeLightbox()">✕</div>
+  <div class="lightbox-img-wrap"><img src="${imgSrc}" alt="Panoramica OPT" /></div>
+  <div class="lightbox-label">Panoramica OPT — ${dataFormatted}</div>
+</div>
+` : ''}
+
+<div class="footer-note">
+  <strong>Healthy Smile By N</strong> — Scheda clinica riservata · Codice paziente: ${codice}<br>
+  Documento generato il ${dataFormatted}. I prezzi indicati sono orientativi e soggetti a conferma in sede di visita.
+</div>
+</div>
+
+<script>
+const denti = ${dentiJS};
+let selectedDente = null;
+
+function renderArcata(arcata) {
+  const container = document.getElementById('arcata-' + arcata);
+  const filtered = denti.filter(d => d.arcata === arcata).sort((a,b) => a.pos - b.pos);
+  filtered.forEach(d => {
+    const btn = document.createElement('div');
+    btn.className = 'dente-btn ' + d.rischio;
+    btn.dataset.num = d.num;
+    btn.style.margin = '3px'; // Safari gap fallback
+    btn.onclick = () => showDetail(d, btn);
+    btn.innerHTML = '<div class="dente-num">' + d.num + '</div><div class="dente-dot"></div>' + (d.implant ? '<div class="imp-tag-small">IMP</div>' : '');
+    btn.title = d.nome;
+    container.appendChild(btn);
+  });
+}
+
+function showDetail(dente, btn) {
+  document.querySelectorAll('.dente-btn').forEach(b => b.classList.remove('selected'));
+  if (selectedDente === dente.num) {
+    selectedDente = null;
+    document.getElementById('dente-detail').style.display = 'none';
+    return;
+  }
+  selectedDente = dente.num;
+  btn.classList.add('selected');
+  const detail = document.getElementById('dente-detail');
+  const rischioLabel = {low:'Basso rischio',medium:'Sotto osservazione',high:'Intervento consigliato',absent:'Assente'}[dente.rischio] || 'Basso rischio';
+  const colorClass   = {low:'green',medium:'yellow',high:'red',absent:'grey'}[dente.rischio] || 'green';
+  const statoHTML    = dente.rischio === 'low'
+    ? '<div class="dente-detail-grid"><div class="detail-item"><div class="detail-item-label">Stato</div><div class="detail-item-value green" style="font-size:16px">' + (dente.implant ? '✓ Impianto stabile' : '✓ Nessun intervento') + '</div></div><div class="detail-item"><div class="detail-item-label">Garanzia</div><div class="detail-item-value green">✓ Coperto da garanzia</div></div></div>'
+    : dente.rischio === 'absent'
+    ? '<div class="dente-detail-grid"><div class="detail-item"><div class="detail-item-label">Stato</div><div class="detail-item-value grey" style="font-size:16px">Elemento assente</div></div></div>'
+    : '<div class="dente-detail-grid"><div class="detail-item"><div class="detail-item-label">Stato</div><div class="detail-item-value ' + colorClass + '" style="font-size:16px">' + rischioLabel + '</div></div><div class="detail-item"><div class="detail-item-label">Preventivo</div><div class="detail-item-value ' + colorClass + '">Vedi preventivo in cartella</div></div></div>';
+  detail.style.display = 'block';
+  detail.innerHTML = '<div class="dente-detail-header"><div><div style="font-size:12px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Dente ' + dente.num + (dente.implant ? ' — IMPIANTO' : '') + '</div><div class="dente-detail-title">' + dente.nome + '</div></div><div class="rischio-badge ' + dente.rischio + '">' + rischioLabel + '</div></div>' + statoHTML + (dente.prestazioni ? '<div style="background:rgba(255,209,102,0.05);border:1px solid rgba(255,209,102,0.15);border-radius:12px;padding:16px 20px;margin-bottom:16px"><div style="font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--yellow);font-weight:600;margin-bottom:8px">🦷 Prestazioni</div><div style="font-size:14px;color:var(--text-dim);line-height:1.7">' + dente.prestazioni + '</div></div>' : '') + '<div class="detail-consiglio"><div class="detail-consiglio-label">💬 Il nostro consiglio per te</div><div class="detail-consiglio-text">' + dente.consiglio + '</div>' + (dente.rischio !== 'low' && dente.rischio !== 'absent' ? '<div class="wa-inline"><a href="https://wa.me/393461824965?text=Ciao%2C+vorrei+prenotare+per+il+dente+' + dente.num + '" target="_blank" class="wa-btn" style="margin-top:16px"><svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.115.549 4.099 1.504 5.829L.057 23.428a.75.75 0 0 0 .921.921l5.599-1.447A11.944 11.944 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.75a9.705 9.705 0 0 1-4.953-1.355l-.355-.211-3.674.949.969-3.558-.232-.368A9.705 9.705 0 0 1 2.25 12C2.25 6.615 6.615 2.25 12 2.25S21.75 6.615 21.75 12 17.385 21.75 12 21.75z"/></svg> Prenota su WhatsApp</a></div>' : '') + '</div>';
+  detail.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function renderTable() {
+  const body = document.getElementById('teeth-table-body');
+  const order = {high:0,medium:1,low:2,absent:3};
+  [...denti].sort((a,b) => (order[a.rischio]??2) - (order[b.rischio]??2)).forEach(d => {
+    const row = document.createElement('div');
+    row.className = 'teeth-table-row';
+    const rischioLabel = {high:'Intervento',medium:'Osservazione',low:'Basso',absent:'Assente'}[d.rischio] || 'Basso';
+    const pc = {high:'red',medium:'yellow',low:'green',absent:'grey'}[d.rischio] || 'green';
+    row.innerHTML = '<span class="dente-num-cell">' + d.num + '</span><span class="dente-name">' + d.nome + (d.implant ? ' <span style="font-size:10px;color:var(--green);font-family:DM Mono">[IMP]</span>' : '') + '</span><span><div class="rischio-pill ' + d.rischio + '"><div class="dot"></div>' + rischioLabel + '</div></span><span></span><span style="font-size:13px;font-weight:500;color:' + (d.rischio === 'low' ? 'var(--green)' : d.rischio === 'absent' ? 'var(--text-muted)' : 'var(--yellow)') + '">' + (d.rischio === 'low' ? '✓ Garanzia' : d.rischio === 'absent' ? '—' : 'Vedi preventivo') + '</span><span class="table-consiglio-btn">💬 Dettaglio</span>';
+    row.onclick = () => { const b = document.querySelector('[data-num="'+d.num+'"]'); showDetail(d, b || document.createElement('div')); document.getElementById('dente-detail').scrollIntoView({behavior:'smooth',block:'center'}); };
+    body.appendChild(row);
+  });
+}
+
+function openLightbox() { document.getElementById('lightbox').classList.add('open'); document.body.style.overflow='hidden'; }
+function closeLightbox() { document.getElementById('lightbox').classList.remove('open'); document.body.style.overflow=''; }
+document.addEventListener('keydown', e => { if(e.key==='Escape') closeLightbox(); });
+
+renderArcata('sup');
+renderArcata('inf');
+renderTable();
+<\/script>
+</body>
+</html>`;
+}
+
+// ═══════════════════════════════════════════════════════════
+// FIREBASE — connessione per lettura dati cartella clinica
+// ═══════════════════════════════════════════════════════════
+const _fbConfig = {
+  apiKey: "AIzaSyB9BXoJQLCx_Y9pwoXmxtVj1CLULohaUsw",
+  authDomain: "healthysmile-d2b52.firebaseapp.com",
+  projectId: "healthysmile-d2b52",
+  storageBucket: "healthysmile-d2b52.firebasestorage.app",
+  messagingSenderId: "984573798131",
+  appId: "1:984573798131:web:e96e695fb86b90a2413986"
+};
+
+let _fbApp = null;
+let _fbDb  = null;
+
+function getFirestoreDb() {
+  if (_fbDb) return _fbDb;
+  if (!firebase.apps.length) {
+    _fbApp = firebase.initializeApp(_fbConfig);
+  } else {
+    _fbApp = firebase.app();
+  }
+  _fbDb = firebase.firestore();
+  return _fbDb;
+}
+
+// ═══════════════════════════════════════════════════════════
+// COMPILA SCHEDA CON AI — Fase 1: lettura dati + JSON pulito
+// ═══════════════════════════════════════════════════════════
+
+async function compilaSchedaConAI() {
+  const btn = document.getElementById('btn-ai');
+  const debugBox = document.getElementById('ai-debug-box');
+  const debugPre = document.getElementById('ai-debug-pre');
+  const debugStatus = document.getElementById('ai-debug-status');
+
+  // 1. Leggi patient ID dall'URL (?id=pt_xxx)
+  const params = new URLSearchParams(window.location.search);
+  const patientId = params.get('id');
+
+  if (!patientId) {
+    showToast('⚠ Nessun ?id= nell\'URL — apri l\'editor da cartella clinica con ?id=pt_xxx');
+    debugBox.style.display = 'block';
+    debugPre.textContent = 'Errore: parametro ?id= non trovato nell\'URL.\nAggiungi ?id=<id_paziente> all\'URL per usare questa funzione.';
+    debugStatus.textContent = '⚠ ID paziente mancante';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = '⏳ Lettura Firebase…';
+  debugBox.style.display = 'block';
+  debugPre.textContent = 'Connessione a Firebase…';
+  debugStatus.textContent = '';
+
+  try {
+    const db = getFirestoreDb();
+    const STUDIO_ID = 'healthy_smile_torino';
+
+    // 2. Recupera documento paziente da studios/{STUDIO_ID}/pazienti (con fallback globale)
+    let docSnap = await db.collection('studios').doc(STUDIO_ID).collection('pazienti').doc(patientId).get();
+    if (!docSnap.exists) {
+      docSnap = await db.collection('pazienti').doc(patientId).get();
+    }
+    if (!docSnap.exists) {
+      throw new Error(`Paziente "${patientId}" non trovato in Firestore`);
+    }
+    const p = docSnap.data();
+
+    // 3. Parsing sicuro dei campi JSON stringificati
+    const safeP = (val, def) => {
+      if (!val) return def;
+      if (typeof val === 'object') return val;
+      try { return JSON.parse(val); } catch { return def; }
+    };
+
+    const odontogramma   = safeP(p.odontogramma,   {});
+    const piano          = safeP(p.piano,           {});
+    const arcatePiano    = safeP(p.arcate_piano,    {});
+    const quadrantePiano = safeP(p.quad_piano,      {});
+    const arcateAttuale  = safeP(p.arcate,          {});
+    const diario         = safeP(p.diario,          []);
+    const preventivoRows = safeP(p.preventivi,      []);
+
+    // 4. Struttura unificata per dente — fonte unica di verità per il Worker AI
+    const dentiDettaglio = _buildDentiDettaglio(odontogramma, piano);
+
+    // 5. Costruisci patientClinicalSummary
+    const patientClinicalSummary = {
+      meta: {
+        patientId:    patientId,
+        codice:       p.codice       || '',
+        nome:         p.nome         || '',
+        cognome:      p.cognome      || '',
+        anno:         p.anno         || '',
+        dob:          p.dob          || '',
+        rischio:      p.rischio      || '',
+        prima_visita: p.prima_visita || '',
+        operatore:    p.operatore    || '',
+        generato:     new Date().toISOString(),
+      },
+
+      // Struttura chiara per il Worker: attuale separato da da_fare
+      // Il Worker deve usare SOLO questi dati per generare i testi.
+      denti_dettaglio: Object.values(dentiDettaglio)
+        .filter(det =>
+          det.situazione_attuale.length > 0 ||
+          det.prestazioni_da_fare.length > 0 ||
+          det.prestazioni_in_corso.length > 0 ||
+          det.prestazioni_eseguite.length > 0
+        )
+        .map(det => ({
+          num:                  det.num,
+          situazione_attuale:   det.situazione_attuale,
+          prestazioni_da_fare:  det.prestazioni_da_fare.map(p => ({
+            nome: p.nome, prezzo: p.prezzo
+          })),
+          prestazioni_in_corso: det.prestazioni_in_corso.map(p => ({ nome: p.nome })),
+          prestazioni_eseguite: det.prestazioni_eseguite.map(p => ({ nome: p.nome })),
+        })),
+
+      // Arcate e quadranti (trattamenti non per singolo dente)
+      arcate_piano:    arcatePiano,
+      quadranti_piano: quadrantePiano,
+
+      preventivo: {
+        righe:       preventivoRows,
+        totale:      preventivoRows.reduce((s, r) => s + (r.prezzo || 0), 0),
+        validita_gg: p.prev_validita || 30,
+      },
+
+      diario_clinico: diario.slice(-20),
+
+      note_generali: p.note_generali || '',
+    };
+
+    // 5. Log in console
+    console.log('=== patientClinicalSummary ===');
+    console.log(JSON.stringify(patientClinicalSummary, null, 2));
+
+    // 6. Mostra nel debug box
+    debugPre.textContent = JSON.stringify(patientClinicalSummary, null, 2);
+    debugStatus.textContent =
+      `✓ Dati caricati — ${Object.keys(odontogramma).length} denti in odontogramma · ` +
+      `${Object.keys(piano).length} con piano · ` +
+      `${preventivoRows.length} righe preventivo · ` +
+      `${diario.length} note diario`;
+
+    // 7. Aggiorna editor con i dati reali (mappa, lista, testi)
+    _applicaDatiClinici({ codice: p.codice, attuale: odontogramma, piano: piano });
+
+    // 8. Chiama il Worker AI
+    btn.textContent = '⏳ AI in elaborazione…';
+    await generateAITexts(patientClinicalSummary);
+
+  } catch (err) {
+    console.error('compilaSchedaConAI error:', err);
+    debugPre.textContent = 'Errore: ' + err.message;
+    debugStatus.textContent = '✗ ' + err.message;
+    showToast('✗ Errore lettura Firebase');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg> Compila scheda con AI`;
+  }
+}
+
+// Struttura unificata per dente: separa nettamente attuale da piano.
+// Fonte unica di verità per generaConsiglioClinico, _applicaDatiClinici
+// e patientClinicalSummary inviato al Worker AI.
+function _buildDentiDettaglio(odontogramma, piano) {
+  const result = {};
+  const allNums = new Set([
+    ...Object.keys(odontogramma).map(Number),
+    ...Object.keys(piano).map(Number)
+  ].filter(n => !isNaN(n)));
+
+  allNums.forEach(num => {
+    const attualeRaw = odontogramma[num] || odontogramma[String(num)] || [];
+    const attArr = Array.isArray(attualeRaw) ? attualeRaw : [attualeRaw];
+    const pianoItems = piano[num] || piano[String(num)] || [];
+
+    const mapItem = it => ({
+      nome:   labelTR(it.tid) || it.tid,
+      tid:    it.tid,
+      prezzo: prezzoTR(it.tid),
+      stato:  it.stato || 'dafare'
+    });
+
+    result[num] = {
+      num,
+      situazione_attuale:    attArr.filter(t => t !== 'sano').map(t => labelTR(t)).filter(Boolean),
+      prestazioni_da_fare:   pianoItems.filter(x => x.stato === 'dafare').map(mapItem),
+      prestazioni_in_corso:  pianoItems.filter(x => x.stato === 'incorso').map(mapItem),
+      prestazioni_eseguite:  pianoItems.filter(x => x.stato === 'eseguito').map(mapItem),
+      // raw usato internamente da generaConsiglioClinico
+      _attArr: attArr,
+    };
+  });
+  return result;
+}
+
+// Costruisce un riepilogo leggibile del piano per il prompt AI
+function _buildPianoRiepilogo(piano, arcatePiano, quadrantePiano) {
+  const righe = [];
+  Object.entries(piano).forEach(([num, items]) => {
+    if (!items || !items.length) return;
+    items.forEach(it => {
+      righe.push({
+        dente:       parseInt(num),
+        trattamento: labelTR(it.tid) || it.tid,
+        stato:       it.stato || 'dafare',
+        prezzo:      prezzoTR(it.tid),
+      });
+    });
+  });
+  Object.entries(arcatePiano).forEach(([arcata, items]) => {
+    if (!items || !items.length) return;
+    items.forEach(it => {
+      righe.push({
+        dente:       arcata,
+        trattamento: labelTR(it.tid) || it.tid,
+        stato:       it.stato || 'dafare',
+        prezzo:      prezzoTR(it.tid),
+      });
+    });
+  });
+  Object.entries(quadrantePiano).forEach(([quad, items]) => {
+    if (!items || !items.length) return;
+    items.forEach(it => {
+      righe.push({
+        dente:       quad,
+        trattamento: labelTR(it.tid) || it.tid,
+        stato:       it.stato || 'dafare',
+        prezzo:      prezzoTR(it.tid),
+      });
+    });
+  });
+  return righe;
+}
+
+// ═══════════════════════════════════════════════════════════
+// WORKER AI — POST → Cloudflare Worker → Claude API
+// ═══════════════════════════════════════════════════════════
+const WORKER_URL = 'https://cartelladigitalepaziente.nicolapalmia.workers.dev';
+
+async function generateAITexts(patientClinicalSummary) {
+  const debugStatus = document.getElementById('ai-debug-status');
+
+  let res;
+  try {
+    res = await fetch(WORKER_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ patientClinicalSummary })
+    });
+  } catch (netErr) {
+    const msg = 'Worker non raggiungibile: ' + netErr.message;
+    debugStatus.textContent += ' · ✗ ' + msg;
+    showToast('✗ ' + msg);
+    throw netErr;
+  }
+
+  let ai;
+  try {
+    ai = await res.json();
+  } catch {
+    const msg = `Worker HTTP ${res.status} — risposta non JSON valida`;
+    debugStatus.textContent += ' · ✗ ' + msg;
+    showToast('✗ ' + msg);
+    throw new Error(msg);
+  }
+
+  if (!res.ok) {
+    const msg = `Worker HTTP ${res.status}: ${ai.error || JSON.stringify(ai).slice(0, 120)}`;
+    debugStatus.textContent += ' · ✗ ' + msg;
+    showToast('✗ ' + msg);
+    throw new Error(msg);
+  }
+
+  // ── Popola campi testo ──
+  if (ai.overview_text)
+    document.getElementById('overview-text').value  = ai.overview_text;
+  if (ai.filosofia_text)
+    document.getElementById('filosofia-text').value = ai.filosofia_text;
+  if (ai.wa_text)
+    document.getElementById('wa-text').value        = ai.wa_text;
+  if (ai.punti_forza) {
+    document.getElementById('punti-forza').value =
+      Array.isArray(ai.punti_forza) ? ai.punti_forza.join('\n') : ai.punti_forza;
+  }
+  if (ai.punti_critici) {
+    document.getElementById('punti-critici').value =
+      Array.isArray(ai.punti_critici) ? ai.punti_critici.join('\n') : ai.punti_critici;
+  }
+
+  // ── Aggiorna denti (solo testi — il rischio AI non può abbassare quello clinico) ──
+  if (ai.denti && typeof ai.denti === 'object') {
+    const RISCHIO_ORD = { 'low': 0, 'medium': 1, 'high': 2, 'absent': 3 };
+    Object.entries(ai.denti).forEach(([numStr, info]) => {
+      if (!info) return;
+      const n = parseInt(numStr);
+      const d = denti.find(x => x.num === n);
+      if (!d) return;
+      if (info.consiglio !== undefined) d.consiglio = info.consiglio;
+      if (info.note      !== undefined) d.note      = info.note;
+      // Applica rischio AI solo se non abbassa quello già calcolato dai dati clinici
+      if (info.rischio !== undefined &&
+          ['low','medium','high','absent'].includes(info.rischio)) {
+        if ((RISCHIO_ORD[info.rischio] || 0) >= (RISCHIO_ORD[d.rischio] || 0)) {
+          d.rischio = info.rischio;
+        }
+        if (info.rischio === 'absent') d.presente = false;
+      }
+    });
+    renderMappa();
+    renderDenteList();
+    updateStats();
+  }
+
+  debugStatus.textContent += ' · ✦ AI completato';
+  showToast('✦ Testi AI compilati!');
+  switchTab('testi');
+}
+
+init();
+</script>
+</body>
+</html>
