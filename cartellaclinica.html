@@ -3348,14 +3348,25 @@ function _apriModalNuovaPrestazione(rowKey, label, tipo) {
 // AI — Verifica clinica dipendenze (clinicalDependencyCheck)
 // ════════════════════════════════════════════════════════════
 const AI_CLINICAL_RULES = [
+  // Corona definitiva nel piano → manca il provvisorio
   {
-    id: 'corona_provvisorio',
-    triggerKw:  ['corona', 'crown', 'protesi fissa'],
-    excludeTrigger: ['provvisorio', 'temporaneo'],
-    missingKw:  ['provvisorio', 'temporaneo', 'provisional'],
-    label:  'Provvisorio',
-    idListino: 'provvisorio',
-    motivo: 'La corona definitiva richiede solitamente un provvisorio durante la fase di preparazione'
+    id: 'corona_definitiva_manca_provvisorio',
+    triggerKw:    ['corona definitiva', 'corona_definitiva'],
+    excludeTrigger: [],
+    missingKw:    ['provvisorio', 'temporaneo', 'provisional'],
+    label:        'Provvisorio',
+    idListino:    'provvisorio',
+    motivo:       'La corona definitiva richiede un provvisorio durante la fase di preparazione'
+  },
+  // Provvisorio (o perno + provvisorio) nel piano → manca la corona definitiva
+  {
+    id: 'provvisorio_manca_definitiva',
+    triggerKw:    ['provvisorio', 'temporaneo', 'provisional'],
+    excludeTrigger: [],
+    missingKw:    ['corona definitiva', 'corona_definitiva'],
+    label:        'Corona definitiva',
+    idListino:    'corona_definitiva',
+    motivo:       'Il provvisorio è già pianificato — occorre completare con la corona definitiva'
   },
   {
     id: 'endo_ricostruzione',
@@ -3399,7 +3410,12 @@ function clinicalDependencyCheck(data, workerSuggerimenti) {
   })).filter(s => s.label);
 
   // 2. Regole hardcoded locali come fallback/integrazione
-  const seenKeys = new Set(suggestions.map(s => `${s.num}__${s.idListino}`));
+  // Dedup per id_listino E per label normalizzata (evita duplicati anche quando idListino differisce)
+  const normLabel = l => l.toLowerCase().replace(/\s+/g, ' ').trim();
+  const seenKeys = new Set([
+    ...suggestions.map(s => `${s.num}__${s.idListino}`),
+    ...suggestions.map(s => `${s.num}__label__${normLabel(s.label)}`)
+  ]);
   Object.entries(denti).forEach(([num, d]) => {
     const terapieArr = Array.isArray(d.terapie) && d.terapie.length
       ? d.terapie : [{ stato: d.stato || '', id_listino: d.id_listino || '' }];
@@ -3413,9 +3429,10 @@ function clinicalDependencyCheck(data, workerSuggerimenti) {
                          !_depMatch(allText, rule.excludeTrigger);
       if (!hasTrigger) return;
       if (_depMatch(allText, rule.missingKw)) return;
-      const key = `${num}__${rule.idListino}`;
-      if (seenKeys.has(key)) return; // già suggerito dal Worker
-      seenKeys.add(key);
+      const key  = `${num}__${rule.idListino}`;
+      const keyL = `${num}__label__${normLabel(rule.label)}`;
+      if (seenKeys.has(key) || seenKeys.has(keyL)) return;
+      seenKeys.add(key); seenKeys.add(keyL);
       suggestions.push({ ruleId: rule.id, num, label: rule.label, idListino: rule.idListino, motivo: rule.motivo });
     });
   });

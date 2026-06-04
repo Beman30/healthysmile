@@ -78,10 +78,11 @@ function buildExtractionPrompt(listinoAttuale, listinoPiano, esempiAttuale, esem
 
   // Regole cliniche abilitate
   const BASE_RULES = [
-    { id:'crown_temporary',       text:'Corona definitiva → suggerisci provvisorio se assente', enabled: true },
+    { id:'crown_temporary',        text:'Corona DEFINITIVA nel piano per un dente → suggerisci PROVVISORIO se non già presente per quel dente', enabled: true },
+    { id:'provisional_definitive', text:'PROVVISORIO (o perno+provvisorio) nel piano per un dente → suggerisci CORONA DEFINITIVA se non già presente per quel dente', enabled: true },
     { id:'root_canal_reconstruction', text:'Endodonzia → suggerisci ricostruzione post-endo se assente', enabled: true },
-    { id:'implant_abutment_crown',text:'Impianto → suggerisci abutment + corona se assenti', enabled: true },
-    { id:'implant_tac',           text:'Caso implantare → TAC una sola volta (CASE_LEVEL), mai per dente', enabled: true },
+    { id:'implant_abutment_crown', text:'Impianto → suggerisci abutment + corona se assenti', enabled: true },
+    { id:'implant_tac',            text:'Caso implantare → TAC una sola volta (CASE_LEVEL), mai per dente', enabled: true },
     { id:'extraction_followup_check', text:'Estrazione → controllo post-estrattivo', enabled: false },
   ];
   const prefs = rulePrefs || [];
@@ -129,6 +130,14 @@ ${depsBlock ? `════ DIPENDENZE CLINICHE APPRESE ════\n${depsBloc
 
 ════ REGOLE CLINICHE ATTIVE ════
 ${rulesBlock || '  Nessuna regola attiva'}
+
+REGOLE ANTI-DUPLICATO PER suggerimenti_clinici:
+- Non includere MAI in suggerimenti_clinici una prestazione già presente nel piano dello stesso dente.
+- "Corona provvisoria / provvisorio" e "Corona definitiva" sono prestazioni DISTINTE — non confonderle.
+- Se il piano contiene PROVVISORIO ma NON corona definitiva → rule_id: provisional_definitive → suggerisci corona definitiva.
+- Se il piano contiene CORONA DEFINITIVA ma NON provvisorio → rule_id: crown_temporary → suggerisci provvisorio.
+- Se il piano contiene già ENTRAMBI → non suggerire nulla per quella regola.
+- Se il listino contiene una voce "corona definitiva", usa il suo id_listino. Altrimenti label "Corona definitiva" + needs_review:true.
 
 ════ REGOLE SCOPE ════
 TOOTH_LEVEL → "denti" con numero FDI (es.:"36") — si ripete per ogni dente
