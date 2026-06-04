@@ -1172,8 +1172,8 @@ async function loadPatients() {
   setSyncPill('sy');
   try {
     let snap = await patientsCol().get();
-    // Migrazione automatica: se la collection dello studio è vuota, leggi dalla globale e copia
-    if (snap.empty) {
+    // Migrazione automatica: SOLO per lo studio storico che ha dati nella collection globale
+    if (snap.empty && STUDIO_ID === 'healthy_smile_torino') {
       const globalSnap = await db.collection('pazienti').get();
       if (!globalSnap.empty) {
         console.log(`[migrazione] Copio ${globalSnap.size} pazienti in studios/${STUDIO_ID}/pazienti`);
@@ -2070,7 +2070,7 @@ async function handleUpload(files) {
     if (file.size > 10*1024*1024) { notify(file.name+' supera 10MB','err'); continue; }
     notify('Caricamento '+file.name+'...','i');
     try {
-      const path = `pazienti/${currentId}/${Date.now()}_${file.name}`;
+      const path = `studios/${STUDIO_ID}/pazienti/${currentId}/${Date.now()}_${file.name}`;
       const ref  = storage.ref(path);
       await ref.put(file);
       const url  = await ref.getDownloadURL();
@@ -2103,6 +2103,7 @@ function switchTab(name) {
 // ════════════════════════════════════════════════════════════
 async function loadPrestazioni() {
   try {
+    // LISTINO GLOBALE condiviso tra studi — non separare per ora
     const doc = await db.collection('config').doc('prestazioni').get();
     if (doc.exists) {
       const d = doc.data();
