@@ -184,7 +184,7 @@ body::before {
 .dente-item-dot.medium { background: var(--yellow); }
 .dente-item-dot.high { background: var(--red); }
 .dente-item-dot.absent { background: var(--grey); opacity: 0.5; }
-.dente-item-dot.treated { background: var(--yellow); box-shadow: 0 0 6px rgba(255,209,102,0.5); }
+
 
 .dente-item-info { flex: 1; min-width: 0; }
 .dente-item-num {
@@ -342,8 +342,7 @@ body::before {
 .dente-map-btn.high.selected { border-color: var(--red); background: rgba(255,77,109,0.1); box-shadow: 0 0 14px rgba(255,77,109,0.25); }
 .dente-map-btn.absent { border-color: rgba(74,85,104,0.25); opacity: 0.45; }
 .dente-map-btn.absent.selected { border-color: var(--grey); background: rgba(74,85,104,0.1); box-shadow: 0 0 14px rgba(74,85,104,0.25); opacity: 0.7; }
-.dente-map-btn.treated { border-color: rgba(255,209,102,0.4); }
-.dente-map-btn.treated.selected { border-color: var(--yellow); background: rgba(255,209,102,0.12); box-shadow: 0 0 14px rgba(255,209,102,0.3); }
+
 
 .dente-map-num {
   font-family: 'DM Mono', monospace;
@@ -354,7 +353,7 @@ body::before {
 .medium .dente-map-dot { background: var(--yellow); }
 .high .dente-map-dot { background: var(--red); }
 .absent .dente-map-dot { background: var(--grey); }
-.treated .dente-map-dot { background: var(--yellow); }
+
 
 .imp-tag {
   position: absolute; bottom: 1px;
@@ -411,7 +410,7 @@ body::before {
 .rischio-btn.active-medium { border-color: var(--yellow); background: rgba(255,209,102,0.1); color: var(--yellow); }
 .rischio-btn.active-high { border-color: var(--red); background: rgba(255,77,109,0.1); color: var(--red); }
 .rischio-btn.active-absent { border-color: var(--grey); background: rgba(74,85,104,0.1); color: var(--grey); }
-.rischio-btn.active-treated { border-color: var(--yellow); background: rgba(255,209,102,0.15); color: var(--yellow); }
+
 
 /* Toggle switch */
 .toggle-row {
@@ -713,39 +712,39 @@ body::before {
 // ─── DATI BASE ───
 const DENTI_BASE = [
   // SUP
-  { num: 18, nome: "Ottavo sup. dx", arcata: "sup", pos: 0, rischio: "absent", implant: false, presente: false, prezzoMercato: null, prezzoConv: null, note: "Non presente.", consiglio: "Elemento non presente in arcata." },
-  { num: 17, nome: "Settimo sup. dx", arcata: "sup", pos: 1, rischio: "medium", implant: false, presente: true, prezzoMercato: 170, prezzoConv: 85, note: "Otturazione infiltrata — sotto osservazione.", consiglio: "L'otturazione su questo dente mostra segni di infiltrazione. Lo teniamo sotto osservazione — se i segni progrediscono, interverremo subito a costo convenzionato." },
-  { num: 16, nome: "Sesto sup. dx", arcata: "sup", pos: 2, rischio: "low", implant: false, presente: true, prezzoMercato: null, prezzoConv: null, note: "Dente stabile.", consiglio: "Dente stabile. Nessun intervento previsto." },
-  { num: 15, nome: "Quinto sup. dx", arcata: "sup", pos: 3, rischio: "medium", implant: false, presente: true, prezzoMercato: 170, prezzoConv: 85, note: "Otturazioni non eseguite da noi — stabili.", consiglio: "Restauro già presente ma non nostro. Stabile al momento — lo monitoriamo ad ogni visita." },
-  { num: 14, nome: "Quarto sup. dx", arcata: "sup", pos: 4, rischio: "medium", implant: false, presente: true, prezzoMercato: 170, prezzoConv: 85, note: "Otturazioni non eseguite da noi — stabili.", consiglio: "Restauro già presente ma non nostro. Stabile al momento — lo monitoriamo ad ogni visita." },
-  { num: 13, nome: "Canino sup. dx", arcata: "sup", pos: 5, rischio: "low", implant: false, presente: true, prezzoMercato: null, prezzoConv: null, note: "Ottimo stato.", consiglio: "Canino perfettamente sano. Continua così." },
-  { num: 12, nome: "Laterale sup. dx", arcata: "sup", pos: 6, rischio: "low", implant: false, presente: true, prezzoMercato: null, prezzoConv: null, note: "Nessuna anomalia.", consiglio: "Dente sano. Nessun intervento previsto." },
-  { num: 11, nome: "Centrale sup. dx", arcata: "sup", pos: 7, rischio: "low", implant: false, presente: true, prezzoMercato: null, prezzoConv: null, note: "Ottimo stato.", consiglio: "Perfetto. Nessuna azione necessaria." },
-  { num: 21, nome: "Centrale sup. sx", arcata: "sup", pos: 8, rischio: "low", implant: true, presente: true, prezzoMercato: null, prezzoConv: null, note: "Impianto osteointegrato.", consiglio: "Impianto ben integrato. Igiene con scovolino ogni giorno." },
-  { num: 22, nome: "Laterale sup. sx", arcata: "sup", pos: 9, rischio: "low", implant: true, presente: true, prezzoMercato: null, prezzoConv: null, note: "Impianto osteointegrato.", consiglio: "Impianto stabile. Igiene con scovolino ogni sera." },
-  { num: 23, nome: "Canino sup. sx", arcata: "sup", pos: 10, rischio: "low", implant: true, presente: true, prezzoMercato: null, prezzoConv: null, note: "Impianto osteointegrato.", consiglio: "Impianto in posizione canina — integrato e funzionale. Scovolino quotidiano." },
-  { num: 24, nome: "Quarto sup. sx", arcata: "sup", pos: 11, rischio: "low", implant: true, presente: true, prezzoMercato: null, prezzoConv: null, note: "Impianto osteointegrato.", consiglio: "Impianto stabile. Mantieni l'igiene con scovolino ogni giorno." },
-  { num: 25, nome: "Quinto sup. sx", arcata: "sup", pos: 12, rischio: "low", implant: true, presente: true, prezzoMercato: null, prezzoConv: null, note: "Impianto osteointegrato.", consiglio: "Impianto integrato e funzionale. Ottima situazione." },
-  { num: 26, nome: "Sesto sup. sx", arcata: "sup", pos: 13, rischio: "high", implant: false, presente: true, prezzoMercato: 180, prezzoConv: 84, note: "Lesione occlusale piccola.", consiglio: "⚠ C'è una carie piccola sulla superficie di masticazione. In questo stadio l'intervento è semplice e poco costoso. Se aspetti, la lesione si approfondisce." },
-  { num: 27, nome: "Settimo sup. sx", arcata: "sup", pos: 14, rischio: "high", implant: false, presente: true, prezzoMercato: 250, prezzoConv: 119, note: "Otturazione distale profonda.", consiglio: "⚠ Otturazione distale profonda — la profondità è la variabile critica. Monitoraggio stretto; se notiamo evoluzione, interverremo subito." },
-  { num: 28, nome: "Ottavo sup. sx", arcata: "sup", pos: 15, rischio: "absent", implant: false, presente: false, prezzoMercato: null, prezzoConv: null, note: "Non presente.", consiglio: "Elemento non presente in arcata." },
+  { num: 18, nome: "Ottavo sup. dx", arcata: "sup", pos: 0, rischio: "absent", implant: false, presente: false, note: "Non presente.", consiglio: "Elemento non presente in arcata." },
+  { num: 17, nome: "Settimo sup. dx", arcata: "sup", pos: 1, rischio: "medium", implant: false, presente: true, note: "Otturazione infiltrata — sotto osservazione.", consiglio: "L'otturazione su questo dente mostra segni di infiltrazione. Lo teniamo sotto osservazione — se i segni progrediscono, interverremo subito a costo convenzionato." },
+  { num: 16, nome: "Sesto sup. dx", arcata: "sup", pos: 2, rischio: "low", implant: false, presente: true, note: "Dente stabile.", consiglio: "Dente stabile. Nessun intervento previsto." },
+  { num: 15, nome: "Quinto sup. dx", arcata: "sup", pos: 3, rischio: "medium", implant: false, presente: true, note: "Otturazioni non eseguite da noi — stabili.", consiglio: "Restauro già presente ma non nostro. Stabile al momento — lo monitoriamo ad ogni visita." },
+  { num: 14, nome: "Quarto sup. dx", arcata: "sup", pos: 4, rischio: "medium", implant: false, presente: true, note: "Otturazioni non eseguite da noi — stabili.", consiglio: "Restauro già presente ma non nostro. Stabile al momento — lo monitoriamo ad ogni visita." },
+  { num: 13, nome: "Canino sup. dx", arcata: "sup", pos: 5, rischio: "low", implant: false, presente: true, note: "Ottimo stato.", consiglio: "Canino perfettamente sano. Continua così." },
+  { num: 12, nome: "Laterale sup. dx", arcata: "sup", pos: 6, rischio: "low", implant: false, presente: true, note: "Nessuna anomalia.", consiglio: "Dente sano. Nessun intervento previsto." },
+  { num: 11, nome: "Centrale sup. dx", arcata: "sup", pos: 7, rischio: "low", implant: false, presente: true, note: "Ottimo stato.", consiglio: "Perfetto. Nessuna azione necessaria." },
+  { num: 21, nome: "Centrale sup. sx", arcata: "sup", pos: 8, rischio: "low", implant: true, presente: true, note: "Impianto osteointegrato.", consiglio: "Impianto ben integrato. Igiene con scovolino ogni giorno." },
+  { num: 22, nome: "Laterale sup. sx", arcata: "sup", pos: 9, rischio: "low", implant: true, presente: true, note: "Impianto osteointegrato.", consiglio: "Impianto stabile. Igiene con scovolino ogni sera." },
+  { num: 23, nome: "Canino sup. sx", arcata: "sup", pos: 10, rischio: "low", implant: true, presente: true, note: "Impianto osteointegrato.", consiglio: "Impianto in posizione canina — integrato e funzionale. Scovolino quotidiano." },
+  { num: 24, nome: "Quarto sup. sx", arcata: "sup", pos: 11, rischio: "low", implant: true, presente: true, note: "Impianto osteointegrato.", consiglio: "Impianto stabile. Mantieni l'igiene con scovolino ogni giorno." },
+  { num: 25, nome: "Quinto sup. sx", arcata: "sup", pos: 12, rischio: "low", implant: true, presente: true, note: "Impianto osteointegrato.", consiglio: "Impianto integrato e funzionale. Ottima situazione." },
+  { num: 26, nome: "Sesto sup. sx", arcata: "sup", pos: 13, rischio: "high", implant: false, presente: true, note: "Lesione occlusale piccola.", consiglio: "⚠ C'è una carie piccola sulla superficie di masticazione. In questo stadio l'intervento è semplice e poco costoso. Se aspetti, la lesione si approfondisce." },
+  { num: 27, nome: "Settimo sup. sx", arcata: "sup", pos: 14, rischio: "high", implant: false, presente: true, note: "Otturazione distale profonda.", consiglio: "⚠ Otturazione distale profonda — la profondità è la variabile critica. Monitoraggio stretto; se notiamo evoluzione, interverremo subito." },
+  { num: 28, nome: "Ottavo sup. sx", arcata: "sup", pos: 15, rischio: "absent", implant: false, presente: false, note: "Non presente.", consiglio: "Elemento non presente in arcata." },
   // INF
-  { num: 48, nome: "Ottavo inf. dx", arcata: "inf", pos: 0, rischio: "absent", implant: false, presente: false, prezzoMercato: null, prezzoConv: null, note: "Non presente.", consiglio: "Elemento non presente in arcata." },
-  { num: 47, nome: "Settimo inf. dx", arcata: "inf", pos: 1, rischio: "low", implant: true, presente: true, prezzoMercato: null, prezzoConv: null, note: "Impianto osteointegrato.", consiglio: "Impianto stabile. Mantieni l'igiene con scovolino ogni sera." },
-  { num: 46, nome: "Sesto inf. dx", arcata: "inf", pos: 2, rischio: "low", implant: true, presente: true, prezzoMercato: null, prezzoConv: null, note: "Impianto osteointegrato.", consiglio: "Impianto ben osteointegrato. Scovolino ogni giorno." },
-  { num: 45, nome: "Quinto inf. dx", arcata: "inf", pos: 3, rischio: "high", implant: false, presente: true, prezzoMercato: 900, prezzoConv: 588, note: "Perno in fibra + provvisorio. Completare con corona definitiva.", consiglio: "⚠ Perno già posizionato con provvisorio in situ. Il provvisorio non è una soluzione definitiva — va completato con la corona per proteggere il dente a lungo termine." },
-  { num: 44, nome: "Quarto inf. dx", arcata: "inf", pos: 4, rischio: "high", implant: false, presente: true, prezzoMercato: 180, prezzoConv: 119, note: "Carie mesiale piccola.", consiglio: "⚠ Piccola lesione sul lato mesiale. È il momento giusto per intervenire: una carie piccola oggi è un'otturazione semplice." },
-  { num: 43, nome: "Canino inf. dx", arcata: "inf", pos: 5, rischio: "low", implant: true, presente: true, prezzoMercato: null, prezzoConv: null, note: "Impianto osteointegrato.", consiglio: "Impianto in posizione canina — integrato e funzionale. Scovolino quotidiano." },
-  { num: 42, nome: "Laterale inf. dx", arcata: "inf", pos: 6, rischio: "low", implant: true, presente: true, prezzoMercato: null, prezzoConv: null, note: "Impianto osteointegrato.", consiglio: "Impianto stabile. Igiene con scovolino ogni giorno." },
-  { num: 41, nome: "Centrale inf. dx", arcata: "inf", pos: 7, rischio: "low", implant: true, presente: true, prezzoMercato: null, prezzoConv: null, note: "Impianto osteointegrato.", consiglio: "Impianto centrale inferiore in ottimo stato. Scovolino ogni sera." },
-  { num: 31, nome: "Centrale inf. sx", arcata: "inf", pos: 8, rischio: "low", implant: true, presente: true, prezzoMercato: null, prezzoConv: null, note: "Impianto osteointegrato.", consiglio: "Impianto perfettamente integrato. Routine di igiene quotidiana." },
-  { num: 32, nome: "Laterale inf. sx", arcata: "inf", pos: 9, rischio: "low", implant: true, presente: true, prezzoMercato: null, prezzoConv: null, note: "Impianto osteointegrato.", consiglio: "Impianto stabile. Igiene con scovolino ogni sera." },
-  { num: 33, nome: "Canino inf. sx", arcata: "inf", pos: 10, rischio: "low", implant: true, presente: true, prezzoMercato: null, prezzoConv: null, note: "Impianto osteointegrato.", consiglio: "Impianto in posizione canina — funzione e guidanza preservate. Scovolino quotidiano." },
-  { num: 34, nome: "Quarto inf. sx", arcata: "inf", pos: 11, rischio: "low", implant: false, presente: true, prezzoMercato: null, prezzoConv: null, note: "Nessun problema.", consiglio: "Tutto bene. Mantieni l'igiene attuale." },
-  { num: 35, nome: "Quinto inf. sx", arcata: "inf", pos: 12, rischio: "low", implant: false, presente: true, prezzoMercato: null, prezzoConv: null, note: "Stato stabile.", consiglio: "Dente sano. Nessuna azione richiesta." },
-  { num: 36, nome: "Sesto inf. sx", arcata: "inf", pos: 13, rischio: "low", implant: true, presente: true, prezzoMercato: null, prezzoConv: null, note: "Impianto non eseguito da noi. Stabile.", consiglio: "Impianto presente ma non eseguito da noi. Stabile — lo monitoriamo ad ogni visita." },
-  { num: 37, nome: "Settimo inf. sx", arcata: "inf", pos: 14, rischio: "low", implant: true, presente: true, prezzoMercato: null, prezzoConv: null, note: "Impianto non eseguito da noi. Stabile.", consiglio: "Impianto presente ma non eseguito da noi. Stabile al momento — monitoraggio periodico." },
-  { num: 38, nome: "Ottavo inf. sx", arcata: "inf", pos: 15, rischio: "absent", implant: false, presente: false, prezzoMercato: null, prezzoConv: null, note: "Non presente.", consiglio: "Elemento non presente in arcata." },
+  { num: 48, nome: "Ottavo inf. dx", arcata: "inf", pos: 0, rischio: "absent", implant: false, presente: false, note: "Non presente.", consiglio: "Elemento non presente in arcata." },
+  { num: 47, nome: "Settimo inf. dx", arcata: "inf", pos: 1, rischio: "low", implant: true, presente: true, note: "Impianto osteointegrato.", consiglio: "Impianto stabile. Mantieni l'igiene con scovolino ogni sera." },
+  { num: 46, nome: "Sesto inf. dx", arcata: "inf", pos: 2, rischio: "low", implant: true, presente: true, note: "Impianto osteointegrato.", consiglio: "Impianto ben osteointegrato. Scovolino ogni giorno." },
+  { num: 45, nome: "Quinto inf. dx", arcata: "inf", pos: 3, rischio: "high", implant: false, presente: true, note: "Perno in fibra + provvisorio. Completare con corona definitiva.", consiglio: "⚠ Perno già posizionato con provvisorio in situ. Il provvisorio non è una soluzione definitiva — va completato con la corona per proteggere il dente a lungo termine." },
+  { num: 44, nome: "Quarto inf. dx", arcata: "inf", pos: 4, rischio: "high", implant: false, presente: true, note: "Carie mesiale piccola.", consiglio: "⚠ Piccola lesione sul lato mesiale. È il momento giusto per intervenire: una carie piccola oggi è un'otturazione semplice." },
+  { num: 43, nome: "Canino inf. dx", arcata: "inf", pos: 5, rischio: "low", implant: true, presente: true, note: "Impianto osteointegrato.", consiglio: "Impianto in posizione canina — integrato e funzionale. Scovolino quotidiano." },
+  { num: 42, nome: "Laterale inf. dx", arcata: "inf", pos: 6, rischio: "low", implant: true, presente: true, note: "Impianto osteointegrato.", consiglio: "Impianto stabile. Igiene con scovolino ogni giorno." },
+  { num: 41, nome: "Centrale inf. dx", arcata: "inf", pos: 7, rischio: "low", implant: true, presente: true, note: "Impianto osteointegrato.", consiglio: "Impianto centrale inferiore in ottimo stato. Scovolino ogni sera." },
+  { num: 31, nome: "Centrale inf. sx", arcata: "inf", pos: 8, rischio: "low", implant: true, presente: true, note: "Impianto osteointegrato.", consiglio: "Impianto perfettamente integrato. Routine di igiene quotidiana." },
+  { num: 32, nome: "Laterale inf. sx", arcata: "inf", pos: 9, rischio: "low", implant: true, presente: true, note: "Impianto osteointegrato.", consiglio: "Impianto stabile. Igiene con scovolino ogni sera." },
+  { num: 33, nome: "Canino inf. sx", arcata: "inf", pos: 10, rischio: "low", implant: true, presente: true, note: "Impianto osteointegrato.", consiglio: "Impianto in posizione canina — funzione e guidanza preservate. Scovolino quotidiano." },
+  { num: 34, nome: "Quarto inf. sx", arcata: "inf", pos: 11, rischio: "low", implant: false, presente: true, note: "Nessun problema.", consiglio: "Tutto bene. Mantieni l'igiene attuale." },
+  { num: 35, nome: "Quinto inf. sx", arcata: "inf", pos: 12, rischio: "low", implant: false, presente: true, note: "Stato stabile.", consiglio: "Dente sano. Nessuna azione richiesta." },
+  { num: 36, nome: "Sesto inf. sx", arcata: "inf", pos: 13, rischio: "low", implant: true, presente: true, note: "Impianto non eseguito da noi. Stabile.", consiglio: "Impianto presente ma non eseguito da noi. Stabile — lo monitoriamo ad ogni visita." },
+  { num: 37, nome: "Settimo inf. sx", arcata: "inf", pos: 14, rischio: "low", implant: true, presente: true, note: "Impianto non eseguito da noi. Stabile.", consiglio: "Impianto presente ma non eseguito da noi. Stabile al momento — monitoraggio periodico." },
+  { num: 38, nome: "Ottavo inf. sx", arcata: "inf", pos: 15, rischio: "absent", implant: false, presente: false, note: "Non presente.", consiglio: "Elemento non presente in arcata." },
 ];
 
 let denti = JSON.parse(JSON.stringify(DENTI_BASE));
@@ -1087,12 +1086,6 @@ function _applicaDatiClinici(data) {
 
       if (det.prestazioni_da_fare.length) {
         d.rischio = d.presente ? 'high' : 'absent';
-        const totPrezzo = det.prestazioni_da_fare.reduce((s, p) => s + p.prezzo, 0);
-        if (totPrezzo > 0) {
-          d.prezzoMercato = totPrezzo;
-          const scontoMap = { low: 0.30, medium: 0.70, high: 1.0, absent: 1.0 };
-          d.prezzoConv = Math.round(totPrezzo * (scontoMap[d.rischio] || 1.0));
-        }
       }
     }
   });
@@ -1259,7 +1252,7 @@ function renderDenteList() {
 
 function updateStats() {
   document.getElementById('stat-green').textContent = denti.filter(d => d.rischio === 'low').length;
-  document.getElementById('stat-yellow').textContent = denti.filter(d => d.rischio === 'medium' || d.rischio === 'treated').length;
+  document.getElementById('stat-yellow').textContent = denti.filter(d => d.rischio === 'medium').length;
   document.getElementById('stat-red').textContent = denti.filter(d => d.rischio === 'high').length;
   document.getElementById('stat-grey').textContent = denti.filter(d => d.rischio === 'absent').length;
 }
@@ -1276,8 +1269,8 @@ function selectDente(num) {
 function showDenteEditor(d) {
   document.getElementById('editor-title').textContent = `${d.num} — ${d.nome}`;
 
-  const rischioColors = { low: 'var(--green)', medium: 'var(--yellow)', high: 'var(--red)', absent: 'var(--grey)', treated: 'var(--yellow)' };
-  const rischioLabels = { low: 'Basso', medium: 'Osservazione', high: 'Intervento', absent: 'Assente', treated: 'Curato da noi' };
+  const rischioColors = { low: 'var(--green)', medium: 'var(--yellow)', high: 'var(--red)', absent: 'var(--grey)' };
+  const rischioLabels = { low: 'Basso', medium: 'Osservazione', high: 'Intervento', absent: 'Assente' };
   document.getElementById('editor-badge').innerHTML = `<span style="font-size:11px;font-weight:600;color:${rischioColors[d.rischio]};text-transform:uppercase;letter-spacing:0.1em">${rischioLabels[d.rischio]}</span>`;
 
   document.getElementById('editor-body').innerHTML = `
@@ -1287,7 +1280,6 @@ function showDenteEditor(d) {
       <div class="rischio-btn ${d.rischio === 'medium' ? 'active-medium' : ''}" onclick="setRischio('medium')">🟡 Osservazione</div>
       <div class="rischio-btn ${d.rischio === 'high' ? 'active-high' : ''}" onclick="setRischio('high')">🔴 Intervento</div>
       <div class="rischio-btn ${d.rischio === 'absent' ? 'active-absent' : ''}" onclick="setRischio('absent')">⚫ Assente</div>
-      <div class="rischio-btn ${d.rischio === 'treated' ? 'active-treated' : ''}" onclick="setRischio('treated')">⭐ Curato da noi</div>
     </div>
 
     <div class="toggle-row">
@@ -1300,20 +1292,6 @@ function showDenteEditor(d) {
     </div>
 
 
-    <div class="section-divider"></div>
-    <div class="section-label">Prezzi</div>
-    <div class="field-row">
-      <div class="field">
-        <label>Prezzo terapia (€)</label>
-        <input type="number" id="prezzo-mercato" min="0" step="1" placeholder="es. 180"
-          value="${d.prezzoMercato || ''}" oninput="aggiornaDente()">
-      </div>
-      <div class="field">
-        <label>Con convenzione (€)</label>
-        <input type="number" id="prezzo-conv" min="0" step="1" placeholder="es. 84"
-          value="${d.prezzoConv || ''}" oninput="aggiornaDente()">
-      </div>
-    </div>
     <div class="section-divider"></div>
     <div class="section-label">Note cliniche interne</div>
     <div class="field">
@@ -1338,7 +1316,6 @@ function setRischio(r) {
   const d = denti.find(x => x.num === selectedNum);
   d.rischio = r;
   if (r === 'absent') d.presente = false;
-  if (r === 'treated') d.presente = true;
   showDenteEditor(d);
   renderMappa();
   renderDenteList();
@@ -1373,10 +1350,6 @@ function aggiornaDente() {
   if (document.getElementById('consiglio')) d.consiglio = document.getElementById('consiglio').value;
   if (document.getElementById('note-dente')) d.note = document.getElementById('note-dente').value;
   if (document.getElementById('prestazioni-dente')) d.prestazioni = document.getElementById('prestazioni-dente').value;
-  const pm = document.getElementById('prezzo-mercato');
-  const pc = document.getElementById('prezzo-conv');
-  if (pm) d.prezzoMercato = pm.value ? parseInt(pm.value) : null;
-  if (pc) d.prezzoConv = pc.value ? parseInt(pc.value) : null;
   renderDenteList();
   updateStats();
 }
@@ -1543,19 +1516,19 @@ header{display:flex;justify-content:space-between;align-items:flex-start;margin-
 .dente-btn.medium{border-color:rgba(255,209,102,0.4)}.dente-btn.medium:hover{border-color:var(--yellow);box-shadow:0 0 16px rgba(255,209,102,0.2)}
 .dente-btn.high{border-color:rgba(255,77,109,0.4)}.dente-btn.high:hover{border-color:var(--red);box-shadow:0 0 16px rgba(255,77,109,0.2)}
 .dente-btn.absent{border-color:rgba(74,85,104,0.3);opacity:0.45}.dente-btn.absent:hover{border-color:var(--grey);opacity:0.7}
-.dente-btn.treated{border-color:rgba(255,209,102,0.5);background:rgba(255,209,102,0.07)}.dente-btn.treated:hover{border-color:var(--yellow);box-shadow:0 0 16px rgba(255,209,102,0.25)}
+
 .dente-btn.selected{transform:translateY(-4px);z-index:10;}
 .dente-btn.selected.low{background:rgba(45,255,122,0.1);border-color:var(--green);box-shadow:0 0 20px rgba(45,255,122,0.3)}
 .dente-btn.selected.medium{background:rgba(255,209,102,0.1);border-color:var(--yellow);box-shadow:0 0 20px rgba(255,209,102,0.3)}
 .dente-btn.selected.high{background:rgba(255,77,109,0.1);border-color:var(--red);box-shadow:0 0 20px rgba(255,77,109,0.3)}
 .dente-btn.selected.absent{background:rgba(74,85,104,0.1);border-color:var(--grey);box-shadow:0 0 20px rgba(74,85,104,0.3);opacity:0.7}
-.dente-btn.selected.treated{background:rgba(255,209,102,0.15);border-color:var(--yellow);box-shadow:0 0 20px rgba(255,209,102,0.35)}
+
 .click-hint{text-align:center;margin:0 0 28px;font-size:13px;color:var(--text-dim);display:flex;align-items:center;justify-content:center;gap:8px;animation:hintPulse 2.5s infinite;}
 @keyframes hintPulse{0%,100%{opacity:0.4}50%{opacity:1}}
 .click-hint em{color:var(--green);font-style:normal;font-weight:500;}
 .dente-num{font-family:'DM Mono',monospace;font-size:10px;color:var(--text-dim);}
 .dente-dot{width:8px;height:8px;border-radius:50%;}
-.low .dente-dot{background:var(--green)}.medium .dente-dot{background:var(--yellow)}.high .dente-dot{background:var(--red)}.absent .dente-dot{background:var(--grey)}.treated .dente-dot{background:var(--yellow);box-shadow:0 0 6px rgba(255,209,102,0.6)}
+.low .dente-dot{background:var(--green)}.medium .dente-dot{background:var(--yellow)}.high .dente-dot{background:var(--red)}.absent .dente-dot{background:var(--grey)}
 .imp-tag-small{font-size:7px;color:var(--green);font-family:'DM Mono',monospace;opacity:0.8;}
 .arcata-label{text-align:center;font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em;margin:6px 0 16px;}
 .dente-detail{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:32px;margin-bottom:40px;animation:fadeIn 0.3s ease;}
@@ -1567,13 +1540,13 @@ header{display:flex;justify-content:space-between;align-items:flex-start;margin-
 .rischio-badge.medium{background:rgba(255,209,102,0.15);color:var(--yellow);border:1px solid rgba(255,209,102,0.3)}
 .rischio-badge.high{background:rgba(255,77,109,0.15);color:var(--red);border:1px solid rgba(255,77,109,0.3)}
 .rischio-badge.absent{background:rgba(74,85,104,0.15);color:var(--grey);border:1px solid rgba(74,85,104,0.3)}
-.rischio-badge.treated{background:rgba(255,209,102,0.18);color:var(--yellow);border:1px solid rgba(255,209,102,0.4)}
+
 .dente-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;}
 .detail-item{background:var(--surface2);border-radius:12px;padding:16px 20px;}
 .detail-item-label{font-size:11px;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-dim);margin-bottom:8px;}
 .detail-item-value{font-family:'Playfair Display',serif;font-size:22px;font-weight:600;}
 .detail-item-value.green{color:var(--green)}.detail-item-value.yellow{color:var(--yellow)}.detail-item-value.red{color:var(--red)}
-.detail-item-value.crossed{color:var(--text-dim);text-decoration:line-through;font-size:16px;}
+
 .detail-consiglio{background:linear-gradient(135deg,rgba(45,255,122,0.06),rgba(45,255,122,0.02));border:1px solid rgba(45,255,122,0.2);border-radius:14px;padding:20px 24px;margin-top:16px;}
 .detail-consiglio-label{font-size:11px;text-transform:uppercase;letter-spacing:0.12em;color:var(--green);font-weight:600;margin-bottom:10px;}
 .detail-consiglio-text{font-size:14px;color:var(--text);line-height:1.75;}
@@ -1589,10 +1562,6 @@ header{display:flex;justify-content:space-between;align-items:flex-start;margin-
 .rischio-pill.medium{color:var(--yellow)}.rischio-pill.medium .dot{background:var(--yellow)}
 .rischio-pill.high{color:var(--red)}.rischio-pill.high .dot{background:var(--red)}
 .rischio-pill.absent{color:var(--grey)}.rischio-pill.absent .dot{background:var(--grey)}
-.rischio-pill.treated{color:var(--yellow)}.rischio-pill.treated .dot{background:var(--yellow)}
-.prezzo-mercato{font-size:13px;color:var(--text-muted);text-decoration:line-through;font-family:'DM Mono',monospace;}
-.prezzo-convenzione{font-size:14px;font-weight:600;font-family:'DM Mono',monospace;}
-.prezzo-convenzione.green{color:var(--green)}.prezzo-convenzione.yellow{color:var(--yellow)}.prezzo-convenzione.red{color:var(--red)}
 .table-consiglio-btn{font-size:12px;color:var(--green);cursor:pointer;font-weight:500;white-space:nowrap;opacity:0.7;transition:opacity 0.2s;}
 .teeth-table-row:hover .table-consiglio-btn{opacity:1;}
 .legend{display:flex;gap:24px;justify-content:center;margin:16px 0 32px;}
@@ -1685,28 +1654,21 @@ header{display:flex;justify-content:space-between;align-items:flex-start;margin-
       <div class="filosofia-dot green-dot"></div>
       <div>
         <div class="filosofia-label">Denti verdi — basso rischio</div>
-        <div class="filosofia-sub">Se in futuro avranno bisogno di cure, sconto del <strong>70%</strong> sul prezzo di mercato</div>
+        <div class="filosofia-sub">Nessun intervento necessario — <strong>garanzia inclusa</strong></div>
       </div>
     </div>
     <div class="filosofia-item yellow">
       <div class="filosofia-dot yellow-dot"></div>
       <div>
         <div class="filosofia-label">Denti gialli — sotto osservazione</div>
-        <div class="filosofia-sub">Se interverremo, sconto del <strong>30%</strong> sul prezzo di mercato</div>
+        <div class="filosofia-sub">Monitoriamo l'evoluzione — il preventivo è in cartella</div>
       </div>
     </div>
     <div class="filosofia-item red">
       <div class="filosofia-dot red-dot"></div>
       <div>
         <div class="filosofia-label">Denti rossi — intervento consigliato</div>
-        <div class="filosofia-sub">Trattamento necessario — <strong>prezzo di listino</strong> senza scontistica</div>
-      </div>
-    </div>
-    <div class="filosofia-item yellow" style="border-color:rgba(255,209,102,0.3);background:rgba(255,209,102,0.07)">
-      <div class="filosofia-dot yellow-dot" style="box-shadow:0 0 10px rgba(255,209,102,0.7)"></div>
-      <div>
-        <div class="filosofia-label">Denti gialli con ⭐ — curati da noi</div>
-        <div class="filosofia-sub">Trattamento già eseguito presso il nostro studio — <strong>garanzia e follow-up inclusi</strong></div>
+        <div class="filosofia-sub">Intervento urgente — vedi preventivo in cartella</div>
       </div>
     </div>
   </div>
@@ -1734,7 +1696,6 @@ header{display:flex;justify-content:space-between;align-items:flex-start;margin-
     <div class="legend-item"><div class="legend-dot" style="background:var(--yellow)"></div> Sotto osservazione</div>
     <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div> Intervento consigliato</div>
     <div class="legend-item"><div class="legend-dot" style="background:var(--grey)"></div> Assente</div>
-    <div class="legend-item"><div class="legend-dot" style="background:var(--yellow);box-shadow:0 0 6px rgba(255,209,102,0.7);border:1.5px solid rgba(255,209,102,0.6)"></div> Curato da noi ⭐</div>
   </div>
 </div>
 
@@ -1808,30 +1769,27 @@ function showDetail(dente, btn) {
   selectedDente = dente.num;
   btn.classList.add('selected');
   const detail = document.getElementById('dente-detail');
-  const rischioLabel = {low:'Basso rischio',medium:'Sotto osservazione',high:'Intervento consigliato',absent:'Assente',treated:'Curato da noi ⭐'}[dente.rischio];
-  const colorClass = {low:'green',medium:'yellow',high:'red',absent:'grey',treated:'yellow'}[dente.rischio];
-  const scontoLabel = {low:'–70%',medium:'–30%',high:'prezzo pieno',absent:'—',treated:'—'}[dente.rischio];
-  let prezziHTML = dente.rischio === 'treated'
-    ? '<div class="dente-detail-grid"><div class="detail-item" style="background:rgba(255,209,102,0.07);border:1px solid rgba(255,209,102,0.2)"><div class="detail-item-label" style="color:var(--yellow)">Trattamento</div><div class="detail-item-value yellow" style="font-size:16px">⭐ Curato da noi</div></div><div class="detail-item"><div class="detail-item-label">Garanzia</div><div class="detail-item-value yellow" style="font-size:15px">Follow-up incluso</div></div></div>'
-    : dente.prezzoMercato
-    ? (dente.rischio === 'high'
-      ? '<div class="dente-detail-grid"><div class="detail-item"><div class="detail-item-label">Prezzo di listino</div><div class="detail-item-value red">€' + dente.prezzoMercato + '</div></div><div class="detail-item"><div class="detail-item-label">Stato</div><div class="detail-item-value red" style="font-size:16px">Da trattare — prezzo pieno</div></div></div>'
-      : '<div class="dente-detail-grid"><div class="detail-item"><div class="detail-item-label">Prezzo di mercato</div><div class="detail-item-value crossed">€' + dente.prezzoMercato + '</div></div><div class="detail-item"><div class="detail-item-label">Con la tua convenzione <span style="color:var(--green);font-size:13px">' + scontoLabel + '</span></div><div class="detail-item-value ' + colorClass + '">€' + dente.prezzoConv + '</div></div></div>')
-    : '<div class="dente-detail-grid"><div class="detail-item"><div class="detail-item-label">Costo previsto</div><div class="detail-item-value green">€0</div></div><div class="detail-item"><div class="detail-item-label">Stato</div><div class="detail-item-value green" style="font-size:16px">' + (dente.implant ? 'Impianto stabile' : 'Nessun intervento') + '</div></div></div>';
+  const rischioLabel = {low:'Basso rischio',medium:'Sotto osservazione',high:'Intervento consigliato',absent:'Assente'}[dente.rischio] || 'Basso rischio';
+  const colorClass   = {low:'green',medium:'yellow',high:'red',absent:'grey'}[dente.rischio] || 'green';
+  const statoHTML    = dente.rischio === 'low'
+    ? '<div class="dente-detail-grid"><div class="detail-item"><div class="detail-item-label">Stato</div><div class="detail-item-value green" style="font-size:16px">' + (dente.implant ? '✓ Impianto stabile' : '✓ Nessun intervento') + '</div></div><div class="detail-item"><div class="detail-item-label">Garanzia</div><div class="detail-item-value green">✓ Coperto da garanzia</div></div></div>'
+    : dente.rischio === 'absent'
+    ? '<div class="dente-detail-grid"><div class="detail-item"><div class="detail-item-label">Stato</div><div class="detail-item-value grey" style="font-size:16px">Elemento assente</div></div></div>'
+    : '<div class="dente-detail-grid"><div class="detail-item"><div class="detail-item-label">Stato</div><div class="detail-item-value ' + colorClass + '" style="font-size:16px">' + rischioLabel + '</div></div><div class="detail-item"><div class="detail-item-label">Preventivo</div><div class="detail-item-value ' + colorClass + '">Vedi preventivo in cartella</div></div></div>';
   detail.style.display = 'block';
-  detail.innerHTML = '<div class="dente-detail-header"><div><div style="font-size:12px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Dente ' + dente.num + (dente.implant ? ' — IMPIANTO' : '') + '</div><div class="dente-detail-title">' + dente.nome + '</div></div><div class="rischio-badge ' + dente.rischio + '">' + rischioLabel + '</div></div>' + prezziHTML + (dente.prestazioni ? '<div style="background:rgba(255,209,102,0.05);border:1px solid rgba(255,209,102,0.15);border-radius:12px;padding:16px 20px;margin-bottom:16px"><div style="font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--yellow);font-weight:600;margin-bottom:8px">🦷 Prestazioni</div><div style="font-size:14px;color:var(--text-dim);line-height:1.7">' + dente.prestazioni + '</div></div>' : '') + '<div class="detail-consiglio"><div class="detail-consiglio-label">💬 Il nostro consiglio per te</div><div class="detail-consiglio-text">' + dente.consiglio + '</div>' + (dente.rischio !== 'low' && dente.rischio !== 'treated' ? '<div class="wa-inline"><a href="https://wa.me/393461824965?text=Ciao%2C+vorrei+prenotare+per+il+dente+' + dente.num + '" target="_blank" class="wa-btn" style="margin-top:16px"><svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.115.549 4.099 1.504 5.829L.057 23.428a.75.75 0 0 0 .921.921l5.599-1.447A11.944 11.944 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.75a9.705 9.705 0 0 1-4.953-1.355l-.355-.211-3.674.949.969-3.558-.232-.368A9.705 9.705 0 0 1 2.25 12C2.25 6.615 6.615 2.25 12 2.25S21.75 6.615 21.75 12 17.385 21.75 12 21.75z"/></svg> Prenota su WhatsApp</a></div>' : '') + '</div>';
+  detail.innerHTML = '<div class="dente-detail-header"><div><div style="font-size:12px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Dente ' + dente.num + (dente.implant ? ' — IMPIANTO' : '') + '</div><div class="dente-detail-title">' + dente.nome + '</div></div><div class="rischio-badge ' + dente.rischio + '">' + rischioLabel + '</div></div>' + statoHTML + (dente.prestazioni ? '<div style="background:rgba(255,209,102,0.05);border:1px solid rgba(255,209,102,0.15);border-radius:12px;padding:16px 20px;margin-bottom:16px"><div style="font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--yellow);font-weight:600;margin-bottom:8px">🦷 Prestazioni</div><div style="font-size:14px;color:var(--text-dim);line-height:1.7">' + dente.prestazioni + '</div></div>' : '') + '<div class="detail-consiglio"><div class="detail-consiglio-label">💬 Il nostro consiglio per te</div><div class="detail-consiglio-text">' + dente.consiglio + '</div>' + (dente.rischio !== 'low' && dente.rischio !== 'absent' ? '<div class="wa-inline"><a href="https://wa.me/393461824965?text=Ciao%2C+vorrei+prenotare+per+il+dente+' + dente.num + '" target="_blank" class="wa-btn" style="margin-top:16px"><svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.115.549 4.099 1.504 5.829L.057 23.428a.75.75 0 0 0 .921.921l5.599-1.447A11.944 11.944 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.75a9.705 9.705 0 0 1-4.953-1.355l-.355-.211-3.674.949.969-3.558-.232-.368A9.705 9.705 0 0 1 2.25 12C2.25 6.615 6.615 2.25 12 2.25S21.75 6.615 21.75 12 17.385 21.75 12 21.75z"/></svg> Prenota su WhatsApp</a></div>' : '') + '</div>';
   detail.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 
 function renderTable() {
   const body = document.getElementById('teeth-table-body');
-  const order = {high:0,medium:1,treated:2,low:3,absent:4};
-  [...denti].sort((a,b) => order[a.rischio] - order[b.rischio]).forEach(d => {
+  const order = {high:0,medium:1,low:2,absent:3};
+  [...denti].sort((a,b) => (order[a.rischio]??2) - (order[b.rischio]??2)).forEach(d => {
     const row = document.createElement('div');
     row.className = 'teeth-table-row';
-    const rischioLabel = {high:'Intervento',medium:'Osservazione',low:'Basso',absent:'Assente',treated:'Curato da noi'}[d.rischio];
-    const pc = {high:'red',medium:'yellow',low:'green',absent:'grey',treated:'yellow'}[d.rischio];
-    row.innerHTML = '<span class="dente-num-cell">' + d.num + '</span><span class="dente-name">' + d.nome + (d.implant ? ' <span style="font-size:10px;color:var(--green);font-family:DM Mono">[IMP]</span>' : '') + '</span><span><div class="rischio-pill ' + d.rischio + '"><div class="dot"></div>' + rischioLabel + '</div></span><span class="prezzo-mercato">' + (d.prezzoMercato ? '€'+d.prezzoMercato : '—') + '</span><span class="prezzo-convenzione ' + pc + '">' + (d.prezzoConv ? '€'+d.prezzoConv : 'Nessun intervento') + '</span><span class="table-consiglio-btn">💬 Dettaglio</span>';
+    const rischioLabel = {high:'Intervento',medium:'Osservazione',low:'Basso',absent:'Assente'}[d.rischio] || 'Basso';
+    const pc = {high:'red',medium:'yellow',low:'green',absent:'grey'}[d.rischio] || 'green';
+    row.innerHTML = '<span class="dente-num-cell">' + d.num + '</span><span class="dente-name">' + d.nome + (d.implant ? ' <span style="font-size:10px;color:var(--green);font-family:DM Mono">[IMP]</span>' : '') + '</span><span><div class="rischio-pill ' + d.rischio + '"><div class="dot"></div>' + rischioLabel + '</div></span><span></span><span style="font-size:13px;font-weight:500;color:' + (d.rischio === 'low' ? 'var(--green)' : d.rischio === 'absent' ? 'var(--text-muted)' : 'var(--yellow)') + '">' + (d.rischio === 'low' ? '✓ Garanzia' : d.rischio === 'absent' ? '—' : 'Vedi preventivo') + '</span><span class="table-consiglio-btn">💬 Dettaglio</span>';
     row.onclick = () => { const b = document.querySelector('[data-num="'+d.num+'"]'); showDetail(d, b || document.createElement('div')); document.getElementById('dente-detail').scrollIntoView({behavior:'smooth',block:'center'}); };
     body.appendChild(row);
   });
@@ -2145,7 +2103,7 @@ async function generateAITexts(patientClinicalSummary) {
 
   // ── Aggiorna denti (solo testi — il rischio AI non può abbassare quello clinico) ──
   if (ai.denti && typeof ai.denti === 'object') {
-    const RISCHIO_ORD = { 'low': 0, 'treated': 1, 'medium': 1, 'high': 2, 'absent': 3 };
+    const RISCHIO_ORD = { 'low': 0, 'medium': 1, 'high': 2, 'absent': 3 };
     Object.entries(ai.denti).forEach(([numStr, info]) => {
       if (!info) return;
       const n = parseInt(numStr);
@@ -2155,7 +2113,7 @@ async function generateAITexts(patientClinicalSummary) {
       if (info.note      !== undefined) d.note      = info.note;
       // Applica rischio AI solo se non abbassa quello già calcolato dai dati clinici
       if (info.rischio !== undefined &&
-          ['low','medium','high','absent','treated'].includes(info.rischio)) {
+          ['low','medium','high','absent'].includes(info.rischio)) {
         if ((RISCHIO_ORD[info.rischio] || 0) >= (RISCHIO_ORD[d.rischio] || 0)) {
           d.rischio = info.rischio;
         }
