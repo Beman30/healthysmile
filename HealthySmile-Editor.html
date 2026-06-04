@@ -1905,9 +1905,13 @@ async function compilaSchedaConAI() {
 
   try {
     const db = getFirestoreDb();
+    const STUDIO_ID = 'healthy_smile_torino';
 
-    // 2. Recupera documento paziente da Firestore
-    const docSnap = await db.collection('pazienti').doc(patientId).get();
+    // 2. Recupera documento paziente da studios/{STUDIO_ID}/pazienti (con fallback globale)
+    let docSnap = await db.collection('studios').doc(STUDIO_ID).collection('pazienti').doc(patientId).get();
+    if (!docSnap.exists) {
+      docSnap = await db.collection('pazienti').doc(patientId).get();
+    }
     if (!docSnap.exists) {
       throw new Error(`Paziente "${patientId}" non trovato in Firestore`);
     }
@@ -2139,8 +2143,9 @@ async function generateAITexts(patientClinicalSummary) {
       Array.isArray(ai.punti_critici) ? ai.punti_critici.join('\n') : ai.punti_critici;
   }
 
-  // ── Aggiorna denti ──
+  // ── Aggiorna denti (solo testi — il rischio AI non può abbassare quello clinico) ──
   if (ai.denti && typeof ai.denti === 'object') {
+    const RISCHIO_ORD = { 'low': 0, 'treated': 1, 'medium': 1, 'high': 2, 'absent': 3 };
     Object.entries(ai.denti).forEach(([numStr, info]) => {
       if (!info) return;
       const n = parseInt(numStr);
@@ -2148,9 +2153,12 @@ async function generateAITexts(patientClinicalSummary) {
       if (!d) return;
       if (info.consiglio !== undefined) d.consiglio = info.consiglio;
       if (info.note      !== undefined) d.note      = info.note;
+      // Applica rischio AI solo se non abbassa quello già calcolato dai dati clinici
       if (info.rischio !== undefined &&
           ['low','medium','high','absent','treated'].includes(info.rischio)) {
-        d.rischio = info.rischio;
+        if ((RISCHIO_ORD[info.rischio] || 0) >= (RISCHIO_ORD[d.rischio] || 0)) {
+          d.rischio = info.rischio;
+        }
         if (info.rischio === 'absent') d.presente = false;
       }
     });
