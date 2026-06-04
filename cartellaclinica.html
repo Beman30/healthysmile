@@ -882,6 +882,7 @@ const DOCTOR_ID  = "default_doctor";
 // Riferimenti Firestore per memoria AI dello studio
 function studioRef()    { return db.collection('studios').doc(STUDIO_ID); }
 function aiCol(name)    { return studioRef().collection(name); }
+function patientsCol()  { return studioRef().collection('pazienti'); }
 
 function startApp() {
   loadPrestazioni()
@@ -1170,9 +1171,22 @@ window.addEventListener('load', () => {
 async function loadPatients() {
   setSyncPill('sy');
   try {
-    const snap = await db.collection('pazienti').get();
+    let snap = await patientsCol().get();
+    // Migrazione automatica: se la collection dello studio è vuota, leggi dalla globale e copia
+    if (snap.empty) {
+      const globalSnap = await db.collection('pazienti').get();
+      if (!globalSnap.empty) {
+        console.log(`[migrazione] Copio ${globalSnap.size} pazienti in studios/${STUDIO_ID}/pazienti`);
+        const batch = db.batch();
+        globalSnap.docs.forEach(d => {
+          batch.set(patientsCol().doc(d.id), d.data());
+        });
+        await batch.commit();
+        snap = await patientsCol().get();
+        notify(`Migrazione completata: ${globalSnap.size} pazienti spostati nello studio`, 'ok');
+      }
+    }
     patients = snap.docs.map(d => ({...d.data(), id: d.id}));
-    // Sort by codice
     patients.sort((a,b)=>(a.codice||'').localeCompare(b.codice||''));
     renderList(patients);
     setSyncPill('ok');
@@ -1216,7 +1230,7 @@ async function openPatient(id) {
   renderList(patients);
   setSyncPill('sy');
   try {
-    const doc = await db.collection('pazienti').doc(id).get();
+    const doc = await patientsCol().doc(id).get();
     if (!doc.exists) { notify('Paziente non trovato','err'); setSyncPill('er'); return; }
     const p = doc.data();
     setSyncPill('ok');
@@ -1266,7 +1280,7 @@ async function openPatient(id) {
 
   // Listener real-time: aggiorna odontogramma se un altro PC salva
   if (_patListener) { _patListener(); _patListener = null; }
-  _patListener = db.collection('pazienti').doc(id).onSnapshot(snap => {
+  _patListener = patientsCol().doc(id).onSnapshot(snap => {
     if (!snap.exists) return;
     if (snap.metadata.hasPendingWrites) return;
     if (Date.now() - _lastSaveTime < 4000) return;
@@ -1335,7 +1349,7 @@ async function savePatient() {
   try {
     _lastSaveTime = Date.now();
     const data = collectData();
-    await db.collection('pazienti').doc(currentId).set(data);
+    await patientsCol().doc(currentId).set(data);
     setSyncPill('ok');
     notify('Salvato!','ok');
     await loadPatients();
@@ -1373,7 +1387,7 @@ async function createPatient() {
   const today = new Date().toISOString().split('T')[0];
   setSyncPill('sy');
   try {
-    await db.collection('pazienti').doc(id).set({
+    await patientsCol().doc(id).set({
       id,
       codice:  codiceFinale,
       nome,
@@ -1400,7 +1414,7 @@ async function confirmDelete() {
   if (!confirm('Eliminare questa cartella?')) return;
   setSyncPill('sy');
   try {
-    await db.collection('pazienti').doc(currentId).delete();
+    await patientsCol().doc(currentId).delete();
     currentId = null;
     document.getElementById('record').style.display = 'none';
     document.getElementById('welcome').style.display = 'flex';
