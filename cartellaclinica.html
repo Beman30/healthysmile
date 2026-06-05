@@ -4603,7 +4603,7 @@ async function quadStartRec(q){
 
 function quadStopRec(q){QUAD_RECORDERS[q]?.mr?.stop();document.getElementById(`quad-stop-${q}`).style.display='none';}
 
-async async function quadAnalizza(q){
+async function quadAnalizza(q){
   const nota=(document.getElementById(`quad-tx-${q}`)?.value||'').trim();
   if(!nota){quadShowErr(q,'Inserisci o registra del testo.');return;}
   quadShowErr(q,'');quadSetStatus(q,'proc','Analisi AI...');
