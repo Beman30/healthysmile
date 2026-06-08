@@ -2800,12 +2800,12 @@ function renderPrevRows() {
         style="width:80px;border:1px solid transparent;border-radius:4px;padding:4px 5px;font-size:12px;text-align:right;background:transparent;outline:none" onfocus="this.style.borderColor='var(--gray-300)'" onblur="this.style.borderColor='transparent'"></td>
       <td style="padding:6px 8px;text-align:right">
         <div style="display:flex;align-items:center;gap:3px;justify-content:flex-end">
-          <input type="number" value="${r.sconto||0}" min="0" max="100" step="0.01" placeholder="%" oninput="updatePrevRowSconto(${i},'pct',this.value)"
+          <input type="number" value="${r.sconto||0}" min="0" max="100" step="0.01" placeholder="%" onchange="updatePrevRowSconto(${i},'pct',this.value)"
             style="width:52px;border:1px solid transparent;border-radius:4px;padding:4px 5px;font-size:12px;text-align:right;background:transparent;outline:none" onfocus="this.style.borderColor='var(--gray-300)'" onblur="this.style.borderColor='transparent'" title="Sconto in %">
           <span style="font-size:10px;color:var(--gray-300)">%</span>
           <span style="font-size:10px;color:var(--gray-400);margin:0 1px">/</span>
           <span style="font-size:10px;color:var(--gray-300)">€</span>
-          <input type="number" value="${r.prezzoScontato!=null ? r.prezzoScontato : ''}" min="0" step="0.01" placeholder="0,00" oninput="updatePrevRowSconto(${i},'eur',this.value)"
+          <input type="number" value="${r.prezzoScontato!=null ? r.prezzoScontato : ''}" min="0" step="0.01" placeholder="0,00" onchange="updatePrevRowSconto(${i},'eur',this.value)"
             style="width:62px;border:1px solid transparent;border-radius:4px;padding:4px 5px;font-size:12px;text-align:right;background:transparent;outline:none" onfocus="this.style.borderColor='var(--gray-300)'" onblur="this.style.borderColor='transparent'" title="Prezzo finale scontato">
         </div>
       </td>
