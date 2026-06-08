@@ -2901,6 +2901,13 @@ function updatePrevRowSconto(i, mode, val) {
 
 function updatePrevRow(i, field, val) {
   prevRows[i][field] = val;
+  if (field === 'label') {
+    const match = [...TR_PIANO, ...TR_ATTUALE].find(t => t.label.trim().toLowerCase() === val.trim().toLowerCase());
+    if (match && match.prezzo != null && (!prevRows[i].prezzo || prevRows[i].prezzo == 0)) {
+      prevRows[i].prezzo = match.prezzo;
+      prevRows[i].tid = match.id;
+    }
+  }
   renderPrevRows();
 }
 
