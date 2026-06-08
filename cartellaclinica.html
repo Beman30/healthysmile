@@ -484,6 +484,17 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--gray-50);color:
         <!-- ODONTOGRAMMA -->
         <div id="tab-odontogramma" style="display:none">
 
+          <!-- COSE DA MONITORARE — alert clinici -->
+          <div class="card" id="alerts-card">
+            <div class="card-title" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+              <span>⚠ Cose da monitorare</span>
+              <button class="btn-s" onclick="openAlertForm()">+ Nuovo alert</button>
+            </div>
+            <div style="font-size:11px;color:var(--gray-500);margin-bottom:.6rem">Memoria clinica sintetica: situazioni da non perdere di vista (non sostituisce odontogramma o piano di cura).</div>
+            <div id="alert-form-wrap"></div>
+            <div id="alerts-list"></div>
+          </div>
+
           <!-- LEGENDA -->
           <div class="card">
             <div class="card-title">Legenda trattamenti</div>
@@ -719,6 +730,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--gray-50);color:
 
             <!-- Quality check / warnings v2 -->
             <div id="ai-quality-box" style="display:none;margin-bottom:12px"></div>
+            <div id="ai-alert-suggestions" style="display:none;margin-bottom:12px"></div>
 
             <!-- Pulsante conferma -->
             <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:4px;margin-bottom:2rem">
@@ -1153,6 +1165,8 @@ let _patListener = null;
 let _lastSaveTime = 0;
 
 let diary    = [];
+let alerts   = [];
+let _editingAlertIdx = null;
 let docs     = [];
 let prevRows = [];   // righe preventivo corrente
 
@@ -1262,6 +1276,7 @@ async function openPatient(id) {
   arcateAttualePresta = safeJson(p.arcate_attuale_presta, {});
   arcatePianoPresta   = safeJson(p.arcate_piano_presta, {});
   diary         = safeJson(p.diario, []);
+  alerts        = safeJson(p.alerts, []);
   docs          = safeJson(p.documenti, []);
   prevRows      = safeJson(p.preventivi, []);
   refreshOdonto('attuale');
@@ -1275,6 +1290,7 @@ async function openPatient(id) {
   renderPrevRows();
   initPrevHeader();
   renderDiary();
+  renderAlerts();
   renderDocs();
   document.getElementById('welcome').style.display = 'none';
   document.getElementById('record').style.display = 'block';
@@ -1342,6 +1358,7 @@ function collectData() {
     prev_validita: parseInt(document.getElementById('prev-validita')?.value||30),
     preventivi:    JSON.stringify(prevRows),
     diario:        JSON.stringify(diary),
+    alerts:        JSON.stringify(alerts),
     documenti:     JSON.stringify(docs)
   };
 }
@@ -1400,7 +1417,7 @@ async function createPatient() {
       rischio: 'basso',
       prima_visita: new Date().toISOString().split('T')[0],
       odontogramma: '{}', arcate: '{}', piano: '{}', arcate_piano: '{}',
-      preventivi: '[]', diario: '[]', documenti: '[]'
+      preventivi: '[]', diario: '[]', documenti: '[]', alerts: '[]'
     });
     setSyncPill('ok');
     closeModal();
@@ -2054,6 +2071,214 @@ function addDiaryEntry() {
   diary.push({ts,author,text});
   document.getElementById('diary-text').value='';
   renderDiary();
+
+  const candidati = detectClinicalAlerts(text).filter(c => !_alertGiaPresente(c));
+  if (candidati.length) {
+    candidati.forEach(c => alerts.push(c));
+    renderAlerts();
+    notify(`Rilevate ${candidati.length} situazione/i da monitorare: aggiunte a "Cose da monitorare"`,'i');
+  }
+}
+
+// ════════════════════════════════════════════════════════════
+// ALERT CLINICI / MONITORAGGIO — "Cose da monitorare"
+// ════════════════════════════════════════════════════════════
+const ALERT_CATEGORIE = ['Endodonzia','Conservativa','Protesi','Parodontologia','Implantologia','Chirurgia','Diagnosi incerta','Abitudini/parafunzioni','Organizzativo','Altro'];
+const ALERT_PRIORITA  = [{v:'bassa',label:'Bassa',color:'var(--teal)'},{v:'media',label:'Media',color:'var(--amber)'},{v:'alta',label:'Alta',color:'var(--red)'}];
+
+function _alertPrioMeta(p){ return ALERT_PRIORITA.find(x=>x.v===p) || ALERT_PRIORITA[1]; }
+
+function renderAlerts() {
+  const el = document.getElementById('alerts-list');
+  if (!el) return;
+  if (!alerts.length) { el.innerHTML = '<div style="color:var(--gray-300);font-size:13px;padding:.3rem 0">Nessun alert attivo. Usa "+ Nuovo alert" per aggiungerne uno manualmente — verranno proposti automaticamente anche dall\'analisi AI delle note.</div>'; return; }
+  const ordine = {alta:0, media:1, bassa:2};
+  const sorted = alerts.map((a,i)=>({a,i})).sort((x,y)=>{
+    if ((x.a.stato==='risolto') !== (y.a.stato==='risolto')) return x.a.stato==='risolto' ? 1 : -1;
+    return (ordine[x.a.priorita]??1) - (ordine[y.a.priorita]??1);
+  });
+  el.innerHTML = sorted.map(({a,i})=>{
+    const pm = _alertPrioMeta(a.priorita);
+    const risolto = a.stato === 'risolto';
+    return `
+    <div class="alert-item" style="border:1px solid ${risolto?'var(--gray-100)':pm.color};border-left:4px solid ${pm.color};border-radius:var(--r-sm);padding:.7rem .9rem;margin-bottom:.6rem;${risolto?'opacity:.55':''}">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;flex-wrap:wrap">
+        <div style="flex:1;min-width:180px">
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:.25rem">
+            ${a.dente ? `<span style="font-family:'DM Mono',monospace;font-size:11px;background:var(--gray-50);border-radius:4px;padding:1px 6px;font-weight:700">${esc(a.dente)}</span>` : ''}
+            <span style="font-weight:700;font-size:13px">${esc(a.titolo||'—')}</span>
+            <span style="font-size:10px;text-transform:uppercase;letter-spacing:.03em;color:${pm.color};font-weight:700;border:1px solid ${pm.color};border-radius:3px;padding:0 5px">${pm.label}</span>
+            ${a.categoria ? `<span style="font-size:10px;color:var(--gray-500);background:var(--gray-50);border-radius:3px;padding:1px 6px">${esc(a.categoria)}</span>` : ''}
+            <span style="font-size:10px;font-weight:700;border-radius:3px;padding:1px 6px;${risolto?'background:var(--teal-pale);color:var(--teal)':'background:#fef3c7;color:#78350f'}">${risolto?'✓ Risolto':'● Attivo'}</span>
+          </div>
+          ${a.nota_medico ? `<div style="font-size:12px;color:var(--gray-700);margin-bottom:.2rem"><strong>Per il medico:</strong> ${esc(a.nota_medico)}</div>` : ''}
+          ${a.nota_paziente ? `<div style="font-size:12px;color:var(--gray-500);margin-bottom:.2rem"><strong>Per il paziente:</strong> ${esc(a.nota_paziente)}</div>` : ''}
+          ${a.followup ? `<div style="font-size:12px;color:var(--gray-500)"><strong>Follow-up:</strong> ${esc(a.followup)}</div>` : ''}
+          <div style="font-size:10px;color:var(--gray-300);margin-top:.3rem;font-family:'DM Mono',monospace">creato il ${esc(a.creato||'—')}${a.origine==='ai' ? ' · proposto da AI' : ''}</div>
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <button class="btn-s" onclick="toggleAlertStato(${i})">${risolto?'↺ Riattiva':'✓ Risolto'}</button>
+          <button class="btn-s" onclick="openAlertForm(${i})">✎ Modifica</button>
+          <button class="btn-danger" onclick="deleteAlert(${i})">Elimina</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openAlertForm(idx) {
+  _editingAlertIdx = (typeof idx === 'number') ? idx : null;
+  const a = (_editingAlertIdx !== null) ? alerts[_editingAlertIdx] : {};
+  const wrap = document.getElementById('alert-form-wrap');
+  wrap.innerHTML = `
+    <div class="card" style="background:var(--gray-50);border:1px solid var(--gray-100);margin-bottom:.8rem">
+      <div class="card-title">${_editingAlertIdx !== null ? 'Modifica alert' : 'Nuovo alert'}</div>
+      <div class="grid3">
+        <div class="fg"><label>Dente / area (opzionale)</label><input id="al-dente" placeholder="es. 36 o 'arcata superiore'" value="${esc(a.dente||'')}"></div>
+        <div class="fg"><label>Priorità</label>
+          <select id="al-priorita">${ALERT_PRIORITA.map(p=>`<option value="${p.v}" ${a.priorita===p.v?'selected':''}>${p.label}</option>`).join('')}</select>
+        </div>
+        <div class="fg" style="grid-column:1/-1"><label>Titolo breve</label><input id="al-titolo" placeholder="es. Otturazione a rischio terapia canalare" value="${esc(a.titolo||'')}"></div>
+        <div class="fg"><label>Categoria</label>
+          <select id="al-categoria"><option value="">—</option>${ALERT_CATEGORIE.map(c=>`<option ${a.categoria===c?'selected':''}>${c}</option>`).join('')}</select>
+        </div>
+        <div class="fg"><label>Stato</label>
+          <select id="al-stato"><option value="attivo" ${a.stato!=='risolto'?'selected':''}>Attivo</option><option value="risolto" ${a.stato==='risolto'?'selected':''}>Risolto</option></select>
+        </div>
+        <div class="fg" style="grid-column:1/-1"><label>Nota per il medico</label><textarea id="al-nota-medico" style="min-height:54px">${esc(a.nota_medico||'')}</textarea></div>
+        <div class="fg" style="grid-column:1/-1"><label>Nota semplificata per il paziente</label><textarea id="al-nota-paziente" style="min-height:46px">${esc(a.nota_paziente||'')}</textarea></div>
+        <div class="fg" style="grid-column:1/-1"><label>Follow-up consigliato</label><input id="al-followup" placeholder="es. Ricontrollare tra 3 mesi" value="${esc(a.followup||'')}"></div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:.6rem">
+        <button class="btn-save" onclick="saveAlertForm()">💾 Salva alert</button>
+        <button class="btn-sec" onclick="closeAlertForm()">Annulla</button>
+      </div>
+    </div>`;
+  wrap.scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+function closeAlertForm() {
+  _editingAlertIdx = null;
+  document.getElementById('alert-form-wrap').innerHTML = '';
+}
+
+function saveAlertForm() {
+  const titolo = gv('al-titolo').trim();
+  if (!titolo) { notify('Inserisci almeno un titolo breve','err'); return; }
+  const now = new Date();
+  const data = {
+    dente:         gv('al-dente').trim(),
+    titolo,
+    categoria:     gv('al-categoria'),
+    priorita:      gv('al-priorita') || 'media',
+    stato:         gv('al-stato') || 'attivo',
+    nota_medico:   gv('al-nota-medico').trim(),
+    nota_paziente: gv('al-nota-paziente').trim(),
+    followup:      gv('al-followup').trim()
+  };
+  if (_editingAlertIdx !== null) {
+    alerts[_editingAlertIdx] = { ...alerts[_editingAlertIdx], ...data };
+  } else {
+    data.creato = now.toLocaleDateString('it-IT');
+    data.origine = 'manuale';
+    alerts.push(data);
+  }
+  closeAlertForm();
+  renderAlerts();
+  notify('Alert salvato','ok');
+}
+
+function toggleAlertStato(i) {
+  if (!alerts[i]) return;
+  alerts[i].stato = alerts[i].stato === 'risolto' ? 'attivo' : 'risolto';
+  renderAlerts();
+}
+
+function deleteAlert(i) {
+  if (!alerts[i]) return;
+  if (!confirm(`Eliminare l'alert "${alerts[i].titolo||''}"?`)) return;
+  alerts.splice(i,1);
+  renderAlerts();
+  notify('Alert eliminato','ok');
+}
+
+// ── Rilevamento automatico da dettatura/note: pattern clinici da ricordare ──
+const ALERT_PATTERNS = [
+  {re:/otturaz\w*[^.;\n]{0,40}(rischio|esposizion\w*|prossim\w* alla polpa|terapia canalare|devitalizz)/i, titolo:'Dente otturato a rischio terapia canalare', categoria:'Endodonzia', priorita:'alta', medico:'Otturazione vicina alla polpa: possibile evoluzione verso terapia canalare. Monitorare sintomatologia.', paziente:'Teniamo sotto controllo questo dente: in futuro potrebbe servire una cura del nervo.', followup:'Controllo clinico/radiografico a 3-6 mesi'},
+  {re:/carie\s+profond\w*/i, titolo:'Carie profonda', categoria:'Conservativa', priorita:'alta', medico:'Carie di profondità rilevante, possibile coinvolgimento pulpare. Valutare vitalità e necessità di terapia canalare.', paziente:'Hai una carie piuttosto profonda: è importante curarla presto per evitare problemi al nervo del dente.', followup:'Trattamento conservativo prioritario; rivalutare vitalità pulpare'},
+  {re:/(corona|capsul\w*)\s+provvisori\w*/i, titolo:'Corona provvisoria da sostituire con definitiva', categoria:'Protesi', priorita:'media', medico:'Presente corona provvisoria: pianificare sostituzione con manufatto definitivo.', paziente:'Hai una corona provvisoria: andrà sostituita con quella definitiva non appena possibile.', followup:'Pianificare appuntamento per protesi definitiva'},
+  {re:/(element\w*|dente)[^.;\n]{0,30}\bda\s+monitorar\w*/i, titolo:'Elemento da monitorare', categoria:'Altro', priorita:'media', medico:'Elemento dentario segnalato come da tenere sotto osservazione.', paziente:'Questo dente va tenuto sotto controllo nei prossimi appuntamenti.', followup:'Rivalutare ai successivi controlli periodici'},
+  {re:/tasch\w*\s+parodontal\w*/i, titolo:'Tasche parodontali', categoria:'Parodontologia', priorita:'media', medico:'Rilevate tasche parodontali. Valutare terapia parodontale e igiene domiciliare.', paziente:'Abbiamo notato una leggera infiammazione delle gengive da tenere monitorata con pulizie regolari.', followup:'Controllo parodontale e igiene professionale ravvicinata'},
+  {re:/mobilit[aà]\s*(dentale|element\w*)?/i, titolo:'Mobilità dentale', categoria:'Parodontologia', priorita:'alta', medico:'Riscontrata mobilità dell\'elemento dentario. Valutare grado e causa (parodontale/traumatica/occlusale).', paziente:'Abbiamo notato che questo dente si muove leggermente: lo terremo d\'occhio nei prossimi controlli.', followup:'Rivalutazione mobilità e splintaggio se necessario'},
+  {re:/impiant\w*[^.;\n]{0,30}\bda\s+controllar\w*|impiant\w*[^.;\n]{0,30}(verificare|rivalutare|monitorar\w*)/i, titolo:'Impianto da controllare', categoria:'Implantologia', priorita:'media', medico:'Impianto segnalato come da rivalutare (osteointegrazione, perimplantite, componentistica).', paziente:'Il tuo impianto va ricontrollato in uno dei prossimi appuntamenti.', followup:'Controllo radiografico e clinico dell\'impianto'},
+  {re:/(vecchi\w*|datat\w*)\s+protesi[^.;\n]{0,30}(incongru\w*|da rifare|da sostituire|non adeguat\w*)/i, titolo:'Vecchia protesi incongrua', categoria:'Protesi', priorita:'media', medico:'Protesi datata/incongrua riscontrata: valutare sostituzione o ribasatura.', paziente:'La protesi attuale non è più adeguata: valuteremo insieme come sostituirla o adattarla.', followup:'Pianificare valutazione protesica'},
+  {re:/dolore\s+riferit\w*[^.;\n]{0,40}(diagnosi\s+incert\w*|non\s+chiar\w*|da\s+approfondire|causa\s+non\s+identificat\w*)/i, titolo:'Dolore riferito ma diagnosi incerta', categoria:'Diagnosi incerta', priorita:'alta', medico:'Sintomatologia dolorosa riferita dal paziente, eziologia non ancora definita. Approfondire con esami diagnostici mirati.', paziente:'Il fastidio che ci hai segnalato va ancora indagato meglio: faremo ulteriori controlli per capire la causa.', followup:'Approfondimento diagnostico (test di vitalità/RX) al prossimo appuntamento'},
+  {re:/dent\w*\s+del\s+giudizio[^.;\n]{0,30}estratt\w*/i, titolo:'Dente del giudizio estratto: non proporre impianto', categoria:'Chirurgia', priorita:'bassa', medico:'Estrazione di terzo molare: NON proporre riabilitazione implantare nella sede, salvo diversa indicazione clinica.', paziente:'Abbiamo tolto il dente del giudizio: in questa zona non è necessario alcun impianto.', followup:'Nessun follow-up implantare previsto in questa sede'},
+  {re:/paziente\s+brux\w*|bruxis/i, titolo:'Paziente bruxista', categoria:'Abitudini/parafunzioni', priorita:'media', medico:'Paziente con bruxismo: valutare bite/protezione occlusale e monitorare usura/restauri.', paziente:'Hai l\'abitudine di digrignare i denti: ti consigliamo l\'uso di un bite per proteggerli.', followup:'Valutare/aggiornare bite notturno; controllo usura dentale'},
+  {re:/richiamo\s+ravvicinat\w*\s+necessari\w*|richiamo\s+a\s+breve|controllo\s+ravvicinat\w*\s+necessari\w*/i, titolo:'Richiamo ravvicinato necessario', categoria:'Organizzativo', priorita:'media', medico:'Indicato un richiamo a breve termine rispetto alla cadenza standard.', paziente:'Ti richiameremo per un controllo prima del solito, per tenere tutto sotto controllo.', followup:'Programmare richiamo ravvicinato (es. 4-8 settimane)'}
+];
+
+function detectClinicalAlerts(text) {
+  if (!text) return [];
+  const found = [];
+  const denteRe = /\b([1-4][1-8])\b/g;
+  ALERT_PATTERNS.forEach(p => {
+    const m = text.match(p.re);
+    if (!m) return;
+    // cerca un numero di dente nelle vicinanze del match
+    const idx = m.index ?? text.indexOf(m[0]);
+    const ctx = text.slice(Math.max(0, idx-25), idx + m[0].length + 15);
+    denteRe.lastIndex = 0;
+    const dm = denteRe.exec(ctx);
+    found.push({
+      dente: dm ? dm[1] : '',
+      titolo: p.titolo,
+      categoria: p.categoria,
+      priorita: p.priorita,
+      stato: 'attivo',
+      nota_medico: p.medico,
+      nota_paziente: p.paziente,
+      followup: p.followup,
+      creato: new Date().toLocaleDateString('it-IT'),
+      origine: 'ai'
+    });
+  });
+  return found;
+}
+
+function _alertGiaPresente(cand) {
+  return alerts.some(a => a.titolo === cand.titolo && (a.dente||'') === (cand.dente||''));
+}
+
+function renderAlertSuggestions(text) {
+  const box = document.getElementById('ai-alert-suggestions');
+  if (!box) return;
+  const candidati = detectClinicalAlerts(text).filter(c => !_alertGiaPresente(c));
+  if (!candidati.length) { box.style.display = 'none'; box.innerHTML=''; return; }
+  window._aiAlertCandidates = candidati;
+  box.style.display = 'block';
+  box.innerHTML = `
+    <div style="border:1px solid #fcd34d;border-radius:var(--r-sm);overflow:hidden;margin-top:10px">
+      <div style="background:#fef3c7;padding:7px 12px;font-size:12px;font-weight:700;color:#78350f">⚠ Rilevate situazioni da ricordare — proposta per "Cose da monitorare"</div>
+      <div style="background:white;padding:10px 12px;display:flex;flex-direction:column;gap:8px">
+        ${candidati.map((c,i)=>`
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;border:1px solid var(--gray-100);border-radius:var(--r-sm);padding:7px 10px;flex-wrap:wrap">
+            <div style="font-size:12px">${c.dente?`<span style="font-family:'DM Mono',monospace;font-weight:700;background:var(--gray-50);border-radius:4px;padding:1px 6px;margin-right:6px">${esc(c.dente)}</span>`:''}<strong>${esc(c.titolo)}</strong> <span style="color:var(--gray-500)">· ${esc(c.categoria)} · priorità ${esc(c.priorita)}</span></div>
+            <button class="btn-s" onclick="confermaAlertSuggerito(${i})">+ Aggiungi a "Cose da monitorare"</button>
+          </div>`).join('')}
+      </div>
+    </div>`;
+}
+
+function confermaAlertSuggerito(i) {
+  const cand = (window._aiAlertCandidates||[])[i];
+  if (!cand) return;
+  if (_alertGiaPresente(cand)) { notify('Alert già presente','i'); return; }
+  alerts.push({...cand});
+  renderAlerts();
+  notify('Alert aggiunto a "Cose da monitorare"','ok');
+  const btn = event?.target;
+  if (btn) { btn.disabled = true; btn.textContent = '✓ Aggiunto'; }
 }
 
 // ════════════════════════════════════════════════════════════
@@ -3207,6 +3432,9 @@ function aiApplicaRisposta(data) {
 
   // Mostra warnings e quality check del v2
   aiMostraQuality(data);
+
+  // Rileva situazioni cliniche da ricordare e propone alert per "Cose da monitorare"
+  renderAlertSuggestions(notaDisplay);
 
   results?.scrollIntoView({ behavior: 'smooth' });
 }
