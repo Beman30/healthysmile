@@ -574,6 +574,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--gray-50);color:
               <table style="width:100%;border-collapse:collapse" id="prev-table">
                 <thead>
                   <tr style="background:var(--gray-50)">
+                    <th style="width:24px;border-bottom:var(--border)"></th>
                     <th style="padding:7px 10px;font-size:10px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.04em;border-bottom:var(--border);text-align:left;width:55px">Dente</th>
                     <th style="padding:7px 10px;font-size:10px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.04em;border-bottom:var(--border);text-align:left">Prestazione</th>
                     <th style="padding:7px 10px;font-size:10px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.04em;border-bottom:var(--border);text-align:right;width:80px">Q.tà</th>
@@ -2776,7 +2777,13 @@ function renderPrevRows() {
     const denteDisplay = r.dente || '';
     const isGen = ['AS','AI','Q1','Q2','Q3','Q4'].includes(String(r.dente).toUpperCase()) || (!r.dente && r.scope && r.scope !== 'TOOTH_LEVEL');
     const denteBg = isGen ? 'background:#f0fdf4;color:#1D9E75;font-weight:700' : 'background:transparent';
-    return `<tr style="border-bottom:var(--border)">
+    return `<tr draggable="true" data-idx="${i}"
+        ondragstart="prevRowDragStart(event,${i})"
+        ondragover="prevRowDragOver(event)"
+        ondrop="prevRowDrop(event,${i})"
+        ondragend="prevRowDragEnd(event)"
+        style="border-bottom:var(--border)">
+      <td style="padding:6px 2px;text-align:center;cursor:grab;color:var(--gray-300);font-size:13px;user-select:none" title="Trascina per riordinare">⠿⠿</td>
       <td style="padding:6px 4px;white-space:nowrap">
         <input value="${denteDisplay}" onchange="updatePrevRow(${i},'dente',this.value)"
           list="prev-dente-list"
@@ -2804,7 +2811,7 @@ function renderPrevRows() {
       <td style="padding:6px 8px;text-align:right;font-weight:600;font-family:'DM Mono',monospace;font-size:12px;color:var(--teal)">€ ${tot.toFixed(2).replace('.',',')}</td>
       <td style="padding:6px 4px;text-align:center"><button onclick="removePrevRow(${i})" style="background:none;border:none;cursor:pointer;color:var(--gray-300);font-size:13px">✕</button></td>
     </tr>`;
-  }).join('') || `<tr><td colspan="7" style="padding:1.5rem;text-align:center;color:var(--gray-300);font-size:13px">Nessuna voce — clicca Da odontogramma o + Riga</td></tr>`;
+  }).join('') || `<tr><td colspan="8" style="padding:1.5rem;text-align:center;color:var(--gray-300);font-size:13px">Nessuna voce — clicca Da odontogramma o + Riga</td></tr>`;
 
   if (!document.getElementById('prev-prest-list')) {
     const dl = document.createElement('datalist'); dl.id='prev-prest-list';
@@ -2823,6 +2830,31 @@ function renderPrevRows() {
     document.body.appendChild(dl);
   }
   updatePrevTotals();
+}
+
+// ── Riordino righe preventivo via drag & drop ──
+let _prevDragIdx = null;
+function prevRowDragStart(e, i) {
+  _prevDragIdx = i;
+  e.dataTransfer.effectAllowed = 'move';
+  try { e.dataTransfer.setData('text/plain', String(i)); } catch(_) {}
+  e.currentTarget.style.opacity = '.4';
+}
+function prevRowDragOver(e) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+}
+function prevRowDrop(e, i) {
+  e.preventDefault();
+  if (_prevDragIdx === null || _prevDragIdx === i) return;
+  const [moved] = prevRows.splice(_prevDragIdx, 1);
+  prevRows.splice(i, 0, moved);
+  _prevDragIdx = null;
+  renderPrevRows();
+}
+function prevRowDragEnd(e) {
+  e.currentTarget.style.opacity = '';
+  _prevDragIdx = null;
 }
 
 function calcTotRow(r) {
