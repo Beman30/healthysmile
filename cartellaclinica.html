@@ -1229,6 +1229,10 @@ function filterList(q) {
 async function openPatient(id) {
   currentId = id;
   renderList(patients);
+  const url = new URL(window.location.href);
+  url.searchParams.set('id', id);
+  url.searchParams.delete('cerca');
+  history.replaceState(null, '', url);
   setSyncPill('sy');
   try {
     const doc = await patientsCol().doc(id).get();
