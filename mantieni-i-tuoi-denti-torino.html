@@ -349,7 +349,7 @@ footer{background:#0a0a0a;border-top:1px solid #161616;padding:28px 0}
     <h1 id="hero-h1">Se la prevenzione fallisce, <span class="aw">ci rimettiamo economicamente anche noi.</span></h1>
     <p class="hero-sub">Non ti chiediamo di fidarti.<br>Abbiamo messo i nostri soldi sulla prevenzione.</p>
     <p class="hero-micro">Identifichiamo i denti sani, li monitoriamo nel tempo e lavoriamo per mantenerli tali.</p>
-    <p style="font-size:clamp(17px,2.4vw,22px);color:var(--white);line-height:1.5;margin-bottom:14px;max-width:560px">Se uno di questi denti si ammala nonostante il percorso venga seguito correttamente, lo studio assorbe il <span style="font-family:var(--serif);font-style:italic;font-size:1.8em;color:var(--accent);line-height:1;vertical-align:middle;font-weight:400">70%</span> del costo delle cure necessarie*.</p>
+    <p id="section-70pct" style="font-size:clamp(17px,2.4vw,22px);color:var(--white);line-height:1.5;margin-bottom:14px;max-width:560px">Se uno di questi denti si ammala nonostante il percorso venga seguito correttamente, lo studio assorbe il <span style="font-family:var(--serif);font-style:italic;font-size:1.8em;color:var(--accent);line-height:1;vertical-align:middle;font-weight:400">70%</span> del costo delle cure necessarie*.</p>
     <div style="border:1px solid rgba(200,0,92,.35);border-radius:10px;padding:20px 22px;margin:18px 0 24px;background:rgba(200,0,92,.06);max-width:560px">
       <p style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);font-weight:600;margin-bottom:10px">CI CONVIENE ECONOMICAMENTE CHE TU RESTI SANO.</p>
       <p style="font-size:14px;color:#c8c6c0;line-height:1.7;margin:0">Se i tuoi denti restano sani spendiamo meno tutti.<br>Se si ammalano, tu paghi il 30% delle cure. Noi paghiamo il 70%.<br><strong style="color:var(--white)">Non conviene economicamente a nessuno.</strong><br><br>Per questo la prevenzione non &egrave; solo un consiglio.<br>È la scelta pi&ugrave; conveniente per entrambi.</p>
@@ -386,7 +386,7 @@ footer{background:#0a0a0a;border-top:1px solid #161616;padding:28px 0}
 </section>
 
 <!-- MICRO SEZIONE: COME FUNZIONA -->
-<section class="passport-intro" style="padding:56px 0 48px;background:var(--gray-100)" aria-label="Come funziona">
+<section id="section-come-funziona" class="passport-intro" style="padding:56px 0 48px;background:var(--gray-100)" aria-label="Come funziona">
   <div class="wrap">
     <p class="section-eyebrow">Come funziona?</p>
     <div style="display:flex;flex-direction:column;gap:0;margin-top:8px;margin-bottom:36px">
@@ -407,7 +407,7 @@ footer{background:#0a0a0a;border-top:1px solid #161616;padding:28px 0}
         <p style="font-size:17px;color:var(--gray-700);line-height:1.6;margin:0">Se uno dei denti classificati come sani si ammala nonostante il percorso venga seguito correttamente, <strong style="color:var(--black)">lo studio assorbe il</strong> <span style="font-family:var(--serif);font-style:italic;font-size:2.4em;color:var(--accent);line-height:1;vertical-align:middle">70%</span> <strong style="color:var(--black)">del costo delle cure necessarie</strong>.*</p>
       </div>
     </div>
-    <div style="background:var(--black);border-radius:12px;padding:28px 24px;margin-bottom:28px">
+    <div id="section-quale-trucco" style="background:var(--black);border-radius:12px;padding:28px 24px;margin-bottom:28px">
       <p style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);font-weight:600;margin-bottom:14px">Qual &egrave; il trucco?</p>
       <p style="font-family:var(--serif);font-size:clamp(22px,3vw,28px);color:var(--white);line-height:1.2;margin-bottom:16px">Nessuno.</p>
       <p style="font-size:15px;color:#c8c6c0;line-height:1.75;margin:0">La maggior parte degli studi viene pagata quando compare un problema.<br><br>Noi abbiamo scelto di assumerci una parte del rischio.<br><br>Se i denti che avevamo classificato come sani si ammalano nonostante il percorso venga seguito correttamente, sosteniamo il <strong style="color:var(--accent)">70%</strong> del costo delle cure previste dal regolamento Healthy Smile.<br><br><strong style="color:var(--white)">Per questo ci conviene economicamente che tu resti sano.</strong></p>
@@ -775,7 +775,7 @@ footer{background:#0a0a0a;border-top:1px solid #161616;padding:28px 0}
 </section>
 
 <!-- CTA FINALE -->
-<section class="cta-section" aria-labelledby="cta-title">
+<section id="cta-section" class="cta-section" aria-labelledby="cta-title">
   <div class="wrap">
     <p class="cta-eyebrow">Healthy Smile By N &middot; Torino</p>
     <p class="cta-pull">&ldquo;La miglior cura &egrave; quella che non serve fare.&rdquo;</p>
@@ -1019,42 +1019,133 @@ renderArch('archSup',supData);
 renderArch('archInf',infData);
 renderScore();
 
-/* GLOBAL TRACKING LISTENERS */
+/* ── ADVANCED TRACKING ─────────────────────────────── */
+
+/* helper: fire gtag + optional clarity event, once per key */
+var _fired={};
+function fire(evtName,params,clarityEvt){
+  if(_fired[evtName])return;
+  _fired[evtName]=true;
+  if(typeof gtag==='function')gtag('event',evtName,params||{});
+  if(clarityEvt&&typeof clarity==='function')clarity('event',clarityEvt);
+}
+
+/* HERO VIEW (fires immediately on load) */
+fire('hero_view',{page:'mantieni-i-tuoi-denti-torino'});
+
+/* INTERSECTION OBSERVER for named sections */
+(function(){
+  if(!window.IntersectionObserver)return;
+  var sections=[
+    {id:'section-70pct',   evt:'view_70_percent_section', params:{section_name:'70_percent'}, clarityEvt:'view_70_percent_section'},
+    {id:'section-quale-trucco', evt:'view_quale_trucco',  params:{section_name:'quale_trucco'}, clarityEvt:null},
+    {id:'cta-section',      evt:'view_final_cta',          params:{section_name:'final_cta'},   clarityEvt:null}
+  ];
+  var obs=new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){
+      if(!entry.isIntersecting)return;
+      var sid=entry.target.id;
+      var cfg=null;
+      for(var i=0;i<sections.length;i++){if(sections[i].id===sid){cfg=sections[i];break;}}
+      if(cfg){fire(cfg.evt,cfg.params,cfg.clarityEvt);obs.unobserve(entry.target);}
+    });
+  },{threshold:0.5});
+  sections.forEach(function(s){
+    var el=document.getElementById(s.id);
+    if(el)obs.observe(el);
+  });
+})();
+
+/* SCROLL DEPTH */
+var sdHit={25:false,50:false,75:false,90:false};
+window.addEventListener('scroll',function(){
+  var tot=document.documentElement.scrollHeight-window.innerHeight;
+  if(tot<=0)return;
+  var pct=Math.round(((window.scrollY||window.pageYOffset)/tot)*100);
+  if(pct>=25&&!sdHit[25]){sdHit[25]=true;fire('scroll_25',{percent:25});}
+  if(pct>=50&&!sdHit[50]){sdHit[50]=true;fire('scroll_50',{percent:50});}
+  if(pct>=75&&!sdHit[75]){sdHit[75]=true;fire('scroll_75',{percent:75},  'scroll_75');}
+  if(pct>=90&&!sdHit[90]){sdHit[90]=true;fire('scroll_90',{percent:90},  'scroll_90');}
+},{passive:true});
+
+/* TIME ON PAGE */
+var pageStart=Date.now();
+var engHit={30:false,60:false,120:false};
+setInterval(function(){
+  var sec=Math.floor((Date.now()-pageStart)/1000);
+  if(sec>=30 &&!engHit[30]) {engHit[30]=true; fire('engaged_30s',{seconds:30});}
+  if(sec>=60 &&!engHit[60]) {engHit[60]=true; fire('engaged_60s',{seconds:60});}
+  if(sec>=120&&!engHit[120]){engHit[120]=true;fire('engaged_120s',{seconds:120});}
+},5000);
+
+/* CLICK TRACKING (phone + whatsapp con source_section) */
+function getWaSection(el){
+  if(el.closest('.hero'))return'hero';
+  if(el.closest('#case1'))return'case_1';
+  if(el.closest('#case2'))return'case_2';
+  if(el.closest('#case3'))return'case_3';
+  if(el.closest('#case4'))return'case_4';
+  if(el.closest('#case5'))return'case_5';
+  if(el.closest('.cta-section'))return'final_cta';
+  return'other';
+}
 document.addEventListener('click',function(e){
   var a=e.target.closest('a');if(!a)return;
   var href=a.getAttribute('href')||'';
   if(href.indexOf('tel:+390112488248')!==-1){
     if(typeof gtag==='function'){
-      gtag('event','click_telefono',{event_category:'conversion',event_label:'Chiamata Fisso 011 Mantieni Denti'});
+      gtag('event','click_phone',{phone_number:'0112488248'});
       gtag('event','conversion',{send_to:'AW-947982327/phone_click'});
     }
-    if(typeof clarity==='function')clarity('set','click_fisso_011','true');
+    if(typeof clarity==='function')clarity('event','click_phone');
   }
   if(href.indexOf('wa.me')!==-1){
+    var src=getWaSection(a);
     if(typeof gtag==='function'){
-      gtag('event','whatsapp_click',{event_category:'conversione'});
+      gtag('event','click_whatsapp',{source_section:src});
       gtag('event','conversion',{send_to:'AW-947982327/whatsapp_click'});
     }
+    if(typeof clarity==='function')clarity('event','click_whatsapp');
+    /* final CTA specifico */
+    if(src==='final_cta')gtag('event','final_cta_click',{cta_type:'whatsapp'});
+  }
+  /* final CTA telefono */
+  if(href.indexOf('tel:')!==-1&&a.closest('.cta-section')){
+    if(typeof gtag==='function')gtag('event','final_cta_click',{cta_type:'phone'});
   }
 },true);
 
-/* SCROLL DEPTH */
-var sdHit={25:false,50:false,75:false,90:false};
-window.addEventListener('scroll',function(){
-  var pct=Math.round((window.scrollY/(document.documentElement.scrollHeight-window.innerHeight))*100);
-  [25,50,75,90].forEach(function(m){
-    if(pct>=m&&!sdHit[m]){sdHit[m]=true;if(typeof gtag==='function')gtag('event','scroll_depth',{event_category:'engagement',event_label:'depth_'+m+'_mantieni_denti'});}
+/* CASE OPEN */
+document.querySelectorAll('.choice-btn').forEach(function(btn){
+  btn.addEventListener('click',function(){
+    var n=btn.getAttribute('data-case');
+    if(!btn.classList.contains('active')){
+      if(typeof gtag==='function')gtag('event','open_case',{case_id:n});
+    }
   });
-},{passive:true});
+});
 
-/* TIME ON PAGE */
-var topHit={30:false,60:false,120:false,180:false},pageStart=Date.now();
-setInterval(function(){
-  var sec=Math.floor((Date.now()-pageStart)/1000);
-  [30,60,120,180].forEach(function(t){
-    if(sec>=t&&!topHit[t]){topHit[t]=true;if(typeof gtag==='function')gtag('event','time_on_page',{event_category:'engagement',event_label:'time_'+t+'s_mantieni_denti'});}
+/* AI EXPANDER OPEN + SUBMIT */
+document.querySelectorAll('.ai-trigger-btn').forEach(function(trigger){
+  var id=trigger.getAttribute('data-expander');
+  var caseId=id.replace('ai','');
+  var opened=false;
+  trigger.addEventListener('click',function(){
+    if(!opened){
+      opened=true;
+      if(typeof gtag==='function')gtag('event','open_ai_box',{case_id:caseId});
+    }
   });
-},5000);
+  var sendBtn=document.getElementById(id+'-send');
+  if(sendBtn){
+    sendBtn.addEventListener('click',function(){
+      var txt=document.getElementById(id+'-text');
+      if(txt&&txt.value.trim()){
+        if(typeof gtag==='function')gtag('event','submit_ai_request',{case_id:caseId});
+      }
+    });
+  }
+});
 
 })();
 </script>
