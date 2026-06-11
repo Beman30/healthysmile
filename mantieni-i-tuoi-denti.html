@@ -385,6 +385,36 @@ footer{background:#0a0a0a;border-top:1px solid #161616;padding:28px 0}
   </div>
 </section>
 
+<!-- CTA INTERMEDIA: VERIFICA PROFILO -->
+<section id="section-verify-profile" class="passport-intro" style="padding:52px 0 44px;background:#111;border-top:1px solid #1e1e1e;border-bottom:1px solid #1e1e1e" aria-label="Verifica il tuo profilo">
+  <div class="wrap">
+    <p class="section-eyebrow" style="color:#888">Piano Protezione</p>
+    <h2 class="section-title" style="color:var(--white)">Non tutti possono entrare nel Piano Protezione.</h2>
+    <p class="hero-sub" style="font-size:clamp(16px,2.2vw,19px);margin-bottom:16px">Scopri in meno di 30 secondi se il tuo sorriso pu&ograve; essere protetto dal nostro sistema.</p>
+    <p class="section-body" style="color:#c8c6c0;margin-bottom:28px">Non tutte le situazioni sono uguali.<br><br>Abbiamo creato una verifica preliminare per aiutarti a capire se il Piano Protezione &egrave; adatto alla tua situazione prima ancora di contattarci.</p>
+    <button id="btn-verify-profile" style="display:inline-flex;align-items:center;gap:10px;background:var(--white);color:var(--black);font-family:var(--sans);font-size:15px;font-weight:600;padding:15px 28px;border-radius:9px;border:none;cursor:pointer;transition:opacity .2s" onclick="document.getElementById('modal-verify').style.display='flex'">&#128269; Verifica il mio profilo</button>
+  </div>
+</section>
+
+<!-- MODAL: VERIFICA IN ARRIVO -->
+<div id="modal-verify" style="display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.75);align-items:center;justify-content:center;padding:20px" role="dialog" aria-modal="true" aria-labelledby="modal-verify-title">
+  <div style="background:var(--white);border-radius:14px;padding:32px 28px;max-width:480px;width:100%;position:relative">
+    <button onclick="document.getElementById('modal-verify').style.display='none'" style="position:absolute;top:16px;right:18px;font-size:20px;color:#888;background:none;border:none;cursor:pointer;font-family:var(--sans);line-height:1" aria-label="Chiudi">&#x2715;</button>
+    <p style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);font-weight:600;margin-bottom:14px">Verifica in arrivo</p>
+    <h3 id="modal-verify-title" style="font-family:var(--serif);font-size:clamp(22px,3.5vw,28px);color:var(--black);line-height:1.25;margin-bottom:16px">Stiamo completando il sistema di valutazione automatica.</h3>
+    <p style="font-size:15px;color:var(--gray-700);line-height:1.7;margin-bottom:24px">A breve potrai verificare online se il tuo sorriso &egrave; compatibile con il Piano Protezione.<br><br>Per ora puoi:</p>
+    <div style="display:flex;gap:10px;flex-direction:column">
+      <a href="tel:+390112488248" style="display:flex;align-items:center;justify-content:center;gap:8px;background:var(--accent);color:var(--white);font-size:14px;font-weight:500;padding:13px 16px;border-radius:8px;text-decoration:none">
+        <svg width="16" height="16"><use href="#phone-ico"/></svg>Chiamaci in Studio
+      </a>
+      <a href="https://wa.me/393924076794?text=Ciao%2C%20vorrei%20verificare%20se%20il%20mio%20profilo%20%C3%A8%20compatibile%20con%20il%20Piano%20Protezione%20Healthy%20Smile." target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:8px;background:var(--green);color:#fff;font-size:14px;font-weight:500;padding:13px 16px;border-radius:8px;text-decoration:none">
+        <svg width="16" height="16"><use href="#wa-ico"/></svg>Scrivici su WhatsApp
+      </a>
+    </div>
+    <p style="font-size:12px;color:var(--gray-500);margin-top:20px;line-height:1.5;text-align:center">Nessun form. Nessuna email. Nessuna raccolta dati.</p>
+  </div>
+</div>
+
 <!-- MICRO SEZIONE: COME FUNZIONA -->
 <section id="section-come-funziona" class="passport-intro" style="padding:56px 0 48px;background:var(--gray-100)" aria-label="Come funziona">
   <div class="wrap">
@@ -1114,6 +1144,34 @@ document.addEventListener('click',function(e){
     if(typeof gtag==='function')gtag('event','final_cta_click',{cta_type:'phone'});
   }
 },true);
+
+/* MODAL VERIFY: chiusura con ESC e click fuori */
+document.addEventListener('keydown',function(e){if(e.key==='Escape'){var m=document.getElementById('modal-verify');if(m)m.style.display='none';}});
+document.getElementById('modal-verify').addEventListener('click',function(e){if(e.target===this)this.style.display='none';});
+
+/* VERIFY PROFILE SECTION VIEW */
+(function(){
+  if(!window.IntersectionObserver)return;
+  var el=document.getElementById('section-verify-profile');
+  if(!el)return;
+  var obs=new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){
+      if(!entry.isIntersecting)return;
+      fire('view_verify_profile_section',{page:'mantieni_i_tuoi_denti'});
+      obs.unobserve(entry.target);
+    });
+  },{threshold:0.5});
+  obs.observe(el);
+})();
+
+/* VERIFY PROFILE BUTTON CLICK */
+var btnVerify=document.getElementById('btn-verify-profile');
+if(btnVerify){
+  btnVerify.addEventListener('click',function(){
+    if(typeof gtag==='function')gtag('event','click_verify_profile',{page:'mantieni_i_tuoi_denti',position:'mid_page_cta'});
+    if(typeof clarity==='function')clarity('event','verify_profile_click');
+  });
+}
 
 /* CASE OPEN */
 document.querySelectorAll('.choice-btn').forEach(function(btn){
