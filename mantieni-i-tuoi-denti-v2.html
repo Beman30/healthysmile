@@ -453,8 +453,9 @@ footer{background:#0a0a0a;border-top:1px solid #161616;padding:28px 0}
 
 
 <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
-<!-- APPROFONDIMENTI -->
-<section id="approfondimenti" style="display:none;background:var(--gray-100);padding:16px 0 0;border-top:2px solid var(--gray-300)" aria-label="Approfondimenti">
+<!-- APPROFONDIMENTI + FOOTER (nascosti) -->
+<div id="approfondimenti" style="display:none">
+<section style="background:var(--gray-100);padding:16px 0 0;border-top:2px solid var(--gray-300)" aria-label="Approfondimenti">
   <div class="wrap">
     <p style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--gray-500);padding:20px 0 16px;margin:0">Per approfondire &rarr;</p>
   </div>
@@ -663,6 +664,7 @@ footer{background:#0a0a0a;border-top:1px solid #161616;padding:28px 0}
     </nav>
   </div>
 </footer>
+</div><!-- /approfondimenti -->
 
 <!-- STICKY BAR -->
 <div class="sticky-bar" id="stickyBar" aria-hidden="true">
@@ -965,14 +967,14 @@ if(btnVerify){
 
 /* APPROFONDIMENTI TOGGLE */
 function toggleApprofondimenti(){
-  var sec=document.getElementById('approfondimenti');
+  var wrap=document.getElementById('approfondimenti');
   var btn=document.getElementById('btn-approfondisci');
   var arrow=document.getElementById('approfondisci-arrow');
-  var open=sec.style.display!=='none';
-  sec.style.display=open?'none':'block';
+  var open=wrap.style.display!=='none';
+  wrap.style.display=open?'none':'block';
   arrow.style.transform=open?'':'rotate(180deg)';
   btn.setAttribute('aria-expanded',open?'false':'true');
-  if(!open)setTimeout(function(){sec.scrollIntoView({behavior:'smooth',block:'start'});},50);
+  if(!open)setTimeout(function(){wrap.scrollIntoView({behavior:'smooth',block:'start'});},50);
 }
 
 /* START HS PATH BUTTON */
