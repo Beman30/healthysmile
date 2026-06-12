@@ -872,7 +872,7 @@ fire('hero_view',{page:'mantieni-i-tuoi-denti-torino'});
   var sections=[
     {id:'section-70pct',        evt:'view_70_percent_section', params:{section_name:'70_percent'},    clarityEvt:'view_70_percent_section'},
     {id:'section-quale-trucco', evt:'view_quale_trucco',      params:{section_name:'quale_trucco'}, clarityEvt:null},
-    {id:'section-come-si-inizia',evt:'view_come_si_inizia',   params:{section_name:'come_si_inizia'},clarityEvt:'view_come_si_inizia'},
+    {id:'section-come-si-inizia',evt:'igiene_protezione',      params:{section_name:'come_si_inizia'},clarityEvt:'igiene_protezione'},
     {id:'cta-section',          evt:'view_final_cta',         params:{section_name:'final_cta'},    clarityEvt:null}
   ];
   var obs=new IntersectionObserver(function(entries){
@@ -981,8 +981,8 @@ if(btnVerify){
 var btnStartPath=document.getElementById('btn-start-hs-path');
 if(btnStartPath){
   btnStartPath.addEventListener('click',function(){
-    if(typeof gtag==='function')gtag('event','click_start_hs_path',{page:'mantieni_i_tuoi_denti',position:'final_operational_cta'});
-    if(typeof clarity==='function')clarity('event','start_hs_path_click');
+    if(typeof gtag==='function')gtag('event','igiene_protezione_wa',{page:'mantieni_i_tuoi_denti',position:'final_operational_cta'});
+    if(typeof clarity==='function')clarity('event','igiene_protezione_wa');
   });
 }
 
