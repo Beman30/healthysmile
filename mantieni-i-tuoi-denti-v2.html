@@ -445,19 +445,16 @@ footer{background:#0a0a0a;border-top:1px solid #161616;padding:28px 0}
 <!-- CTA FINALE -->
 <section id="cta-section" style="background:var(--black);padding:56px 0 48px" aria-label="CTA finale">
   <div class="wrap" style="text-align:center">
-    <a id="btn-cta-finale-wa" href="https://wa.me/393924076794?text=Ciao%2C%20vorrei%20prenotare%20la%20valutazione%20iniziale%20Healthy%20Smile%20con%20igiene%20professionale%20e%20scheda%20digitale." target="_blank" rel="noopener" style="display:inline-flex;align-items:center;justify-content:center;gap:12px;background:var(--green);color:#fff;font-family:var(--sans);font-size:17px;font-weight:600;padding:20px 32px;border-radius:12px;transition:opacity .2s;text-decoration:none;margin-bottom:16px;width:100%;max-width:480px">
-      <svg width="20" height="20"><use href="#wa-ico"/></svg>
-      Scrivici su WhatsApp
-    </a>
-    <p style="font-size:13px;color:#888;line-height:1.5;margin-bottom:36px">Prenota l&rsquo;igiene professionale Healthy Smile.</p>
-    <a href="#approfondimenti" style="font-size:14px;color:#666;text-decoration:none;border-bottom:1px solid #333;padding-bottom:2px;transition:color .2s">Vuoi approfondire? Continua a leggere &darr;</a>
+    <button id="btn-approfondisci" onclick="toggleApprofondimenti()" style="display:inline-flex;align-items:center;gap:10px;background:none;border:1px solid #444;color:#ccc;font-family:var(--sans);font-size:15px;font-weight:400;padding:16px 28px;border-radius:10px;cursor:pointer;transition:border-color .2s,color .2s" aria-expanded="false" aria-controls="approfondimenti">
+      Vuoi saperne di pi&ugrave;? <span id="approfondisci-arrow" style="transition:transform .3s;display:inline-block">&darr;</span>
+    </button>
   </div>
 </section>
 
 
 <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
 <!-- APPROFONDIMENTI -->
-<section id="approfondimenti" style="background:var(--gray-100);padding:16px 0 0;border-top:2px solid var(--gray-300)" aria-label="Approfondimenti">
+<section id="approfondimenti" style="display:none;background:var(--gray-100);padding:16px 0 0;border-top:2px solid var(--gray-300)" aria-label="Approfondimenti">
   <div class="wrap">
     <p style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--gray-500);padding:20px 0 16px;margin:0">Per approfondire &rarr;</p>
   </div>
@@ -964,6 +961,18 @@ if(btnVerify){
     if(typeof gtag==='function')gtag('event','click_verify_profile',{page:'mantieni_i_tuoi_denti',position:'mid_page_cta'});
     if(typeof clarity==='function')clarity('event','verify_profile_click');
   });
+}
+
+/* APPROFONDIMENTI TOGGLE */
+function toggleApprofondimenti(){
+  var sec=document.getElementById('approfondimenti');
+  var btn=document.getElementById('btn-approfondisci');
+  var arrow=document.getElementById('approfondisci-arrow');
+  var open=sec.style.display!=='none';
+  sec.style.display=open?'none':'block';
+  arrow.style.transform=open?'':'rotate(180deg)';
+  btn.setAttribute('aria-expanded',open?'false':'true');
+  if(!open)setTimeout(function(){sec.scrollIntoView({behavior:'smooth',block:'start'});},50);
 }
 
 /* START HS PATH BUTTON */
