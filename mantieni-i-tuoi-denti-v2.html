@@ -677,6 +677,17 @@ footer{background:#0a0a0a;border-top:1px solid #161616;padding:28px 0}
 </div>
 
 <script>
+function toggleApprofondimenti(){
+  var wrap=document.getElementById('approfondimenti');
+  var btn=document.getElementById('btn-approfondisci');
+  var arrow=document.getElementById('approfondisci-arrow');
+  var open=wrap.style.display!=='none';
+  wrap.style.display=open?'none':'block';
+  arrow.style.transform=open?'':'rotate(180deg)';
+  btn.setAttribute('aria-expanded',open?'false':'true');
+  if(!open)setTimeout(function(){wrap.scrollIntoView({behavior:'smooth',block:'start'});},50);
+}
+
 (function(){
 'use strict';
 
@@ -963,18 +974,6 @@ if(btnVerify){
     if(typeof gtag==='function')gtag('event','click_verify_profile',{page:'mantieni_i_tuoi_denti',position:'mid_page_cta'});
     if(typeof clarity==='function')clarity('event','verify_profile_click');
   });
-}
-
-/* APPROFONDIMENTI TOGGLE */
-function toggleApprofondimenti(){
-  var wrap=document.getElementById('approfondimenti');
-  var btn=document.getElementById('btn-approfondisci');
-  var arrow=document.getElementById('approfondisci-arrow');
-  var open=wrap.style.display!=='none';
-  wrap.style.display=open?'none':'block';
-  arrow.style.transform=open?'':'rotate(180deg)';
-  btn.setAttribute('aria-expanded',open?'false':'true');
-  if(!open)setTimeout(function(){wrap.scrollIntoView({behavior:'smooth',block:'start'});},50);
 }
 
 /* START HS PATH BUTTON */
