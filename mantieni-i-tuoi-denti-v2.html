@@ -870,9 +870,10 @@ fire('hero_view',{page:'mantieni-i-tuoi-denti-torino'});
 (function(){
   if(!window.IntersectionObserver)return;
   var sections=[
-    {id:'section-70pct',   evt:'view_70_percent_section', params:{section_name:'70_percent'}, clarityEvt:'view_70_percent_section'},
-    {id:'section-quale-trucco', evt:'view_quale_trucco',  params:{section_name:'quale_trucco'}, clarityEvt:null},
-    {id:'cta-section',      evt:'view_final_cta',          params:{section_name:'final_cta'},   clarityEvt:null}
+    {id:'section-70pct',        evt:'view_70_percent_section', params:{section_name:'70_percent'},    clarityEvt:'view_70_percent_section'},
+    {id:'section-quale-trucco', evt:'view_quale_trucco',      params:{section_name:'quale_trucco'}, clarityEvt:null},
+    {id:'section-come-si-inizia',evt:'view_come_si_inizia',   params:{section_name:'come_si_inizia'},clarityEvt:'view_come_si_inizia'},
+    {id:'cta-section',          evt:'view_final_cta',         params:{section_name:'final_cta'},    clarityEvt:null}
   ];
   var obs=new IntersectionObserver(function(entries){
     entries.forEach(function(entry){
