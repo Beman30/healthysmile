@@ -61,7 +61,7 @@ button{cursor:pointer;border:none;background:none;font-family:var(--sans)}
 .nav-phone{font-size:13px;color:#aaa;display:flex;align-items:center;gap:5px;white-space:nowrap;transition:color .2s}
 .nav-phone:hover{color:var(--white)}
 .nav-phone svg{width:13px;height:13px;flex-shrink:0}
-.nav-cta{background:var(--accent);color:var(--white);font-size:13px;font-weight:500;padding:7px 14px;border-radius:6px;white-space:nowrap;transition:opacity .2s;flex-shrink:0;cursor:pointer;border:none;font-family:var(--sans)}
+.nav-cta{background:var(--accent);color:var(--white);font-size:13px;font-weight:500;padding:7px 14px;border-radius:6px;white-space:nowrap;transition:opacity .2s;flex-shrink:0}
 .nav-cta:hover{opacity:.88}
 .hamburger{display:none;width:36px;height:36px;align-items:center;justify-content:center;flex-direction:column;gap:5px;flex-shrink:0}
 .hamburger span{display:block;width:22px;height:2px;background:var(--white);border-radius:2px;transition:transform .25s,opacity .25s}
@@ -272,56 +272,6 @@ footer{background:#0a0a0a;border-top:1px solid #161616;padding:28px 0}
 .sticky-wa{background:var(--green)}
 .sticky-tel{background:var(--accent)}
 .sticky-wa svg,.sticky-tel svg{width:17px;height:17px}
-
-/* ─── V2: ASSESSMENT BUTTON ─── */
-.btn-assessment-v2{display:inline-flex;align-items:center;justify-content:center;gap:10px;background:var(--accent);color:var(--white);font-family:var(--sans);font-size:16px;font-weight:600;padding:18px 28px;border-radius:10px;border:none;cursor:pointer;transition:opacity .2s;text-align:center;line-height:1.3;width:100%;max-width:520px}
-.btn-assessment-v2:hover{opacity:.88}
-.btn-assessment-v2.ghost{background:transparent;border:2px solid var(--white);color:var(--white);font-size:15px;padding:16px 24px}
-.btn-assessment-v2.ghost:hover{background:rgba(255,255,255,.08)}
-
-/* ─── V2: MICROCOPY ─── */
-.v2-microcopy{display:flex;gap:14px;flex-wrap:wrap;margin-top:14px;justify-content:center}
-.v2-microcopy span{font-size:13px;color:#aaa}
-.v2-microcopy.dark span{color:#888}
-@media(max-width:480px){.v2-microcopy{gap:8px;flex-direction:column;align-items:flex-start}}
-
-/* ─── V2: FORM MODAL ─── */
-.v2-modal-overlay{position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.8);display:none;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto}
-.v2-modal-overlay.open{display:flex}
-.v2-modal-inner{background:var(--white);border-radius:16px;padding:36px 28px 32px;max-width:520px;width:100%;position:relative;margin:auto}
-@media(max-width:480px){.v2-modal-inner{padding:28px 18px 24px;border-radius:12px}}
-.v2-modal-close{position:absolute;top:16px;right:18px;font-size:22px;color:#888;background:none;border:none;cursor:pointer;font-family:var(--sans);line-height:1;z-index:1}
-.v2-modal-eyebrow{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);font-weight:600;margin-bottom:12px}
-.v2-modal-title{font-family:var(--serif);font-size:clamp(22px,3.5vw,28px);color:var(--black);line-height:1.25;margin-bottom:8px}
-.v2-modal-sub{font-size:15px;color:var(--gray-700);line-height:1.6;margin-bottom:24px}
-.v2-form-field{margin-bottom:16px}
-.v2-form-label{display:block;font-size:13px;font-weight:500;color:var(--gray-700);margin-bottom:6px}
-.v2-form-label .req{color:var(--accent)}
-.v2-form-input{width:100%;padding:12px 14px;border:1px solid var(--gray-300);border-radius:8px;font-family:var(--sans);font-size:14px;color:var(--black);background:var(--white);transition:border-color .2s}
-.v2-form-input:focus{outline:none;border-color:var(--accent)}
-.v2-form-textarea{width:100%;min-height:90px;padding:12px 14px;border:1px solid var(--gray-300);border-radius:8px;font-family:var(--sans);font-size:14px;color:var(--black);background:var(--white);resize:vertical;transition:border-color .2s}
-.v2-form-textarea:focus{outline:none;border-color:var(--accent)}
-.v2-form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-@media(max-width:420px){.v2-form-row{grid-template-columns:1fr}}
-.v2-radio-group{display:flex;gap:10px;margin-top:4px}
-.v2-radio-label{display:flex;align-items:center;gap:7px;font-size:14px;color:var(--gray-700);cursor:pointer;background:var(--gray-100);border:1px solid var(--gray-300);border-radius:7px;padding:9px 16px;transition:border-color .2s,background .2s}
-.v2-radio-label:has(input:checked){border-color:var(--accent);background:rgba(200,0,92,.06)}
-.v2-radio-label input{accent-color:var(--accent)}
-.v2-file-wrap{border:1px dashed var(--gray-300);border-radius:8px;padding:14px 16px;cursor:pointer;transition:border-color .2s}
-.v2-file-wrap:hover{border-color:var(--accent)}
-.v2-file-wrap label{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--gray-500);cursor:pointer}
-.v2-file-wrap label strong{color:var(--black);font-size:14px}
-.v2-file-name{font-size:12px;color:var(--accent);margin-top:6px;display:none}
-.v2-file-input{display:none}
-.v2-submit-btn{width:100%;background:var(--accent);color:var(--white);font-family:var(--sans);font-size:16px;font-weight:600;padding:16px 24px;border-radius:9px;border:none;cursor:pointer;transition:opacity .2s;margin-top:8px}
-.v2-submit-btn:hover{opacity:.88}
-.v2-submit-btn:disabled{opacity:.5;cursor:not-allowed}
-.v2-form-privacy{font-size:12px;color:var(--gray-500);margin-top:12px;line-height:1.5;text-align:center}
-.v2-success{display:none;text-align:center;padding:12px 0 8px}
-.v2-success.show{display:block;animation:stepin .4s ease both}
-.v2-success-icon{font-size:40px;margin-bottom:16px}
-.v2-success-title{font-family:var(--serif);font-size:clamp(22px,3.5vw,28px);color:var(--black);line-height:1.25;margin-bottom:14px}
-.v2-success-body{font-size:15px;color:var(--gray-700);line-height:1.75}
 </style>
 </head>
 <body>
@@ -368,7 +318,7 @@ footer{background:#0a0a0a;border-top:1px solid #161616;padding:28px 0}
       <svg><use href="#phone-ico"/></svg>
       011 2488248
     </a>
-    <button class="nav-cta" id="nav-cta-v2" onclick="openAssessmentModal('nav')">Valutazione gratuita</button>
+    <a class="nav-cta" href="https://wa.me/393924076794?text=Ciao%2C%20vorrei%20saperne%20di%20pi%C3%B9%20su%20Healthy%20Smile%20Protection%20per%20mantenere%20i%20miei%20denti." target="_blank" rel="noopener">Scrivici</a>
     <button class="hamburger" id="hamburger" aria-label="Apri menu" aria-expanded="false">
       <span></span><span></span><span></span>
     </button>
@@ -390,21 +340,35 @@ footer{background:#0a0a0a;border-top:1px solid #161616;padding:28px 0}
   </div>
 </section>
 
-<!-- CTA INTERMEDIA: RICHIEDI VALUTAZIONE -->
-<section id="section-verify-profile" class="passport-intro" style="padding:52px 0 44px;background:#111;border-top:1px solid #1e1e1e;border-bottom:1px solid #1e1e1e" aria-label="Richiedi valutazione gratuita">
+<!-- CTA INTERMEDIA: VERIFICA PROFILO -->
+<section id="section-verify-profile" class="passport-intro" style="padding:52px 0 44px;background:#111;border-top:1px solid #1e1e1e;border-bottom:1px solid #1e1e1e" aria-label="Verifica il tuo profilo">
   <div class="wrap">
-    <p class="section-eyebrow" style="color:#888">Valutazione Healthy Smile</p>
+    <p class="section-eyebrow" style="color:#888">Piano Protezione</p>
     <h2 class="section-title" style="color:var(--white)">Non tutti possono entrare nel Piano Protezione.</h2>
-    <p class="hero-sub" style="font-size:clamp(16px,2.2vw,19px);margin-bottom:16px">Parlaci della tua situazione. Valuteremo se il tuo caso &egrave; compatibile con il percorso Healthy Smile.</p>
-    <p class="section-body" style="color:#c8c6c0;margin-bottom:28px">Non tutte le situazioni sono uguali.<br><br>Abbiamo creato una valutazione preliminare per capire insieme se il Piano Protezione &egrave; adatto alla tua situazione prima ancora di incontrarti.</p>
-    <button id="btn-verify-profile" class="btn-assessment-v2" onclick="openAssessmentModal('mid_page_cta')">Richiedi una Valutazione Healthy Smile Gratuita</button>
-    <div class="v2-microcopy" style="justify-content:flex-start;margin-top:12px">
-      <span>&#10003; Nessun impegno</span>
-      <span>&#10003; Nessun costo</span>
-      <span>&#10003; Verifica preliminare del caso</span>
-    </div>
+    <p class="hero-sub" style="font-size:clamp(16px,2.2vw,19px);margin-bottom:16px">Scopri in meno di 30 secondi se il tuo sorriso pu&ograve; essere protetto dal nostro sistema.</p>
+    <p class="section-body" style="color:#c8c6c0;margin-bottom:28px">Non tutte le situazioni sono uguali.<br><br>Abbiamo creato una verifica preliminare per aiutarti a capire se il Piano Protezione &egrave; adatto alla tua situazione prima ancora di contattarci.</p>
+    <button id="btn-verify-profile" style="display:inline-flex;align-items:center;gap:10px;background:var(--white);color:var(--black);font-family:var(--sans);font-size:15px;font-weight:600;padding:15px 28px;border-radius:9px;border:none;cursor:pointer;transition:opacity .2s" onclick="document.getElementById('modal-verify').style.display='flex'">&#128269; Verifica il mio profilo</button>
   </div>
 </section>
+
+<!-- MODAL: VERIFICA IN ARRIVO -->
+<div id="modal-verify" style="display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.75);align-items:center;justify-content:center;padding:20px" role="dialog" aria-modal="true" aria-labelledby="modal-verify-title">
+  <div style="background:var(--white);border-radius:14px;padding:32px 28px;max-width:480px;width:100%;position:relative">
+    <button onclick="document.getElementById('modal-verify').style.display='none'" style="position:absolute;top:16px;right:18px;font-size:20px;color:#888;background:none;border:none;cursor:pointer;font-family:var(--sans);line-height:1" aria-label="Chiudi">&#x2715;</button>
+    <p style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);font-weight:600;margin-bottom:14px">Verifica in arrivo</p>
+    <h3 id="modal-verify-title" style="font-family:var(--serif);font-size:clamp(22px,3.5vw,28px);color:var(--black);line-height:1.25;margin-bottom:16px">Stiamo completando il sistema di valutazione automatica.</h3>
+    <p style="font-size:15px;color:var(--gray-700);line-height:1.7;margin-bottom:24px">A breve potrai verificare online se il tuo sorriso &egrave; compatibile con il Piano Protezione.<br><br>Per ora puoi:</p>
+    <div style="display:flex;gap:10px;flex-direction:column">
+      <a href="tel:+390112488248" style="display:flex;align-items:center;justify-content:center;gap:8px;background:var(--accent);color:var(--white);font-size:14px;font-weight:500;padding:13px 16px;border-radius:8px;text-decoration:none">
+        <svg width="16" height="16"><use href="#phone-ico"/></svg>Chiamaci in Studio
+      </a>
+      <a href="https://wa.me/393924076794?text=Ciao%2C%20vorrei%20verificare%20se%20il%20mio%20profilo%20%C3%A8%20compatibile%20con%20il%20Piano%20Protezione%20Healthy%20Smile." target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:8px;background:var(--green);color:#fff;font-size:14px;font-weight:500;padding:13px 16px;border-radius:8px;text-decoration:none">
+        <svg width="16" height="16"><use href="#wa-ico"/></svg>Scrivici su WhatsApp
+      </a>
+    </div>
+    <p style="font-size:12px;color:var(--gray-500);margin-top:20px;line-height:1.5;text-align:center">Nessun form. Nessuna email. Nessuna raccolta dati.</p>
+  </div>
+</div>
 
 <!-- MICRO SEZIONE: COME FUNZIONA -->
 <section id="section-come-funziona" class="passport-intro" style="padding:56px 0 48px;background:var(--gray-100)" aria-label="Come funziona">
@@ -470,32 +434,20 @@ footer{background:#0a0a0a;border-top:1px solid #161616;padding:28px 0}
       </div>
     </div>
     <p style="font-size:15px;color:var(--gray-700);line-height:1.75;margin-bottom:36px">Solo dopo questa visita possiamo dirti se la tua bocca pu&ograve; entrare in Healthy Smile Protection.</p>
-    <button id="btn-start-hs-path" class="btn-assessment-v2" onclick="openAssessmentModal('come_si_inizia')">Richiedi una Valutazione Healthy Smile Gratuita</button>
-    <div class="v2-microcopy dark" style="margin-top:12px">
-      <span>&#10003; Nessun impegno</span>
-      <span>&#10003; Nessun costo</span>
-      <span>&#10003; Verifica preliminare del caso</span>
-    </div>
+    <a id="btn-start-hs-path" href="https://wa.me/393924076794?text=Ciao%2C%20vorrei%20prenotare%20la%20valutazione%20iniziale%20Healthy%20Smile%20con%20igiene%20professionale%20e%20scheda%20digitale." target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:12px;background:var(--accent);color:var(--white);font-family:var(--sans);font-size:17px;font-weight:600;padding:20px 28px;border-radius:12px;transition:opacity .2s;text-decoration:none;margin-bottom:14px;max-width:480px">
+      <svg width="20" height="20"><use href="#wa-ico"/></svg>
+      Inizia il tuo percorso Healthy Smile
+    </a>
+    <p style="font-size:13px;color:var(--gray-500);line-height:1.5;max-width:440px">Valutazione iniziale con igiene professionale, scheda digitale e verifica di idoneit&agrave;.</p>
   </div>
 </section>
 
 <!-- CTA FINALE -->
-<section id="cta-section" style="background:var(--black);padding:72px 0 56px" aria-label="CTA finale">
+<section id="cta-section" style="background:var(--black);padding:56px 0 48px" aria-label="CTA finale">
   <div class="wrap" style="text-align:center">
-    <p class="cta-eyebrow">Inizia adesso</p>
-    <h2 style="font-family:var(--serif);font-size:clamp(26px,4vw,36px);color:var(--white);line-height:1.2;margin-bottom:14px">Richiedi una Valutazione<br>Healthy Smile Gratuita</h2>
-    <p style="font-size:15px;color:#c8c6c0;line-height:1.7;margin-bottom:28px;max-width:480px;margin-left:auto;margin-right:auto">Parlaci della tua situazione. Valuteremo se il tuo caso &egrave; compatibile con il percorso Healthy Smile.</p>
-    <button id="btn-final-cta-v2" class="btn-assessment-v2" style="margin:0 auto" onclick="openAssessmentModal('final_cta')">Richiedi una Valutazione Healthy Smile Gratuita</button>
-    <div class="v2-microcopy" style="margin-top:14px">
-      <span>&#10003; Nessun impegno</span>
-      <span>&#10003; Nessun costo</span>
-      <span>&#10003; Verifica preliminare del caso</span>
-    </div>
-    <div style="margin-top:48px">
-      <button id="btn-approfondisci" onclick="toggleApprofondimenti()" style="display:inline-flex;align-items:center;gap:10px;background:none;border:1px solid #444;color:#ccc;font-family:var(--sans);font-size:15px;font-weight:400;padding:16px 28px;border-radius:10px;cursor:pointer;transition:border-color .2s,color .2s" aria-expanded="false" aria-controls="approfondimenti">
-        Vuoi saperne di pi&ugrave;? <span id="approfondisci-arrow" style="transition:transform .3s;display:inline-block">&darr;</span>
-      </button>
-    </div>
+    <button id="btn-approfondisci" onclick="toggleApprofondimenti()" style="display:inline-flex;align-items:center;gap:10px;background:none;border:1px solid #444;color:#ccc;font-family:var(--sans);font-size:15px;font-weight:400;padding:16px 28px;border-radius:10px;cursor:pointer;transition:border-color .2s,color .2s" aria-expanded="false" aria-controls="approfondimenti">
+      Vuoi saperne di pi&ugrave;? <span id="approfondisci-arrow" style="transition:transform .3s;display:inline-block">&darr;</span>
+    </button>
   </div>
 </section>
 
@@ -724,95 +676,6 @@ footer{background:#0a0a0a;border-top:1px solid #161616;padding:28px 0}
   </a>
 </div>
 
-<!-- ═══════════════════════════════════════ -->
-<!-- FORM MODAL V2                          -->
-<!-- ═══════════════════════════════════════ -->
-<div class="v2-modal-overlay" id="modal-assessment-v2" role="dialog" aria-modal="true" aria-labelledby="modal-v2-title">
-  <div class="v2-modal-inner">
-    <button class="v2-modal-close" id="modal-v2-close" aria-label="Chiudi">&#x2715;</button>
-
-    <!-- FORM STATE -->
-    <div id="v2-form-state">
-      <p class="v2-modal-eyebrow">Valutazione Healthy Smile</p>
-      <h3 class="v2-modal-title" id="modal-v2-title">Parlaci della tua situazione.</h3>
-      <p class="v2-modal-sub">Valuteremo se il tuo caso &egrave; compatibile con il percorso Healthy Smile.</p>
-
-      <form id="form-assessment-v2" novalidate>
-
-        <div class="v2-form-row">
-          <div class="v2-form-field">
-            <label class="v2-form-label" for="v2-nome">Nome <span class="req">*</span></label>
-            <input class="v2-form-input" type="text" id="v2-nome" name="nome" placeholder="Il tuo nome" required autocomplete="given-name">
-          </div>
-          <div class="v2-form-field">
-            <label class="v2-form-label" for="v2-eta">Et&agrave;</label>
-            <input class="v2-form-input" type="number" id="v2-eta" name="eta" placeholder="Es. 42" min="18" max="99">
-          </div>
-        </div>
-
-        <div class="v2-form-field">
-          <label class="v2-form-label" for="v2-telefono">Telefono <span class="req">*</span></label>
-          <input class="v2-form-input" type="tel" id="v2-telefono" name="telefono" placeholder="+39 000 000 0000" required autocomplete="tel">
-        </div>
-
-        <div class="v2-form-field">
-          <label class="v2-form-label" for="v2-email">Email <span class="req">*</span></label>
-          <input class="v2-form-input" type="email" id="v2-email" name="email" placeholder="nome@email.com" required autocomplete="email">
-        </div>
-
-        <div class="v2-form-field">
-          <label class="v2-form-label" for="v2-citta">Citt&agrave;</label>
-          <input class="v2-form-input" type="text" id="v2-citta" name="citta" placeholder="Dove abiti?" autocomplete="address-level2">
-        </div>
-
-        <div class="v2-form-field">
-          <label class="v2-form-label">Hai gi&agrave; un dentista?</label>
-          <div class="v2-radio-group">
-            <label class="v2-radio-label">
-              <input type="radio" name="ha_dentista" value="si"> S&igrave;
-            </label>
-            <label class="v2-radio-label">
-              <input type="radio" name="ha_dentista" value="no"> No
-            </label>
-          </div>
-        </div>
-
-        <div class="v2-form-field">
-          <label class="v2-form-label" for="v2-messaggio">Cosa ti ha colpito di Healthy Smile?</label>
-          <textarea class="v2-form-textarea" id="v2-messaggio" name="messaggio" placeholder="Descrivi la tua situazione, cosa ti ha convinto a chiedere informazioni, o qualsiasi cosa vuoi farci sapere prima della valutazione&hellip;"></textarea>
-        </div>
-
-        <div class="v2-form-field">
-          <label class="v2-form-label">Carica OPT recente <span style="font-weight:400;color:var(--gray-500)">(facoltativo)</span></label>
-          <div class="v2-file-wrap">
-            <label for="v2-opt-upload">
-              <span style="font-size:18px">&#128247;</span>
-              <div>
-                <strong>Carica radiografia OPT</strong>
-                <div style="font-size:12px;margin-top:2px">JPG, PNG o PDF &middot; Max 10 MB</div>
-              </div>
-            </label>
-            <input class="v2-file-input" type="file" id="v2-opt-upload" name="opt" accept=".jpg,.jpeg,.png,.pdf">
-            <div class="v2-file-name" id="v2-file-name-display"></div>
-          </div>
-        </div>
-
-        <button type="submit" class="v2-submit-btn" id="v2-submit-btn">Invia la richiesta di valutazione</button>
-        <p class="v2-form-privacy">I tuoi dati saranno utilizzati esclusivamente per valutare la compatibilit&agrave; con il percorso Healthy Smile. Non verranno condivisi con terze parti.</p>
-
-      </form>
-    </div>
-
-    <!-- SUCCESS STATE -->
-    <div class="v2-success" id="v2-success-state">
-      <div class="v2-success-icon">&#10003;</div>
-      <h3 class="v2-success-title">Grazie.</h3>
-      <p class="v2-success-body">Analizzeremo la tua richiesta.<br><br>Se il tuo caso &egrave; compatibile con il percorso Healthy Smile verrai contattato per una breve valutazione iniziale gratuita.</p>
-    </div>
-
-  </div>
-</div>
-
 <script>
 function toggleApprofondimenti(){
   var wrap=document.getElementById('approfondimenti');
@@ -847,96 +710,6 @@ var AI_ENDPOINT='https://healthy-smile-guide-agent.nicolapalmia.workers.dev';
 var AI_CTX='Sei un assistente odontoiatrico esperto di Healthy Smile Protection. Il tuo obiettivo è aiutare l\'utente a capire se il sistema Healthy Smile è adatto alla sua situazione. Spiega il concetto di conservazione dei denti naturali e la differenza tra un approccio reattivo (curare quando compare un problema) e la prevenzione programmata (monitorare nel tempo per evitare che i problemi si presentino). Descrivi che la prima visita crea una fotografia iniziale della bocca, che i denti vengono monitorati nel tempo e che il dentista ha interesse a mantenerti sano. NON fare diagnosi cliniche. NON fare promesse assolute sui risultati. NON parlare di garanzie commerciali. Spiega che lo studio ha un interesse economico diretto nel mantenerti sano: se un dente classificato come sano si ammala nonostante il percorso venga seguito, lo studio assorbe il 70% del costo delle cure. Questo significa che ci conviene economicamente che tu resti sano. Suggerisci sempre una visita di valutazione per capire la situazione personale. Tono: professionale, elegante, rassicurante, mai aggressivo né sensazionalistico.';
 var WA_TEXT='Ciao%2C%20vorrei%20saperne%20di%20pi%C3%B9%20su%20Healthy%20Smile%20Protection%20per%20mantenere%20i%20miei%20denti.';
 
-/* ─── V2: TRACKING HELPER ─── */
-var _fired={};
-function fire(evtName,params,clarityEvt){
-  if(_fired[evtName])return;
-  _fired[evtName]=true;
-  if(typeof gtag==='function')gtag('event',evtName,params||{});
-  if(clarityEvt&&typeof clarity==='function')clarity('event',clarityEvt);
-}
-
-/* ─── V2: ASSESSMENT MODAL ─── */
-var _assessmentSource='unknown';
-window.openAssessmentModal=function(source){
-  _assessmentSource=source||'unknown';
-  var overlay=document.getElementById('modal-assessment-v2');
-  overlay.classList.add('open');
-  document.body.style.overflow='hidden';
-  if(typeof gtag==='function')gtag('event','form_open_v2',{page:'mantieni_i_tuoi_denti_v2',source:_assessmentSource});
-  if(typeof clarity==='function')clarity('event','form_open_v2');
-  if(typeof gtag==='function')gtag('event','cta_request_assessment_v2',{page:'mantieni_i_tuoi_denti_v2',source:_assessmentSource});
-  if(typeof clarity==='function')clarity('event','cta_request_assessment_v2');
-};
-function closeAssessmentModal(){
-  var overlay=document.getElementById('modal-assessment-v2');
-  overlay.classList.remove('open');
-  document.body.style.overflow='';
-}
-document.getElementById('modal-v2-close').addEventListener('click',closeAssessmentModal);
-document.getElementById('modal-assessment-v2').addEventListener('click',function(e){
-  if(e.target===this)closeAssessmentModal();
-});
-document.addEventListener('keydown',function(e){
-  if(e.key==='Escape'){
-    var m=document.getElementById('modal-assessment-v2');
-    if(m&&m.classList.contains('open'))closeAssessmentModal();
-  }
-});
-
-/* ─── V2: OPT UPLOAD TRACKING ─── */
-var optInput=document.getElementById('v2-opt-upload');
-var fileNameDisplay=document.getElementById('v2-file-name-display');
-if(optInput){
-  optInput.addEventListener('change',function(){
-    if(optInput.files&&optInput.files.length>0){
-      var fn=optInput.files[0].name;
-      fileNameDisplay.textContent=fn;
-      fileNameDisplay.style.display='block';
-      if(typeof gtag==='function')gtag('event','opt_upload_v2',{page:'mantieni_i_tuoi_denti_v2',file_name:fn});
-      if(typeof clarity==='function')clarity('event','opt_upload_v2');
-    }
-  });
-}
-
-/* ─── V2: FORM SUBMIT ─── */
-var formEl=document.getElementById('form-assessment-v2');
-var submitBtn=document.getElementById('v2-submit-btn');
-if(formEl){
-  formEl.addEventListener('submit',function(e){
-    e.preventDefault();
-    var nome=document.getElementById('v2-nome').value.trim();
-    var telefono=document.getElementById('v2-telefono').value.trim();
-    var email=document.getElementById('v2-email').value.trim();
-    if(!nome||!telefono||!email){
-      var missing=[];
-      if(!nome)missing.push('Nome');
-      if(!telefono)missing.push('Telefono');
-      if(!email)missing.push('Email');
-      alert('Per favore compila i campi obbligatori: '+missing.join(', ')+'.');
-      return;
-    }
-    submitBtn.disabled=true;
-    submitBtn.textContent='Invio in corso…';
-    var hasOpt=optInput&&optInput.files&&optInput.files.length>0;
-    if(typeof gtag==='function'){
-      gtag('event','form_submit_v2',{
-        page:'mantieni_i_tuoi_denti_v2',
-        source:_assessmentSource,
-        ha_dentista:(document.querySelector('input[name="ha_dentista"]:checked')||{}).value||'non_specificato',
-        ha_opt:hasOpt?'si':'no'
-      });
-      gtag('event','conversion',{send_to:'AW-947982327/form_submit_v2'});
-    }
-    if(typeof clarity==='function')clarity('event','form_submit_v2');
-    setTimeout(function(){
-      document.getElementById('v2-form-state').style.display='none';
-      var succ=document.getElementById('v2-success-state');
-      succ.classList.add('show');
-    },600);
-  });
-}
-
 /* DRAWER */
 var hamburger=document.getElementById('hamburger');
 var drawer=document.getElementById('drawer');
@@ -956,6 +729,7 @@ window.addEventListener('scroll',function(){
   else if(sy<=120&&stickyShown){stickyBar.classList.remove('show');stickyBar.setAttribute('aria-hidden','true');stickyShown=false;}
 },{passive:true});
 
+
 /* ACCORDION */
 document.querySelectorAll('.acc-header').forEach(function(header){
   function toggle(){
@@ -965,7 +739,7 @@ document.querySelectorAll('.acc-header').forEach(function(header){
     if(!isOpen){
       item.classList.add('open');header.setAttribute('aria-expanded','true');
       var n=header.getAttribute('data-acc');
-      if(typeof gtag==='function')gtag('event','hs_accordion_open_v2',{page:'mantieni_i_tuoi_denti_v2',event_label:'step_'+n+'_mantieni_denti_v2'});
+      if(typeof gtag==='function')gtag('event','hs_accordion_open',{event_category:'engagement',event_label:'step_'+n+'_mantieni_denti'});
     }
   }
   header.addEventListener('click',toggle);
@@ -984,7 +758,7 @@ document.querySelectorAll('.ai-trigger-btn').forEach(function(trigger){
 });
 
 function callAI(userText,onOk,onErr){
-  var payload={page:'mantieni_i_tuoi_denti_v2',path:'healthy-smile-protection-v2',symptom:'Conservazione denti naturali',userText:userText,hasPhoto:false,consent:true,consentTimestamp:new Date().toISOString(),privacyVersion:'chatbot-v1',marketingUse:false,visitorId:VISITOR_ID,context:AI_CTX};
+  var payload={page:'mantieni-i-tuoi-denti-torino',path:'healthy-smile-protection',symptom:'Conservazione denti naturali',userText:userText,hasPhoto:false,consent:true,consentTimestamp:new Date().toISOString(),privacyVersion:'chatbot-v1',marketingUse:false,visitorId:VISITOR_ID,context:AI_CTX};
   fetch(AI_ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})
     .then(function(r){return r.json();})
     .then(function(d){
@@ -1028,7 +802,6 @@ if(aiMainSend){
     var text=aiMainText.value.trim();if(!text)return;
     aiMainSend.disabled=true;aiMainSend.textContent='Un momento…';
     aiMainResp.style.display='none';aiMainResp.classList.remove('show');
-    if(typeof gtag==='function')gtag('event','submit_ai_request_v2',{page:'mantieni_i_tuoi_denti_v2'});
     callAI(text,
       function(reply){
         aiMainResp.innerHTML=reply.replace(/\n/g,'<br>')+'<br><a class="ai-main-wa" href="https://wa.me/393924076794?text='+WA_TEXT+'" target="_blank" rel="noopener"><svg width="14" height="14"><use href="#wa-ico"/></svg> Prenota su WhatsApp</a>';
@@ -1079,19 +852,28 @@ renderArch('archSup',supData);
 renderArch('archInf',infData);
 renderScore();
 
-/* ── V2 TRACKING ─────────────────────────────── */
+/* ── ADVANCED TRACKING ─────────────────────────────── */
 
-/* HERO VIEW */
-fire('hero_view_v2',{page:'mantieni_i_tuoi_denti_v2'},'hero_view_v2');
+/* helper: fire gtag + optional clarity event, once per key */
+var _fired={};
+function fire(evtName,params,clarityEvt){
+  if(_fired[evtName])return;
+  _fired[evtName]=true;
+  if(typeof gtag==='function')gtag('event',evtName,params||{});
+  if(clarityEvt&&typeof clarity==='function')clarity('event',clarityEvt);
+}
 
-/* INTERSECTION OBSERVER */
+/* HERO VIEW (fires immediately on load) */
+fire('hero_view',{page:'mantieni-i-tuoi-denti-torino'});
+
+/* INTERSECTION OBSERVER for named sections */
 (function(){
   if(!window.IntersectionObserver)return;
   var sections=[
-    {id:'section-70pct',         evt:'view_70_percent_section_v2', params:{page:'mantieni_i_tuoi_denti_v2',section_name:'70_percent'},    clarityEvt:'view_70_percent_section_v2'},
-    {id:'section-quale-trucco',  evt:'view_quale_trucco_v2',       params:{page:'mantieni_i_tuoi_denti_v2',section_name:'quale_trucco'},   clarityEvt:null},
-    {id:'section-come-si-inizia',evt:'igiene_protezione_v2',       params:{page:'mantieni_i_tuoi_denti_v2',section_name:'come_si_inizia'},clarityEvt:'igiene_protezione_v2'},
-    {id:'cta-section',           evt:'view_final_cta_v2',          params:{page:'mantieni_i_tuoi_denti_v2',section_name:'final_cta'},     clarityEvt:null}
+    {id:'section-70pct',        evt:'view_70_percent_section', params:{section_name:'70_percent'},    clarityEvt:'view_70_percent_section'},
+    {id:'section-quale-trucco', evt:'view_quale_trucco',      params:{section_name:'quale_trucco'}, clarityEvt:null},
+    {id:'section-come-si-inizia',evt:'igiene_protezione',      params:{section_name:'come_si_inizia'},clarityEvt:'igiene_protezione'},
+    {id:'cta-section',          evt:'view_final_cta',         params:{section_name:'final_cta'},    clarityEvt:null}
   ];
   var obs=new IntersectionObserver(function(entries){
     entries.forEach(function(entry){
@@ -1102,7 +884,10 @@ fire('hero_view_v2',{page:'mantieni_i_tuoi_denti_v2'},'hero_view_v2');
       if(cfg){fire(cfg.evt,cfg.params,cfg.clarityEvt);obs.unobserve(entry.target);}
     });
   },{threshold:0.5});
-  sections.forEach(function(s){var el=document.getElementById(s.id);if(el)obs.observe(el);});
+  sections.forEach(function(s){
+    var el=document.getElementById(s.id);
+    if(el)obs.observe(el);
+  });
 })();
 
 /* SCROLL DEPTH */
@@ -1111,10 +896,10 @@ window.addEventListener('scroll',function(){
   var tot=document.documentElement.scrollHeight-window.innerHeight;
   if(tot<=0)return;
   var pct=Math.round(((window.scrollY||window.pageYOffset)/tot)*100);
-  if(pct>=25&&!sdHit[25]){sdHit[25]=true;fire('scroll_25_v2',{page:'mantieni_i_tuoi_denti_v2',percent:25});}
-  if(pct>=50&&!sdHit[50]){sdHit[50]=true;fire('scroll_50_v2',{page:'mantieni_i_tuoi_denti_v2',percent:50});}
-  if(pct>=75&&!sdHit[75]){sdHit[75]=true;fire('scroll_75_v2',{page:'mantieni_i_tuoi_denti_v2',percent:75},'scroll_75_v2');}
-  if(pct>=90&&!sdHit[90]){sdHit[90]=true;fire('scroll_90_v2',{page:'mantieni_i_tuoi_denti_v2',percent:90},'scroll_90_v2');}
+  if(pct>=25&&!sdHit[25]){sdHit[25]=true;fire('scroll_25',{percent:25});}
+  if(pct>=50&&!sdHit[50]){sdHit[50]=true;fire('scroll_50',{percent:50});}
+  if(pct>=75&&!sdHit[75]){sdHit[75]=true;fire('scroll_75',{percent:75},  'scroll_75');}
+  if(pct>=90&&!sdHit[90]){sdHit[90]=true;fire('scroll_90',{percent:90},  'scroll_90');}
 },{passive:true});
 
 /* TIME ON PAGE */
@@ -1122,32 +907,53 @@ var pageStart=Date.now();
 var engHit={30:false,60:false,120:false};
 setInterval(function(){
   var sec=Math.floor((Date.now()-pageStart)/1000);
-  if(sec>=30 &&!engHit[30]) {engHit[30]=true; fire('engaged_30s_v2', {page:'mantieni_i_tuoi_denti_v2',seconds:30});}
-  if(sec>=60 &&!engHit[60]) {engHit[60]=true; fire('engaged_60s_v2', {page:'mantieni_i_tuoi_denti_v2',seconds:60});}
-  if(sec>=120&&!engHit[120]){engHit[120]=true;fire('engaged_120s_v2',{page:'mantieni_i_tuoi_denti_v2',seconds:120});}
+  if(sec>=30 &&!engHit[30]) {engHit[30]=true; fire('engaged_30s',{seconds:30});}
+  if(sec>=60 &&!engHit[60]) {engHit[60]=true; fire('engaged_60s',{seconds:60});}
+  if(sec>=120&&!engHit[120]){engHit[120]=true;fire('engaged_120s',{seconds:120});}
 },5000);
 
-/* CLICK TRACKING */
+/* CLICK TRACKING (phone + whatsapp con source_section) */
+function getWaSection(el){
+  if(el.closest('.hero'))return'hero';
+  if(el.closest('#case1'))return'case_1';
+  if(el.closest('#case2'))return'case_2';
+  if(el.closest('#case3'))return'case_3';
+  if(el.closest('#case4'))return'case_4';
+  if(el.closest('#case5'))return'case_5';
+  if(el.closest('.cta-section'))return'final_cta';
+  return'other';
+}
 document.addEventListener('click',function(e){
   var a=e.target.closest('a');if(!a)return;
   var href=a.getAttribute('href')||'';
   if(href.indexOf('tel:+390112488248')!==-1){
     if(typeof gtag==='function'){
-      gtag('event','click_phone_v2',{page:'mantieni_i_tuoi_denti_v2',phone_number:'0112488248'});
+      gtag('event','click_phone',{phone_number:'0112488248'});
       gtag('event','conversion',{send_to:'AW-947982327/phone_click'});
     }
-    if(typeof clarity==='function')clarity('event','click_phone_v2');
+    if(typeof clarity==='function')clarity('event','click_phone');
   }
   if(href.indexOf('wa.me')!==-1){
+    var src=getWaSection(a);
     if(typeof gtag==='function'){
-      gtag('event','click_whatsapp_v2',{page:'mantieni_i_tuoi_denti_v2'});
+      gtag('event','click_whatsapp',{source_section:src});
       gtag('event','conversion',{send_to:'AW-947982327/whatsapp_click'});
     }
-    if(typeof clarity==='function')clarity('event','click_whatsapp_v2');
+    if(typeof clarity==='function')clarity('event','click_whatsapp');
+    /* final CTA specifico */
+    if(src==='final_cta')gtag('event','final_cta_click',{cta_type:'whatsapp'});
+  }
+  /* final CTA telefono */
+  if(href.indexOf('tel:')!==-1&&a.closest('.cta-section')){
+    if(typeof gtag==='function')gtag('event','final_cta_click',{cta_type:'phone'});
   }
 },true);
 
-/* VERIFY PROFILE SECTION VIEW (V2) */
+/* MODAL VERIFY: chiusura con ESC e click fuori */
+document.addEventListener('keydown',function(e){if(e.key==='Escape'){var m=document.getElementById('modal-verify');if(m)m.style.display='none';}});
+document.getElementById('modal-verify').addEventListener('click',function(e){if(e.target===this)this.style.display='none';});
+
+/* VERIFY PROFILE SECTION VIEW */
 (function(){
   if(!window.IntersectionObserver)return;
   var el=document.getElementById('section-verify-profile');
@@ -1155,12 +961,52 @@ document.addEventListener('click',function(e){
   var obs=new IntersectionObserver(function(entries){
     entries.forEach(function(entry){
       if(!entry.isIntersecting)return;
-      fire('view_assessment_section_v2',{page:'mantieni_i_tuoi_denti_v2'});
+      fire('view_verify_profile_section',{page:'mantieni_i_tuoi_denti'});
       obs.unobserve(entry.target);
     });
   },{threshold:0.5});
   obs.observe(el);
 })();
+
+/* VERIFY PROFILE BUTTON CLICK */
+var btnVerify=document.getElementById('btn-verify-profile');
+if(btnVerify){
+  btnVerify.addEventListener('click',function(){
+    if(typeof gtag==='function')gtag('event','click_verify_profile',{page:'mantieni_i_tuoi_denti',position:'mid_page_cta'});
+    if(typeof clarity==='function')clarity('event','verify_profile_click');
+  });
+}
+
+/* START HS PATH BUTTON */
+var btnStartPath=document.getElementById('btn-start-hs-path');
+if(btnStartPath){
+  btnStartPath.addEventListener('click',function(){
+    if(typeof gtag==='function')gtag('event','igiene_protezione_wa',{page:'mantieni_i_tuoi_denti',position:'final_operational_cta'});
+    if(typeof clarity==='function')clarity('event','igiene_protezione_wa');
+  });
+}
+
+/* AI EXPANDER OPEN + SUBMIT */
+document.querySelectorAll('.ai-trigger-btn').forEach(function(trigger){
+  var id=trigger.getAttribute('data-expander');
+  var caseId=id.replace('ai','');
+  var opened=false;
+  trigger.addEventListener('click',function(){
+    if(!opened){
+      opened=true;
+      if(typeof gtag==='function')gtag('event','open_ai_box',{case_id:caseId});
+    }
+  });
+  var sendBtn=document.getElementById(id+'-send');
+  if(sendBtn){
+    sendBtn.addEventListener('click',function(){
+      var txt=document.getElementById(id+'-text');
+      if(txt&&txt.value.trim()){
+        if(typeof gtag==='function')gtag('event','submit_ai_request',{case_id:caseId});
+      }
+    });
+  }
+});
 
 })();
 </script>
