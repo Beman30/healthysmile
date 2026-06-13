@@ -1120,17 +1120,6 @@ fire('hero_view_v2',{page:'mantieni_i_tuoi_denti_v2'},'hero_view_v2');
   sections.forEach(function(s){var el=document.getElementById(s.id);if(el)obs.observe(el);});
 })();
 
-/* SCROLL DEPTH */
-var sdHit={25:false,50:false,75:false,90:false};
-window.addEventListener('scroll',function(){
-  var tot=document.documentElement.scrollHeight-window.innerHeight;
-  if(tot<=0)return;
-  var pct=Math.round(((window.scrollY||window.pageYOffset)/tot)*100);
-  if(pct>=25&&!sdHit[25]){sdHit[25]=true;fire('scroll_25_v2',{page:'mantieni_i_tuoi_denti_v2',percent:25});}
-  if(pct>=50&&!sdHit[50]){sdHit[50]=true;fire('scroll_50_v2',{page:'mantieni_i_tuoi_denti_v2',percent:50});}
-  if(pct>=75&&!sdHit[75]){sdHit[75]=true;fire('scroll_75_v2',{page:'mantieni_i_tuoi_denti_v2',percent:75},'scroll_75_v2');}
-  if(pct>=90&&!sdHit[90]){sdHit[90]=true;fire('scroll_90_v2',{page:'mantieni_i_tuoi_denti_v2',percent:90},'scroll_90_v2');}
-},{passive:true});
 
 /* TIME ON PAGE */
 var pageStart=Date.now();
