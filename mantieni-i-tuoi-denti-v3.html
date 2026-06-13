@@ -1121,15 +1121,6 @@ fire('hero_view_v2',{page:'mantieni_i_tuoi_denti_v2'},'hero_view_v2');
 })();
 
 
-/* TIME ON PAGE */
-var pageStart=Date.now();
-var engHit={30:false,60:false,120:false};
-setInterval(function(){
-  var sec=Math.floor((Date.now()-pageStart)/1000);
-  if(sec>=30 &&!engHit[30]) {engHit[30]=true; fire('engaged_30s_v2', {page:'mantieni_i_tuoi_denti_v2',seconds:30});}
-  if(sec>=60 &&!engHit[60]) {engHit[60]=true; fire('engaged_60s_v2', {page:'mantieni_i_tuoi_denti_v2',seconds:60});}
-  if(sec>=120&&!engHit[120]){engHit[120]=true;fire('engaged_120s_v2',{page:'mantieni_i_tuoi_denti_v2',seconds:120});}
-},5000);
 
 /* CLICK TRACKING */
 document.addEventListener('click',function(e){

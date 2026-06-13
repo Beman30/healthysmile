@@ -891,15 +891,6 @@ fire('hero_view',{page:'mantieni-i-tuoi-denti-torino'});
 })();
 
 
-/* TIME ON PAGE */
-var pageStart=Date.now();
-var engHit={30:false,60:false,120:false};
-setInterval(function(){
-  var sec=Math.floor((Date.now()-pageStart)/1000);
-  if(sec>=30 &&!engHit[30]) {engHit[30]=true; fire('engaged_30s',{seconds:30});}
-  if(sec>=60 &&!engHit[60]) {engHit[60]=true; fire('engaged_60s',{seconds:60});}
-  if(sec>=120&&!engHit[120]){engHit[120]=true;fire('engaged_120s',{seconds:120});}
-},5000);
 
 /* CLICK TRACKING (phone + whatsapp con source_section) */
 function getWaSection(el){
