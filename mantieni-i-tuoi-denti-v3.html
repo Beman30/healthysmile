@@ -919,21 +919,36 @@ if(formEl){
     submitBtn.disabled=true;
     submitBtn.textContent='Invio in corso…';
     var hasOpt=optInput&&optInput.files&&optInput.files.length>0;
-    if(typeof gtag==='function'){
-      gtag('event','form_submit_v2',{
-        page:'mantieni_i_tuoi_denti_v2',
-        source:_assessmentSource,
-        ha_dentista:(document.querySelector('input[name="ha_dentista"]:checked')||{}).value||'non_specificato',
-        ha_opt:hasOpt?'si':'no'
-      });
-      gtag('event','conversion',{send_to:'AW-947982327/form_submit_v2'});
-    }
-    if(typeof clarity==='function')clarity('event','form_submit_v2');
-    setTimeout(function(){
-      document.getElementById('v2-form-state').style.display='none';
-      var succ=document.getElementById('v2-success-state');
-      succ.classList.add('show');
-    },600);
+    var formData=new FormData(formEl);
+    fetch('https://formspree.io/f/mkopypyg',{
+      method:'POST',
+      body:formData,
+      headers:{Accept:'application/json'}
+    }).then(function(res){
+      if(res.ok){
+        if(typeof gtag==='function'){
+          gtag('event','form_submit_v2',{
+            page:'mantieni_i_tuoi_denti_v3',
+            source:_assessmentSource,
+            ha_dentista:(document.querySelector('input[name="ha_dentista"]:checked')||{}).value||'non_specificato',
+            ha_opt:hasOpt?'si':'no'
+          });
+          gtag('event','conversion',{send_to:'AW-947982327/form_submit_v2'});
+        }
+        if(typeof clarity==='function')clarity('event','form_submit_v2');
+        document.getElementById('v2-form-state').style.display='none';
+        var succ=document.getElementById('v2-success-state');
+        succ.classList.add('show');
+      }else{
+        submitBtn.disabled=false;
+        submitBtn.textContent='Invia la richiesta';
+        alert('Errore nell\'invio. Riprova o contattaci su WhatsApp.');
+      }
+    }).catch(function(){
+      submitBtn.disabled=false;
+      submitBtn.textContent='Invia la richiesta';
+      alert('Errore di rete. Riprova o contattaci su WhatsApp.');
+    });
   });
 }
 
