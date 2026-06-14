@@ -993,10 +993,10 @@ window.openAssessmentModal=function(source){
   var overlay=document.getElementById('modal-assessment-v2');
   overlay.classList.add('open');
   document.body.style.overflow='hidden';
-  if(typeof gtag==='function')gtag('event','form_open_serata',{page:'mantieni_i_tuoi_denti_v2',source:_assessmentSource});
-  if(typeof clarity==='function')clarity('event','form_open_serata');
-  if(typeof gtag==='function')gtag('event','cta_request_assessment_serata',{page:'mantieni_i_tuoi_denti_v2',source:_assessmentSource});
-  if(typeof clarity==='function')clarity('event','cta_request_assessment_serata');
+  if(typeof gtag==='function')gtag('event','form_open_v3',{page:'mantieni_i_tuoi_denti_v3',source:_assessmentSource});
+  if(typeof clarity==='function')clarity('event','form_open_v3');
+  if(typeof gtag==='function')gtag('event','cta_request_assessment_v3',{page:'mantieni_i_tuoi_denti_v3',source:_assessmentSource});
+  if(typeof clarity==='function')clarity('event','cta_request_assessment_v3');
 };
 function closeAssessmentModal(){
   var overlay=document.getElementById('modal-assessment-v2');
@@ -1150,8 +1150,8 @@ if(optInput){
       var fn=optInput.files[0].name;
       fileNameDisplay.textContent=fn;
       fileNameDisplay.style.display='block';
-      if(typeof gtag==='function')gtag('event','opt_upload_serata',{page:'mantieni_i_tuoi_denti_v2',file_name:fn});
-      if(typeof clarity==='function')clarity('event','opt_upload_serata');
+      if(typeof gtag==='function')gtag('event','opt_upload_v3',{page:'mantieni_i_tuoi_denti_v3',file_name:fn});
+      if(typeof clarity==='function')clarity('event','opt_upload_v3');
     }
   });
 }
@@ -1184,7 +1184,7 @@ if(formEl){
     }).then(function(res){
       if(res.ok){
         if(typeof gtag==='function'){
-          gtag('event','form_submit_serata',{
+          gtag('event','form_submit_v3',{
             page:'mantieni_i_tuoi_denti_v3',
             source:_assessmentSource,
             ha_dentista:(document.querySelector('input[name="ha_dentista"]:checked')||{}).value||'non_specificato',
@@ -1192,7 +1192,7 @@ if(formEl){
           });
           gtag('event','conversion',{send_to:'AW-947982327/form_submit_v2'});
         }
-        if(typeof clarity==='function')clarity('event','form_submit_serata');
+        if(typeof clarity==='function')clarity('event','form_submit_v3');
         document.getElementById('v2-form-state').style.display='none';
         var succ=document.getElementById('v2-success-state');
         succ.classList.add('show');
@@ -1237,7 +1237,7 @@ document.querySelectorAll('.acc-header').forEach(function(header){
     if(!isOpen){
       item.classList.add('open');header.setAttribute('aria-expanded','true');
       var n=header.getAttribute('data-acc');
-      if(typeof gtag==='function')gtag('event','hs_accordion_open_serata',{page:'mantieni_i_tuoi_denti_v2',event_label:'step_'+n+'_mantieni_denti_v2'});
+      if(typeof gtag==='function')gtag('event','hs_accordion_open_v3',{page:'mantieni_i_tuoi_denti_v3',event_label:'step_'+n+'_mantieni_denti_v3'});
     }
   }
   header.addEventListener('click',toggle);
@@ -1256,7 +1256,7 @@ document.querySelectorAll('.ai-trigger-btn').forEach(function(trigger){
 });
 
 function callAI(userText,onOk,onErr){
-  var payload={page:'mantieni_i_tuoi_denti_v2',path:'healthy-smile-protection-v2',symptom:'Conservazione denti naturali',userText:userText,hasPhoto:false,consent:true,consentTimestamp:new Date().toISOString(),privacyVersion:'chatbot-v1',marketingUse:false,visitorId:VISITOR_ID,context:AI_CTX};
+  var payload={page:'mantieni_i_tuoi_denti_v3',path:'healthy-smile-protection-v3',symptom:'Conservazione denti naturali',userText:userText,hasPhoto:false,consent:true,consentTimestamp:new Date().toISOString(),privacyVersion:'chatbot-v1',marketingUse:false,visitorId:VISITOR_ID,context:AI_CTX};
   fetch(AI_ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})
     .then(function(r){return r.json();})
     .then(function(d){
@@ -1300,7 +1300,7 @@ if(aiMainSend){
     var text=aiMainText.value.trim();if(!text)return;
     aiMainSend.disabled=true;aiMainSend.textContent='Un momento…';
     aiMainResp.style.display='none';aiMainResp.classList.remove('show');
-    if(typeof gtag==='function')gtag('event','submit_ai_request_serata',{page:'mantieni_i_tuoi_denti_v2'});
+    if(typeof gtag==='function')gtag('event','submit_ai_request_v3',{page:'mantieni_i_tuoi_denti_v3'});
     callAI(text,
       function(reply){
         aiMainResp.innerHTML=reply.replace(/\n/g,'<br>')+'<br><a class="ai-main-wa" href="https://wa.me/393924076794?text='+WA_TEXT+'" target="_blank" rel="noopener"><svg width="14" height="14"><use href="#wa-ico"/></svg> Prenota su WhatsApp</a>';
@@ -1354,16 +1354,16 @@ renderScore();
 /* ── V2 TRACKING ─────────────────────────────── */
 
 /* HERO VIEW */
-fire('hero_view_serata',{page:'mantieni_i_tuoi_denti_v2'},'hero_view_serata');
+fire('hero_view_v3',{page:'mantieni_i_tuoi_denti_v3'},'hero_view_v3');
 
 /* INTERSECTION OBSERVER */
 (function(){
   if(!window.IntersectionObserver)return;
   var sections=[
-    {id:'section-70pct',         evt:'view_70_percent_section_serata', params:{page:'mantieni_i_tuoi_denti_v2',section_name:'70_percent'},    clarityEvt:'view_70_percent_section_serata'},
-    {id:'section-quale-trucco',  evt:'view_quale_trucco_serata',       params:{page:'mantieni_i_tuoi_denti_v2',section_name:'quale_trucco'},   clarityEvt:null},
-    {id:'section-come-si-inizia',evt:'igiene_protezione_serata',       params:{page:'mantieni_i_tuoi_denti_v2',section_name:'come_si_inizia'},clarityEvt:'igiene_protezione_serata'},
-    {id:'cta-section',           evt:'view_final_cta_serata',          params:{page:'mantieni_i_tuoi_denti_v2',section_name:'final_cta'},     clarityEvt:null}
+    {id:'section-70pct',         evt:'view_70_percent_section_v3', params:{page:'mantieni_i_tuoi_denti_v3',section_name:'70_percent'},    clarityEvt:'view_70_percent_section_v3'},
+    {id:'section-quale-trucco',  evt:'view_quale_trucco_v3',       params:{page:'mantieni_i_tuoi_denti_v3',section_name:'quale_trucco'},   clarityEvt:null},
+    {id:'section-come-si-inizia',evt:'igiene_protezione_v3',       params:{page:'mantieni_i_tuoi_denti_v3',section_name:'come_si_inizia'},clarityEvt:'igiene_protezione_v3'},
+    {id:'cta-section',           evt:'view_final_cta_v3',          params:{page:'mantieni_i_tuoi_denti_v3',section_name:'final_cta'},     clarityEvt:null}
   ];
   var obs=new IntersectionObserver(function(entries){
     entries.forEach(function(entry){
@@ -1385,17 +1385,17 @@ document.addEventListener('click',function(e){
   var href=a.getAttribute('href')||'';
   if(href.indexOf('tel:+390112488248')!==-1){
     if(typeof gtag==='function'){
-      gtag('event','click_phone_serata',{page:'mantieni_i_tuoi_denti_v2',phone_number:'0112488248'});
+      gtag('event','click_phone_v3',{page:'mantieni_i_tuoi_denti_v3',phone_number:'0112488248'});
       gtag('event','conversion',{send_to:'AW-947982327/phone_click'});
     }
-    if(typeof clarity==='function')clarity('event','click_phone_serata');
+    if(typeof clarity==='function')clarity('event','click_phone_v3');
   }
   if(href.indexOf('wa.me')!==-1){
     if(typeof gtag==='function'){
-      gtag('event','click_whatsapp_serata',{page:'mantieni_i_tuoi_denti_v2'});
+      gtag('event','click_whatsapp_v3',{page:'mantieni_i_tuoi_denti_v3'});
       gtag('event','conversion',{send_to:'AW-947982327/whatsapp_click'});
     }
-    if(typeof clarity==='function')clarity('event','click_whatsapp_serata');
+    if(typeof clarity==='function')clarity('event','click_whatsapp_v3');
   }
 },true);
 
@@ -1407,7 +1407,7 @@ document.addEventListener('click',function(e){
   var obs=new IntersectionObserver(function(entries){
     entries.forEach(function(entry){
       if(!entry.isIntersecting)return;
-      fire('view_assessment_section_serata',{page:'mantieni_i_tuoi_denti_v2'});
+      fire('view_assessment_section_v3',{page:'mantieni_i_tuoi_denti_v3'});
       obs.unobserve(entry.target);
     });
   },{threshold:0.5});
