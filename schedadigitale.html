@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>La tua Scheda Digitale | Healthy Smile By N — Torino</title>
+<meta name="description" content="Dopo la prima visita ricevi via WhatsApp la mappa completa della tua bocca. Ogni dente verde entra in garanzia automatica: se si ammala, lo studio paga il 70%.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,700&display=swap" rel="stylesheet">
+<!-- GA4 -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-SRMDX8JXL5"></script>
+<script>
+window.dataLayer=window.dataLayer||[];
+function gtag(){dataLayer.push(arguments);}
+gtag('js',new Date());
+gtag('config','G-SRMDX8JXL5');
+gtag('config','AW-947982327');
+</script>
+<!-- Clarity -->
+<script type="text/javascript">
+(function(c,l,a,r,i,t,y){
+c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+})(window,document,"clarity","script","walfj3k79c");
+</script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#171717;
+  --bg2:#1c1c1c;
+  --bg3:#222;
+  --surface:#272727;
+  --border:#2e2e2e;
+  --white:#fafaf8;
+  --gray:#888;
+  --gray-dim:#555;
+  --gray-light:#c8c6c0;
+  --accent:#e6007e;
+  --accent-dim:rgba(230,0,126,.12);
+  --accent-border:rgba(230,0,126,.28);
+  --green:#2dff7a;
+  --green-wa:#25D366;
+  --yellow:#ffd166;
+  --red:#ff4d6d;
+  --font:'Inter',system-ui,sans-serif;
+}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{font-family:var(--font);background:var(--bg);color:var(--white);line-height:1.6;font-size:16px;overflow-x:hidden}
+@media(max-width:768px){body{padding-bottom:60px}}
+a{color:inherit;text-decoration:none}
+button{cursor:pointer;border:none;background:none;font-family:var(--font)}
+.wrap{max-width:640px;margin:0 auto;padding:0 20px}
+
+/* ── NAV ── */
+.nav{position:sticky;top:0;z-index:100;background:rgba(23,23,23,.96);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--border)}
+.nav-inner{max-width:640px;margin:0 auto;padding:0 20px;display:flex;align-items:center;gap:14px;height:56px}
+.nav-logo{font-size:15px;font-weight:800;letter-spacing:-.03em;color:var(--white);flex:1}
+.nav-logo .hs{color:var(--accent)}
+.nav-phone{font-size:13px;color:var(--gray);display:flex;align-items:center;gap:5px;white-space:nowrap;transition:color .2s}
+.nav-phone:hover{color:var(--white)}
+.nav-phone svg{width:13px;height:13px;flex-shrink:0}
+.nav-cta{background:var(--accent);color:#fff;font-size:13px;font-weight:700;padding:8px 16px;border-radius:7px;white-space:nowrap;transition:opacity .2s;flex-shrink:0}
+.nav-cta:hover{opacity:.85}
+@media(max-width:480px){.nav-phone{display:none}}
+
+/* ── HERO ── */
+.hero{background:var(--bg);padding:80px 0 68px}
+.hero-eyebrow{font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);font-weight:700;margin-bottom:22px}
+.hero-h1{font-size:clamp(30px,7vw,50px);font-weight:900;line-height:1.07;letter-spacing:-.035em;color:var(--white);margin-bottom:22px}
+.hero-h1 em{color:var(--accent);font-style:italic}
+.hero-sub{font-size:clamp(16px,2.5vw,19px);color:var(--gray-light);line-height:1.65;margin-bottom:36px;max-width:560px}
+.hero-pill{display:inline-flex;align-items:center;gap:8px;background:var(--bg3);border:1px solid var(--border);border-radius:30px;padding:8px 16px;font-size:12px;font-weight:600;color:var(--gray);letter-spacing:.04em}
+.hero-pill-dot{width:6px;height:6px;background:var(--accent);border-radius:50%;flex-shrink:0}
+
+/* ── GENERIC SECTION ── */
+.section-label{font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--gray);font-weight:700;margin-bottom:16px}
+.section-h2{font-size:clamp(24px,5vw,36px);font-weight:800;letter-spacing:-.025em;line-height:1.15;color:var(--white);margin-bottom:18px}
+.section-h2 em{color:var(--accent);font-style:italic}
+.section-body{font-size:15px;color:var(--gray-light);line-height:1.8;margin-bottom:16px}
+.section-body:last-child{margin-bottom:0}
+
+/* ── PROBLEMA ── */
+.problema{background:var(--bg2);padding:64px 0 56px;border-top:1px solid var(--border)}
+.problem-card{background:rgba(255,77,109,.05);border:1px solid rgba(255,77,109,.18);border-radius:16px;padding:28px 24px;margin:28px 0}
+.problem-amount{font-size:clamp(48px,10vw,72px);font-weight:900;color:var(--red);letter-spacing:-.05em;line-height:1;margin-bottom:4px}
+.problem-sublabel{font-size:13px;color:rgba(255,77,109,.7);font-weight:600;letter-spacing:.04em;text-transform:uppercase;margin-bottom:14px}
+.problem-desc{font-size:14px;color:#aaa;line-height:1.7}
+
+/* ── SCHEDA INTRO ── */
+.scheda-intro{background:var(--bg);padding:64px 0 56px;border-top:1px solid var(--border)}
+.steps-list{display:flex;flex-direction:column;margin-top:28px}
+.step-item{display:flex;align-items:flex-start;gap:18px;padding:20px 0;border-bottom:1px solid var(--border)}
+.step-item:last-child{border-bottom:none}
+.step-num{font-size:24px;font-weight:900;color:var(--accent);flex-shrink:0;width:34px;line-height:1.1}
+.step-body{font-size:15px;color:var(--gray-light);line-height:1.7}
+.step-body strong{color:var(--white);font-weight:700}
+.wa-notify-badge{display:inline-flex;align-items:center;gap:9px;background:rgba(37,211,102,.06);border:1px solid rgba(37,211,102,.18);border-radius:10px;padding:12px 16px;margin-top:32px}
+.wa-badge-dot{width:8px;height:8px;background:var(--green-wa);border-radius:50%;flex-shrink:0;animation:blink 2s infinite}
+.wa-badge-text{font-size:13px;color:#aaa}
+.wa-badge-text strong{color:var(--white);font-weight:600}
+
+/* ── PHONE MOCKUP ── */
+.phone-section{background:var(--bg);padding:0 0 64px}
+.phone-frame{background:#0e0e0e;border-radius:28px;border:1.5px solid #333;overflow:hidden;max-width:340px;margin:0 auto;box-shadow:0 32px 80px rgba(0,0,0,.7),inset 0 1px 0 rgba(255,255,255,.05)}
+.pf-notch{background:#0e0e0e;height:10px;display:flex;justify-content:center;align-items:center;padding-top:10px}
+.pf-notch-bar{width:60px;height:3px;background:#222;border-radius:4px}
+.wa-topbar{background:#1a1a1a;padding:12px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid #252525}
+.wa-back-arrow{color:#ccc;font-size:18px;line-height:1;margin-right:2px;flex-shrink:0}
+.wa-avatar{width:34px;height:34px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;flex-shrink:0;letter-spacing:-.02em}
+.wa-contact-info{flex:1;min-width:0}
+.wa-contact-name{font-size:14px;font-weight:700;color:#fff;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wa-contact-sub{font-size:11px;color:#888}
+.wa-body{background:#111;padding:16px 14px}
+.wa-bubble{background:#1f1f1f;border-radius:14px 14px 14px 4px;padding:13px;max-width:92%;position:relative}
+.wa-bubble-text{font-size:13px;color:#ddd;line-height:1.55;margin-bottom:12px}
+.wa-link-card{background:#161616;border-radius:10px;overflow:hidden;border-left:3px solid var(--accent)}
+.wa-link-card-header{padding:10px 12px;border-bottom:1px solid #252525}
+.wa-link-card-site{font-size:10px;color:var(--accent);font-weight:700;letter-spacing:.04em;margin-bottom:3px}
+.wa-link-card-title{font-size:12px;font-weight:700;color:#eee;line-height:1.3}
+.wa-mini-map{background:#0c170e;padding:12px 10px 10px}
+.wa-mini-label{font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:#3d6a4d;font-weight:700;text-align:center;margin-bottom:10px}
+.mini-arch-label{font-size:8px;color:#3d6a4d;text-align:center;margin-bottom:6px;letter-spacing:.06em;text-transform:uppercase}
+.mini-arch-row{display:flex;justify-content:center;gap:2px}
+.mini-arch-div{text-align:center;font-size:7px;color:#2d4d38;margin:4px 0;letter-spacing:.05em;text-transform:uppercase}
+.mt{width:18px;height:22px;border-radius:4px 4px 3px 3px;display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:700;flex-shrink:0;cursor:pointer;position:relative;transition:transform .15s}
+.mt:hover{transform:scale(1.25);z-index:5}
+.mt:active{transform:scale(1.3)}
+.mt.g{background:rgba(45,255,122,.12);border:1px solid rgba(45,255,122,.3);color:#2dff7a}
+.mt.y{background:rgba(255,209,102,.12);border:1px solid rgba(255,209,102,.3);color:#ffd166}
+.mt.r{background:rgba(255,77,109,.12);border:1px solid rgba(255,77,109,.32);color:#ff4d6d}
+.mini-counts{display:flex;gap:6px;justify-content:center;margin-top:8px;flex-wrap:wrap}
+.mc-pill{display:flex;align-items:center;gap:3px;border-radius:10px;padding:3px 7px;font-size:8px;font-weight:700}
+.mc-pill.mg{background:rgba(45,255,122,.1);color:#2dff7a;border:1px solid rgba(45,255,122,.18)}
+.mc-pill.my{background:rgba(255,209,102,.1);color:#ffd166;border:1px solid rgba(255,209,102,.18)}
+.mc-pill.mr{background:rgba(255,77,109,.1);color:#ff4d6d;border:1px solid rgba(255,77,109,.2)}
+.mini-legend{display:flex;gap:8px;justify-content:center;margin-top:8px;flex-wrap:wrap}
+.ml-item{display:flex;align-items:center;gap:3px;font-size:7px;color:#4d7a5d}
+.ml-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.wa-link-card-tap{display:flex;align-items:center;justify-content:center;gap:4px;padding:9px 12px;font-size:11px;color:var(--accent);font-weight:600;border-top:1px solid #252525}
+.wa-time{font-size:10px;color:#555;text-align:right;margin-top:8px}
+.wa-ticks{color:var(--accent)}
+
+/* ── FULL DENTAL MAP ── */
+.full-map-section{background:var(--bg2);padding:56px 0 48px;border-top:1px solid var(--border)}
+.full-map-card{background:#111;border:1px solid #222;border-radius:18px;padding:28px 16px 20px;margin-top:24px;overflow:hidden}
+.full-map-title{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--gray);text-align:center;margin-bottom:6px}
+.full-map-subtitle{font-size:13px;color:var(--accent);font-weight:600;text-align:center;margin-bottom:24px}
+.full-arch-label{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#666;text-align:center;margin-bottom:8px}
+.full-arch-row{display:flex;justify-content:center;gap:2px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding:2px 0}
+.full-arch-row::-webkit-scrollbar{display:none}
+.full-arch-div{text-align:center;font-size:10px;color:#3a3a3a;margin:8px 0;letter-spacing:.07em;text-transform:uppercase}
+.ft{
+  width:clamp(20px,calc((100vw - 110px) / 14.5),34px);
+  height:clamp(24px,calc((100vw - 110px) / 11.5),42px);
+  border-radius:6px 6px 4px 4px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  flex-shrink:0;
+  position:relative;
+  transition:transform .15s,box-shadow .15s;
+}
+.ft:hover{transform:scale(1.18) translateY(-2px);z-index:10}
+.ft.selected{transform:scale(1.22) translateY(-3px);z-index:15}
+.ft-num{font-size:clamp(7px,1.4vw,9px);font-weight:700;line-height:1}
+.ft.fg{background:rgba(45,255,122,.1);border:1px solid rgba(45,255,122,.28);color:#2dff7a}
+.ft.fy{background:rgba(255,209,102,.1);border:1px solid rgba(255,209,102,.28);color:#ffd166}
+.ft.fr{background:rgba(255,77,109,.1);border:1px solid rgba(255,77,109,.3);color:#ff4d6d}
+.ft.selected.fg{background:rgba(45,255,122,.2);border-color:#2dff7a;box-shadow:0 0 16px rgba(45,255,122,.35)}
+.ft.selected.fy{background:rgba(255,209,102,.2);border-color:#ffd166;box-shadow:0 0 16px rgba(255,209,102,.35)}
+.ft.selected.fr{background:rgba(255,77,109,.2);border-color:#ff4d6d;box-shadow:0 0 16px rgba(255,77,109,.35)}
+.full-counts{display:flex;gap:10px;justify-content:center;margin:20px 0 16px;flex-wrap:wrap}
+.fc-pill{display:flex;align-items:center;gap:6px;border-radius:20px;padding:6px 14px;font-size:12px;font-weight:700}
+.fc-pill.fcg{background:rgba(45,255,122,.1);color:#2dff7a;border:1px solid rgba(45,255,122,.2)}
+.fc-pill.fcy{background:rgba(255,209,102,.1);color:#ffd166;border:1px solid rgba(255,209,102,.2)}
+.fc-pill.fcr{background:rgba(255,77,109,.1);color:#ff4d6d;border:1px solid rgba(255,77,109,.2)}
+.full-legend{display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
+.fl-item{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--gray)}
+.fl-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.full-note{font-size:12px;color:var(--gray-dim);text-align:center;margin-top:16px;font-style:italic}
+/* Tooth detail panel */
+.tooth-panel{display:none;margin-top:16px;border-radius:12px;padding:16px 18px;animation:panelIn .2s ease both}
+.tooth-panel.open{display:block}
+.tooth-panel.tp-g{background:rgba(45,255,122,.06);border:1px solid rgba(45,255,122,.2)}
+.tooth-panel.tp-y{background:rgba(255,209,102,.06);border:1px solid rgba(255,209,102,.2)}
+.tooth-panel.tp-r{background:rgba(255,77,109,.06);border:1px solid rgba(255,77,109,.2)}
+.tp-header{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.tp-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0}
+.tp-title{font-size:14px;font-weight:700;color:var(--white)}
+.tp-body{font-size:13px;color:#aaa;line-height:1.65}
+@keyframes panelIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.tap-hint{font-size:12px;color:var(--gray-dim);text-align:center;margin:12px 0 0;display:flex;align-items:center;justify-content:center;gap:5px}
+
+/* ── COLOR SYSTEM ── */
+.colori-section{background:var(--bg);padding:64px 0 56px;border-top:1px solid var(--border)}
+.color-cards{display:flex;flex-direction:column;gap:12px;margin-top:28px}
+.color-card{display:flex;align-items:flex-start;gap:16px;border-radius:14px;padding:22px 20px}
+.cc-g{background:rgba(45,255,122,.04);border:1px solid rgba(45,255,122,.15)}
+.cc-y{background:rgba(255,209,102,.04);border:1px solid rgba(255,209,102,.15)}
+.cc-r{background:rgba(255,77,109,.04);border:1px solid rgba(255,77,109,.15)}
+.cc-dot{width:20px;height:20px;border-radius:50%;flex-shrink:0;margin-top:2px}
+.cc-g .cc-dot{background:#2dff7a;box-shadow:0 0 12px rgba(45,255,122,.45)}
+.cc-y .cc-dot{background:#ffd166;box-shadow:0 0 12px rgba(255,209,102,.45)}
+.cc-r .cc-dot{background:#ff4d6d;box-shadow:0 0 12px rgba(255,77,109,.45)}
+.cc-title{font-size:17px;font-weight:800;margin-bottom:6px;letter-spacing:-.015em}
+.cc-g .cc-title{color:#2dff7a}
+.cc-y .cc-title{color:#ffd166}
+.cc-r .cc-title{color:#ff4d6d}
+.cc-desc{font-size:14px;color:#aaa;line-height:1.65}
+.cc-badge{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;border-radius:5px;padding:3px 9px;margin-top:10px}
+.cc-g .cc-badge{background:rgba(45,255,122,.12);color:#2dff7a}
+.cc-y .cc-badge{background:rgba(255,209,102,.12);color:#ffd166}
+.cc-r .cc-badge{background:rgba(255,77,109,.12);color:#ff4d6d}
+
+/* ── GARANZIA ── */
+.garanzia-section{background:var(--bg2);padding:64px 0 56px;border-top:1px solid var(--border)}
+.garanzia-box{border:1.5px solid var(--accent-border);border-radius:16px;background:var(--accent-dim);padding:28px 22px;margin-top:28px}
+.garanzia-box-label{font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);font-weight:700;margin-bottom:16px}
+.garanzia-box p{font-size:15px;color:var(--gray-light);line-height:1.75;margin-bottom:20px}
+.garanzia-box p strong{color:var(--white)}
+.math-block{background:rgba(0,0,0,.35);border-radius:12px;padding:22px 20px}
+.math-pre{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--gray-dim);font-weight:700;margin-bottom:18px}
+.math-row{display:flex;align-items:center;gap:12px;padding:6px 0}
+.math-label{font-size:14px;color:var(--gray-light);flex:1}
+.math-value{font-size:20px;font-weight:800;letter-spacing:-.02em;white-space:nowrap}
+.math-sep{height:1px;background:rgba(255,255,255,.08);margin:8px 0}
+.math-total-label{font-size:15px;color:var(--white);font-weight:700;flex:1}
+.math-total-value{font-size:32px;font-weight:900;color:var(--accent);letter-spacing:-.035em}
+.garanzia-asterisk{font-size:12px;color:var(--gray-dim);line-height:1.6;margin-top:18px}
+.risparmio-card{background:rgba(45,255,122,.05);border:1px solid rgba(45,255,122,.15);border-radius:14px;padding:24px 20px;margin-top:16px;display:flex;align-items:center;gap:20px}
+.risparmio-num{font-size:clamp(42px,9vw,64px);font-weight:900;color:#2dff7a;letter-spacing:-.05em;line-height:1;flex-shrink:0}
+.risparmio-label{font-size:14px;color:#aaa;line-height:1.55}
+.risparmio-label strong{color:var(--white);display:block;font-size:13px;margin-bottom:4px;font-weight:700;letter-spacing:.02em;text-transform:uppercase}
+
+/* ── PERCHÉ ── */
+.perche-section{background:var(--bg);padding:64px 0 56px;border-top:1px solid var(--border)}
+.quote-bar{border-left:3px solid var(--accent);padding-left:20px;margin:24px 0 28px}
+.quote-text{font-size:clamp(18px,3.5vw,23px);font-style:italic;color:var(--white);line-height:1.5;font-weight:400}
+.quote-attr{font-size:13px;color:var(--accent);font-weight:600;margin-top:8px}
+.logic-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:24px}
+@media(max-width:380px){.logic-grid{grid-template-columns:1fr}}
+.lc{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:18px 16px}
+.lc-icon{font-size:22px;margin-bottom:10px}
+.lc-title{font-size:14px;font-weight:700;color:var(--white);margin-bottom:6px;letter-spacing:-.01em}
+.lc-desc{font-size:13px;color:var(--gray);line-height:1.6}
+.logic-conclusion{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:22px 20px;margin-top:24px}
+.logic-conclusion p{font-size:15px;color:var(--gray-light);line-height:1.75}
+.logic-conclusion p strong{color:var(--white)}
+
+/* ── CTA ── */
+.cta-section{background:var(--bg2);padding:72px 0 64px;border-top:3px solid var(--accent)}
+.cta-eyebrow{font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);font-weight:700;margin-bottom:16px}
+.cta-h2{font-size:clamp(26px,6vw,40px);font-weight:900;letter-spacing:-.03em;line-height:1.1;color:var(--white);margin-bottom:18px}
+.cta-h2 em{color:var(--accent);font-style:italic}
+.cta-body{font-size:15px;color:var(--gray-light);line-height:1.8;margin-bottom:32px}
+.cta-list{display:flex;flex-direction:column;gap:8px;margin-bottom:32px}
+.cta-list-item{display:flex;align-items:center;gap:10px;font-size:14px;color:var(--gray-light)}
+.cta-check{color:var(--accent);font-weight:800;font-size:16px;flex-shrink:0}
+.btn-wa-main{display:flex;align-items:center;justify-content:center;gap:10px;background:var(--green-wa);color:#fff;font-size:16px;font-weight:800;padding:19px 24px;border-radius:13px;transition:opacity .2s;margin-bottom:12px;letter-spacing:-.01em}
+.btn-wa-main:hover{opacity:.88}
+.btn-wa-main svg{width:20px;height:20px;flex-shrink:0}
+.btn-tel-sec{display:flex;align-items:center;justify-content:center;gap:10px;background:var(--bg3);color:var(--white);font-size:15px;font-weight:600;padding:16px 24px;border-radius:13px;transition:opacity .2s;border:1px solid #3a3a3a}
+.btn-tel-sec:hover{border-color:#555;opacity:.85}
+.btn-tel-sec svg{width:17px;height:17px;flex-shrink:0}
+.cta-fine-print{font-size:12px;color:var(--gray-dim);margin-top:12px;line-height:1.5}
+.cta-link-system{display:inline-flex;align-items:center;gap:7px;font-size:14px;color:var(--gray);margin-top:28px;border-bottom:1px solid #333;padding-bottom:2px;transition:color .2s,border-color .2s}
+.cta-link-system:hover{color:var(--white);border-color:#666}
+
+/* ── FOOTER ── */
+footer{background:#0f0f0f;border-top:1px solid #1c1c1c;padding:32px 0}
+.footer-inner{max-width:640px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px}
+.footer-logo{font-size:14px;font-weight:800;color:#666;letter-spacing:-.02em}
+.footer-logo .hs{color:rgba(230,0,126,.55)}
+.footer-links{display:flex;gap:16px;flex-wrap:wrap}
+.footer-links a{font-size:12px;color:#555;transition:color .2s}
+.footer-links a:hover{color:#ccc}
+
+/* ── STICKY BAR ── */
+.sticky-bar{position:fixed;bottom:0;left:0;right:0;z-index:99;height:60px;display:flex;transform:translateY(100%);transition:transform .35s cubic-bezier(.4,0,.2,1)}
+.sticky-bar.show{transform:translateY(0)}
+@media(min-width:769px){.sticky-bar{display:none}}
+.sticky-wa,.sticky-tel{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;font-size:14px;font-weight:700;color:#fff}
+.sticky-wa{background:var(--green-wa)}
+.sticky-tel{background:var(--accent)}
+.sticky-wa svg,.sticky-tel svg{width:18px;height:18px;flex-shrink:0}
+
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+</style>
+</head>
+<body>
+
+<!-- SVG sprite -->
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
+  <symbol id="wa-ico" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+  </symbol>
+  <symbol id="phone-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.67A2 2 0 012 .99h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 8.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/>
+  </symbol>
+</svg>
+
+<!-- NAV -->
+<header class="nav" role="banner">
+  <div class="nav-inner">
+    <a href="/" class="nav-logo">Healthy <span class="hs">Smile</span> By N</a>
+    <a href="tel:+390112488248" class="nav-phone" aria-label="Chiama lo studio">
+      <svg><use href="#phone-ico"/></svg>
+      011 2488248
+    </a>
+    <a class="nav-cta" href="https://wa.me/393924076794?text=Ciao%2C+vorrei+prenotare+la+prima+visita+con+scheda+digitale+Healthy+Smile." target="_blank" rel="noopener">Prenota</a>
+  </div>
+</header>
+
+<!-- ══ HERO ══ -->
+<section class="hero" aria-labelledby="hero-h1">
+  <div class="wrap">
+    <p class="hero-eyebrow">Healthy Smile By N &middot; Torino</p>
+    <h1 class="hero-h1" id="hero-h1">Stavi benissimo.<br>Poi &egrave; arrivato<br>un conto da <em>2.000€.</em></h1>
+    <p class="hero-sub">Con Healthy Smile questo non pu&ograve; succedere a sorpresa. Dopo la prima visita sai esattamente cosa ha la tua bocca. E i denti sani entrano in garanzia automatica.</p>
+    <span class="hero-pill"><span class="hero-pill-dot"></span>Il dentista bravo &egrave; quello che vedi meno</span>
+  </div>
+</section>
+
+<!-- ══ IL PROBLEMA ══ -->
+<section class="problema" aria-labelledby="prob-h2">
+  <div class="wrap">
+    <p class="section-label">Il problema che conosci</p>
+    <h2 class="section-h2" id="prob-h2">La ricaduta che non ti aspetti.<br>Il preventivo che ti <em>blocca.</em></h2>
+    <p class="section-body">Un giorno stai bene. Un dolore improvviso. Vai dal dentista. Ti siedi sulla poltrona e aspetti.</p>
+    <p class="section-body">Poi arriva il preventivo.</p>
+    <div class="problem-card">
+      <div class="problem-amount">2.000€</div>
+      <div class="problem-sublabel">preventivo che non ti aspettavi</div>
+      <p class="problem-desc">Non &egrave; sfortuna. &Egrave; il risultato di problemi piccoli che nessuno ha intercettato in tempo. Una carie ignorata diventa devitalizzazione. Un dente non monitorato diventa un impianto da 1.500€.</p>
+    </div>
+    <p class="section-body">Con Healthy Smile, ogni problema ha un nome, una data e un costo preventivato. Niente sorprese. E se arriva comunque, abbiamo una risposta concreta.</p>
+  </div>
+</section>
+
+<!-- ══ COME ARRIVA LA SCHEDA ══ -->
+<section class="scheda-intro" aria-labelledby="scheda-h2">
+  <div class="wrap">
+    <p class="section-label">Come funziona</p>
+    <h2 class="section-h2" id="scheda-h2">Cosa succede dopo la prima visita</h2>
+    <p class="section-body">Non ricevi una stampa in studio. Non un PDF via email. Qualcosa che non hai mai visto dal tuo dentista.</p>
+    <div class="steps-list">
+      <div class="step-item">
+        <div class="step-num">1</div>
+        <p class="step-body">Vieni in studio per l&rsquo;igiene professionale. Mentre lavoriamo, mappiamo ogni singolo dente.</p>
+      </div>
+      <div class="step-item">
+        <div class="step-num">2</div>
+        <p class="step-body">Ogni dente riceve un colore: <strong>rosso, giallo o verde.</strong> Stato attuale, priorità, situazione clinica.</p>
+      </div>
+      <div class="step-item">
+        <div class="step-num">3</div>
+        <p class="step-body">Entro 24 ore <strong>ti arriva un messaggio su WhatsApp</strong> con il link alla tua scheda digitale personale.</p>
+      </div>
+      <div class="step-item">
+        <div class="step-num">4</div>
+        <p class="step-body">Apri il link. Vedi <strong>la mappa completa della tua bocca.</strong> Ogni dente colorato in base al suo stato reale.</p>
+      </div>
+    </div>
+    <div class="wa-notify-badge">
+      <span class="wa-badge-dot"></span>
+      <span class="wa-badge-text"><strong>Healthy Smile By N</strong> &mdash; la tua scheda digitale &egrave; pronta</span>
+    </div>
+  </div>
+</section>
+
+<!-- ══ PHONE MOCKUP ══ -->
+<section class="phone-section" aria-label="Anteprima WhatsApp della scheda digitale">
+  <div class="wrap">
+    <div class="phone-frame">
+      <div class="pf-notch"><div class="pf-notch-bar"></div></div>
+      <div class="wa-topbar">
+        <span class="wa-back-arrow">&#8592;</span>
+        <div class="wa-avatar">HS</div>
+        <div class="wa-contact-info">
+          <div class="wa-contact-name">Healthy Smile By N</div>
+          <div class="wa-contact-sub">Studio Dentistico &middot; Torino</div>
+        </div>
+      </div>
+      <div class="wa-body">
+        <div class="wa-bubble">
+          <p class="wa-bubble-text">Ciao! &#128522; La tua scheda digitale Healthy Smile &egrave; pronta. Trovi qui sotto la mappa completa della tua bocca con lo stato di ogni dente.</p>
+          <div class="wa-link-card">
+            <div class="wa-link-card-header">
+              <div class="wa-link-card-site">HEALTHYSMILE.IT</div>
+              <div class="wa-link-card-title">Scheda Digitale Personale &mdash; Healthy Smile</div>
+            </div>
+            <div class="wa-mini-map">
+              <div class="wa-mini-label">&#x25CF; Mappa dentale aggiornata</div>
+              <div class="mini-arch-label">arcata superiore</div>
+              <div class="mini-arch-row" id="miniUpper"></div>
+              <div class="mini-arch-div">— mascella / mandibola —</div>
+              <div class="mini-arch-row" id="miniLower"></div>
+              <div class="mini-counts" id="miniCounts"></div>
+              <div class="mini-legend">
+                <div class="ml-item"><div class="ml-dot" style="background:#2dff7a"></div>in garanzia</div>
+                <div class="ml-item"><div class="ml-dot" style="background:#ffd166"></div>monitorato</div>
+                <div class="ml-item"><div class="ml-dot" style="background:#ff4d6d"></div>da trattare</div>
+              </div>
+            </div>
+            <div class="wa-link-card-tap">Apri la scheda completa &#8594;</div>
+          </div>
+          <div class="wa-time"><span class="wa-ticks">&#10003;&#10003;</span> 09:47</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ MAPPA DENTALE INTERATTIVA ══ -->
+<section class="full-map-section" aria-labelledby="map-h2">
+  <div class="wrap">
+    <p class="section-label">Simulazione interattiva</p>
+    <h2 class="section-h2" id="map-h2">Ecco la tua mappa dentale.<br><em>Tocca un dente per i dettagli.</em></h2>
+    <p class="section-body">Questa &egrave; la simulazione di ci&ograve; che vedi quando apri la tua scheda digitale. Ogni elemento &egrave; cliccabile.</p>
+    <div class="full-map-card">
+      <div class="full-map-title">SCHEDA DIGITALE HEALTHY SMILE</div>
+      <div class="full-map-subtitle">Paziente &middot; Prima visita</div>
+      <div class="full-arch-label">Arcata superiore</div>
+      <div class="full-arch-row" id="fullUpper"></div>
+      <div class="full-arch-div">&mdash; mascella / mandibola &mdash;</div>
+      <div class="full-arch-label">Arcata inferiore</div>
+      <div class="full-arch-row" id="fullLower"></div>
+      <div class="full-counts" id="fullCounts"></div>
+      <div class="full-legend">
+        <div class="fl-item"><div class="fl-dot" style="background:#2dff7a"></div>Verde &mdash; sano, in garanzia</div>
+        <div class="fl-item"><div class="fl-dot" style="background:#ffd166"></div>Giallo &mdash; da monitorare</div>
+        <div class="fl-item"><div class="fl-dot" style="background:#ff4d6d"></div>Rosso &mdash; da trattare</div>
+      </div>
+      <div class="tooth-panel" id="toothPanel"></div>
+      <p class="tap-hint">&#128070; Tocca un dente per vedere i dettagli</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══ SISTEMA A COLORI ══ -->
+<section class="colori-section" aria-labelledby="colori-h2">
+  <div class="wrap">
+    <p class="section-label">Il sistema a colori</p>
+    <h2 class="section-h2" id="colori-h2">Ogni dente ha un colore.<br><em>Ogni colore ha un significato.</em></h2>
+    <div class="color-cards">
+      <div class="color-card cc-r">
+        <div class="cc-dot"></div>
+        <div>
+          <div class="cc-title">&#128308; Rosso &mdash; da trattare</div>
+          <p class="cc-desc">Questo dente ha bisogno di un intervento adesso. Aspettare peggiorerebbe la situazione e aumenterebbe il costo delle cure. Lo programmiamo insieme.</p>
+          <span class="cc-badge">Priorità alta</span>
+        </div>
+      </div>
+      <div class="color-card cc-y">
+        <div class="cc-dot"></div>
+        <div>
+          <div class="cc-title">&#128993; Giallo &mdash; da monitorare</div>
+          <p class="cc-desc">C&rsquo;&egrave; una carie incipiente, ma &egrave; cos&igrave; piccola che intervenire ora significherebbe rimuovere pi&ugrave; tessuto sano che malato. La scelta clinica corretta &egrave; aspettare e monitorare.</p>
+          <span class="cc-badge">In osservazione</span>
+        </div>
+      </div>
+      <div class="color-card cc-g">
+        <div class="cc-dot"></div>
+        <div>
+          <div class="cc-title">&#128994; Verde &mdash; sano</div>
+          <p class="cc-desc">Questo dente &egrave; sano oggi. Ed &egrave; qui che succede qualcosa di unico nel sistema Healthy Smile: entra automaticamente in garanzia. Se si ammala, lo studio paga il 70%.</p>
+          <span class="cc-badge">In garanzia automatica</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ LA GARANZIA ══ -->
+<section class="garanzia-section" aria-labelledby="gar-h2">
+  <div class="wrap">
+    <p class="section-label">Il cuore del sistema</p>
+    <h2 class="section-h2" id="gar-h2">I denti verdi entrano in<br><em>garanzia automatica.</em></h2>
+    <p class="section-body">Ogni dente classificato come verde nella tua scheda digitale &egrave; coperto. Non &egrave; un&rsquo;assicurazione che paghi a parte. Non &egrave; una clausola nascosta. &Egrave; la struttura del sistema.</p>
+    <div class="garanzia-box">
+      <p class="garanzia-box-label">Come funziona la garanzia</p>
+      <p>Se un dente classificato come verde si ammala &mdash; nonostante tu stia seguendo il percorso Healthy Smile &mdash; <strong>lo studio assorbe il 70% del costo delle cure necessarie.</strong></p>
+      <div class="math-block">
+        <p class="math-pre">Esempio reale su un preventivo da 2.000€</p>
+        <div class="math-row">
+          <span class="math-label">Preventivo totale cure</span>
+          <span class="math-value" style="color:#888">2.000€</span>
+        </div>
+        <div class="math-row">
+          <span class="math-label">Lo studio assorbe (70%)</span>
+          <span class="math-value" style="color:var(--red)">&minus; 1.400€</span>
+        </div>
+        <div class="math-sep"></div>
+        <div class="math-row">
+          <span class="math-total-label">Tu paghi al massimo</span>
+          <span class="math-total-value">600€</span>
+        </div>
+      </div>
+      <p class="garanzia-asterisk">* La garanzia copre cure conservative, endodontiche, chirurgia estrattiva e protesi su denti naturali secondo il regolamento Healthy Smile. Sono esclusi impianti, ortodonzia, trattamenti estetici e prestazioni non correlate ai denti precedentemente classificati come sani.</p>
+    </div>
+    <div class="risparmio-card">
+      <div class="risparmio-num">1.400€</div>
+      <div class="risparmio-label">
+        <strong>Risparmio reale garantito</strong>
+        su un preventivo di 2.000€ di cure. Tu paghi solo 600€. I restanti 1.400€ sono a carico dello studio.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ PERCHÉ CI CONVIENE ══ -->
+<section class="perche-section" aria-labelledby="perche-h2">
+  <div class="wrap">
+    <p class="section-label">La logica dietro il sistema</p>
+    <h2 class="section-h2" id="perche-h2">Perch&eacute; ci conviene<br>che tu resti sano.</h2>
+    <div class="quote-bar">
+      <p class="quote-text">&ldquo;Non &egrave; filantropia.<br>&Egrave; la struttura del business.&rdquo;</p>
+      <p class="quote-attr">&mdash; Filosofia Healthy Smile</p>
+    </div>
+    <p class="section-body">La maggior parte degli studi dentistici guadagna quando i pazienti si ammalano. Ogni carie, ogni devitalizzazione, ogni impianto &egrave; un ricavo.</p>
+    <p class="section-body">Noi abbiamo scelto un modello opposto. Abbiamo messo i nostri soldi sulla prevenzione. Se un dente che avevamo classificato come sano si ammala nonostante il percorso, paghiamo noi il 70%.</p>
+    <div class="logic-grid">
+      <div class="lc">
+        <div class="lc-icon">&#129001;</div>
+        <div class="lc-title">Tu resti sano</div>
+        <p class="lc-desc">Fai l&rsquo;igiene ogni anno. Lo studio incassa da controlli preventivi. Costi bassi per tutti.</p>
+      </div>
+      <div class="lc">
+        <div class="lc-icon">&#128997;</div>
+        <div class="lc-title">Un dente verde si ammala</div>
+        <p class="lc-desc">Lo studio paga il 70% delle cure. Un costo diretto per noi. Non ci conviene economicamente.</p>
+      </div>
+    </div>
+    <div class="logic-conclusion">
+      <p>La prevenzione non &egrave; solo un consiglio.<br><strong>&Egrave; la scelta pi&ugrave; conveniente per entrambi.</strong><br><br>Per questo ci impegniamo davvero a tenerti sano &mdash; e non &egrave; solo una frase.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══ CTA FINALE ══ -->
+<section class="cta-section" aria-labelledby="cta-h2">
+  <div class="wrap">
+    <p class="cta-eyebrow">Inizia ora</p>
+    <h2 class="cta-h2" id="cta-h2">Prenota la prima visita.<br>Ottieni la tua <em>scheda digitale.</em></h2>
+    <p class="cta-body">La prima visita include tutto. Nessun step extra, nessun preventivo nascosto.</p>
+    <div class="cta-list">
+      <div class="cta-list-item"><span class="cta-check">&#10003;</span> Igiene professionale completa</div>
+      <div class="cta-list-item"><span class="cta-check">&#10003;</span> Controllo completo della bocca</div>
+      <div class="cta-list-item"><span class="cta-check">&#10003;</span> Scheda digitale personale via WhatsApp</div>
+      <div class="cta-list-item"><span class="cta-check">&#10003;</span> Classificazione di ogni dente (verde / giallo / rosso)</div>
+      <div class="cta-list-item"><span class="cta-check">&#10003;</span> Garanzia automatica sui denti verdi</div>
+    </div>
+    <a class="btn-wa-main" href="https://wa.me/393924076794?text=Ciao%2C+vorrei+prenotare+la+prima+visita+con+scheda+digitale+Healthy+Smile." target="_blank" rel="noopener">
+      <svg><use href="#wa-ico"/></svg>
+      Prenota via WhatsApp
+    </a>
+    <a class="btn-tel-sec" href="tel:+390112488248">
+      <svg><use href="#phone-ico"/></svg>
+      Chiama lo studio: 011 2488248
+    </a>
+    <p class="cta-fine-print">Nessun form. Nessuna email. Nessuna raccolta dati. Solo una chat su WhatsApp.</p>
+    <a href="/mantieni-i-tuoi-denti.html" class="cta-link-system">&#8594; Approfondisci il sistema completo Healthy Smile</a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-logo">Healthy <span class="hs">Smile</span> By N</div>
+    <nav class="footer-links" aria-label="Link footer">
+      <a href="/mantieni-i-tuoi-denti.html">Sistema Healthy Smile</a>
+      <a href="/privacy-policy.html">Privacy</a>
+      <a href="/cookie-policy.html">Cookie</a>
+    </nav>
+  </div>
+</footer>
+
+<!-- STICKY BAR MOBILE -->
+<div class="sticky-bar" id="stickyBar" aria-hidden="true">
+  <a class="sticky-wa" href="https://wa.me/393924076794?text=Ciao%2C+vorrei+prenotare+la+prima+visita+con+scheda+digitale+Healthy+Smile." target="_blank" rel="noopener">
+    <svg><use href="#wa-ico"/></svg>
+    WhatsApp
+  </a>
+  <a class="sticky-tel" href="tel:+390112488248">
+    <svg><use href="#phone-ico"/></svg>
+    Chiama
+  </a>
+</div>
+
+<script>
+(function(){
+  'use strict';
+
+  /* ── Sticky bar ── */
+  var bar = document.getElementById('stickyBar');
+  window.addEventListener('scroll', function(){
+    if(window.scrollY > 200) bar.classList.add('show');
+    else bar.classList.remove('show');
+  }, {passive: true});
+
+  /* ── Tooth data ── */
+  var teeth = {
+    upper: [
+      {n:'17', c:'g', title:'Dente 17 — Sano', desc:'Questo molare &egrave; in perfetta salute. Entra automaticamente in garanzia Healthy Smile: se si ammala nonostante il percorso, lo studio paga il 70%.'},
+      {n:'16', c:'r', title:'Dente 16 — Da trattare', desc:'Presenza di carie profonda che richiede otturazione. Pianifichiamo insieme l\'appuntamento per il trattamento.'},
+      {n:'15', c:'g', title:'Dente 15 — Sano', desc:'Premolare in buona salute. In garanzia automatica Healthy Smile.'},
+      {n:'14', c:'y', title:'Dente 14 — Da monitorare', desc:'Carie incipiente molto piccola. Intervenire ora toglierebbe pi&ugrave; tessuto sano che malato. Lo monitoriamo alla prossima visita.'},
+      {n:'13', c:'g', title:'Dente 13 — Sano', desc:'Canino superiore in ottimo stato. In garanzia automatica Healthy Smile.'},
+      {n:'12', c:'g', title:'Dente 12 — Sano', desc:'Incisivo laterale sano. In garanzia automatica Healthy Smile.'},
+      {n:'11', c:'g', title:'Dente 11 — Sano', desc:'Incisivo centrale superiore in perfetta salute. In garanzia automatica Healthy Smile.'},
+      {n:'21', c:'g', title:'Dente 21 — Sano', desc:'Incisivo centrale superiore sinistro, sano. In garanzia automatica Healthy Smile.'},
+      {n:'22', c:'g', title:'Dente 22 — Sano', desc:'Incisivo laterale sinistro sano. In garanzia automatica Healthy Smile.'},
+      {n:'23', c:'g', title:'Dente 23 — Sano', desc:'Canino superiore sinistro in ottimo stato. In garanzia automatica Healthy Smile.'},
+      {n:'24', c:'y', title:'Dente 24 — Da monitorare', desc:'Carie incipiente in fase inizialissima. La scelta clinica corretta &egrave; aspettare e monitorare nel tempo.'},
+      {n:'25', c:'g', title:'Dente 25 — Sano', desc:'Premolare sano. In garanzia automatica Healthy Smile.'},
+      {n:'26', c:'r', title:'Dente 26 — Da trattare', desc:'Carie profonda che richiede valutazione per devitalizzazione. Programmiamo l\'intervento insieme.'},
+      {n:'27', c:'g', title:'Dente 27 — Sano', desc:'Molare superiore sinistro in buona salute. In garanzia automatica Healthy Smile.'}
+    ],
+    lower: [
+      {n:'47', c:'y', title:'Dente 47 — Da monitorare', desc:'Piccola carie iniziale. Aspettiamo: intervenire ora rimuoverebbe pi&ugrave; tessuto sano che necessario.'},
+      {n:'46', c:'g', title:'Dente 46 — Sano', desc:'Primo molare inferiore destro in ottimo stato. In garanzia automatica Healthy Smile.'},
+      {n:'45', c:'g', title:'Dente 45 — Sano', desc:'Premolare inferiore sano. In garanzia automatica Healthy Smile.'},
+      {n:'44', c:'g', title:'Dente 44 — Sano', desc:'Premolare inferiore destro sano. In garanzia automatica Healthy Smile.'},
+      {n:'43', c:'g', title:'Dente 43 — Sano', desc:'Canino inferiore destro in perfetta salute. In garanzia automatica Healthy Smile.'},
+      {n:'42', c:'g', title:'Dente 42 — Sano', desc:'Incisivo laterale inferiore sano. In garanzia automatica Healthy Smile.'},
+      {n:'41', c:'g', title:'Dente 41 — Sano', desc:'Incisivo centrale inferiore destro sano. In garanzia automatica Healthy Smile.'},
+      {n:'31', c:'g', title:'Dente 31 — Sano', desc:'Incisivo centrale inferiore sinistro sano. In garanzia automatica Healthy Smile.'},
+      {n:'32', c:'g', title:'Dente 32 — Sano', desc:'Incisivo laterale inferiore sinistro sano. In garanzia automatica Healthy Smile.'},
+      {n:'33', c:'g', title:'Dente 33 — Sano', desc:'Canino inferiore sinistro in ottimo stato. In garanzia automatica Healthy Smile.'},
+      {n:'34', c:'g', title:'Dente 34 — Sano', desc:'Premolare inferiore sinistro sano. In garanzia automatica Healthy Smile.'},
+      {n:'35', c:'y', title:'Dente 35 — Da monitorare', desc:'Carie incipiente in fase molto iniziale. La seguiamo nel tempo prima di intervenire.'},
+      {n:'36', c:'r', title:'Dente 36 — Da trattare', desc:'Carie profonda che richiede otturazione o valutazione per devitalizzazione. Priorit&agrave; alta.'},
+      {n:'37', c:'g', title:'Dente 37 — Sano', desc:'Molare inferiore sinistro in buona salute. In garanzia automatica Healthy Smile.'}
+    ]
+  };
+
+  var colorClass = {g: 'fg', y: 'fy', r: 'fr'};
+  var miniColorClass = {g: 'g', y: 'y', r: 'r'};
+  var panelClass = {g: 'tp-g', y: 'tp-y', r: 'tp-r'};
+  var panelDotColor = {g: '#2dff7a', y: '#ffd166', r: '#ff4d6d'};
+
+  var selectedTooth = null;
+  var panel = document.getElementById('toothPanel');
+
+  /* Count totals */
+  var counts = {g: 0, y: 0, r: 0};
+  teeth.upper.concat(teeth.lower).forEach(function(t){ counts[t.c]++; });
+
+  /* Build MINI arch (phone mockup) */
+  function buildMiniArch(list, containerId) {
+    var c = document.getElementById(containerId);
+    if (!c) return;
+    list.forEach(function(t) {
+      var el = document.createElement('div');
+      el.className = 'mt ' + miniColorClass[t.c];
+      el.textContent = t.n;
+      el.setAttribute('title', t.title || t.n);
+      c.appendChild(el);
+    });
+  }
+  buildMiniArch(teeth.upper, 'miniUpper');
+  buildMiniArch(teeth.lower, 'miniLower');
+
+  var mc = document.getElementById('miniCounts');
+  if (mc) {
+    mc.innerHTML =
+      '<div class="mc-pill mg">' + counts.g + ' in garanzia</div>' +
+      '<div class="mc-pill my">' + counts.y + ' monitorati</div>' +
+      '<div class="mc-pill mr">' + counts.r + ' da trattare</div>';
+  }
+
+  /* Build FULL interactive arch */
+  function buildFullArch(list, containerId) {
+    var c = document.getElementById(containerId);
+    if (!c) return;
+    list.forEach(function(t, i) {
+      var el = document.createElement('div');
+      el.className = 'ft ' + colorClass[t.c];
+      el.innerHTML = '<span class="ft-num">' + t.n + '</span>';
+      el.setAttribute('data-tooth', JSON.stringify(t));
+      el.addEventListener('click', function() { onToothClick(this, t); });
+      el.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onToothClick(this, t); }
+      });
+      el.setAttribute('tabindex', '0');
+      el.setAttribute('role', 'button');
+      el.setAttribute('aria-label', t.title);
+      c.appendChild(el);
+    });
+  }
+  buildFullArch(teeth.upper, 'fullUpper');
+  buildFullArch(teeth.lower, 'fullLower');
+
+  var fc = document.getElementById('fullCounts');
+  if (fc) {
+    fc.innerHTML =
+      '<div class="fc-pill fcg">' + counts.g + ' in garanzia</div>' +
+      '<div class="fc-pill fcy">' + counts.y + ' monitorati</div>' +
+      '<div class="fc-pill fcr">' + counts.r + ' da trattare</div>';
+  }
+
+  function onToothClick(el, t) {
+    /* deselect previous */
+    if (selectedTooth && selectedTooth !== el) {
+      selectedTooth.classList.remove('selected');
+    }
+    /* toggle */
+    if (selectedTooth === el) {
+      el.classList.remove('selected');
+      panel.classList.remove('open', 'tp-g', 'tp-y', 'tp-r');
+      panel.innerHTML = '';
+      selectedTooth = null;
+      return;
+    }
+    el.classList.add('selected');
+    selectedTooth = el;
+
+    /* show panel */
+    panel.className = 'tooth-panel open ' + panelClass[t.c];
+    panel.innerHTML =
+      '<div class="tp-header">' +
+      '<div class="tp-dot" style="background:' + panelDotColor[t.c] + ';box-shadow:0 0 8px ' + panelDotColor[t.c] + '66"></div>' +
+      '<div class="tp-title">' + t.title + '</div>' +
+      '</div>' +
+      '<div class="tp-body">' + t.desc + '</div>';
+    panel.scrollIntoView({behavior: 'smooth', block: 'nearest'});
+  }
+
+})();
+</script>
+</body>
+</html>
