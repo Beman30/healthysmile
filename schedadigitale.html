@@ -747,6 +747,52 @@ footer{background:#0f0f0f;border-top:1px solid #1c1c1c;padding:32px 0}
       '</div>' +
       '<div class="tp-body">' + t.desc + '</div>';
     panel.scrollIntoView({behavior: 'smooth', block: 'nearest'});
+    gtag('event', 'dental_map_interaction_scheda', {tooth: t.n, status: t.c});
+  }
+
+  /* ── Click tracking: WhatsApp ── */
+  document.querySelectorAll('a[href*="wa.me"]').forEach(function(el) {
+    el.addEventListener('click', function() {
+      gtag('event', 'click_whatsapp_scheda', {location: this.className || 'link'});
+    });
+  });
+
+  /* ── Click tracking: Telefono ── */
+  document.querySelectorAll('a[href^="tel:"]').forEach(function(el) {
+    el.addEventListener('click', function() {
+      gtag('event', 'click_phone_scheda');
+    });
+  });
+
+  /* ── Click tracking: Maps ── */
+  document.querySelectorAll('a[href*="maps"]').forEach(function(el) {
+    el.addEventListener('click', function() {
+      gtag('event', 'click_maps_scheda');
+    });
+  });
+
+  /* ── Scroll depth ── */
+  var scrollFired = {};
+  window.addEventListener('scroll', function() {
+    var pct = Math.round((window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100);
+    [25, 50, 75, 100].forEach(function(milestone) {
+      if (pct >= milestone && !scrollFired[milestone]) {
+        scrollFired[milestone] = true;
+        gtag('event', 'scroll_depth_scheda', {depth: milestone});
+      }
+    });
+  }, {passive: true});
+
+  /* ── CTA in viewport ── */
+  var ctaFired = false;
+  var ctaEl = document.getElementById('cta-h2');
+  if (ctaEl && 'IntersectionObserver' in window) {
+    new IntersectionObserver(function(entries) {
+      if (entries[0].isIntersecting && !ctaFired) {
+        ctaFired = true;
+        gtag('event', 'cta_visible_scheda');
+      }
+    }, {threshold: 0.5}).observe(ctaEl);
   }
 
 })();
