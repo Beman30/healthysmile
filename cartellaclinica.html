@@ -940,6 +940,7 @@ const TR_ATTUALE_DEFAULT = [
   {id:'bite_att',    label:'Bite presente',       color:'#5B4BBF', sym:'B',  bg:'#EEEDFB', tipo:'attuale'},
   {id:'igiene_att',  label:'Igiene eseguita',     color:'#1D9E75', sym:'IG', bg:'#E1F5EE', tipo:'attuale'},
   {id:'sbianc_att',  label:'Sbiancamento fatto',  color:'#1D9E75', sym:'SB', bg:'#E1F5EE', tipo:'attuale'},
+  {id:'sotto_controllo', label:'Sotto controllo',  color:'#B7651A', sym:'SC', bg:'#FEF3E2', tipo:'attuale'},
 ];
 
 const TR_PIANO_DEFAULT = [
@@ -2328,6 +2329,9 @@ async function loadPrestazioni() {
       if (d.quadrante && d.quadrante.length) QUAD_TR  = d.quadrante;
     }
   } catch(e) { /* usa default */ }
+  if (!TR_ATTUALE.find(t => t.id === 'sotto_controllo')) {
+    TR_ATTUALE.push({id:'sotto_controllo', label:'Sotto controllo', color:'#B7651A', sym:'SC', bg:'#FEF3E2', tipo:'attuale'});
+  }
   buildLegend();
 }
 
@@ -3303,7 +3307,11 @@ const AI_STATO_ATTUALE_MAP = {
   impianto:'impianto', corona:'corona', ponte:'ponte',
   provvisorio:'provvisorio', parziale:'parziale',
   frattura:'frattura', erosione:'erosione',
-  bite:'bite_att', igiene:'igiene_att', sbiancamento:'sbianc_att'
+  bite:'bite_att', igiene:'igiene_att', sbiancamento:'sbianc_att',
+  'sotto controllo':'sotto_controllo', 'sotto osservazione':'sotto_controllo',
+  'da monitorare':'sotto_controllo', monitorare:'sotto_controllo',
+  monitoraggio:'sotto_controllo', controllo:'sotto_controllo',
+  'sotto_controllo':'sotto_controllo'
 };
 
 function aiMatchAttuale(stato) {

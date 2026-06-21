@@ -762,7 +762,7 @@ const TR_HIGH = [
 ];
 // Trattamenti che implicano "osservazione" (medium)
 const TR_MEDIUM = [
-  'erosione','provvisorio','endo_fare',
+  'erosione','provvisorio','endo_fare','sotto_controllo',
   'terapia_endodontica_monocanalare','terapia_endodontica_bicanalare','terapia_endodontica_pluricanalare',
   'ritrattamento_monocanalare','ritrattamento_pluricanalare','ritratt1','ritratt2','ritratt3',
   'e1','e2','ep','devitaliz','ricostruzione_moncone_perno_in_fibra','perno'
@@ -779,7 +779,7 @@ const TR_LABEL = {
   provvisorio:'Provvisorio', parziale:'Protesi parziale',
   estratto:'Estratto/assente', frattura:'Frattura', erosione:'Erosione/abrasione',
   bite_att:'Bite presente', igiene_att:'Igiene eseguita', sbianc_att:'Sbiancamento fatto',
-  cariato:'Cariato',
+  cariato:'Cariato', sotto_controllo:'Sotto controllo',
   // ── Piano (ID vecchi) ──
   da_otturare:'Da otturare', endo_fare:'Endodonzia', da_estrarre:'Da estrarre',
   imp_fare:'Impianto', corona_fare:'Corona', ponte_fare:'Ponte',
@@ -1005,6 +1005,8 @@ function _consiglioBaseAttuale(arr, num) {
     return `Dente ${num} già otturato. Mantieni l'igiene attuale e vieni ai controlli periodici.`;
   if (arr.includes('cariato'))
     return `Dente ${num} presenta una lesione cariosa. Richiede attenzione — più si aspetta, più complesso sarà l'intervento.`;
+  if (arr.includes('sotto_controllo'))
+    return `Dente ${num} sotto controllo. Lo monitoriamo ad ogni visita — al momento non richiede intervento.`;
   const labels = arr.filter(t => t !== 'sano').map(t => labelTR(t));
   return labels.length
     ? `Dente ${num}: ${labels.join(', ')}. Monitoraggio periodico.`
