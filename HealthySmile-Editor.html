@@ -1066,6 +1066,14 @@ function _applicaDatiClinici(data) {
     d.note      = det.situazione_attuale.join(' + ') || 'Sano';
     d.consiglio = _consiglioBaseAttuale(arr, det.num);
 
+    // Nota clinica dal dettato (es. "semi incluso, gengiva dolente")
+    const noteClinicheMap = data.note_cliniche || {};
+    const notaCl = noteClinicheMap[det.num] || noteClinicheMap[String(det.num)] || '';
+    if (notaCl) {
+      d.nota_clinica = notaCl;
+      d.consiglio += ` Nota clinica: ${notaCl}.`;
+    }
+
     // Piano: affina consiglio e aggiorna rischio/prezzi
     const pianoItems = [
       ...det.prestazioni_da_fare,
@@ -1779,7 +1787,7 @@ function showDetail(dente, btn) {
     ? '<div class="dente-detail-grid"><div class="detail-item"><div class="detail-item-label">Stato</div><div class="detail-item-value grey" style="font-size:16px">Elemento assente</div></div></div>'
     : '<div class="dente-detail-grid"><div class="detail-item"><div class="detail-item-label">Stato</div><div class="detail-item-value ' + colorClass + '" style="font-size:16px">' + rischioLabel + '</div></div><div class="detail-item"><div class="detail-item-label">Preventivo</div><div class="detail-item-value ' + colorClass + '">Vedi preventivo in cartella</div></div></div>';
   detail.style.display = 'block';
-  detail.innerHTML = '<div class="dente-detail-header"><div><div style="font-size:12px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Dente ' + dente.num + (dente.implant ? ' — IMPIANTO' : '') + '</div><div class="dente-detail-title">' + dente.nome + '</div></div><div class="rischio-badge ' + dente.rischio + '">' + rischioLabel + '</div></div>' + statoHTML + (dente.prestazioni ? '<div style="background:rgba(255,209,102,0.05);border:1px solid rgba(255,209,102,0.15);border-radius:12px;padding:16px 20px;margin-bottom:16px"><div style="font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--yellow);font-weight:600;margin-bottom:8px">🦷 Prestazioni</div><div style="font-size:14px;color:var(--text-dim);line-height:1.7">' + dente.prestazioni + '</div></div>' : '') + '<div class="detail-consiglio"><div class="detail-consiglio-label">💬 Il nostro consiglio per te</div><div class="detail-consiglio-text">' + dente.consiglio + '</div>' + (dente.rischio !== 'low' && dente.rischio !== 'absent' ? '<div class="wa-inline"><a href="https://wa.me/393461824965?text=Ciao%2C+vorrei+prenotare+per+il+dente+' + dente.num + '" target="_blank" class="wa-btn" style="margin-top:16px"><svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.115.549 4.099 1.504 5.829L.057 23.428a.75.75 0 0 0 .921.921l5.599-1.447A11.944 11.944 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.75a9.705 9.705 0 0 1-4.953-1.355l-.355-.211-3.674.949.969-3.558-.232-.368A9.705 9.705 0 0 1 2.25 12C2.25 6.615 6.615 2.25 12 2.25S21.75 6.615 21.75 12 17.385 21.75 12 21.75z"/></svg> Prenota su WhatsApp</a></div>' : '') + '</div>';
+  detail.innerHTML = '<div class="dente-detail-header"><div><div style="font-size:12px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Dente ' + dente.num + (dente.implant ? ' — IMPIANTO' : '') + '</div><div class="dente-detail-title">' + dente.nome + '</div></div><div class="rischio-badge ' + dente.rischio + '">' + rischioLabel + '</div></div>' + statoHTML + (dente.prestazioni ? '<div style="background:rgba(255,209,102,0.05);border:1px solid rgba(255,209,102,0.15);border-radius:12px;padding:16px 20px;margin-bottom:16px"><div style="font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--yellow);font-weight:600;margin-bottom:8px">🦷 Prestazioni</div><div style="font-size:14px;color:var(--text-dim);line-height:1.7">' + dente.prestazioni + '</div></div>' : '') + (dente.nota_clinica ? '<div style="background:rgba(255,209,102,0.07);border:1px solid rgba(255,209,102,0.2);border-radius:12px;padding:16px 20px;margin-bottom:16px"><div style="font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--yellow);font-weight:600;margin-bottom:8px">📋 Nota clinica</div><div style="font-size:14px;color:var(--text);line-height:1.7">' + dente.nota_clinica + '</div></div>' : '') + '<div class="detail-consiglio"><div class="detail-consiglio-label">💬 Il nostro consiglio per te</div><div class="detail-consiglio-text">' + dente.consiglio + '</div>' + (dente.rischio !== 'low' && dente.rischio !== 'absent' ? '<div class="wa-inline"><a href="https://wa.me/393461824965?text=Ciao%2C+vorrei+prenotare+per+il+dente+' + dente.num + '" target="_blank" class="wa-btn" style="margin-top:16px"><svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.115.549 4.099 1.504 5.829L.057 23.428a.75.75 0 0 0 .921.921l5.599-1.447A11.944 11.944 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.75a9.705 9.705 0 0 1-4.953-1.355l-.355-.211-3.674.949.969-3.558-.232-.368A9.705 9.705 0 0 1 2.25 12C2.25 6.615 6.615 2.25 12 2.25S21.75 6.615 21.75 12 17.385 21.75 12 21.75z"/></svg> Prenota su WhatsApp</a></div>' : '') + '</div>';
   detail.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 
@@ -1884,13 +1892,14 @@ async function compilaSchedaConAI() {
       try { return JSON.parse(val); } catch { return def; }
     };
 
-    const odontogramma   = safeP(p.odontogramma,   {});
-    const piano          = safeP(p.piano,           {});
-    const arcatePiano    = safeP(p.arcate_piano,    {});
-    const quadrantePiano = safeP(p.quad_piano,      {});
-    const arcateAttuale  = safeP(p.arcate,          {});
-    const diario         = safeP(p.diario,          []);
-    const preventivoRows = safeP(p.preventivi,      []);
+    const odontogramma       = safeP(p.odontogramma,         {});
+    const noteClinichePerDente = safeP(p.note_cliniche_denti, {});
+    const piano              = safeP(p.piano,               {});
+    const arcatePiano        = safeP(p.arcate_piano,        {});
+    const quadrantePiano     = safeP(p.quad_piano,          {});
+    const arcateAttuale      = safeP(p.arcate,              {});
+    const diario             = safeP(p.diario,              []);
+    const preventivoRows     = safeP(p.preventivi,          []);
 
     // 4. Struttura unificata per dente — fonte unica di verità per il Worker AI
     const dentiDettaglio = _buildDentiDettaglio(odontogramma, piano);
@@ -1942,6 +1951,7 @@ async function compilaSchedaConAI() {
       diario_clinico: diario.slice(-20),
 
       note_generali: p.note_generali || '',
+      note_cliniche_denti: noteClinichePerDente,
     };
 
     // 5. Log in console
@@ -1957,7 +1967,7 @@ async function compilaSchedaConAI() {
       `${diario.length} note diario`;
 
     // 7. Aggiorna editor con i dati reali (mappa, lista, testi)
-    _applicaDatiClinici({ codice: p.codice, attuale: odontogramma, piano: piano });
+    _applicaDatiClinici({ codice: p.codice, attuale: odontogramma, piano: piano, note_cliniche: noteClinichePerDente });
 
     // 8. Chiama il Worker AI
     btn.textContent = '⏳ AI in elaborazione…';
