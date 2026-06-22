@@ -791,6 +791,58 @@
 </head>
 <body>
 
+    <!-- ═══════ SETUP IMMAGINI (rimuovere dopo l'uso) ═══════ -->
+    <div id="imageSetup" style="position:fixed;top:0;left:0;right:0;z-index:9999;background:#fff;border-bottom:3px solid #7A9E7E;padding:24px;text-align:center;font-family:'Nunito Sans',sans-serif;box-shadow:0 4px 20px rgba(0,0,0,.15)">
+        <p style="font-size:16px;font-weight:600;margin-bottom:16px;color:#3A3A3A">Seleziona le immagini per incorporarle nella pagina</p>
+        <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-bottom:16px">
+            <label style="cursor:pointer;background:#EDF4EE;border:2px dashed #7A9E7E;border-radius:12px;padding:16px 24px;font-size:14px;color:#5C8360">
+                1. Hero (donna sorridente)<br>
+                <input type="file" accept="image/*" id="imgHero" style="margin-top:8px">
+            </label>
+            <label style="cursor:pointer;background:#EDF4EE;border:2px dashed #7A9E7E;border-radius:12px;padding:16px 24px;font-size:14px;color:#5C8360">
+                2. Prima/Dopo<br>
+                <input type="file" accept="image/*" id="imgPrimaDopo" style="margin-top:8px">
+            </label>
+        </div>
+        <button id="btnEmbed" disabled style="background:#7A9E7E;color:#fff;border:none;padding:12px 32px;border-radius:50px;font-size:15px;font-weight:600;cursor:pointer;opacity:.5">Incorpora immagini e salva</button>
+        <p style="font-size:12px;color:#7A7A7A;margin-top:10px">Dopo aver cliccato, salva la pagina con <strong>Ctrl+S</strong>. Poi cancella questa barra dal codice se vuoi.</p>
+    </div>
+    <div style="height:180px" id="imageSetupSpacer"></div>
+
+    <script>
+    (function(){
+        var heroInput = document.getElementById('imgHero');
+        var pdInput = document.getElementById('imgPrimaDopo');
+        var btn = document.getElementById('btnEmbed');
+        var heroData = null, pdData = null;
+
+        function checkReady() {
+            if (heroData && pdData) { btn.disabled = false; btn.style.opacity = '1'; }
+        }
+
+        function readFile(input, cb) {
+            input.addEventListener('change', function() {
+                var reader = new FileReader();
+                reader.onload = function(e) { cb(e.target.result); checkReady(); };
+                reader.readAsDataURL(this.files[0]);
+            });
+        }
+
+        readFile(heroInput, function(d) { heroData = d; });
+        readFile(pdInput, function(d) { pdData = d; });
+
+        btn.addEventListener('click', function() {
+            var heroImg = document.querySelector('.hero-image img');
+            var pdImg = document.querySelector('.how-image img');
+            if (heroImg && heroData) heroImg.src = heroData;
+            if (pdImg && pdData) pdImg.src = pdData;
+            document.getElementById('imageSetup').style.display = 'none';
+            document.getElementById('imageSetupSpacer').style.display = 'none';
+            alert('Immagini incorporate! Ora salva la pagina con Ctrl+S (Salva con nome > Pagina web completa).');
+        });
+    })();
+    </script>
+
     <!-- ═══════ SEZIONE 1 — HERO ═══════ -->
     <section class="hero">
         <div class="container">
