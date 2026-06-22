@@ -940,6 +940,7 @@ const TR_ATTUALE_DEFAULT = [
   {id:'bite_att',    label:'Bite presente',       color:'#5B4BBF', sym:'B',  bg:'#EEEDFB', tipo:'attuale'},
   {id:'igiene_att',  label:'Igiene eseguita',     color:'#1D9E75', sym:'IG', bg:'#E1F5EE', tipo:'attuale'},
   {id:'sbianc_att',  label:'Sbiancamento fatto',  color:'#1D9E75', sym:'SB', bg:'#E1F5EE', tipo:'attuale'},
+  {id:'sotto_controllo', label:'Sotto controllo',  color:'#B7651A', sym:'SC', bg:'#FEF3E2', tipo:'attuale'},
 ];
 
 const TR_PIANO_DEFAULT = [
@@ -1127,6 +1128,7 @@ let currentId = null;
 // Odontogramma attuale (situazione in bocca)
 let teethAttuale = {};   // {16: ['impianto','corona']}
 let arcateAttuale = {};  // {sup: ['tot_rimov']}
+let teethNote = {};      // {48: 'semi incluso, gengiva dolente'}
 
 // Odontogramma piano (trattamenti da fare/eseguiti)
 let teethPiano = {};     // {16: [{tid:'estrazione', stato:'dafare'}]}
@@ -1257,6 +1259,7 @@ async function openPatient(id) {
   sv('f-prov',     p.prov||'');
   sv('f-nazione',  p.nazione||'Italia');
   teethAttuale  = safeJson(p.odontogramma, {});
+  teethNote     = safeJson(p.note_cliniche_denti, {});
   arcateAttuale = safeJson(p.arcate, {});
   teethPiano    = safeJson(p.piano, {});
   arcatePiano    = safeJson(p.arcate_piano, {});
@@ -1293,6 +1296,7 @@ async function openPatient(id) {
     if (Date.now() - _lastSaveTime < 4000) return;
     const d = snap.data();
     teethAttuale  = safeJson(d.odontogramma, {});
+    teethNote     = safeJson(d.note_cliniche_denti, {});
     arcateAttuale = safeJson(d.arcate, {});
     teethPiano    = safeJson(d.piano, {});
     arcatePiano    = safeJson(d.arcate_piano, {});
@@ -1337,6 +1341,7 @@ function collectData() {
     prov:          gv('f-prov').toUpperCase(),
     nazione:       gv('f-nazione'),
     odontogramma:  JSON.stringify(teethAttuale),
+    note_cliniche_denti: JSON.stringify(teethNote),
     arcate:        JSON.stringify(arcateAttuale),
     piano:         JSON.stringify(teethPiano),
     arcate_piano:  JSON.stringify(arcatePiano),
@@ -1404,7 +1409,7 @@ async function createPatient() {
       anno:    '',
       rischio: 'basso',
       prima_visita: new Date().toISOString().split('T')[0],
-      odontogramma: '{}', arcate: '{}', piano: '{}', arcate_piano: '{}',
+      odontogramma: '{}', note_cliniche_denti: '{}', arcate: '{}', piano: '{}', arcate_piano: '{}',
       preventivi: '[]', diario: '[]', documenti: '[]', alerts: '[]'
     });
     setSyncPill('ok');
@@ -2328,6 +2333,9 @@ async function loadPrestazioni() {
       if (d.quadrante && d.quadrante.length) QUAD_TR  = d.quadrante;
     }
   } catch(e) { /* usa default */ }
+  if (!TR_ATTUALE.find(t => t.id === 'sotto_controllo')) {
+    TR_ATTUALE.push({id:'sotto_controllo', label:'Sotto controllo', color:'#B7651A', sym:'SC', bg:'#FEF3E2', tipo:'attuale'});
+  }
   buildLegend();
 }
 
@@ -3303,7 +3311,11 @@ const AI_STATO_ATTUALE_MAP = {
   impianto:'impianto', corona:'corona', ponte:'ponte',
   provvisorio:'provvisorio', parziale:'parziale',
   frattura:'frattura', erosione:'erosione',
-  bite:'bite_att', igiene:'igiene_att', sbiancamento:'sbianc_att'
+  bite:'bite_att', igiene:'igiene_att', sbiancamento:'sbianc_att',
+  'sotto controllo':'sotto_controllo', 'sotto osservazione':'sotto_controllo',
+  'da monitorare':'sotto_controllo', monitorare:'sotto_controllo',
+  monitoraggio:'sotto_controllo', controllo:'sotto_controllo',
+  'sotto_controllo':'sotto_controllo'
 };
 
 function aiMatchAttuale(stato) {
@@ -4291,6 +4303,8 @@ async function aiConferma() {
         teethAttuale[num].push(tid);
         modifiche++;
       }
+      const notaClinica = d.problema || d.note || '';
+      if (notaClinica) teethNote[num] = notaClinica;
       if (d.stato || d.id_listino) {
         correzioni.push({
           tipo:          'situazione_attuale',
