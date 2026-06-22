@@ -804,8 +804,8 @@
                 <input type="file" accept="image/*" id="imgPrimaDopo" style="margin-top:8px">
             </label>
         </div>
-        <button id="btnEmbed" disabled style="background:#7A9E7E;color:#fff;border:none;padding:12px 32px;border-radius:50px;font-size:15px;font-weight:600;cursor:pointer;opacity:.5">Incorpora immagini e salva</button>
-        <p style="font-size:12px;color:#7A7A7A;margin-top:10px">Dopo aver cliccato, salva la pagina con <strong>Ctrl+S</strong>. Poi cancella questa barra dal codice se vuoi.</p>
+        <button id="btnEmbed" disabled style="background:#7A9E7E;color:#fff;border:none;padding:12px 32px;border-radius:50px;font-size:15px;font-weight:600;cursor:pointer;opacity:.5">Genera e scarica pagina con immagini</button>
+        <p style="font-size:12px;color:#7A7A7A;margin-top:10px">Seleziona entrambe le immagini, poi clicca il pulsante. Verrà scaricato un file HTML pronto all'uso.</p>
     </div>
     <div style="height:180px" id="imageSetupSpacer"></div>
 
@@ -832,13 +832,20 @@
         readFile(pdInput, function(d) { pdData = d; });
 
         btn.addEventListener('click', function() {
-            var heroImg = document.querySelector('.hero-image img');
-            var pdImg = document.querySelector('.how-image img');
-            if (heroImg && heroData) heroImg.src = heroData;
-            if (pdImg && pdData) pdImg.src = pdData;
-            document.getElementById('imageSetup').style.display = 'none';
-            document.getElementById('imageSetupSpacer').style.display = 'none';
-            alert('Immagini incorporate! Ora salva la pagina con Ctrl+S (Salva con nome > Pagina web completa).');
+            var html = document.documentElement.outerHTML;
+            html = html.replace(/src="hero-viso\.jpg"/g, 'src="' + heroData + '"');
+            html = html.replace(/src="prima-dopo-viso\.jpg"/g, 'src="' + pdData + '"');
+            // Rimuovi il blocco setup dal file scaricato
+            html = html.replace(/<!--\s*═+\s*SETUP IMMAGINI[\s\S]*?imageSetupSpacer"><\/div>/, '');
+            html = html.replace(/<script>\s*\(function\(\)\{[\s\S]*?}\)\(\);\s*<\/script>/, '');
+            var blob = new Blob(['<!DOCTYPE html>\n<html lang="it">' + html.substring(html.indexOf('<head'))], {type: 'text/html'});
+            var a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'ringiovanimento-viso.html';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(a.href);
         });
     })();
     </script>
