@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Healthy Smile By N — 120/26</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0f0d;--surface:#111a16;--surface2:#172018;--border:#1e2e24;--green:#2dff7a;--green-dim:#1a9447;--yellow:#ffd166;--red:#ff4d6d;--grey:#4a5568;--text:#e8f0eb;--text-dim:#6b8a74;--text-muted:#3a5542;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(45,255,122,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(45,255,122,0.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;}
+.container{max-width:1100px;margin:0 auto;padding:40px 24px;position:relative;z-index:1;}
+header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:48px;padding-bottom:32px;border-bottom:1px solid var(--border);}
+.brand{display:flex;align-items:center;gap:12px;}
+.brand-dot{width:10px;height:10px;background:var(--green);border-radius:50%;box-shadow:0 0 12px var(--green);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+.brand-name{font-family:'Playfair Display',serif;font-size:18px;color:var(--text);letter-spacing:-0.02em;}
+.patient-info{text-align:right;}
+.patient-name{font-family:'Playfair Display',serif;font-size:28px;font-weight:700;color:var(--text);letter-spacing:-0.03em;}
+.patient-meta{font-size:13px;color:var(--text-dim);margin-top:4px;font-family:'DM Mono',monospace;}
+.score-section{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:16px;margin-bottom:40px;}
+.score-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;position:relative;overflow:hidden;}
+.score-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.score-card.good::before{background:var(--green)}.score-card.warning::before{background:var(--yellow)}.score-card.alert::before{background:var(--red)}.score-card.absent::before{background:var(--grey)}
+.score-label{font-size:11px;text-transform:uppercase;letter-spacing:0.12em;color:var(--text-dim);margin-bottom:12px;}
+.score-value{font-family:'Playfair Display',serif;font-size:42px;font-weight:700;line-height:1;}
+.score-card.good .score-value{color:var(--green)}.score-card.warning .score-value{color:var(--yellow)}.score-card.alert .score-value{color:var(--red)}.score-card.absent .score-value{color:var(--grey)}
+.score-sub{font-size:12px;color:var(--text-dim);margin-top:8px;}
+.bocca-overview{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:32px;margin-bottom:24px;}
+.bocca-overview-title{font-family:'Playfair Display',serif;font-size:20px;margin-bottom:14px;color:var(--text);}
+.bocca-overview-text{font-size:15px;color:var(--text-dim);line-height:1.7;margin-bottom:24px;}
+.bocca-overview-text strong{color:var(--text);}
+.bocca-punti{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.bocca-punto{border-radius:14px;padding:20px 24px;}
+.bocca-punto.good{background:rgba(45,255,122,0.05);border:1px solid rgba(45,255,122,0.15);}
+.bocca-punto.bad{background:rgba(255,77,109,0.05);border:1px solid rgba(255,77,109,0.15);}
+.bocca-punto-label{font-size:11px;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:12px;font-weight:600;}
+.bocca-punto.good .bocca-punto-label{color:var(--green)}.bocca-punto.bad .bocca-punto-label{color:var(--red)}
+.bocca-punto ul{list-style:none;display:flex;flex-direction:column;gap:8px;}
+.bocca-punto ul li{font-size:13px;color:var(--text-dim);line-height:1.5;padding-left:12px;position:relative;}
+.bocca-punto ul li::before{content:'–';position:absolute;left:0;color:var(--text-muted);}
+.filosofia-banner{background:linear-gradient(135deg,rgba(45,255,122,0.06),rgba(45,255,122,0.02));border:1px solid rgba(45,255,122,0.15);border-radius:20px;padding:32px;margin-bottom:40px;}
+.filosofia-title{font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:var(--text);margin-bottom:12px;letter-spacing:-0.02em;}
+.filosofia-text{font-size:15px;color:var(--text-dim);line-height:1.7;margin-bottom:28px;}
+.filosofia-text strong{color:var(--text);}
+.filosofia-grid{display:flex;flex-direction:column;gap:14px;}
+.filosofia-item{display:flex;align-items:flex-start;gap:16px;padding:16px 20px;border-radius:14px;}
+.filosofia-item.green{background:rgba(45,255,122,0.05);border:1px solid rgba(45,255,122,0.15);}
+.filosofia-item.yellow{background:rgba(255,209,102,0.05);border:1px solid rgba(255,209,102,0.15);}
+.filosofia-item.red{background:rgba(255,77,109,0.05);border:1px solid rgba(255,77,109,0.15);}
+.filosofia-dot{width:12px;height:12px;border-radius:50%;margin-top:4px;flex-shrink:0;}
+.green-dot{background:var(--green);box-shadow:0 0 8px rgba(45,255,122,0.5);}
+.yellow-dot{background:var(--yellow);box-shadow:0 0 8px rgba(255,209,102,0.5);}
+.red-dot{background:var(--red);box-shadow:0 0 8px rgba(255,77,109,0.5);}
+.filosofia-label{font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.08em;}
+.filosofia-sub{font-size:13px;color:var(--text-dim);line-height:1.5;}
+.filosofia-sub strong{color:var(--text);}
+.arcata-section{margin-bottom:40px;}
+.section-title{font-family:'Playfair Display',serif;font-size:20px;margin-bottom:24px;color:var(--text);display:flex;align-items:center;gap:12px;}
+.section-title::after{content:'';flex:1;height:1px;background:var(--border);}
+.arcata{display:-webkit-flex;display:flex;-webkit-justify-content:center;justify-content:center;gap:6px;margin-bottom:8px;-webkit-flex-wrap:wrap;flex-wrap:wrap;min-height:56px;}
+.dente-btn{width:44px;height:52px;border-radius:8px;border:1.5px solid var(--border);background:var(--surface);cursor:pointer;display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;gap:3px;transition:all 0.2s;position:relative;-webkit-box-sizing:border-box;box-sizing:border-box;-webkit-flex-shrink:0;flex-shrink:0;}
+.dente-btn:hover{transform:translateY(-3px);}
+.dente-btn.low{border-color:rgba(45,255,122,0.4)}.dente-btn.low:hover{border-color:var(--green);box-shadow:0 0 16px rgba(45,255,122,0.2)}
+.dente-btn.medium{border-color:rgba(255,209,102,0.4)}.dente-btn.medium:hover{border-color:var(--yellow);box-shadow:0 0 16px rgba(255,209,102,0.2)}
+.dente-btn.high{border-color:rgba(255,77,109,0.4)}.dente-btn.high:hover{border-color:var(--red);box-shadow:0 0 16px rgba(255,77,109,0.2)}
+.dente-btn.absent{border-color:rgba(74,85,104,0.3);opacity:0.45}.dente-btn.absent:hover{border-color:var(--grey);opacity:0.7}
+
+.dente-btn.selected{transform:translateY(-4px);z-index:10;}
+.dente-btn.selected.low{background:rgba(45,255,122,0.1);border-color:var(--green);box-shadow:0 0 20px rgba(45,255,122,0.3)}
+.dente-btn.selected.medium{background:rgba(255,209,102,0.1);border-color:var(--yellow);box-shadow:0 0 20px rgba(255,209,102,0.3)}
+.dente-btn.selected.high{background:rgba(255,77,109,0.1);border-color:var(--red);box-shadow:0 0 20px rgba(255,77,109,0.3)}
+.dente-btn.selected.absent{background:rgba(74,85,104,0.1);border-color:var(--grey);box-shadow:0 0 20px rgba(74,85,104,0.3);opacity:0.7}
+
+.click-hint{text-align:center;margin:0 0 28px;font-size:13px;color:var(--text-dim);display:flex;align-items:center;justify-content:center;gap:8px;animation:hintPulse 2.5s infinite;}
+@keyframes hintPulse{0%,100%{opacity:0.4}50%{opacity:1}}
+.click-hint em{color:var(--green);font-style:normal;font-weight:500;}
+.dente-num{font-family:'DM Mono',monospace;font-size:10px;color:var(--text-dim);}
+.dente-dot{width:8px;height:8px;border-radius:50%;}
+.low .dente-dot{background:var(--green)}.medium .dente-dot{background:var(--yellow)}.high .dente-dot{background:var(--red)}.absent .dente-dot{background:var(--grey)}
+.imp-tag-small{font-size:7px;color:var(--green);font-family:'DM Mono',monospace;opacity:0.8;}
+.arcata-label{text-align:center;font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em;margin:6px 0 16px;}
+.dente-detail{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:32px;margin-bottom:40px;animation:fadeIn 0.3s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.dente-detail-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:28px;}
+.dente-detail-title{font-family:'Playfair Display',serif;font-size:24px;font-weight:700;}
+.rischio-badge{padding:6px 16px;border-radius:100px;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;}
+.rischio-badge.low{background:rgba(45,255,122,0.15);color:var(--green);border:1px solid rgba(45,255,122,0.3)}
+.rischio-badge.medium{background:rgba(255,209,102,0.15);color:var(--yellow);border:1px solid rgba(255,209,102,0.3)}
+.rischio-badge.high{background:rgba(255,77,109,0.15);color:var(--red);border:1px solid rgba(255,77,109,0.3)}
+.rischio-badge.absent{background:rgba(74,85,104,0.15);color:var(--grey);border:1px solid rgba(74,85,104,0.3)}
+
+.dente-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;}
+.detail-item{background:var(--surface2);border-radius:12px;padding:16px 20px;}
+.detail-item-label{font-size:11px;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-dim);margin-bottom:8px;}
+.detail-item-value{font-family:'Playfair Display',serif;font-size:22px;font-weight:600;}
+.detail-item-value.green{color:var(--green)}.detail-item-value.yellow{color:var(--yellow)}.detail-item-value.red{color:var(--red)}
+
+.detail-consiglio{background:linear-gradient(135deg,rgba(45,255,122,0.06),rgba(45,255,122,0.02));border:1px solid rgba(45,255,122,0.2);border-radius:14px;padding:20px 24px;margin-top:16px;}
+.detail-consiglio-label{font-size:11px;text-transform:uppercase;letter-spacing:0.12em;color:var(--green);font-weight:600;margin-bottom:10px;}
+.detail-consiglio-text{font-size:14px;color:var(--text);line-height:1.75;}
+.teeth-table{background:var(--surface);border:1px solid var(--border);border-radius:20px;overflow:hidden;margin-bottom:40px;}
+.teeth-table-header{display:grid;grid-template-columns:80px 1fr 120px 140px 140px 160px;padding:14px 24px;border-bottom:1px solid var(--border);font-size:11px;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);}
+.teeth-table-row{display:grid;grid-template-columns:80px 1fr 120px 140px 140px 160px;padding:16px 24px;border-bottom:1px solid var(--border);align-items:center;cursor:pointer;transition:background 0.15s;}
+.teeth-table-row:last-child{border-bottom:none}.teeth-table-row:hover{background:var(--surface2);}
+.teeth-table-row .dente-num-cell{font-family:'DM Mono',monospace;font-size:14px;color:var(--text-dim);}
+.teeth-table-row .dente-name{font-size:14px;color:var(--text);}
+.rischio-pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:500;}
+.rischio-pill .dot{width:6px;height:6px;border-radius:50%;}
+.rischio-pill.low{color:var(--green)}.rischio-pill.low .dot{background:var(--green)}
+.rischio-pill.medium{color:var(--yellow)}.rischio-pill.medium .dot{background:var(--yellow)}
+.rischio-pill.high{color:var(--red)}.rischio-pill.high .dot{background:var(--red)}
+.rischio-pill.absent{color:var(--grey)}.rischio-pill.absent .dot{background:var(--grey)}
+.table-consiglio-btn{font-size:12px;color:var(--green);cursor:pointer;font-weight:500;white-space:nowrap;opacity:0.7;transition:opacity 0.2s;}
+.teeth-table-row:hover .table-consiglio-btn{opacity:1;}
+.legend{display:flex;gap:24px;justify-content:center;margin:16px 0 32px;}
+.legend-item{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-dim);}
+.legend-dot{width:8px;height:8px;border-radius:50%;}
+.radio-grid{margin-bottom:40px;}
+.radio-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;cursor:pointer;transition:all 0.2s;position:relative;}
+.radio-card:hover{border-color:var(--green);box-shadow:0 0 20px rgba(45,255,122,0.15);transform:translateY(-2px);}
+.radio-img{width:100%;display:block;filter:brightness(0.9) contrast(1.1);}
+.radio-zoom-hint{position:absolute;top:10px;right:10px;background:rgba(0,0,0,0.6);border:1px solid var(--border);border-radius:6px;padding:4px 8px;font-size:11px;color:var(--text-dim);opacity:0;transition:opacity 0.2s;}
+.radio-card:hover .radio-zoom-hint{opacity:1;}
+.radio-info{padding:12px 16px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+.radio-label{font-size:12px;font-weight:600;color:var(--text);}
+.radio-date{font-family:'DM Mono',monospace;font-size:11px;color:var(--text-muted);}
+.lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:1000;align-items:center;justify-content:center;flex-direction:column;gap:16px;cursor:zoom-out;}
+.lightbox.open{display:flex;}
+.lightbox-img-wrap{max-width:95vw;max-height:85vh;border-radius:12px;overflow:hidden;border:1px solid var(--border);}
+.lightbox-img-wrap img{width:100%;height:100%;object-fit:contain;display:block;}
+.lightbox-label{color:var(--text-dim);font-size:14px;font-family:'DM Mono',monospace;}
+.lightbox-close{position:fixed;top:24px;right:24px;background:var(--surface);border:1px solid var(--border);color:var(--text);width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;transition:all 0.2s;}
+.lightbox-close:hover{border-color:var(--green);color:var(--green);}
+.wa-btn{display:inline-flex;align-items:center;gap:10px;background:#25D366;color:#fff;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;padding:14px 24px;border-radius:100px;text-decoration:none;box-shadow:0 4px 20px rgba(37,211,102,0.35);transition:all 0.2s;cursor:pointer;border:none;}
+.wa-btn:hover{transform:translateY(-2px);box-shadow:0 6px 28px rgba(37,211,102,0.5);}
+.wa-banner{background:linear-gradient(135deg,rgba(37,211,102,0.08),rgba(37,211,102,0.02));border:1px solid rgba(37,211,102,0.2);border-radius:20px;padding:28px 32px;margin-bottom:40px;display:flex;align-items:center;justify-content:space-between;gap:24px;}
+.wa-banner-text{font-size:15px;color:var(--text-dim);line-height:1.6;}
+.wa-banner-text strong{color:var(--text);}
+.wa-inline{text-align:center;margin:24px 0 0;}
+.footer-note{text-align:center;padding:32px;border-top:1px solid var(--border);font-size:13px;color:var(--text-muted);line-height:1.8;}
+.footer-note strong{color:var(--green);font-weight:500;}
+@media(max-width:768px){.score-section{grid-template-columns:1fr}.bocca-punti{grid-template-columns:1fr}.wa-banner{flex-direction:column}.teeth-table-header,.teeth-table-row{grid-template-columns:60px 1fr 100px}.teeth-table-header>*:nth-child(4),.teeth-table-header>*:nth-child(5),.teeth-table-row>*:nth-child(4),.teeth-table-row>*:nth-child(5){display:none}.dente-detail-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="container">
+
+<header>
+  <div class="brand">
+    <div class="brand-dot"></div>
+    <div class="brand-name">Healthy Smile By N</div>
+  </div>
+  <div class="patient-info">
+    <div class="patient-name">Codice 120/26</div>
+    <div class="patient-meta">Visita: 23/07/2026 &nbsp;·&nbsp; Aggiornamento: 23/07/2026</div>
+  </div>
+</header>
+
+<div class="bocca-overview">
+  <div class="bocca-overview-title">Quadro clinico generale</div>
+  <div class="bocca-overview-text">Erica presenta una situazione clinica stabile con un dente 17 personalizzato in buone condizioni. La visita ha evidenziato l'importanza di un approccio preventivo e di mantenimento, con particolare attenzione al monitoraggio nel tempo. Il piano terapeutico proposto si focalizza su igiene professionale, protezione delle strutture dentali e stabilizzazione ortodontica per preservare i risultati ottenuti.</div>
+  <div class="bocca-punti">
+    <div class="bocca-punto good">
+      <div class="bocca-punto-label">✓ Punti di forza</div>
+      <ul><li>Struttura dentale stabile e personalizzata</li><li>Approccio preventivo mirato a lungo termine</li><li>Piano terapeutico conservativo e non invasivo</li></ul>
+    </div>
+    <div class="bocca-punto bad">
+      <div class="bocca-punto-label">⚠ Aree da trattare</div>
+      <ul><li>Monitoraggio consigliato del dente 17 nel tempo</li><li>Necessità di mantenimento igienico professionale regolare</li></ul>
+    </div>
+  </div>
+</div>
+
+<div class="score-section">
+  <div class="score-card good">
+    <div class="score-label">Posizioni stabili</div>
+    <div class="score-value">32</div>
+    <div class="score-sub">Nessun intervento previsto</div>
+  </div>
+  <div class="score-card warning">
+    <div class="score-label">Sotto osservazione</div>
+    <div class="score-value">0</div>
+    <div class="score-sub">Monitoraggio programmato</div>
+  </div>
+  <div class="score-card alert">
+    <div class="score-label">Intervento consigliato</div>
+    <div class="score-value">0</div>
+    <div class="score-sub">Agire entro 30–90 giorni</div>
+  </div>
+  <div class="score-card absent">
+    <div class="score-label">Assenti</div>
+    <div class="score-value">0</div>
+    <div class="score-sub">Elementi non presenti</div>
+  </div>
+</div>
+
+<div class="filosofia-banner">
+  <div class="filosofia-title">La nostra filosofia</div>
+  <div class="filosofia-text">Il nostro approccio si basa sulla prevenzione attiva e sulla conservazione a lungo termine. Attraverso l'ablazione del tartaro, la contenzione ortodontica e il piano protezione, garantiamo stabilità estetica e funzionale, evitando complicanze future e mantenendo la salute gengivale nel tempo.</div>
+  <div class="filosofia-grid">
+    <div class="filosofia-item green">
+      <div class="filosofia-dot green-dot"></div>
+      <div>
+        <div class="filosofia-label">Denti verdi — basso rischio</div>
+        <div class="filosofia-sub">Nessun intervento necessario — <strong>garanzia inclusa</strong></div>
+      </div>
+    </div>
+    <div class="filosofia-item yellow">
+      <div class="filosofia-dot yellow-dot"></div>
+      <div>
+        <div class="filosofia-label">Denti gialli — sotto osservazione</div>
+        <div class="filosofia-sub">Monitoriamo l'evoluzione — il preventivo è in cartella</div>
+      </div>
+    </div>
+    <div class="filosofia-item red">
+      <div class="filosofia-dot red-dot"></div>
+      <div>
+        <div class="filosofia-label">Denti rossi — intervento consigliato</div>
+        <div class="filosofia-sub">Intervento urgente — vedi preventivo in cartella</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="wa-banner">
+  <div class="wa-banner-text">
+    <strong>Hai domande sulla tua scheda?</strong><br>
+    Scrivici direttamente su WhatsApp — ti rispondiamo entro poche ore e prenotiamo la visita insieme.
+  </div>
+  <a href="https://wa.me/393461824965?text=Ciao%2C+ho+visto+la+scheda+Healthy+Smile+e+vorrei+prenotare" target="_blank" class="wa-btn">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.115.549 4.099 1.504 5.829L.057 23.428a.75.75 0 0 0 .921.921l5.599-1.447A11.944 11.944 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.75a9.705 9.705 0 0 1-4.953-1.355l-.355-.211-3.674.949.969-3.558-.232-.368A9.705 9.705 0 0 1 2.25 12C2.25 6.615 6.615 2.25 12 2.25S21.75 6.615 21.75 12 17.385 21.75 12 21.75z"/></svg>
+    Scrivici su WhatsApp
+  </a>
+</div>
+
+<div class="arcata-section">
+  <div class="section-title">La tua bocca</div>
+  <div class="arcata" id="arcata-sup"></div>
+  <div class="arcata-label">Arcata superiore</div>
+  <div class="arcata-label">Arcata inferiore</div>
+  <div class="arcata" id="arcata-inf"></div>
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div> Basso rischio</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--yellow)"></div> Sotto osservazione</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div> Intervento consigliato</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--grey)"></div> Assente</div>
+  </div>
+</div>
+
+<div class="click-hint">
+  <span style="color:var(--green);font-size:18px">👆</span>
+  <span>Clicca su ogni dente — trovi <em>i nostri consigli personalizzati</em></span>
+</div>
+
+<div id="dente-detail" style="display:none" class="dente-detail"></div>
+
+<div class="section-title">I nostri consigli per te</div>
+<div class="teeth-table">
+  <div class="teeth-table-header">
+    <span>N°</span><span>Dente</span><span>Rischio</span>
+    <span>Prezzo mercato</span><span>Con convenzione</span>
+  </div>
+  <div id="teeth-table-body"></div>
+</div>
+
+
+
+<div class="footer-note">
+  <strong>Healthy Smile By N</strong> — Scheda clinica riservata · Codice paziente: 120/26<br>
+  Documento generato il 23/07/2026. I prezzi indicati sono orientativi e soggetti a conferma in sede di visita.
+</div>
+</div>
+
+<script>
+const denti = [{"num":18,"nome":"Ottavo sup. dx","arcata":"sup","pos":0,"rischio":"low","implant":false,"presente":true,"note":"Sano","consiglio":"Dente 18 in osservazione. Nessun intervento attivo previsto."},{"num":17,"nome":"Settimo sup. dx","arcata":"sup","pos":1,"rischio":"low","implant":false,"presente":true,"note":"Monitoraggio consigliato","consiglio":"Il dente 17 presenta una soluzione personalizzata in buone condizioni. Consigliamo monitoraggio periodico durante i controlli per verificare l'integrità strutturale e prevenire eventuali complicanze nel tempo.","nota_clinica":"monitoraggio consigliato"},{"num":16,"nome":"Sesto sup. dx","arcata":"sup","pos":2,"rischio":"low","implant":false,"presente":true,"note":"Sano","consiglio":"Dente 16 in osservazione. Nessun intervento attivo previsto."},{"num":15,"nome":"Quinto sup. dx","arcata":"sup","pos":3,"rischio":"low","implant":false,"presente":true,"note":"Sano","consiglio":"Dente 15 in osservazione. Nessun intervento attivo previsto."},{"num":14,"nome":"Quarto sup. dx","arcata":"sup","pos":4,"rischio":"low","implant":false,"presente":true,"note":"Sano","consiglio":"Dente 14 in osservazione. Nessun intervento attivo previsto."},{"num":13,"nome":"Canino sup. dx","arcata":"sup","pos":5,"rischio":"low","implant":false,"presente":true,"note":"Sano","consiglio":"Dente 13 in osservazione. Nessun intervento attivo previsto."},{"num":12,"nome":"Laterale sup. dx","arcata":"sup","pos":6,"rischio":"low","implant":false,"presente":true,"note":"Sano","consiglio":"Dente 12 in osservazione. Nessun intervento attivo previsto."},{"num":11,"nome":"Centrale sup. dx","arcata":"sup","pos":7,"rischio":"low","implant":false,"presente":true,"note":"Sano","consiglio":"Dente 11 in osservazione. Nessun intervento attivo previsto."},{"num":21,"nome":"Centrale sup. sx","arcata":"sup","pos":8,"rischio":"low","implant":false,"presente":true,"note":"Sano","consiglio":"Dente 21 in osservazione. Nessun intervento attivo previsto."},{"num":22,"nome":"Laterale sup. sx","arcata":"sup","pos":9,"rischio":"low","implant":false,"presente":true,"note":"Sano","consiglio":"Dente 22 in osservazione. Nessun intervento attivo previsto."},{"num":23,"nome":"Canino sup. sx","arcata":"sup","pos":10,"rischio":"low","implant":false,"presente":true,"note":"Sano","consiglio":"Dente 23 in osservazione. Nessun intervento attivo previsto."},{"num":24,"nome":"Quarto sup. sx","arcata":"sup","pos":11,"rischio":"low","implant":false,"presente":true,"note":"Sano","consiglio":"Dente 24 in osservazione. Nessun intervento attivo previsto."},{"num":25,"nome":"Quinto sup. sx","arcata":"sup","pos":12,"rischio":"low","implant":false,"presente":true,"note":"Sano","consiglio":"Dente 25 in osservazione. Nessun intervento attivo previsto."},{"num":26,"nome":"Sesto sup. sx","arcata":"sup","pos":13,"rischio":"low","implant":false,"presente":true,"note":"Sano","consiglio":"Dente 26 in osservazione. Nessun intervento attivo previsto."},{"num":27,"nome":"Settimo sup. sx","arcata":"sup","pos":14,"rischio":"low","implant":false,"presente":true,"note":"Sano","consiglio":"Dente 27 in osservazione. Nessun intervento attivo previsto."},{"num":28,"nome":"Ottavo sup. sx","arcata":"sup","pos":15,"rischio":"low","implant":false,"presente":true,"note":"Sano","consiglio":"Dente 28 in osservazione. Nessun intervento attivo previsto."},{"num":48,"nome":"Ottavo inf. dx","arcata":"inf","pos":0,"rischio":"low","implant":false,"presente":true,"note":"Sano","consiglio":"Dente 48 in osservazione. Nessun intervento attivo previsto."},{"num":47,"nome":"Settimo inf. dx","arcata":"inf","pos":1,"rischio":"low","implant":false,"presente":true,"note":"Sano","consiglio":"Dente 47 in osservazione. Nessun intervento attivo previsto."},{"num":46,"nome":"Sesto inf. dx","arcata":"inf","pos":2,"rischio":"low","implant":false,"presente":true,"note":"Sano","consiglio":"Dente 46 in osservazione. Nessun intervento attivo previsto."},{"num":45,"nome":"Quinto inf. dx","arcata":"inf","pos":3,"rischio":"low","implant":false,"presente":true,"note":"Sano","consiglio":"Dente 45 in osservazione. Nessun intervento attivo previsto."},{"num":44,"nome":"Quarto inf. dx","arcata":"inf","pos":4,"rischio":"low","implant":false,"presente":true,"note":"Sano","consiglio":"Dente 44 in osservazione. Nessun intervento attivo previsto."},{"num":43,"nome":"Canino inf. dx","arcata":"inf","pos":5,"rischio":"low","implant":false,"presente":true,"note":"Sano","consiglio":"Dente 43 in osservazione. Nessun intervento attivo previsto."},{"num":42,"nome":"Laterale inf. dx","arcata":"inf","pos":6,"rischio":"low","implant":false,"presente":true,"note":"Sano","consiglio":"Dente 42 in osservazione. Nessun intervento attivo previsto."},{"num":41,"nome":"Centrale inf. dx","arcata":"inf","pos":7,"rischio":"low","implant":false,"presente":true,"note":"Sano","consiglio":"Dente 41 in osservazione. Nessun intervento attivo previsto."},{"num":31,"nome":"Centrale inf. sx","arcata":"inf","pos":8,"rischio":"low","implant":false,"presente":true,"note":"Sano","consiglio":"Dente 31 in osservazione. Nessun intervento attivo previsto."},{"num":32,"nome":"Laterale inf. sx","arcata":"inf","pos":9,"rischio":"low","implant":false,"presente":true,"note":"Sano","consiglio":"Dente 32 in osservazione. Nessun intervento attivo previsto."},{"num":33,"nome":"Canino inf. sx","arcata":"inf","pos":10,"rischio":"low","implant":false,"presente":true,"note":"Sano","consiglio":"Dente 33 in osservazione. Nessun intervento attivo previsto."},{"num":34,"nome":"Quarto inf. sx","arcata":"inf","pos":11,"rischio":"low","implant":false,"presente":true,"note":"Sano","consiglio":"Dente 34 in osservazione. Nessun intervento attivo previsto."},{"num":35,"nome":"Quinto inf. sx","arcata":"inf","pos":12,"rischio":"low","implant":false,"presente":true,"note":"Sano","consiglio":"Dente 35 in osservazione. Nessun intervento attivo previsto."},{"num":36,"nome":"Sesto inf. sx","arcata":"inf","pos":13,"rischio":"low","implant":false,"presente":true,"note":"Sano","consiglio":"Dente 36 in osservazione. Nessun intervento attivo previsto."},{"num":37,"nome":"Settimo inf. sx","arcata":"inf","pos":14,"rischio":"low","implant":false,"presente":true,"note":"Sano","consiglio":"Dente 37 in osservazione. Nessun intervento attivo previsto."},{"num":38,"nome":"Ottavo inf. sx","arcata":"inf","pos":15,"rischio":"low","implant":false,"presente":true,"note":"Sano","consiglio":"Dente 38 in osservazione. Nessun intervento attivo previsto."}];
+let selectedDente = null;
+
+function renderArcata(arcata) {
+  const container = document.getElementById('arcata-' + arcata);
+  const filtered = denti.filter(d => d.arcata === arcata).sort((a,b) => a.pos - b.pos);
+  filtered.forEach(d => {
+    const btn = document.createElement('div');
+    btn.className = 'dente-btn ' + d.rischio;
+    btn.dataset.num = d.num;
+    btn.style.margin = '3px'; // Safari gap fallback
+    btn.onclick = () => showDetail(d, btn);
+    btn.innerHTML = '<div class="dente-num">' + d.num + '</div><div class="dente-dot"></div>' + (d.implant ? '<div class="imp-tag-small">IMP</div>' : '');
+    btn.title = d.nome;
+    container.appendChild(btn);
+  });
+}
+
+function showDetail(dente, btn) {
+  document.querySelectorAll('.dente-btn').forEach(b => b.classList.remove('selected'));
+  if (selectedDente === dente.num) {
+    selectedDente = null;
+    document.getElementById('dente-detail').style.display = 'none';
+    return;
+  }
+  selectedDente = dente.num;
+  btn.classList.add('selected');
+  const detail = document.getElementById('dente-detail');
+  const rischioLabel = {low:'Basso rischio',medium:'Sotto osservazione',high:'Intervento consigliato',absent:'Assente'}[dente.rischio] || 'Basso rischio';
+  const colorClass   = {low:'green',medium:'yellow',high:'red',absent:'grey'}[dente.rischio] || 'green';
+  const statoHTML    = dente.rischio === 'low'
+    ? '<div class="dente-detail-grid"><div class="detail-item"><div class="detail-item-label">Stato</div><div class="detail-item-value green" style="font-size:16px">' + (dente.implant ? '✓ Impianto stabile' : '✓ Nessun intervento') + '</div></div><div class="detail-item"><div class="detail-item-label">Garanzia</div><div class="detail-item-value green">✓ Coperto da garanzia</div></div></div>'
+    : dente.rischio === 'absent'
+    ? '<div class="dente-detail-grid"><div class="detail-item"><div class="detail-item-label">Stato</div><div class="detail-item-value grey" style="font-size:16px">Elemento assente</div></div></div>'
+    : '<div class="dente-detail-grid"><div class="detail-item"><div class="detail-item-label">Stato</div><div class="detail-item-value ' + colorClass + '" style="font-size:16px">' + rischioLabel + '</div></div><div class="detail-item"><div class="detail-item-label">Preventivo</div><div class="detail-item-value ' + colorClass + '">Vedi preventivo in cartella</div></div></div>';
+  detail.style.display = 'block';
+  detail.innerHTML = '<div class="dente-detail-header"><div><div style="font-size:12px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Dente ' + dente.num + (dente.implant ? ' — IMPIANTO' : '') + '</div><div class="dente-detail-title">' + dente.nome + '</div></div><div class="rischio-badge ' + dente.rischio + '">' + rischioLabel + '</div></div>' + statoHTML + (dente.prestazioni ? '<div style="background:rgba(255,209,102,0.05);border:1px solid rgba(255,209,102,0.15);border-radius:12px;padding:16px 20px;margin-bottom:16px"><div style="font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--yellow);font-weight:600;margin-bottom:8px">🦷 Prestazioni</div><div style="font-size:14px;color:var(--text-dim);line-height:1.7">' + dente.prestazioni + '</div></div>' : '') + (dente.nota_clinica ? '<div style="background:rgba(255,209,102,0.07);border:1px solid rgba(255,209,102,0.2);border-radius:12px;padding:16px 20px;margin-bottom:16px"><div style="font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--yellow);font-weight:600;margin-bottom:8px">📋 Nota clinica</div><div style="font-size:14px;color:var(--text);line-height:1.7">' + dente.nota_clinica + '</div></div>' : '') + '<div class="detail-consiglio"><div class="detail-consiglio-label">💬 Il nostro consiglio per te</div><div class="detail-consiglio-text">' + dente.consiglio + '</div>' + (dente.rischio !== 'low' && dente.rischio !== 'absent' ? '<div class="wa-inline"><a href="https://wa.me/393461824965?text=Ciao%2C+vorrei+prenotare+per+il+dente+' + dente.num + '" target="_blank" class="wa-btn" style="margin-top:16px"><svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.115.549 4.099 1.504 5.829L.057 23.428a.75.75 0 0 0 .921.921l5.599-1.447A11.944 11.944 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.75a9.705 9.705 0 0 1-4.953-1.355l-.355-.211-3.674.949.969-3.558-.232-.368A9.705 9.705 0 0 1 2.25 12C2.25 6.615 6.615 2.25 12 2.25S21.75 6.615 21.75 12 17.385 21.75 12 21.75z"/></svg> Prenota su WhatsApp</a></div>' : '') + '</div>';
+  detail.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function renderTable() {
+  const body = document.getElementById('teeth-table-body');
+  const order = {high:0,medium:1,low:2,absent:3};
+  [...denti].sort((a,b) => (order[a.rischio]??2) - (order[b.rischio]??2)).forEach(d => {
+    const row = document.createElement('div');
+    row.className = 'teeth-table-row';
+    const rischioLabel = {high:'Intervento',medium:'Osservazione',low:'Basso',absent:'Assente'}[d.rischio] || 'Basso';
+    const pc = {high:'red',medium:'yellow',low:'green',absent:'grey'}[d.rischio] || 'green';
+    row.innerHTML = '<span class="dente-num-cell">' + d.num + '</span><span class="dente-name">' + d.nome + (d.implant ? ' <span style="font-size:10px;color:var(--green);font-family:DM Mono">[IMP]</span>' : '') + '</span><span><div class="rischio-pill ' + d.rischio + '"><div class="dot"></div>' + rischioLabel + '</div></span><span></span><span style="font-size:13px;font-weight:500;color:' + (d.rischio === 'low' ? 'var(--green)' : d.rischio === 'absent' ? 'var(--text-muted)' : 'var(--yellow)') + '">' + (d.rischio === 'low' ? '✓ Garanzia' : d.rischio === 'absent' ? '—' : 'Vedi preventivo') + '</span><span class="table-consiglio-btn">💬 Dettaglio</span>';
+    row.onclick = () => { const b = document.querySelector('[data-num="'+d.num+'"]'); showDetail(d, b || document.createElement('div')); document.getElementById('dente-detail').scrollIntoView({behavior:'smooth',block:'center'}); };
+    body.appendChild(row);
+  });
+}
+
+function openLightbox() { document.getElementById('lightbox').classList.add('open'); document.body.style.overflow='hidden'; }
+function closeLightbox() { document.getElementById('lightbox').classList.remove('open'); document.body.style.overflow=''; }
+document.addEventListener('keydown', e => { if(e.key==='Escape') closeLightbox(); });
+
+renderArcata('sup');
+renderArcata('inf');
+renderTable();
+</script>
+</body>
+</html>
