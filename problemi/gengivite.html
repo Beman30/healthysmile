@@ -611,7 +611,7 @@ footer{background:#0a0a0a;padding:24px 32px;border-top:1px solid #1e1e1e;display
         <p class="studio-name">Healthy Smile <em>By N</em></p>
         <p class="studio-meta">Torino · San Salvario</p>
         <p class="studio-address">Via Madama Cristina 2</p>
-        <p class="studio-phone"><a href="tel:+393924076794">+39 392 407 6794</a></p>
+        <p class="studio-phone"><a href="tel:+390112488248">011 2488248</a></p>
         <p class="studio-appt">visita su appuntamento</p>
       </div>
       <div class="studio-links">
@@ -813,20 +813,8 @@ document.querySelectorAll('a[href^="tel:"]').forEach(function(el) {
   });
 })();
 
-/* MOBILE DRAWER */
-var hamburger = document.getElementById('hamburger');
-var mobileDrawer = document.getElementById('mobileDrawer');
-var overlay = document.getElementById('drawerOverlay');
-var drawerClose = document.getElementById('drawerClose');
-function toggleDrawer(open) {
-  hamburger.classList.toggle('open', open);
-  mobileDrawer.classList.toggle('open', open);
-  overlay.classList.toggle('open', open);
-  document.body.style.overflow = open ? 'hidden' : '';
-}
-hamburger.addEventListener('click', function() { toggleDrawer(!mobileDrawer.classList.contains('open')); });
-overlay.addEventListener('click', function() { toggleDrawer(false); });
-drawerClose.addEventListener('click', function() { toggleDrawer(false); });
+/* Il menu mobile lo fornisce components.js (#hs-hamburger, #hs-drawer):
+   il vecchio blocco qui cercava id inesistenti e lanciava un errore. */
 </script>
 </body>
 </html>
