@@ -112,7 +112,10 @@
   // ── INJECT ───────────────────────────────────────────────────────────
   // Una pagina che ha già un suo header può disattivare solo il nav con
   // <html data-hs-custom-nav>: footer e cookie banner restano iniettati.
-  var SKIP_NAV = document.documentElement.hasAttribute('data-hs-custom-nav');
+  var SKIP_NAV    = document.documentElement.hasAttribute('data-hs-custom-nav');
+  // Una pagina che ha gia' un suo footer puo' saltarne l'iniezione con
+  // <html data-hs-custom-footer>: il banner cookie viene comunque messo.
+  var SKIP_FOOTER = document.documentElement.hasAttribute('data-hs-custom-footer');
 
   function inject(){
     if(!SKIP_NAV && !document.getElementById('hs-nav')){
@@ -120,7 +123,7 @@
       document.body.insertBefore(overlay, nav.nextSibling);
       document.body.insertBefore(drawer, overlay.nextSibling);
     }
-    if(!document.getElementById('hs-footer')){
+    if(!SKIP_FOOTER && !document.getElementById('hs-footer')){
       document.body.appendChild(footer);
     }
 
