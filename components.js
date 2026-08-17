@@ -110,13 +110,20 @@
     '</div>';
 
   // ── INJECT ───────────────────────────────────────────────────────────
+  // Una pagina che ha già un suo header può disattivare solo il nav con
+  // <html data-hs-custom-nav>: footer e cookie banner restano iniettati.
+  var SKIP_NAV    = document.documentElement.hasAttribute('data-hs-custom-nav');
+  // Una pagina che ha gia' un suo footer puo' saltarne l'iniezione con
+  // <html data-hs-custom-footer>: il banner cookie viene comunque messo.
+  var SKIP_FOOTER = document.documentElement.hasAttribute('data-hs-custom-footer');
+
   function inject(){
-    if(!document.getElementById('hs-nav')){
+    if(!SKIP_NAV && !document.getElementById('hs-nav')){
       document.body.insertBefore(nav, document.body.firstChild);
       document.body.insertBefore(overlay, nav.nextSibling);
       document.body.insertBefore(drawer, overlay.nextSibling);
     }
-    if(!document.getElementById('hs-footer')){
+    if(!SKIP_FOOTER && !document.getElementById('hs-footer')){
       document.body.appendChild(footer);
     }
 
@@ -132,6 +139,9 @@
     var drw      = document.getElementById('hs-drawer');
     var ovl      = document.getElementById('hs-drawer-overlay');
     var closeBtn = document.getElementById('hs-drawer-close');
+    // Se il nav è stato saltato questi elementi non esistono: esci senza
+    // rompere, così il cookie banner viene comunque iniettato.
+    if(!btn || !drw || !ovl || !closeBtn) return;
     function openDrawer(){btn.classList.add('open');drw.classList.add('open');ovl.classList.add('open');document.body.style.overflow='hidden'}
     function closeDrawer(){btn.classList.remove('open');drw.classList.remove('open');ovl.classList.remove('open');document.body.style.overflow=''}
     btn.addEventListener('click', openDrawer);

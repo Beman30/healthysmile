@@ -1009,19 +1009,8 @@ document.querySelectorAll('a[href^="tel:"]').forEach(function(el) {
 })();
 
 /* ── MOBILE DRAWER ── */
-var hamburger = document.getElementById('hamburger');
-var mobileDrawer = document.getElementById('mobileDrawer');
-var overlay = document.getElementById('drawerOverlay');
-var drawerClose = document.getElementById('drawerClose');
-function toggleDrawer(open) {
-  hamburger.classList.toggle('open', open);
-  mobileDrawer.classList.toggle('open', open);
-  overlay.classList.toggle('open', open);
-  document.body.style.overflow = open ? 'hidden' : '';
-}
-hamburger.addEventListener('click', function() { toggleDrawer(!mobileDrawer.classList.contains('open')); });
-overlay.addEventListener('click', function() { toggleDrawer(false); });
-drawerClose.addEventListener('click', function() { toggleDrawer(false); });
+/* Il menu mobile lo fornisce components.js (#hs-hamburger, #hs-drawer):
+   il vecchio blocco qui cercava id inesistenti e lanciava un errore. */
 </script>
 </body>
 </html>

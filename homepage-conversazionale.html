@@ -1419,21 +1419,8 @@ document.querySelectorAll('.start-btn').forEach(btn => {
   btn.addEventListener('click', () => startPath(btn.dataset.path));
 });
 
-/* ── MOBILE DRAWER ─────────────────────────────────── */
-const hamburger    = document.getElementById('hamburger');
-const mobileDrawer = document.getElementById('mobileDrawer');
-const overlay      = document.getElementById('drawerOverlay');
-const drawerClose  = document.getElementById('drawerClose');
-
-const toggleDrawer = open => {
-  hamburger.classList.toggle('open', open);
-  mobileDrawer.classList.toggle('open', open);
-  overlay.classList.toggle('open', open);
-  document.body.style.overflow = open ? 'hidden' : '';
-};
-hamburger.addEventListener('click', () => toggleDrawer(!mobileDrawer.classList.contains('open')));
-overlay.addEventListener('click', () => toggleDrawer(false));
-drawerClose.addEventListener('click', () => toggleDrawer(false));
+/* Il menu mobile lo fornisce components.js (#hs-hamburger, #hs-drawer):
+   il vecchio blocco qui cercava id inesistenti e lanciava un errore. */
 </script>
 </body>
 </html>
