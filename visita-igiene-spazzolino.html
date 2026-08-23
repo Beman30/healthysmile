@@ -385,10 +385,10 @@ footer .legal{font-size:.78rem;color:#4a4a4a;margin-top:18px}
    CONFIGURAZIONE — è qui che si cambia tutto senza toccare il resto
    ═══════════════════════════════════════════════════════════════ */
 
-/* Link di pagamento dei 15 € (Stripe, SumUp, PayPal, Satispay...).
-   Finché resta stringa vuota il bottone "Blocca il posto" apre WhatsApp
-   con il riepilogo già scritto, così la pagina non è mai rotta.        */
-var PAYMENT_URL = '';
+/* La landing NON conosce il prezzo: manda solo il service_id al checkout
+   universale, che recupera importi e condizioni dal backend.
+   Per collegare un'altra offerta basta cambiare questa riga.           */
+var SERVICE_ID = 'igiene-sonicare';
 
 /* Le due giornate di settembre. Aggiungere o togliere date e orari qui:
    il resto della pagina si adatta da solo.                             */
@@ -474,14 +474,11 @@ var WA_BASE   = "Ciao, vorrei informazioni o prenotare Visita + Igiene + Spazzol
     if(!chosenDate||!chosenTime) return;
     ev('hs_book_checkout',{page:'visita-igiene-spazzolino',date:chosenDate.id,time:chosenTime,value:15,currency:'EUR'});
     if(typeof fbq==='function') fbq('track','InitiateCheckout',{value:15,currency:'EUR'});
-    if(PAYMENT_URL){
-      var sep = PAYMENT_URL.indexOf('?')>-1 ? '&' : '?';
-      location.href = PAYMENT_URL + sep +
-        'data='+encodeURIComponent(chosenDate.id) + '&ora='+encodeURIComponent(chosenTime);
-    } else {
-      // nessun link di pagamento configurato: si passa da WhatsApp
-      window.open(wa(WA_BASE+' Vorrei prenotare '+chosenDate.label+' alle '+chosenTime+'.'),'_blank','noopener');
-    }
+    // Nessun prezzo nell'URL: price, deposit, total e balance li stabilisce
+    // il backend a partire dal service_id.
+    location.href = '/checkout.html?service=' + encodeURIComponent(SERVICE_ID)
+      + '&date=' + encodeURIComponent(chosenDate.id)
+      + '&time=' + encodeURIComponent(chosenTime);
   });
 
   // profondità di scroll

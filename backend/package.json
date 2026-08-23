@@ -1,0 +1,13 @@
+{
+  "name": "healthysmile-checkout",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "db:create": "wrangler d1 create healthysmile-checkout-db",
+    "db:schema": "wrangler d1 execute healthysmile-checkout-db --remote --file=./schema.sql",
+    "db:seed": "wrangler d1 execute healthysmile-checkout-db --remote --file=./seed-slots.sql"
+  },
+  "devDependencies": { "wrangler": "^3.90.0" }
+}

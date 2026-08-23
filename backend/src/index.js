@@ -1,0 +1,346 @@
+/**
+ * Healthy Smile — checkout universale
+ *
+ * Un solo Worker per tutti i servizi. Le landing non sanno nulla di
+ * prezzi: mandano un service_id e questo backend decide il resto.
+ */
+import { getService, resolveAmounts, publicService, SERVICES } from './services.js';
+import { createCheckoutSession, verifyStripeSignature } from './stripe.js';
+import { createOrder, captureOrder, verifyWebhook as verifyPaypal } from './paypal.js';
+
+const HOLD_MINUTES = 20; // quanto resta bloccato uno slot durante il pagamento
+
+/* ── utilita' ─────────────────────────────────────────────── */
+
+const now = () => new Date().toISOString();
+
+function cors(env, request) {
+  const allowed = (env.ALLOWED_ORIGINS || 'https://healthysmile.it')
+    .split(',').map((s) => s.trim());
+  const origin = request.headers.get('Origin');
+  return {
+    'Access-Control-Allow-Origin': allowed.includes(origin) ? origin : allowed[0],
+    'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Max-Age': '86400',
+  };
+}
+
+function json(data, status, env, request) {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: { 'Content-Type': 'application/json; charset=utf-8', ...cors(env, request) },
+  });
+}
+
+const ok = (d, env, r) => json(d, 200, env, r);
+const bad = (m, env, r, s = 400) => json({ error: m }, s, env, r);
+
+/* ── validazione dei dati paziente ────────────────────────── */
+
+function validatePatient(b) {
+  const errs = [];
+  const s = (v) => (typeof v === 'string' ? v.trim() : '');
+  const first = s(b.first_name), last = s(b.last_name);
+  const phone = s(b.phone), email = s(b.email);
+
+  if (first.length < 2) errs.push('Nome mancante o troppo corto');
+  if (last.length < 2) errs.push('Cognome mancante o troppo corto');
+  if (!/^[+0-9 ().-]{6,25}$/.test(phone)) errs.push('Telefono non valido');
+  if (!/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(email)) errs.push('Email non valida');
+  if (b.terms_accepted !== true) errs.push('Devi accettare le condizioni di prenotazione');
+
+  return { errs, clean: { first_name: first, last_name: last, phone, email } };
+}
+
+/* ── slot: available → held → confirmed ───────────────────── */
+
+async function holdSlot(db, serviceId, date, time, bookingId) {
+  const heldUntil = new Date(Date.now() + HOLD_MINUTES * 60000).toISOString();
+  // Una sola UPDATE condizionale: se due persone cliccano nello stesso
+  // istante, solo una trova la riga ancora prenotabile. La corsa la
+  // risolve il database, non il codice.
+  const r = await db
+    .prepare(
+      `UPDATE slots SET status='held', booking_id=?, held_until=?, updated_at=?
+         WHERE service_id=? AND date=? AND time=?
+           AND (status='available' OR (status='held' AND held_until < ?))`
+    )
+    .bind(bookingId, heldUntil, now(), serviceId, date, time, now())
+    .run();
+  return r.meta.changes === 1;
+}
+
+async function confirmSlot(db, bookingId) {
+  await db.prepare(
+    `UPDATE slots SET status='confirmed', held_until=NULL, updated_at=? WHERE booking_id=?`
+  ).bind(now(), bookingId).run();
+}
+
+async function releaseSlot(db, bookingId) {
+  await db.prepare(
+    `UPDATE slots SET status='available', booking_id=NULL, held_until=NULL, updated_at=?
+       WHERE booking_id=? AND status='held'`
+  ).bind(now(), bookingId).run();
+}
+
+/* ── creazione prenotazione + avvio pagamento ─────────────── */
+
+async function startCheckout(request, env, provider) {
+  const body = await request.json().catch(() => null);
+  if (!body) return bad('Richiesta non valida', env, request);
+
+  const service = getService(body.service_id);
+  if (!service) return bad('Servizio non riconosciuto', env, request);
+
+  const { errs, clean } = validatePatient(body);
+  if (errs.length) return bad(errs.join('. '), env, request);
+
+  let amounts;
+  try {
+    // requestedAmount viene guardato SOLO se il servizio e' "custom"
+    amounts = resolveAmounts(service, body.requested_amount);
+  } catch (e) {
+    return bad(e.message, env, request);
+  }
+
+  let date = null, time = null;
+  if (service.requiresAppointment) {
+    date = String(body.date || '');
+    time = String(body.time || '');
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !/^\d{2}:\d{2}$/.test(time)) {
+      return bad('Data o ora mancanti', env, request);
+    }
+  }
+
+  const bookingId = crypto.randomUUID();
+  const db = env.DB;
+
+  if (service.requiresAppointment) {
+    const held = await holdSlot(db, body.service_id, date, time, bookingId);
+    if (!held) return bad('Questo orario è appena stato prenotato. Scegline un altro.', env, request, 409);
+  }
+
+  await db.prepare(
+    `INSERT INTO bookings (
+       booking_id, service_id, first_name, last_name, phone, email,
+       appointment_date, appointment_time,
+       total_price, amount_due_now, amount_paid, balance_due,
+       payment_mode, payment_provider, payment_status, booking_status,
+       terms_accepted, terms_version, terms_accepted_at, created_at, updated_at
+     ) VALUES (?,?,?,?,?,?,?,?,?,?,0,?,?,?,'pending',?,1,?,?,?,?)`
+  ).bind(
+    bookingId, body.service_id, clean.first_name, clean.last_name, clean.phone, clean.email,
+    date, time,
+    amounts.totalPrice, amounts.amountDueNow, amounts.balanceDueLater,
+    service.paymentMode, provider,
+    service.requiresAppointment ? 'held' : 'awaiting_payment',
+    service.termsVersion, now(), now(), now()
+  ).run();
+
+  const successUrl = `${env.SITE_URL}/checkout-success.html`;
+  const cancelUrl = `${env.SITE_URL}/checkout.html?service=${encodeURIComponent(body.service_id)}`
+    + (date ? `&date=${date}&time=${encodeURIComponent(time)}` : '')
+    + '&annullato=1';
+
+  const booking = { booking_id: bookingId, service_id: body.service_id, email: clean.email };
+
+  try {
+    const session = provider === 'stripe'
+      ? await createCheckoutSession(env, { booking, service, amounts, successUrl, cancelUrl })
+      : await createOrder(env, { booking, service, amounts, successUrl, cancelUrl });
+
+    await db.prepare(`UPDATE bookings SET payment_id=?, updated_at=? WHERE booking_id=?`)
+      .bind(session.id, now(), bookingId).run();
+
+    return ok({ booking_id: bookingId, redirect_url: session.url }, env, request);
+  } catch (e) {
+    await releaseSlot(db, bookingId);
+    await db.prepare(
+      `UPDATE bookings SET payment_status='failed', booking_status='cancelled', updated_at=? WHERE booking_id=?`
+    ).bind(now(), bookingId).run();
+    return bad(`Non riusciamo ad avviare il pagamento. ${e.message}`, env, request, 502);
+  }
+}
+
+/* ── esito pagamento (chiamato dai webhook) ───────────────── */
+
+async function markPaid(db, bookingId, paidAmount, providerPaymentId) {
+  const b = await db.prepare(`SELECT * FROM bookings WHERE booking_id=?`).bind(bookingId).first();
+  if (!b) return;
+  if (b.payment_status === 'paid') return; // idempotente: webhook ripetuto = niente
+
+  const balance = Math.round((b.total_price - paidAmount) * 100) / 100;
+  await db.prepare(
+    `UPDATE bookings SET amount_paid=?, balance_due=?, payment_status='paid',
+       booking_status='confirmed', payment_id=COALESCE(?,payment_id), updated_at=?
+     WHERE booking_id=?`
+  ).bind(paidAmount, balance, providerPaymentId || null, now(), bookingId).run();
+
+  await confirmSlot(db, bookingId);
+}
+
+async function markFailed(db, bookingId) {
+  await db.prepare(
+    `UPDATE bookings SET payment_status='failed', booking_status='cancelled', updated_at=?
+       WHERE booking_id=? AND payment_status='pending'`
+  ).bind(now(), bookingId).run();
+  await releaseSlot(db, bookingId);
+}
+
+async function seen(db, eventId, provider, type, bookingId, payload) {
+  try {
+    await db.prepare(
+      `INSERT INTO webhook_events (event_id, provider, event_type, booking_id, received_at, payload)
+       VALUES (?,?,?,?,?,?)`
+    ).bind(eventId, provider, type, bookingId || null, now(), payload.slice(0, 8000)).run();
+    return false; // non ancora visto
+  } catch {
+    return true;  // chiave duplicata: evento gia' processato
+  }
+}
+
+/* ── router ───────────────────────────────────────────────── */
+
+export default {
+  async fetch(request, env) {
+    const url = new URL(request.url);
+    const path = url.pathname.replace(/\/+$/, '') || '/';
+
+    if (request.method === 'OPTIONS') {
+      return new Response(null, { status: 204, headers: cors(env, request) });
+    }
+
+    // GET /api/services/:id — il frontend chiede nome e prezzi
+    if (request.method === 'GET' && path.startsWith('/api/services/')) {
+      const id = decodeURIComponent(path.slice('/api/services/'.length));
+      const s = getService(id);
+      if (!s) return bad('Servizio non riconosciuto', env, request, 404);
+      return ok(publicService(id, s), env, request);
+    }
+
+    // GET /api/slots?service=..&date=.. — orari ancora liberi
+    if (request.method === 'GET' && path === '/api/slots') {
+      const service = url.searchParams.get('service');
+      const date = url.searchParams.get('date');
+      if (!getService(service)) return bad('Servizio non riconosciuto', env, request, 404);
+      const q = date
+        ? env.DB.prepare(
+            `SELECT date, time FROM slots
+               WHERE service_id=? AND date=?
+                 AND (status='available' OR (status='held' AND held_until < ?))
+               ORDER BY time`
+          ).bind(service, date, now())
+        : env.DB.prepare(
+            `SELECT date, time FROM slots
+               WHERE service_id=?
+                 AND (status='available' OR (status='held' AND held_until < ?))
+               ORDER BY date, time`
+          ).bind(service, now());
+      const { results } = await q.all();
+      return ok({ slots: results || [] }, env, request);
+    }
+
+    // GET /api/bookings/:id — la success page legge i dati reali
+    if (request.method === 'GET' && path.startsWith('/api/bookings/')) {
+      const id = decodeURIComponent(path.slice('/api/bookings/'.length));
+      const b = await env.DB.prepare(
+        `SELECT booking_id, service_id, first_name, appointment_date, appointment_time,
+                total_price, amount_paid, balance_due, payment_status, booking_status
+           FROM bookings WHERE booking_id=?`
+      ).bind(id).first();
+      if (!b) return bad('Prenotazione non trovata', env, request, 404);
+      const s = getService(b.service_id);
+      return ok({ ...b, service_name: s ? s.name : b.service_id }, env, request);
+    }
+
+    if (request.method === 'POST' && path === '/api/checkout/stripe') return startCheckout(request, env, 'stripe');
+    if (request.method === 'POST' && path === '/api/checkout/paypal') return startCheckout(request, env, 'paypal');
+
+    // ── WEBHOOK STRIPE ──
+    if (request.method === 'POST' && path === '/api/webhooks/stripe') {
+      const raw = await request.text();
+      const valid = await verifyStripeSignature(raw, request.headers.get('stripe-signature'), env.STRIPE_WEBHOOK_SECRET);
+      if (!valid) return new Response('firma non valida', { status: 400 });
+
+      const event = JSON.parse(raw);
+      const obj = event.data?.object || {};
+      const bookingId = obj.metadata?.booking_id || obj.client_reference_id;
+      if (await seen(env.DB, event.id, 'stripe', event.type, bookingId, raw)) {
+        return new Response('gia processato', { status: 200 });
+      }
+
+      if (event.type === 'checkout.session.completed' && obj.payment_status === 'paid') {
+        await markPaid(env.DB, bookingId, (obj.amount_total || 0) / 100, obj.payment_intent || obj.id);
+      } else if (event.type === 'checkout.session.expired' || event.type === 'payment_intent.payment_failed') {
+        await markFailed(env.DB, bookingId);
+      } else if (event.type === 'charge.refunded') {
+        const full = obj.amount_refunded >= obj.amount;
+        await env.DB.prepare(
+          `UPDATE bookings SET payment_status=?, booking_status='cancelled', updated_at=? WHERE booking_id=?`
+        ).bind(full ? 'refunded' : 'partially_refunded', now(), bookingId).run();
+        await releaseSlot(env.DB, bookingId);
+      }
+      return new Response('ok', { status: 200 });
+    }
+
+    // ── WEBHOOK PAYPAL ──
+    if (request.method === 'POST' && path === '/api/webhooks/paypal') {
+      const raw = await request.text();
+      if (!(await verifyPaypal(env, request.headers, raw))) {
+        return new Response('firma non valida', { status: 400 });
+      }
+      const event = JSON.parse(raw);
+      const res = event.resource || {};
+      const bookingId =
+        res.custom_id ||
+        res.purchase_units?.[0]?.custom_id ||
+        res.purchase_units?.[0]?.reference_id;
+
+      if (await seen(env.DB, event.id, 'paypal', event.event_type, bookingId, raw)) {
+        return new Response('gia processato', { status: 200 });
+      }
+
+      if (event.event_type === 'CHECKOUT.ORDER.APPROVED') {
+        // approvato non vuol dire incassato: si cattura e si aspetta l'esito
+        const cap = await captureOrder(env, res.id);
+        const unit = cap.purchase_units?.[0]?.payments?.captures?.[0];
+        if (cap.status === 'COMPLETED' && unit) {
+          await markPaid(env.DB, bookingId, Number(unit.amount.value), unit.id);
+        }
+      } else if (event.event_type === 'PAYMENT.CAPTURE.COMPLETED') {
+        await markPaid(env.DB, bookingId, Number(res.amount?.value || 0), res.id);
+      } else if (['PAYMENT.CAPTURE.DENIED', 'CHECKOUT.ORDER.VOIDED'].includes(event.event_type)) {
+        await markFailed(env.DB, bookingId);
+      } else if (event.event_type === 'PAYMENT.CAPTURE.REFUNDED') {
+        await env.DB.prepare(
+          `UPDATE bookings SET payment_status='refunded', booking_status='cancelled', updated_at=? WHERE booking_id=?`
+        ).bind(now(), bookingId).run();
+        await releaseSlot(env.DB, bookingId);
+      }
+      return new Response('ok', { status: 200 });
+    }
+
+    if (path === '/api/health') {
+      return ok({ status: 'ok', services: Object.keys(SERVICES) }, env, request);
+    }
+
+    return bad('Endpoint non trovato', env, request, 404);
+  },
+
+  /**
+   * Cron: libera gli slot il cui hold e' scaduto senza pagamento.
+   * Senza questo, un checkout abbandonato terrebbe l'orario occupato
+   * per sempre.
+   */
+  async scheduled(_event, env) {
+    await env.DB.prepare(
+      `UPDATE slots SET status='available', booking_id=NULL, held_until=NULL, updated_at=?
+         WHERE status='held' AND held_until < ?`
+    ).bind(now(), now()).run();
+    await env.DB.prepare(
+      `UPDATE bookings SET booking_status='cancelled', payment_status='failed', updated_at=?
+         WHERE booking_status='held' AND payment_status='pending' AND created_at < ?`
+    ).bind(now(), new Date(Date.now() - 60 * 60000).toISOString()).run();
+  },
+};

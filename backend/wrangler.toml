@@ -1,0 +1,19 @@
+name = "healthysmile-checkout"
+main = "src/index.js"
+compatibility_date = "2026-08-01"
+
+# Le variabili non segrete stanno qui, in chiaro: non c'e' nulla di
+# sensibile. Le chiavi vanno messe con `wrangler secret put`, mai qui.
+[vars]
+SITE_URL = "https://healthysmile.it"
+ALLOWED_ORIGINS = "https://healthysmile.it,https://www.healthysmile.it"
+PAYPAL_ENV = "sandbox"   # passare a "live" quando si va in produzione
+
+[[d1_databases]]
+binding = "DB"
+database_name = "healthysmile-checkout-db"
+database_id = "DA_COMPILARE"   # output di: wrangler d1 create healthysmile-checkout-db
+
+# Libera gli slot con hold scaduto, ogni 10 minuti
+[triggers]
+crons = ["*/10 * * * *"]
