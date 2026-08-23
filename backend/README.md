@@ -91,6 +91,52 @@ La landing punta a `/checkout.html?service=sbiancamento`. Fine.
 `custom` va abilitato esplicitamente: un servizio `fixed` o `full` non è
 modificabile dal paziente nemmeno manomettendo la richiesta.
 
+## Avviso allo studio
+
+Quando un pagamento va a buon fine parte una mail **a te**, non al
+paziente: la conferma la inoltri tu, così resti in controllo.
+
+Nella mail trovi nome, telefono, email, appuntamento, quanto è stato
+incassato e quanto resta da pagare in studio. In fondo c'è un pulsante
+che apre WhatsApp verso il paziente con il messaggio di conferma già
+scritto: lo rileggi, lo modifichi se vuoi, e invii.
+
+Il numero di telefono viene normalizzato: `333 1234567`, `+39 333-1234567`
+e `00393331234567` finiscono tutti sullo stesso link.
+
+### Configurazione
+
+Serve un servizio di posta con API HTTP: i Worker non possono usare SMTP.
+Il codice usa **Resend** (piano gratuito 3.000 mail/mese).
+
+1. registrarsi su resend.com e verificare `healthysmile.it` aggiungendo i
+   record DNS che indica (SPF e DKIM). Senza, le mail finiscono in spam.
+2. impostare le variabili:
+
+       npx wrangler secret put RESEND_API_KEY
+
+   e in `wrangler.toml`, sotto `[vars]`:
+
+       NOTIFY_EMAIL_TO   = "tua@email.it"
+       NOTIFY_EMAIL_FROM = "Healthy Smile <prenotazioni@healthysmile.it>"
+
+`NOTIFY_EMAIL_TO` accetta più indirizzi separati da virgola.
+
+### Se la mail non parte
+
+Il pagamento resta valido comunque. L'invio gira in background con
+`waitUntil` e ogni errore viene ingoiato dopo essere finito nei log:
+un problema con la posta non deve mai far risultare fallito un incasso.
+Verificato: con provider irraggiungibile, Stripe riceve `200` e la
+prenotazione resta `paid` / `confirmed`.
+
+Per leggere i log:
+
+    npx wrangler tail
+
+Se `RESEND_API_KEY` non è configurata, l'avviso viene semplicemente
+saltato: utile per far girare il sistema prima di occuparsi della posta.
+
 ## Slot
 
 Per i servizi con `requiresAppointment`, una riga per orario in `slots`.

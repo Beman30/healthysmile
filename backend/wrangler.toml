@@ -9,6 +9,11 @@ SITE_URL = "https://healthysmile.it"
 ALLOWED_ORIGINS = "https://healthysmile.it,https://www.healthysmile.it"
 PAYPAL_ENV = "sandbox"   # passare a "live" quando si va in produzione
 
+# Avviso allo studio quando arriva una prenotazione pagata.
+# La chiave va messa con: wrangler secret put RESEND_API_KEY
+NOTIFY_EMAIL_TO   = "DA_COMPILARE@healthysmile.it"
+NOTIFY_EMAIL_FROM = "Healthy Smile <prenotazioni@healthysmile.it>"
+
 [[d1_databases]]
 binding = "DB"
 database_name = "healthysmile-checkout-db"

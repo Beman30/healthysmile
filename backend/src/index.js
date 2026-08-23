@@ -7,6 +7,7 @@
 import { getService, resolveAmounts, publicService, SERVICES } from './services.js';
 import { createCheckoutSession, verifyStripeSignature } from './stripe.js';
 import { createOrder, captureOrder, verifyWebhook as verifyPaypal } from './paypal.js';
+import { notifyStudio } from './notify.js';
 
 const HOLD_MINUTES = 20; // quanto resta bloccato uno slot durante il pagamento
 
@@ -167,8 +168,8 @@ async function startCheckout(request, env, provider) {
 
 async function markPaid(db, bookingId, paidAmount, providerPaymentId) {
   const b = await db.prepare(`SELECT * FROM bookings WHERE booking_id=?`).bind(bookingId).first();
-  if (!b) return;
-  if (b.payment_status === 'paid') return; // idempotente: webhook ripetuto = niente
+  if (!b) return null;
+  if (b.payment_status === 'paid') return null; // idempotente: webhook ripetuto = niente
 
   const balance = Math.round((b.total_price - paidAmount) * 100) / 100;
   await db.prepare(
@@ -178,6 +179,10 @@ async function markPaid(db, bookingId, paidAmount, providerPaymentId) {
   ).bind(paidAmount, balance, providerPaymentId || null, now(), bookingId).run();
 
   await confirmSlot(db, bookingId);
+
+  // restituita al chiamante, che ci manda l'avviso allo studio.
+  // Torna null se era gia' pagata: cosi' l'avviso parte una volta sola.
+  return { ...b, amount_paid: paidAmount, balance_due: balance };
 }
 
 async function markFailed(db, bookingId) {
@@ -200,10 +205,24 @@ async function seen(db, eventId, provider, type, bookingId, payload) {
   }
 }
 
+
+/**
+ * Manda l'avviso allo studio. Gira in background con waitUntil: il
+ * provider riceve subito il 200 e non riprova. Qualsiasi errore viene
+ * ingoiato: un problema con la posta non deve mai trasformarsi in un
+ * pagamento che risulta fallito.
+ */
+function alertStudio(ctx, env, booking) {
+  const service = getService(booking.service_id);
+  const name = service ? service.name : booking.service_id;
+  const p = notifyStudio(env, booking, name).catch(() => false);
+  if (ctx && typeof ctx.waitUntil === 'function') ctx.waitUntil(p);
+}
+
 /* ── router ───────────────────────────────────────────────── */
 
 export default {
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
     const url = new URL(request.url);
     const path = url.pathname.replace(/\/+$/, '') || '/';
 
@@ -271,7 +290,8 @@ export default {
       }
 
       if (event.type === 'checkout.session.completed' && obj.payment_status === 'paid') {
-        await markPaid(env.DB, bookingId, (obj.amount_total || 0) / 100, obj.payment_intent || obj.id);
+        const paid = await markPaid(env.DB, bookingId, (obj.amount_total || 0) / 100, obj.payment_intent || obj.id);
+        if (paid) alertStudio(ctx, env, paid);
       } else if (event.type === 'checkout.session.expired' || event.type === 'payment_intent.payment_failed') {
         await markFailed(env.DB, bookingId);
       } else if (event.type === 'charge.refunded') {
@@ -306,10 +326,12 @@ export default {
         const cap = await captureOrder(env, res.id);
         const unit = cap.purchase_units?.[0]?.payments?.captures?.[0];
         if (cap.status === 'COMPLETED' && unit) {
-          await markPaid(env.DB, bookingId, Number(unit.amount.value), unit.id);
+          const paid = await markPaid(env.DB, bookingId, Number(unit.amount.value), unit.id);
+          if (paid) alertStudio(ctx, env, paid);
         }
       } else if (event.event_type === 'PAYMENT.CAPTURE.COMPLETED') {
-        await markPaid(env.DB, bookingId, Number(res.amount?.value || 0), res.id);
+        const paid = await markPaid(env.DB, bookingId, Number(res.amount?.value || 0), res.id);
+        if (paid) alertStudio(ctx, env, paid);
       } else if (['PAYMENT.CAPTURE.DENIED', 'CHECKOUT.ORDER.VOIDED'].includes(event.event_type)) {
         await markFailed(env.DB, bookingId);
       } else if (event.event_type === 'PAYMENT.CAPTURE.REFUNDED') {
