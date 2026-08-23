@@ -39,7 +39,11 @@ export async function createOrder(env, { booking, service, amounts, successUrl, 
         {
           reference_id: booking.booking_id,
           custom_id: booking.booking_id,
-          description: service.name.slice(0, 127),
+          // PayPal limita a 127 caratteri e la mostra anche al paziente,
+          // quindi qui niente telefono: solo servizio e appuntamento.
+          description: (booking.date && booking.time
+            ? `${service.name} — ${booking.date.slice(8,10)}/${booking.date.slice(5,7)} ore ${booking.time}`
+            : service.name).slice(0, 127),
           amount: { currency_code: 'EUR', value: amounts.amountDueNow.toFixed(2) },
         },
       ],

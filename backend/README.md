@@ -91,7 +91,34 @@ La landing punta a `/checkout.html?service=sbiancamento`. Fine.
 `custom` va abilitato esplicitamente: un servizio `fixed` o `full` non è
 modificabile dal paziente nemmeno manomettendo la richiesta.
 
-## Avviso allo studio
+## La via semplice: gli avvisi di Stripe
+
+Prima di configurare Resend, valuta gli avvisi che Stripe manda da solo.
+Nessun codice, nessun DNS, due spunte:
+
+- **Settings → Notifications → Successful payments**: mail a ogni incasso
+- **app Stripe sul telefono**: notifica push istantanea
+- **Settings → Customer emails → Successful payments**: ricevuta
+  automatica al paziente (non è la conferma dell'appuntamento, ma almeno
+  chi paga riceve subito qualcosa di scritto)
+
+Perché basti, mandiamo a Stripe anche i dati della prenotazione. Nella
+colonna *Description* dell'elenco pagamenti compare direttamente:
+
+    Rossi Mario · 10/09 ore 10:00 · +39 333 1234567
+
+e aprendo il pagamento trovi nei metadati paziente, telefono,
+appuntamento, servizio e saldo da incassare in studio.
+
+Il telefono finisce solo lì: la Description del payment intent non è
+visibile al paziente. Su PayPal, dove la descrizione la vede anche lui,
+mettiamo servizio e appuntamento ma non il numero.
+
+Con questo l'avviso di Stripe è autosufficiente: sai chi viene, quando e
+come richiamarlo senza aprire il database. La mail con il pulsante
+WhatsApp precompilato resta disponibile quando la vuoi.
+
+## Avviso allo studio (opzionale)
 
 Quando un pagamento va a buon fine parte una mail **a te**, non al
 paziente: la conferma la inoltri tu, così resti in controllo.

@@ -26,6 +26,16 @@ function form(obj, prefix = '', out = new URLSearchParams()) {
  * se sono abilitati nel cruscotto Stripe: non serve codice per ciascuno.
  */
 export async function createCheckoutSession(env, { booking, service, amounts, successUrl, cancelUrl }) {
+  // Riassunto leggibile per la Dashboard. Finisce nella colonna
+  // "Description" dell'elenco pagamenti: si capisce chi viene e quando
+  // senza aprire nulla. Non e' visibile al paziente durante il checkout.
+  const chi = `${booking.last_name || ''} ${booking.first_name || ''}`.trim();
+  const quando = booking.date && booking.time
+    ? `${booking.date.slice(8, 10)}/${booking.date.slice(5, 7)} ore ${booking.time}`
+    : null;
+  const descrizione = [chi || null, quando, booking.phone || null]
+    .filter(Boolean).join(' · ') || service.name;
+
   const body = form({
     mode: 'payment',
     // Stripe ragiona in centesimi interi
@@ -41,9 +51,25 @@ export async function createCheckoutSession(env, { booking, service, amounts, su
     cancel_url: cancelUrl,
     customer_email: booking.email,
     client_reference_id: booking.booking_id,
+
+    // metadati sulla sessione
     'metadata[booking_id]': booking.booking_id,
     'metadata[service_id]': booking.service_id,
+    'metadata[paziente]': chi || null,
+    'metadata[telefono]': booking.phone || null,
+    'metadata[data]': booking.date || null,
+    'metadata[ora]': booking.time || null,
+
+    // e sul pagamento: e' la scheda che si apre cliccando l'incasso
+    'payment_intent_data[description]': descrizione,
     'payment_intent_data[metadata][booking_id]': booking.booking_id,
+    'payment_intent_data[metadata][paziente]': chi || null,
+    'payment_intent_data[metadata][telefono]': booking.phone || null,
+    'payment_intent_data[metadata][appuntamento]': quando || null,
+    'payment_intent_data[metadata][servizio]': service.name,
+    'payment_intent_data[metadata][saldo_in_studio]':
+      amounts.balanceDueLater > 0 ? `${amounts.balanceDueLater} EUR` : null,
+
     locale: 'it',
   });
 

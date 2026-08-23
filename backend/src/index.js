@@ -144,7 +144,18 @@ async function startCheckout(request, env, provider) {
     + (date ? `&date=${date}&time=${encodeURIComponent(time)}` : '')
     + '&annullato=1';
 
-  const booking = { booking_id: bookingId, service_id: body.service_id, email: clean.email };
+  // passato ai provider: serve a far comparire nome, telefono e
+  // appuntamento nelle loro dashboard, cosi' l'avviso automatico di
+  // Stripe basta senza consultare il nostro database
+  const booking = {
+    booking_id: bookingId,
+    service_id: body.service_id,
+    email: clean.email,
+    first_name: clean.first_name,
+    last_name: clean.last_name,
+    phone: clean.phone,
+    date, time,
+  };
 
   try {
     const session = provider === 'stripe'
