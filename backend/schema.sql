@@ -56,7 +56,7 @@ CREATE TABLE IF NOT EXISTS slots (
   date         TEXT NOT NULL,                  -- YYYY-MM-DD
   time         TEXT NOT NULL,                  -- HH:MM
   status       TEXT NOT NULL DEFAULT 'available',
-               -- available | held | confirmed | blocked
+               -- available | held | booked | blocked
   booking_id   TEXT,
   held_until   TEXT,                           -- ISO, oltre il quale l'hold scade
   updated_at   TEXT NOT NULL,

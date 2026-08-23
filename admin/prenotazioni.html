@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prenotazioni — Healthy Smile</title>
+<meta name="robots" content="noindex,nofollow,noarchive">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --black:#0e0e0e;--ink:#141416;--panel:#1a1a1c;--line:#2a2a2c;
+  --white:#fafaf8;--gray-300:#d4d2cc;--gray-500:#8a8880;
+  --accent:#C8005C;--accent-soft:#f0a0c0;
+  --ok:#4ea87a;--warn:#d8a93a;--err:#c84a4a;
+  --serif:'DM Serif Display',Georgia,serif;--sans:'DM Sans',system-ui,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--black);color:var(--white);font-family:var(--sans);font-weight:300;
+     line-height:1.5;font-size:15px;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1180px;margin:0 auto;padding:0 18px}
+h1{font-family:var(--serif);font-weight:400;font-size:1.6rem;letter-spacing:-.01em}
+header{border-bottom:1px solid var(--line);padding:16px 0;margin-bottom:22px}
+header .wrap{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.tabs{display:flex;gap:6px}
+.tab{padding:8px 15px;border:1px solid var(--line);border-radius:7px;background:var(--ink);
+     color:var(--gray-300);cursor:pointer;font-family:var(--sans);font-size:.9rem}
+.tab[aria-selected="true"]{border-color:var(--accent);background:rgba(200,0,92,.14);color:#fff}
+
+/* login */
+#login{max-width:360px;margin:70px auto;text-align:center}
+#login h1{margin-bottom:8px}
+#login p{color:var(--gray-500);font-size:.9rem;margin-bottom:22px}
+input,select{padding:11px 13px;border:1px solid var(--line);border-radius:8px;background:var(--panel);
+       color:var(--white);font-family:var(--sans);font-size:.95rem;width:100%}
+input:focus,select:focus{outline:none;border-color:var(--accent)}
+.btn{background:var(--accent);color:#fff;border:none;border-radius:8px;padding:12px 20px;
+     font-family:var(--sans);font-size:.95rem;font-weight:500;cursor:pointer}
+.btn:hover{opacity:.9}
+.btn-s{padding:6px 11px;font-size:.8rem;background:transparent;border:1px solid var(--line);color:var(--gray-300)}
+.btn-s:hover{border-color:var(--gray-500);color:#fff}
+.btn-s.danger:hover{border-color:var(--err);color:#ff9c9c}
+
+/* filtri */
+.filters{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px;align-items:flex-end}
+.filters .f{min-width:150px}
+.filters label{display:block;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;
+               color:var(--gray-500);margin-bottom:5px}
+
+/* tabella */
+.card{border:1px solid var(--line);border-radius:12px;background:var(--ink);overflow:hidden;margin-bottom:16px}
+.scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.88rem;min-width:900px}
+th{text-align:left;padding:11px 13px;font-weight:500;font-size:.72rem;letter-spacing:.09em;
+   text-transform:uppercase;color:var(--gray-500);border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:11px 13px;border-bottom:1px solid var(--line);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,.02)}
+.num{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.pill{display:inline-block;padding:3px 9px;border-radius:100px;font-size:.74rem;font-weight:500;white-space:nowrap}
+.p-ok{background:rgba(78,168,122,.16);color:#7fd3a5}
+.p-warn{background:rgba(216,169,58,.16);color:#e5c47a}
+.p-err{background:rgba(200,74,74,.16);color:#ee9a9a}
+.p-mut{background:rgba(255,255,255,.06);color:var(--gray-500)}
+.acts{display:flex;gap:5px;flex-wrap:wrap}
+a.tel{color:var(--accent-soft);text-decoration:none}
+a.tel:hover{text-decoration:underline}
+
+/* calendario */
+.daybox{margin-bottom:14px}
+.dayhead{font-family:var(--serif);font-size:1.15rem;padding:12px 14px;background:var(--panel);
+         border:1px solid var(--line);border-radius:12px 12px 0 0;border-bottom:none}
+.slotrow{display:flex;align-items:center;gap:12px;padding:11px 14px;border:1px solid var(--line);
+         border-top:none;font-size:.9rem;flex-wrap:wrap}
+.slotrow:last-child{border-radius:0 0 12px 12px}
+.slot-time{font-variant-numeric:tabular-nums;font-weight:500;min-width:52px}
+.slot-free{color:var(--gray-500);font-style:italic}
+.slot-name{flex:1;min-width:130px}
+.msg{padding:13px 15px;border-radius:9px;font-size:.9rem;margin-bottom:14px;display:none}
+.msg.on{display:block}
+.msg.err{background:rgba(200,74,74,.12);border:1px solid rgba(200,74,74,.35);color:#ee9a9a}
+.msg.ok{background:rgba(78,168,122,.12);border:1px solid rgba(78,168,122,.35);color:#7fd3a5}
+.empty{padding:36px 16px;text-align:center;color:var(--gray-500)}
+.tot{display:flex;gap:22px;flex-wrap:wrap;font-size:.85rem;color:var(--gray-500);margin-bottom:16px}
+.tot b{color:var(--white);font-weight:500}
+</style>
+</head>
+<body>
+
+<div id="login">
+  <h1>Prenotazioni</h1>
+  <p>Area riservata Healthy Smile</p>
+  <input type="password" id="tok" placeholder="Password" autocomplete="current-password">
+  <button class="btn" id="enter" style="width:100%;margin-top:10px">Entra</button>
+  <div class="msg err" id="loginMsg" style="margin-top:14px"></div>
+</div>
+
+<div id="app" hidden>
+  <header>
+    <div class="wrap">
+      <h1>Prenotazioni</h1>
+      <div class="tabs">
+        <button class="tab" id="tabList" aria-selected="true">Elenco</button>
+        <button class="tab" id="tabCal" aria-selected="false">Calendario</button>
+        <button class="tab" id="logout">Esci</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <div class="msg" id="msg"></div>
+
+    <div class="filters">
+      <div class="f"><label for="fDate">Data</label><input type="date" id="fDate"></div>
+      <div class="f"><label for="fService">Servizio</label>
+        <select id="fService"><option value="">Tutti</option></select></div>
+      <div class="f" id="fStatusWrap"><label for="fStatus">Stato</label>
+        <select id="fStatus">
+          <option value="">Tutti</option>
+          <option value="confirmed">Confermata</option>
+          <option value="awaiting_payment">In attesa di pagamento</option>
+          <option value="held">Bloccata</option>
+          <option value="cancelled">Cancellata</option>
+          <option value="no_show">Non presentato</option>
+          <option value="completed">Completata</option>
+        </select></div>
+      <div class="f" style="min-width:auto"><button class="btn" id="reload">Aggiorna</button></div>
+    </div>
+
+    <div class="tot" id="totals"></div>
+    <div id="view"></div>
+  </div>
+</div>
+
+<script>
+var API = 'https://healthysmile-checkout.healthysmile.workers.dev';
+
+(function(){
+  var $ = function(id){ return document.getElementById(id); };
+  var token = sessionStorage.getItem('hs_admin') || '';
+  var mode = 'list';
+
+  function esc(s){ return String(s==null?'':s).replace(/[<>&"]/g,function(c){
+    return {'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]; }); }
+  function eur(n){ return Number(n||0).toLocaleString('it-IT',{maximumFractionDigits:2})+' €'; }
+  function say(t, kind){ var m=$('msg'); m.textContent=t; m.className='msg on '+(kind||'ok');
+    setTimeout(function(){ m.className='msg'; }, 4000); }
+
+  var MESI=['gennaio','febbraio','marzo','aprile','maggio','giugno','luglio','agosto','settembre','ottobre','novembre','dicembre'];
+  var GIORNI=['domenica','lunedì','martedì','mercoledì','giovedì','venerdì','sabato'];
+  function longDate(iso){
+    if(!iso) return 'senza appuntamento';
+    var p=iso.split('-'); var d=new Date(+p[0],+p[1]-1,+p[2]);
+    return GIORNI[d.getDay()]+' '+(+p[2])+' '+MESI[+p[1]-1]+' '+p[0];
+  }
+  function waLink(phone){
+    if(!phone) return null;
+    var n=String(phone).replace(/[^\d+]/g,'');
+    if(n[0]==='+') n=n.slice(1); else if(n.slice(0,2)==='00') n=n.slice(2);
+    if(n.slice(0,2)!=='39' && (n.length===9||n.length===10)) n='39'+n;
+    return /^\d{10,15}$/.test(n) ? 'https://wa.me/'+n : null;
+  }
+
+  function api(path, opts){
+    opts = opts || {};
+    opts.headers = Object.assign({'Content-Type':'application/json'}, opts.headers||{},
+                                 {'Authorization':'Bearer '+token});
+    return fetch(API+path, opts).then(function(r){
+      if(r.status===401){ logout(); throw new Error('Sessione scaduta'); }
+      return r.json().then(function(d){ if(!r.ok) throw new Error(d.error||'Errore'); return d; });
+    });
+  }
+
+  /* ── login ── */
+  function enter(){
+    var t = $('tok').value.trim();
+    if(!t) return;
+    token = t;
+    api('/api/admin/bookings?from=1900-01-01')
+      .then(function(){ sessionStorage.setItem('hs_admin', t); show(); })
+      .catch(function(e){ var m=$('loginMsg'); m.textContent='Password errata'; m.className='msg err on'; token=''; });
+  }
+  function logout(){ sessionStorage.removeItem('hs_admin'); token=''; $('app').hidden=true; $('login').style.display='block'; }
+  $('enter').addEventListener('click', enter);
+  $('tok').addEventListener('keydown', function(e){ if(e.key==='Enter') enter(); });
+  $('logout').addEventListener('click', logout);
+
+  function show(){ $('login').style.display='none'; $('app').hidden=false; loadServices(); load(); }
+
+  function loadServices(){
+    fetch(API+'/api/health').then(function(r){return r.json();}).then(function(d){
+      var sel=$('fService');
+      (d.services||[]).forEach(function(s){
+        var o=document.createElement('option'); o.value=s; o.textContent=s; sel.appendChild(o);
+      });
+    }).catch(function(){});
+  }
+
+  /* ── tab ── */
+  $('tabList').addEventListener('click', function(){ mode='list'; tabs(); load(); });
+  $('tabCal').addEventListener('click', function(){ mode='cal'; tabs(); load(); });
+  function tabs(){
+    $('tabList').setAttribute('aria-selected', mode==='list');
+    $('tabCal').setAttribute('aria-selected', mode==='cal');
+    $('fStatusWrap').style.display = mode==='list' ? '' : 'none';
+  }
+  $('reload').addEventListener('click', load);
+  ['fDate','fService','fStatus'].forEach(function(id){ $(id).addEventListener('change', load); });
+
+  function qs(){
+    var p=[];
+    if($('fDate').value) p.push('date='+$('fDate').value);
+    if($('fService').value) p.push('service='+encodeURIComponent($('fService').value));
+    if(mode==='list' && $('fStatus').value) p.push('status='+$('fStatus').value);
+    return p.length ? '?'+p.join('&') : '';
+  }
+
+  function load(){ return mode==='list' ? loadList() : loadCal(); }
+
+  /* ── elenco ── */
+  var ST = {
+    confirmed:['Confermata','p-ok'], completed:['Completata','p-ok'],
+    awaiting_payment:['In attesa','p-warn'], held:['Bloccata','p-warn'],
+    cancelled:['Cancellata','p-mut'], no_show:['Non presentato','p-err']
+  };
+  var PS = { paid:['Pagato','p-ok'], pending:['In sospeso','p-warn'], failed:['Fallito','p-err'],
+             refunded:['Rimborsato','p-mut'], partially_refunded:['Rimb. parziale','p-mut'] };
+
+  function loadList(){
+    $('view').innerHTML='<div class="empty">Carico…</div>';
+    api('/api/admin/bookings'+qs()).then(function(d){
+      var b=d.bookings||[];
+      var pagato=b.filter(function(x){return x.payment_status==='paid';});
+      $('totals').innerHTML =
+        '<span>Prenotazioni: <b>'+b.length+'</b></span>'+
+        '<span>Pagate: <b>'+pagato.length+'</b></span>'+
+        '<span>Incassato: <b>'+eur(pagato.reduce(function(s,x){return s+(x.amount_paid||0);},0))+'</b></span>'+
+        '<span>Da incassare in studio: <b>'+eur(pagato.filter(function(x){return x.booking_status!=='cancelled';}).reduce(function(s,x){return s+(x.balance_due||0);},0))+'</b></span>';
+
+      if(!b.length){ $('view').innerHTML='<div class="card"><div class="empty">Nessuna prenotazione con questi filtri.</div></div>'; return; }
+
+      var rows = b.map(function(r){
+        var st=ST[r.booking_status]||[r.booking_status,'p-mut'];
+        var ps=PS[r.payment_status]||[r.payment_status,'p-mut'];
+        var wa=waLink(r.phone);
+        return '<tr>'+
+          '<td>'+(r.appointment_date? esc(r.appointment_date.split('-').reverse().join('/')) : '—')+'</td>'+
+          '<td><b>'+esc(r.appointment_time||'—')+'</b></td>'+
+          '<td>'+esc(r.first_name)+' '+esc(r.last_name)+'</td>'+
+          '<td>'+(wa? '<a class="tel" href="'+wa+'" target="_blank" rel="noopener">'+esc(r.phone)+'</a>' : esc(r.phone))+'</td>'+
+          '<td>'+esc(r.email)+'</td>'+
+          '<td>'+esc(r.service_name)+'</td>'+
+          '<td class="num">'+eur(r.total_price)+'</td>'+
+          '<td class="num">'+eur(r.amount_paid)+'</td>'+
+          '<td class="num">'+eur(r.balance_due)+'</td>'+
+          '<td>'+esc(r.payment_provider||'—')+'</td>'+
+          '<td><span class="pill '+ps[1]+'">'+ps[0]+'</span></td>'+
+          '<td><span class="pill '+st[1]+'">'+st[0]+'</span></td>'+
+          '<td><div class="acts">'+
+            '<button class="btn-s" data-act="completed" data-id="'+r.booking_id+'">Completata</button>'+
+            '<button class="btn-s" data-act="no_show" data-id="'+r.booking_id+'">No-show</button>'+
+            '<button class="btn-s danger" data-act="cancelled" data-id="'+r.booking_id+'">Cancella</button>'+
+          '</div></td>'+
+        '</tr>';
+      }).join('');
+
+      $('view').innerHTML='<div class="card"><div class="scroll"><table>'+
+        '<thead><tr><th>Data</th><th>Ora</th><th>Paziente</th><th>Telefono</th><th>Email</th>'+
+        '<th>Servizio</th><th class="num">Totale</th><th class="num">Pagato</th><th class="num">Saldo</th>'+
+        '<th>Provider</th><th>Pagamento</th><th>Prenotazione</th><th>Azioni</th></tr></thead>'+
+        '<tbody>'+rows+'</tbody></table></div></div>';
+
+      $('view').querySelectorAll('[data-act]').forEach(function(btn){
+        btn.addEventListener('click', function(){
+          var act=btn.dataset.act;
+          var testo = act==='cancelled'
+            ? 'Cancellare la prenotazione? Lo slot torna disponibile sulla landing.'
+            : 'Segnare come '+(act==='no_show'?'non presentato':'completata')+'?';
+          if(!confirm(testo)) return;
+          api('/api/admin/booking-status',{method:'POST',body:JSON.stringify({booking_id:btn.dataset.id,status:act})})
+            .then(function(){ say('Aggiornata.'); load(); })
+            .catch(function(e){ say(e.message,'err'); });
+        });
+      });
+    }).catch(function(e){ $('view').innerHTML='<div class="card"><div class="empty">'+esc(e.message)+'</div></div>'; });
+  }
+
+  /* ── calendario ── */
+  function loadCal(){
+    $('view').innerHTML='<div class="empty">Carico…</div>';
+    var p=[]; if($('fService').value) p.push('service='+encodeURIComponent($('fService').value));
+    api('/api/admin/calendar'+(p.length?'?'+p.join('&'):'')).then(function(d){
+      var rows=(d.calendar||[]).filter(function(r){ return !$('fDate').value || r.date===$('fDate').value; });
+      if(!rows.length){ $('view').innerHTML='<div class="card"><div class="empty">Nessuno slot.</div></div>'; return; }
+
+      var occupati=rows.filter(function(r){return r.status==='booked';}).length;
+      $('totals').innerHTML='<span>Slot totali: <b>'+rows.length+'</b></span>'+
+        '<span>Occupati: <b>'+occupati+'</b></span>'+
+        '<span>Liberi: <b>'+rows.filter(function(r){return r.status==='available';}).length+'</b></span>';
+
+      var byDay={}, order=[];
+      rows.forEach(function(r){ if(!byDay[r.date]){byDay[r.date]=[];order.push(r.date);} byDay[r.date].push(r); });
+
+      $('view').innerHTML = order.map(function(day){
+        return '<div class="daybox"><div class="dayhead">'+longDate(day)+'</div>'+
+          byDay[day].map(function(r){
+            var wa=waLink(r.phone);
+            if(r.status==='booked'){
+              return '<div class="slotrow">'+
+                '<span class="slot-time">'+esc(r.time)+'</span>'+
+                '<span class="slot-name">'+esc(r.first_name||'')+' '+esc(r.last_name||'')+
+                  (wa? ' · <a class="tel" href="'+wa+'" target="_blank" rel="noopener">'+esc(r.phone)+'</a>':'')+'</span>'+
+                '<span>'+esc(r.service_name)+'</span>'+
+                '<span class="num">'+eur(r.amount_paid)+'</span>'+
+                '<span class="pill '+((ST[r.booking_status]||['','p-mut'])[1])+'">'+
+                  ((ST[r.booking_status]||[r.booking_status])[0])+'</span>'+
+                '<button class="btn-s danger" data-free="'+esc(r.service_id)+'|'+esc(r.date)+'|'+esc(r.time)+'">Libera</button>'+
+              '</div>';
+            }
+            if(r.status==='held'){
+              return '<div class="slotrow"><span class="slot-time">'+esc(r.time)+'</span>'+
+                '<span class="slot-name slot-free">bloccato durante un pagamento</span>'+
+                '<span class="pill p-warn">In corso</span>'+
+                '<button class="btn-s" data-free="'+esc(r.service_id)+'|'+esc(r.date)+'|'+esc(r.time)+'">Libera</button></div>';
+            }
+            if(r.status==='blocked'){
+              return '<div class="slotrow"><span class="slot-time">'+esc(r.time)+'</span>'+
+                '<span class="slot-name slot-free">bloccato manualmente</span>'+
+                '<button class="btn-s" data-free="'+esc(r.service_id)+'|'+esc(r.date)+'|'+esc(r.time)+'">Rendi disponibile</button></div>';
+            }
+            return '<div class="slotrow"><span class="slot-time">'+esc(r.time)+'</span>'+
+              '<span class="slot-name slot-free">disponibile</span>'+
+              '<button class="btn-s" data-block="'+esc(r.service_id)+'|'+esc(r.date)+'|'+esc(r.time)+'">Blocca</button></div>';
+          }).join('')+'</div>';
+      }).join('');
+
+      $('view').querySelectorAll('[data-free],[data-block]').forEach(function(btn){
+        btn.addEventListener('click', function(){
+          var free = btn.hasAttribute('data-free');
+          var parts=(free?btn.dataset.free:btn.dataset.block).split('|');
+          if(free && !confirm('Liberare questo slot? Tornerà prenotabile sulla landing.')) return;
+          api('/api/admin/slot-status',{method:'POST',body:JSON.stringify({
+            service_id:parts[0], date:parts[1], time:parts[2], status: free?'available':'blocked'})})
+            .then(function(){ say(free?'Slot liberato.':'Slot bloccato.'); load(); })
+            .catch(function(e){ say(e.message,'err'); });
+        });
+      });
+    }).catch(function(e){ $('view').innerHTML='<div class="card"><div class="empty">'+esc(e.message)+'</div></div>'; });
+  }
+
+  if(token) show();
+})();
+</script>
+</body>
+</html>

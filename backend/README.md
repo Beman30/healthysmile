@@ -164,7 +164,56 @@ Per leggere i log:
 Se `RESEND_API_KEY` non è configurata, l'avviso viene semplicemente
 saltato: utile per far girare il sistema prima di occuparsi della posta.
 
-## Slot
+## Slot e area amministrativa
+
+Gli orari non stanno piu' in un array dentro la landing: li tiene la
+tabella `slots`. La landing chiama `GET /api/slots?service=...` e riceve
+solo cio' che e' ancora prenotabile. Uno slot pagato sparisce da solo.
+
+Stati: `available` → `held` (durante il pagamento, con scadenza) →
+`booked` (solo dal webhook). `blocked` e' il blocco manuale, per quando
+lo studio e' chiuso.
+
+Se il backend non risponde, la landing non resta muta: mostra un invito a
+scrivere su WhatsApp invece di un elenco vuoto.
+
+### /admin/prenotazioni
+
+Pagina protetta da una password condivisa, confrontata a tempo costante
+lato Worker:
+
+    npx wrangler secret put ADMIN_TOKEN
+
+Senza `ADMIN_TOKEN` configurata l'area resta chiusa a tutti.
+
+Due viste: **Elenco** con filtri per data, servizio e stato, e totali di
+incassato e da incassare in studio; **Calendario** con ogni giornata e i
+suoi orari, occupati e liberi.
+
+Azioni: cancellare una prenotazione (lo slot torna prenotabile),
+segnare no-show, segnare completata, liberare o bloccare uno slot a mano,
+aggiungere uno slot nuovo. I numeri di telefono sono link WhatsApp.
+
+La pagina HTML e' pubblica ma non contiene dati: tutto arriva dagli
+endpoint autenticati. Per alzare l'asticella si puo' mettere davanti
+Cloudflare Access, che aggiunge il login con la mail dello studio.
+
+### Aggiungere date
+
+Dall'area admin, oppure via SQL:
+
+    npx wrangler d1 execute healthysmile-checkout-db --remote \
+      --command="INSERT INTO slots (service_id,date,time,status,updated_at)
+                 VALUES ('igiene-sonicare','2026-10-08','09:30','available',datetime('now'))"
+
+### Rapporto con TeamUp
+
+Nessuno, per ora, ed e' voluto: il database Healthy Smile e' la fonte
+autorevole per gli slot delle landing e il checkout non dipende da
+TeamUp. Una sincronizzazione futura puo' leggere `bookings` e scrivere su
+TeamUp senza toccare nulla di quanto c'e' qui.
+
+## Slot: dettaglio tecnico
 
 Per i servizi con `requiresAppointment`, una riga per orario in `slots`.
 Il passaggio `available → held` è una UPDATE condizionale: se due persone

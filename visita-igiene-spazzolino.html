@@ -390,14 +390,10 @@ footer .legal{font-size:.78rem;color:#4a4a4a;margin-top:18px}
    Per collegare un'altra offerta basta cambiare questa riga.           */
 var SERVICE_ID = 'igiene-sonicare';
 
-/* Le due giornate di settembre. Aggiungere o togliere date e orari qui:
-   il resto della pagina si adatta da solo.                             */
-var SLOTS = [
-  { id: '2026-09-10', label: 'Giovedì 10 settembre',
-    times: ['09:00','10:00','11:00','14:30','15:30','16:30'] },
-  { id: '2026-09-24', label: 'Giovedì 24 settembre',
-    times: ['09:00','10:00','11:00','14:30','15:30','16:30'] }
-];
+/* Gli orari NON stanno piu' qui: li tiene il database. La pagina li
+   chiede al backend, che restituisce solo quelli ancora prenotabili.
+   Uno slot pagato sparisce da solo, senza toccare questo file.         */
+var API = 'https://healthysmile-checkout.healthysmile.workers.dev';
 
 var WA_NUMBER = '393924076794';
 var WA_BASE   = "Ciao, vorrei informazioni o prenotare Visita + Igiene + Spazzolino elettrico a 98 € presso Healthy Smile in Via Madama Cristina 2.";
@@ -438,13 +434,52 @@ var WA_BASE   = "Ciao, vorrei informazioni o prenotare Visita + Igiene + Spazzol
       btnEl  =document.getElementById('checkout');
   var chosenDate=null, chosenTime=null;
 
-  SLOTS.forEach(function(s){
-    var b=document.createElement('button');
-    b.type='button'; b.className='date-btn'; b.setAttribute('aria-pressed','false');
-    b.innerHTML=s.label+'<small>'+s.times.length+' orari disponibili</small>';
-    b.addEventListener('click',function(){ pickDate(s,b); });
-    datesEl.appendChild(b);
-  });
+  var MESI=['gennaio','febbraio','marzo','aprile','maggio','giugno',
+            'luglio','agosto','settembre','ottobre','novembre','dicembre'];
+  var GIORNI=['domenica','lunedì','martedì','mercoledì','giovedì','venerdì','sabato'];
+  function label(iso){
+    var p=iso.split('-'); var d=new Date(+p[0],+p[1]-1,+p[2]);
+    return GIORNI[d.getDay()].charAt(0).toUpperCase()+GIORNI[d.getDay()].slice(1)
+           +' '+(+p[2])+' '+MESI[+p[1]-1];
+  }
+
+  function renderDates(slots){
+    // raggruppa per giornata mantenendo l'ordine restituito dal backend
+    var byDate={}, order=[];
+    slots.forEach(function(s){
+      if(!byDate[s.date]){ byDate[s.date]=[]; order.push(s.date); }
+      byDate[s.date].push(s.time);
+    });
+
+    datesEl.innerHTML='';
+    if(!order.length){
+      datesEl.innerHTML='<p class="lead" style="margin:0">Al momento non ci sono orari liberi. '+
+        '<a href="'+wa()+'" target="_blank" rel="noopener" style="color:var(--accent-soft)">Scrivici su WhatsApp</a> '+
+        'e troviamo posto.</p>';
+      return;
+    }
+
+    order.forEach(function(iso){
+      var slot={ id: iso, label: label(iso), times: byDate[iso] };
+      var b=document.createElement('button');
+      b.type='button'; b.className='date-btn'; b.setAttribute('aria-pressed','false');
+      b.innerHTML=slot.label+'<small>'+slot.times.length+
+        (slot.times.length===1?' orario disponibile':' orari disponibili')+'</small>';
+      b.addEventListener('click',function(){ pickDate(slot,b); });
+      datesEl.appendChild(b);
+    });
+  }
+
+  datesEl.innerHTML='<p class="lead" style="margin:0;opacity:.6">Carico gli orari…</p>';
+  fetch(API+'/api/slots?service='+encodeURIComponent(SERVICE_ID))
+    .then(function(r){ if(!r.ok) throw new Error('no'); return r.json(); })
+    .then(function(d){ renderDates(d.slots||[]); })
+    .catch(function(){
+      // backend non raggiungibile: mai una pagina muta, si passa da WhatsApp
+      datesEl.innerHTML='<p class="lead" style="margin:0">Non riusciamo a caricare gli orari in questo momento. '+
+        '<a href="'+wa()+'" target="_blank" rel="noopener" style="color:var(--accent-soft)">Scrivici su WhatsApp</a> '+
+        'e fissiamo insieme l\'appuntamento.</p>';
+    });
 
   function pickDate(slot,btn){
     chosenDate=slot; chosenTime=null;

@@ -22,7 +22,9 @@ function cors(env, request) {
   return {
     'Access-Control-Allow-Origin': allowed.includes(origin) ? origin : allowed[0],
     'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
+    // Authorization serve all'area admin: senza, il preflight del
+    // browser blocca ogni chiamata autenticata.
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     'Access-Control-Max-Age': '86400',
   };
 }
@@ -72,12 +74,29 @@ async function holdSlot(db, serviceId, date, time, bookingId) {
   return r.meta.changes === 1;
 }
 
-async function confirmSlot(db, bookingId) {
+async function bookSlot(db, bookingId) {
   await db.prepare(
-    `UPDATE slots SET status='confirmed', held_until=NULL, updated_at=? WHERE booking_id=?`
+    `UPDATE slots SET status='booked', held_until=NULL, updated_at=? WHERE booking_id=?`
   ).bind(now(), bookingId).run();
 }
 
+/** Rimette in vendita uno slot, qualunque sia lo stato di partenza. */
+async function freeSlot(db, { bookingId, serviceId, date, time }) {
+  if (bookingId) {
+    return db.prepare(
+      `UPDATE slots SET status='available', booking_id=NULL, held_until=NULL, updated_at=?
+         WHERE booking_id=?`
+    ).bind(now(), bookingId).run();
+  }
+  return db.prepare(
+    `UPDATE slots SET status='available', booking_id=NULL, held_until=NULL, updated_at=?
+       WHERE service_id=? AND date=? AND time=?`
+  ).bind(now(), serviceId, date, time).run();
+}
+
+/** Annulla un hold non pagato. Diversa da freeSlot: agisce solo se lo
+ *  slot e' ancora 'held', quindi non puo' liberare per sbaglio uno slot
+ *  gia' pagato da qualcun altro. */
 async function releaseSlot(db, bookingId) {
   await db.prepare(
     `UPDATE slots SET status='available', booking_id=NULL, held_until=NULL, updated_at=?
@@ -189,7 +208,7 @@ async function markPaid(db, bookingId, paidAmount, providerPaymentId) {
      WHERE booking_id=?`
   ).bind(paidAmount, balance, providerPaymentId || null, now(), bookingId).run();
 
-  await confirmSlot(db, bookingId);
+  await bookSlot(db, bookingId);
 
   // restituita al chiamante, che ci manda l'avviso allo studio.
   // Torna null se era gia' pagata: cosi' l'avviso parte una volta sola.
@@ -228,6 +247,131 @@ function alertStudio(ctx, env, booking) {
   const name = service ? service.name : booking.service_id;
   const p = notifyStudio(env, booking, name).catch(() => false);
   if (ctx && typeof ctx.waitUntil === 'function') ctx.waitUntil(p);
+}
+
+
+/* ── AREA AMMINISTRATIVA ──────────────────────────────────────
+   Protetta da un token condiviso (ADMIN_TOKEN, secret del Worker).
+   Il confronto e' a tempo costante: un confronto normale con === puo'
+   rivelare quanti caratteri iniziali sono corretti.
+   Per alzare l'asticella si puo' mettere davanti Cloudflare Access.  */
+
+function adminOk(request, env) {
+  if (!env.ADMIN_TOKEN) return false;               // niente token = area chiusa
+  const h = request.headers.get('Authorization') || '';
+  const given = h.startsWith('Bearer ') ? h.slice(7) : '';
+  const a = new TextEncoder().encode(given);
+  const b = new TextEncoder().encode(env.ADMIN_TOKEN);
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) diff |= a[i] ^ b[i];
+  return diff === 0;
+}
+
+async function adminRoutes(request, env, url, path) {
+  if (!adminOk(request, env)) return bad('Non autorizzato', env, request, 401);
+  const db = env.DB;
+
+  // elenco prenotazioni, con filtri
+  if (request.method === 'GET' && path === '/api/admin/bookings') {
+    const cond = [], args = [];
+    const date = url.searchParams.get('date');
+    const service = url.searchParams.get('service');
+    const status = url.searchParams.get('status');
+    const from = url.searchParams.get('from');
+    if (date) { cond.push('appointment_date=?'); args.push(date); }
+    if (from) { cond.push('(appointment_date IS NULL OR appointment_date>=?)'); args.push(from); }
+    if (service) { cond.push('service_id=?'); args.push(service); }
+    if (status) { cond.push('booking_status=?'); args.push(status); }
+    const where = cond.length ? 'WHERE ' + cond.join(' AND ') : '';
+    const { results } = await db.prepare(
+      `SELECT booking_id, service_id, first_name, last_name, phone, email,
+              appointment_date, appointment_time, total_price, amount_paid, balance_due,
+              payment_provider, payment_status, booking_status, created_at
+         FROM bookings ${where}
+        ORDER BY appointment_date IS NULL, appointment_date, appointment_time, created_at`
+    ).bind(...args).all();
+    const rows = (results || []).map((r) => {
+      const svc = getService(r.service_id);
+      return { ...r, service_name: svc ? svc.name : r.service_id };
+    });
+    return ok({ bookings: rows }, env, request);
+  }
+
+  // calendario: ogni slot con, se occupato, chi lo occupa
+  if (request.method === 'GET' && path === '/api/admin/calendar') {
+    const service = url.searchParams.get('service');
+    const cond = [], args = [];
+    if (service) { cond.push('s.service_id=?'); args.push(service); }
+    const where = cond.length ? 'WHERE ' + cond.join(' AND ') : '';
+    const { results } = await db.prepare(
+      `SELECT s.service_id, s.date, s.time, s.status, s.booking_id, s.held_until,
+              b.first_name, b.last_name, b.phone, b.amount_paid, b.payment_status, b.booking_status
+         FROM slots s LEFT JOIN bookings b ON b.booking_id = s.booking_id
+         ${where}
+        ORDER BY s.date, s.time`
+    ).bind(...args).all();
+    const rows = (results || []).map((r) => {
+      const svc = getService(r.service_id);
+      // un hold scaduto e' di fatto libero: mostralo per quello che e'
+      const scaduto = r.status === 'held' && r.held_until && r.held_until < now();
+      return { ...r, status: scaduto ? 'available' : r.status,
+               service_name: svc ? svc.name : r.service_id };
+    });
+    return ok({ calendar: rows }, env, request);
+  }
+
+  // cambia stato a una prenotazione
+  if (request.method === 'POST' && path === '/api/admin/booking-status') {
+    const body = await request.json().catch(() => ({}));
+    const valid = ['confirmed', 'cancelled', 'no_show', 'completed'];
+    if (!valid.includes(body.status)) return bad('Stato non valido', env, request);
+    const b = await db.prepare(`SELECT * FROM bookings WHERE booking_id=?`).bind(body.booking_id).first();
+    if (!b) return bad('Prenotazione non trovata', env, request, 404);
+
+    await db.prepare(`UPDATE bookings SET booking_status=?, updated_at=? WHERE booking_id=?`)
+      .bind(body.status, now(), body.booking_id).run();
+
+    // cancellata: lo slot torna in vendita. no_show e completata invece
+    // restano occupati, sono appuntamenti passati.
+    if (body.status === 'cancelled') await freeSlot(db, { bookingId: body.booking_id });
+
+    return ok({ booking_id: body.booking_id, booking_status: body.status }, env, request);
+  }
+
+  // libera uno slot a mano, o lo blocca perche' lo studio e' chiuso
+  if (request.method === 'POST' && path === '/api/admin/slot-status') {
+    const body = await request.json().catch(() => ({}));
+    const { service_id, date, time } = body;
+    if (!service_id || !date || !time) return bad('Dati slot mancanti', env, request);
+
+    if (body.status === 'available') {
+      await freeSlot(db, { serviceId: service_id, date, time });
+    } else if (body.status === 'blocked') {
+      await db.prepare(
+        `UPDATE slots SET status='blocked', booking_id=NULL, held_until=NULL, updated_at=?
+           WHERE service_id=? AND date=? AND time=?`
+      ).bind(now(), service_id, date, time).run();
+    } else return bad('Stato non valido', env, request);
+
+    return ok({ service_id, date, time, status: body.status }, env, request);
+  }
+
+  // aggiunge uno slot nuovo
+  if (request.method === 'POST' && path === '/api/admin/slot-create') {
+    const body = await request.json().catch(() => ({}));
+    const { service_id, date, time } = body;
+    if (!getService(service_id)) return bad('Servizio non riconosciuto', env, request);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date || '') || !/^\d{2}:\d{2}$/.test(time || '')) {
+      return bad('Data o ora non valide', env, request);
+    }
+    await db.prepare(
+      `INSERT OR IGNORE INTO slots (service_id,date,time,status,updated_at) VALUES (?,?,?,'available',?)`
+    ).bind(service_id, date, time, now()).run();
+    return ok({ service_id, date, time, status: 'available' }, env, request);
+  }
+
+  return bad('Endpoint non trovato', env, request, 404);
 }
 
 /* ── router ───────────────────────────────────────────────── */
@@ -283,6 +427,8 @@ export default {
       const s = getService(b.service_id);
       return ok({ ...b, service_name: s ? s.name : b.service_id }, env, request);
     }
+
+    if (path.startsWith('/api/admin/')) return adminRoutes(request, env, url, path);
 
     if (request.method === 'POST' && path === '/api/checkout/stripe') return startCheckout(request, env, 'stripe');
     if (request.method === 'POST' && path === '/api/checkout/paypal') return startCheckout(request, env, 'paypal');

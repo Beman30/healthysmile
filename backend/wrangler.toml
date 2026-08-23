@@ -9,6 +9,10 @@ SITE_URL = "https://healthysmile.it"
 ALLOWED_ORIGINS = "https://healthysmile.it,https://www.healthysmile.it"
 PAYPAL_ENV = "sandbox"   # passare a "live" quando si va in produzione
 
+# Area /admin/prenotazioni: la password si mette con
+#   wrangler secret put ADMIN_TOKEN
+# Senza, l'area resta chiusa a tutti.
+
 # Avviso allo studio quando arriva una prenotazione pagata.
 # La chiave va messa con: wrangler secret put RESEND_API_KEY
 NOTIFY_EMAIL_TO   = "DA_COMPILARE@healthysmile.it"
