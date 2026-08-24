@@ -217,11 +217,18 @@ h2{font-size:clamp(2.1rem,6vw,3.9rem);margin-bottom:30px;max-width:16ch}
   line-height:1.2;letter-spacing:-.03em;max-width:19ch;margin:0 auto;
 }
 .manifesto p.sub{margin-top:40px;color:var(--gray-500);font-size:1.06rem}
-.manifesto p.mid{margin-top:clamp(56px,9vh,96px);font-size:clamp(1.1rem,2.2vw,1.4rem);color:var(--gray-300)}
-.manifesto p.sign{
-  margin-top:clamp(44px,7vh,76px);font-family:var(--serif);
-  font-size:clamp(1.5rem,4vw,2.6rem);line-height:1.24;letter-spacing:-.03em;color:var(--white);
+/* Secondo tempo del manifesto: molta aria sopra e sotto, perche' la
+   frase deve arrivare da sola dopo una pausa. */
+.manifesto p.mid{
+  margin:clamp(96px,17vh,190px) auto clamp(96px,17vh,190px);
+  font-family:var(--serif);font-size:clamp(1.7rem,5vw,3.2rem);
+  line-height:1.18;letter-spacing:-.03em;color:var(--white);max-width:17ch;
 }
+.manifesto p.sign{
+  font-family:var(--serif);font-size:clamp(1.3rem,3.2vw,2.1rem);
+  line-height:1.24;letter-spacing:-.03em;color:var(--white);
+}
+.manifesto p.sign-sub{margin-top:14px;font-size:.98rem;color:var(--gray-500)}
 
 /* ── FAQ ─────────────────────────────── */
 .faq{max-width:720px;margin:56px auto 0;border-top:1px solid var(--line-l)}
@@ -297,29 +304,15 @@ footer .legal{margin-top:26px;font-size:.76rem;color:#4a4a4a}
     <h2>Non perché il dentista sia gratis.</h2>
     <p class="sub-h2">Perché smetti di viverlo come una spesa imprevista.</p>
     <p class="lead">
-      Con HealthySmile One la prevenzione, i controlli e il mantenimento della tua
-      salute orale diventano parte di un percorso continuativo.
+      Con HealthySmile One prevenzione, controlli e mantenimento diventano parte
+      di un unico percorso.
     </p>
-    <p class="lead" style="margin-top:18px">
+    <p class="lead" style="margin-top:22px">
       Non aspetti che qualcosa faccia male.<br>
       Non riparti da zero ogni volta.<br>
-      HealthySmile ti segue durante l'anno.
+      Noi ti seguiamo durante l'anno.
     </p>
     <p class="closer">16 € al mese.<br>E al dentista <em>ci pensiamo insieme.</em></p>
-  </div>
-</section>
-
-<!-- ══ IL CONCETTO ════════════════════ -->
-<section class="light-sec">
-  <div class="wrap narrow rv">
-    <div class="kicker">Il concetto</div>
-    <h2>Non aspettare di avere un problema.</h2>
-    <p class="lead">
-      HealthySmile One nasce da un'idea semplice: seguirti durante tutto l'anno,
-      mantenere sotto controllo la tua salute orale e intervenire prima che un
-      piccolo problema diventi una cura importante.
-    </p>
-    <p class="closer">Prevenire dovrebbe essere <em>più semplice</em> che curare.</p>
   </div>
 </section>
 
@@ -336,7 +329,7 @@ footer .legal{margin-top:26px;font-size:.76rem;color:#4a4a4a}
         <div class="ico"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.4">
           <circle cx="16" cy="16" r="12"/><circle cx="16" cy="16" r="4.4"/></svg></div>
         <h3>Prevenzione</h3>
-        <p>Gli appuntamenti necessari per mantenere la tua salute orale sotto controllo.</p>
+        <p>Gli appuntamenti necessari per mantenerti sotto controllo.</p>
       </div>
 
       <div class="feat rv">
@@ -351,7 +344,7 @@ footer .legal{margin-top:26px;font-size:.76rem;color:#4a4a4a}
           <path d="M17.6 3.5H27a1.5 1.5 0 0 1 1.5 1.5v9.4a2 2 0 0 1-.6 1.4L15.6 28.1a1.5 1.5 0 0 1-2.1 0L3.9 18.5a1.5 1.5 0 0 1 0-2.1L16.2 4.1a2 2 0 0 1 1.4-.6Z" stroke-linejoin="round"/>
           <circle cx="22.4" cy="9.6" r="1.9"/></svg></div>
         <h3>One Member Price</h3>
-        <p>Quando serve intervenire, hai accesso alle condizioni riservate One.</p>
+        <p>Quando serve intervenire, hai le condizioni riservate One.</p>
       </div>
 
       <div class="feat rv">
@@ -359,7 +352,7 @@ footer .legal{margin-top:26px;font-size:.76rem;color:#4a4a4a}
           <rect x="4" y="3" width="24" height="18" rx="2.2"/><path d="M11 27h10M16 21v6" stroke-linecap="round"/>
           <path d="M9.5 14.5l4-4 3.5 3.5 5.5-6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
         <h3>HealthySmile Digital</h3>
-        <p>La situazione della tua bocca e il tuo percorso sempre disponibili.</p>
+        <p>La situazione della tua bocca. Sempre con te.</p>
       </div>
     </div>
   </div>
@@ -372,8 +365,8 @@ footer .legal{margin-top:26px;font-size:.76rem;color:#4a4a4a}
       <div class="kicker">Member Price</div>
       <h2>Quando serve qualcosa in più, sei One.</h2>
       <p class="lead">
-        Essere One significa avere accesso a condizioni riservate anche quando
-        la prevenzione non basta.
+        I membri One accedono a condizioni riservate sulle prestazioni previste
+        dal programma.
       </p>
     </div>
 
@@ -381,8 +374,7 @@ footer .legal{margin-top:26px;font-size:.76rem;color:#4a4a4a}
       <div class="m">One Member Price</div>
       <!-- Il 70% resta informazione secondaria: e' una conseguenza, non il messaggio. -->
       <p class="mp-note">
-        Fino al 70% di differenza rispetto alla tariffa ordinaria su alcune
-        prestazioni previste dal piano.
+        Fino al 70% di differenza rispetto alla tariffa ordinaria su alcune prestazioni.
       </p>
     </div>
   </div>
@@ -407,10 +399,7 @@ footer .legal{margin-top:26px;font-size:.76rem;color:#4a4a4a}
       </div>
     </div>
 
-    <p class="closer center rv" style="margin-top:52px">Un solo rapporto.<br>Tutto l'anno.</p>
-    <p class="lead center rv" style="margin-top:26px">
-      La tua salute orale non ricomincia da zero ogni volta che entri dalla porta.
-    </p>
+    <p class="closer center rv" style="margin-top:58px">Un solo rapporto.<br>Tutto l'anno.</p>
   </div>
 </section>
 
@@ -426,9 +415,9 @@ footer .legal{margin-top:26px;font-size:.76rem;color:#4a4a4a}
       <div class="step rv"><div class="n">1</div>
         <div><h3>Entri in One</h3><p>16 € al mese.</p></div></div>
       <div class="step rv"><div class="n">2</div>
-        <div><h3>Noi ti seguiamo</h3><p>Controlli, prevenzione e richiami durante l'anno.</p></div></div>
+        <div><h3>Noi ti seguiamo</h3><p>Prevenzione, controlli e richiami.</p></div></div>
       <div class="step rv"><div class="n">3</div>
-        <div><h3>Non aspetti il problema</h3><p>Quando serve intervenire, hai già un rapporto, una situazione conosciuta e le condizioni One.</p></div></div>
+        <div><h3>Non aspetti il problema</h3><p>Quando serve intervenire, conosciamo già te e la tua situazione.</p></div></div>
     </div>
   </div>
 </section>
@@ -440,9 +429,9 @@ footer .legal{margin-top:26px;font-size:.76rem;color:#4a4a4a}
       Un dentista dovrebbe guadagnare quando riesce a <em>mantenerti sano.</em>
       Non soltanto quando deve curarti.
     </p>
-    <p class="sub">È da questa idea che nasce HealthySmile One.</p>
-    <p class="mid">Per questo abbiamo cambiato il modo di pagare il dentista.</p>
-    <p class="sign">HealthySmile One.<br>16 € al mese.<br>Tutto l'anno.</p>
+    <p class="mid">Per questo abbiamo cambiato <em>il dentista.</em></p>
+    <p class="sign">HealthySmile One.</p>
+    <p class="sign-sub">16 € al mese.</p>
   </div>
 </section>
 
@@ -456,7 +445,7 @@ footer .legal{margin-top:26px;font-size:.76rem;color:#4a4a4a}
       <a href="#" class="btn" data-join="finale">Diventa HealthySmile One</a>
       <a href="#" class="btn-q" data-wa="finale">Chiedici informazioni su WhatsApp</a>
     </div>
-    <p class="fineprint">Prevenzione, controllo e condizioni riservate durante tutto l'anno.</p>
+    <p class="fineprint">Prevenzione, controllo e condizioni riservate. Tutto l'anno.</p>
   </div>
 </section>
 
