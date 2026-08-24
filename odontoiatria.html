@@ -227,6 +227,23 @@ h2{font-size:clamp(1.75rem,4.2vw,2.7rem);margin-bottom:26px;max-width:20ch}
 .tool p{font-size:.9rem;color:var(--gray-500);line-height:1.6}
 .tool a{color:var(--accent-soft);text-decoration:underline;text-underline-offset:3px;font-size:.88rem;display:inline-block;margin-top:10px}
 
+
+/* Link dentro i gradini e nel testo. Vanno definiti anche per :visited:
+   senza, il browser applica il suo viola e su fondo scuro diventa
+   illeggibile. Stesso trattamento dei link nelle card strumenti. */
+.links{display:flex;flex-wrap:wrap;gap:8px 20px;margin-top:14px}
+.links a,
+.links a:visited,
+.inline-link,
+.inline-link:visited{
+  color:var(--accent-soft);
+  text-decoration:underline;
+  text-underline-offset:3px;
+  font-size:.92rem;
+}
+.links a:hover,.inline-link:hover{color:var(--accent)}
+.tool a:visited{color:var(--accent-soft)}
+
 /* ── NO ────────────────────────────── */
 .nos{list-style:none;margin-top:36px;display:grid;gap:2px}
 .nos li{
