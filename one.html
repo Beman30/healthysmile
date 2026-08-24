@@ -14,6 +14,46 @@
 <meta property="og:title" content="HealthySmile One">
 <meta property="og:description" content="Non perché il dentista sia gratis. Perché smetti di viverlo come una spesa imprevista. 16 € al mese.">
 
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebPage",
+      "@id": "https://healthysmile.it/one#page",
+      "url": "https://healthysmile.it/one",
+      "name": "HealthySmile One",
+      "description": "La membership che segue la salute orale durante tutto l'anno: prevenzione, controlli e condizioni riservate ai member.",
+      "inLanguage": "it-IT",
+      "isPartOf": {"@type": "WebSite", "name": "Healthy Smile By N", "url": "https://healthysmile.it"}
+    },
+    {
+      "@type": "Offer",
+      "name": "HealthySmile One",
+      "description": "Membership di prevenzione e mantenimento della salute orale.",
+      "url": "https://healthysmile.it/one",
+      "priceCurrency": "EUR",
+      "price": "16",
+      "priceSpecification": {
+        "@type": "UnitPriceSpecification",
+        "price": "16",
+        "priceCurrency": "EUR",
+        "referenceQuantity": {"@type": "QuantitativeValue", "value": 1, "unitCode": "MON"}
+      },
+      "seller": {"@id": "https://healthysmile.it/#studio"},
+      "availableAtOrFrom": {"@id": "https://healthysmile.it/#studio"}
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://healthysmile.it/"},
+        {"@type": "ListItem", "position": 2, "name": "HealthySmile One", "item": "https://healthysmile.it/one"}
+      ]
+    }
+  ]
+}
+</script>
+
 <script>document.documentElement.className+=" js";</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -490,7 +530,8 @@ footer .legal{margin-top:26px;font-size:.76rem;color:#4a4a4a}
 <footer>
   <div class="fb">Healthy Smile <i>By N</i></div>
   <p>Via Madama Cristina 2 · Torino</p>
-  <p><a href="tel:+390112488248" data-tel="footer">011 2488248</a></p>
+  <p><a href="tel:+390112488248" data-tel="footer">011 2488248</a> · <a href="mailto:info@healthysmile.it">info@healthysmile.it</a></p>
+  <p><a href="https://maps.app.goo.gl/xG5N6YaYgg8Mxegp9" target="_blank" rel="noopener" data-maps="footer">Apri su Maps →</a></p>
   <a href="/" class="back">Torna a HealthySmile →</a>
   <p class="legal">
     Dominus Srl · Via Lagrange 10, Torino · P.IVA 12923420017 ·
@@ -532,6 +573,10 @@ var WA_INFO = "Ciao, ho letto la pagina di HealthySmile One e vorrei qualche inf
 
   document.querySelectorAll('[data-tel]').forEach(function(a){
     a.addEventListener('click', function(){ ev('hs_phone_click',{page:'one'}); });
+  });
+
+  document.querySelectorAll('[data-maps]').forEach(function(a){
+    a.addEventListener('click', function(){ ev('hs_maps_click',{page:'one'}); });
   });
 
   document.querySelectorAll('.faq details').forEach(function(d){
