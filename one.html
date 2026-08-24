@@ -162,7 +162,11 @@ section{padding:var(--pad) 0}
 .price small{font-family:var(--sans);font-size:.36em;font-weight:400;
   letter-spacing:0;color:var(--gray-500);margin-left:.35em;vertical-align:.32em}
 .dark .price small{color:var(--gray-500)}
-.hero .price{margin-bottom:40px}
+.hero .price{margin-bottom:10px}
+/* La durata deve stare accanto al prezzo, non solo nelle FAQ: un
+   impegno di dodici mesi presentato come "16 € al mese" e basta e'
+   incompleto. */
+.price-term{font-size:.92rem;color:var(--gray-500);margin-bottom:38px}
 
 .ctas{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
 .btn{
@@ -330,6 +334,7 @@ footer .legal{margin-top:26px;font-size:.76rem;color:#4a4a4a}
     <h1>Il costo del dentista <em>non esiste più.</em></h1>
     <p class="tag">La tua salute orale. Gestita tutto l'anno.</p>
     <div class="price">16 €<small>/ mese</small></div>
+    <p class="price-term">per 12 mesi</p>
     <div class="ctas">
       <a href="#" class="btn" data-join="hero">Diventa One</a>
       <a href="#perche" class="btn-q">Scopri come funziona</a>
@@ -352,7 +357,7 @@ footer .legal{margin-top:26px;font-size:.76rem;color:#4a4a4a}
       Non riparti da zero ogni volta.<br>
       Noi ti seguiamo durante l'anno.
     </p>
-    <p class="closer">16 € al mese.<br>E al dentista <em>ci pensiamo insieme.</em></p>
+    <p class="closer">16 € al mese, per 12 mesi.<br>E al dentista <em>ci pensiamo insieme.</em></p>
   </div>
 </section>
 
@@ -405,8 +410,8 @@ footer .legal{margin-top:26px;font-size:.76rem;color:#4a4a4a}
       <div class="kicker">Member Price</div>
       <h2>Quando serve qualcosa in più, sei One.</h2>
       <p class="lead">
-        I membri One accedono a condizioni riservate sulle prestazioni previste
-        dal programma.
+        Sui denti già mappati nella tua cartella, quando hai seguito il percorso,
+        il costo delle cure non ricade tutto su di te.
       </p>
     </div>
 
@@ -453,7 +458,7 @@ footer .legal{margin-top:26px;font-size:.76rem;color:#4a4a4a}
 
     <div class="steps">
       <div class="step rv"><div class="n">1</div>
-        <div><h3>Entri in One</h3><p>16 € al mese.</p></div></div>
+        <div><h3>Entri in One</h3><p>16 € al mese, per dodici mesi.</p></div></div>
       <div class="step rv"><div class="n">2</div>
         <div><h3>Noi ti seguiamo</h3><p>Prevenzione, controlli e richiami.</p></div></div>
       <div class="step rv"><div class="n">3</div>
@@ -480,7 +485,8 @@ footer .legal{margin-top:26px;font-size:.76rem;color:#4a4a4a}
   <div class="wrap rv">
     <h2>Smetti di aspettare il conto del dentista.</h2>
     <p class="sub-h2 center" style="margin-left:auto;margin-right:auto">Passa a One.</p>
-    <div class="price" style="margin:40px 0 38px">16 €<small>/ mese</small></div>
+    <div class="price" style="margin:40px 0 10px">16 €<small>/ mese</small></div>
+    <p class="price-term" style="margin-bottom:36px">per 12 mesi · due sedute di igiene con l'igienista e Piano Protezione</p>
     <div class="ctas">
       <a href="#" class="btn" data-join="finale">Diventa HealthySmile One</a>
       <a href="#" class="btn-q" data-wa="finale">Chiedici informazioni su WhatsApp</a>
@@ -494,36 +500,37 @@ footer .legal{margin-top:26px;font-size:.76rem;color:#4a4a4a}
   <div class="wrap center">
     <div class="rv"><div class="kicker">FAQ</div><h2>Domande.</h2></div>
 
-    <!-- I testi qui sotto sono volutamente generali dove le condizioni
-         contrattuali non sono state definite. Vanno rivisti prima di
-         pubblicare: sono le uniche frasi della pagina con valore
-         potenzialmente vincolante. -->
+    <!-- Condizioni fornite dallo studio: pagamento a 12 mesi, due ablazioni
+         con igienista, Piano Protezione. Resta da definire se e come si
+         possa interrompere prima della scadenza: finche' non e' deciso,
+         la risposta rimanda allo studio invece di dichiarare una regola. -->
     <div class="faq rv" style="text-align:left">
       <details>
-        <summary>Posso disdire HealthySmile One?</summary>
-        <p>Sì. La membership è mensile e non ti vincola per anni. Scrivici e ce ne occupiamo noi: ti confermiamo per iscritto la data a partire dalla quale non verrà più rinnovata.</p>
+        <summary>Che cosa comprende esattamente HealthySmile One?</summary>
+        <p>Due sedute di igiene professionale con l'igienista nel corso dell'anno e il Piano Protezione, cioè la tua cartella digitale sempre aggiornata e le condizioni riservate sulle cure. Sedici euro al mese per dodici mesi.</p>
       </details>
       <details>
-        <summary>Quali prestazioni hanno il One Member Price?</summary>
-        <p>Le prestazioni previste dal programma di prevenzione e mantenimento. In valutazione ti viene indicato in modo esplicito quali rientrano nelle condizioni One e quali seguono la tariffa ordinaria, prima di qualsiasi decisione.</p>
+        <summary>È un impegno annuale o mensile?</summary>
+        <p>Annuale. Si paga sedici euro al mese per dodici mesi: la membership è pensata per seguire un anno intero, perché è su quell'arco di tempo che la prevenzione si misura. Se hai bisogno di interromperla prima, parlane con noi.</p>
       </details>
       <details>
-        <summary>Come funzionano gli appuntamenti inclusi?</summary>
-        <p>Sono due nel corso dell'anno e li programmiamo insieme. Ti ricordiamo noi quando è il momento: è esattamente il senso della membership, non doverci pensare tu.</p>
+        <summary>Che cos'è il Piano Protezione?</summary>
+        <p>È il patto che sta dietro One. La tua bocca viene mappata dente per dente e la cartella resta tua. Se segui il percorso e nonostante questo un dente già mappato peggiora, il costo della cura non ricade tutto su di te: lo condividiamo.</p>
+      </details>
+      <details>
+        <summary>Su cosa vale il One Member Price?</summary>
+        <p>Sulle cure che riguardano i denti già mappati nella tua cartella, quando hai seguito il percorso di prevenzione. In valutazione ti diciamo sempre in modo esplicito cosa rientra e cosa segue la tariffa ordinaria, prima che tu decida.</p>
       </details>
       <details>
         <summary>Posso entrare in One anche se non sono già paziente HealthySmile?</summary>
-        <p>Sì. Il percorso inizia con una valutazione iniziale, che serve a fotografare la situazione di partenza: senza quella, seguire un cambiamento nel tempo non avrebbe senso.</p>
+        <p>Sì. Si comincia da una prima visita con igiene, che serve a costruire la mappatura di partenza: senza quella fotografia iniziale non ci sarebbe niente da confrontare negli anni successivi, e il Piano Protezione non avrebbe senso.</p>
       </details>
       <details>
-        <summary>Cosa succede se ho bisogno di una cura?</summary>
-        <p>La membership non sostituisce le cure e non è un'assicurazione. Se serve un intervento te lo spieghiamo, ti diciamo cosa comporta e a quali condizioni: sulle prestazioni previste dal piano accedi al One Member Price.</p>
-      </details>
-      <details>
-        <summary>Che differenza c'è rispetto a venire quando ho un problema?</summary>
-        <p>Il momento in cui ci vediamo. Con One ci vediamo quando non hai niente, ed è lì che si interviene sul poco. Senza, ci si vede quando qualcosa fa già male, e a quel punto le opzioni costano di più.</p>
+        <summary>E se ho bisogno di una cura importante?</summary>
+        <p>One non sostituisce le cure e non è un'assicurazione. Se serve un intervento te lo spieghiamo, ti diciamo cosa comporta e quanto costa: sui denti già mappati si applicano le condizioni One.</p>
       </details>
     </div>
+</div>
   </div>
 </section>
 
