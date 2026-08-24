@@ -310,6 +310,38 @@ p strong{color:var(--white);font-weight:500}
 .step p{margin-bottom:0;font-size:.98rem}
 @media(max-width:600px){.step{grid-template-columns:1fr;gap:8px}}
 
+
+/* ── HEALTHYSMILE ONE ─────────────────
+   Blocco contenuto, non una fascia pubblicitaria: fondo appena piu'
+   chiaro del nero della pagina, filo di bordo, nessun riquadro urlato.
+   Deve leggersi come la conseguenza della sezione precedente. */
+.one-lead{margin-top:38px;color:var(--gray-500);font-size:.98rem}
+.one-box{
+  margin-top:22px;padding:clamp(34px,5.5vw,60px);border-radius:20px;
+  border:1px solid var(--line);
+  background:
+    radial-gradient(620px 320px at 88% -20%,rgba(200,0,92,.13),transparent 64%),
+    var(--ink);
+}
+.one-box .eyebrow{color:var(--accent-soft)}
+.one-box h2{margin-bottom:20px;max-width:15ch}
+.one-sub{
+  font-family:var(--serif);font-size:clamp(1.1rem,2.3vw,1.45rem);
+  line-height:1.32;letter-spacing:-.02em;color:var(--gray-300);max-width:34ch;margin-bottom:30px;
+}
+.one-price{
+  font-family:var(--serif);font-size:clamp(1.9rem,4.6vw,2.7rem);
+  letter-spacing:-.03em;line-height:1;color:var(--white);margin-bottom:8px;
+}
+.one-price small{
+  font-family:var(--sans);font-size:.34em;font-weight:400;letter-spacing:0;
+  color:var(--gray-500);margin-left:.35em;vertical-align:.34em;
+}
+.one-price-note{font-size:.92rem;color:var(--gray-500);margin-bottom:28px}
+.one-box p.lead{max-width:52ch;margin-bottom:32px}
+.one-box .btn{margin:0}
+@media(max-width:560px){ .one-box{padding:30px 24px} }
+
 /* ── CONTATTI ──────────────────────── */
 .contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:52px;margin-top:40px}
 @media(max-width:860px){.contact-grid{grid-template-columns:1fr;gap:40px}}
@@ -535,6 +567,39 @@ footer .legal{font-size:.76rem;color:#55534e;line-height:1.7;max-width:640px;mar
   </div>
 </section>
 
+
+<!-- ══ HEALTHYSMILE ONE ═════════════ -->
+<!-- Sta qui di proposito: arriva dopo "il nostro lavoro non finisce
+     quando esci", cioe' quando il lettore ha appena capito che lo
+     seguiamo nel tempo. One e' il nome di quella continuita', non un
+     prodotto in piu'. E non e' un'alternativa ai 90 €: quelli restano
+     il modo di entrare. -->
+<section>
+  <div class="wrap reveal">
+    <p class="one-lead">Tutto questo, per chi vuole, ha un nome e una continuità.</p>
+
+    <div class="one-box">
+      <div class="eyebrow">HealthySmile One</div>
+      <h2>Il costo del dentista <em>non esiste più.</em></h2>
+
+      <p class="one-sub">
+        Non perché il dentista sia gratis.<br>
+        Perché smetti di viverlo come una spesa imprevista.
+      </p>
+
+      <div class="one-price">16 €<small>/ mese</small></div>
+      <p class="one-price-note">Prevenzione, controlli e continuità durante tutto l'anno.</p>
+
+      <p class="lead">
+        One è il modo HealthySmile di seguirti durante tutto l'anno: prevenzione,
+        controlli, richiami e condizioni riservate quando serve intervenire.
+      </p>
+
+      <a class="btn" href="/one" data-one="sezione">Scopri HealthySmile One →</a>
+    </div>
+  </div>
+</section>
+
 <!-- ══ IL COLLEGAMENTO ══════════════ -->
 <section>
   <div class="narrow reveal">
@@ -627,6 +692,7 @@ footer .legal{font-size:.76rem;color:#55534e;line-height:1.7;max-width:640px;mar
     <div class="eyebrow">Contatti</div>
     <h2>Il primo passo è <em>una visita.</em></h2>
     <p class="lead">Igiene e visita a €90: 45 minuti con l'igienista. Esci con la tua scheda digitale e sai esattamente come stai.</p>
+    <p class="note" style="margin-top:14px">Vuoi essere seguito tutto l'anno? <a href="/one" data-one="contatti" style="color:var(--accent-soft)">Scopri One →</a></p>
 
     <div class="contact-grid">
       <div>
@@ -741,6 +807,13 @@ document.getElementById('hsForm').addEventListener('submit',function(e){
       } else { alert('Invio non riuscito. Scrivici su WhatsApp al +39 392 407 6794.'); }
     })
     .catch(function(){ alert('Invio non riuscito. Scrivici su WhatsApp al +39 392 407 6794.'); });
+});
+
+// quanti passano dalla home alla landing della membership
+document.querySelectorAll('[data-one]').forEach(function(a){
+  a.addEventListener('click',function(){
+    if(window.gtag)gtag('event','hs_one_click',{page:'home',position:a.dataset.one});
+  });
 });
 </script>
 </body>
