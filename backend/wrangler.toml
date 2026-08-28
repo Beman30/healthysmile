@@ -21,7 +21,7 @@ NOTIFY_EMAIL_FROM = "Healthy Smile <prenotazioni@healthysmile.it>"
 [[d1_databases]]
 binding = "DB"
 database_name = "healthysmile-checkout-db"
-database_id = "DA_COMPILARE"   # output di: wrangler d1 create healthysmile-checkout-db
+database_id = "2f2f5af0-1a66-4caa-a41f-5d7974f7930c"
 
 # Libera gli slot con hold scaduto, ogni 10 minuti
 [triggers]
