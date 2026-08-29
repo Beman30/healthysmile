@@ -141,6 +141,13 @@ h2{font-size:clamp(1.6rem,3.8vw,2.4rem);margin-bottom:22px;max-width:22ch}
 .price-big{font-family:var(--serif);font-size:clamp(2.6rem,9vw,4.4rem);line-height:1;color:var(--white);margin-bottom:14px}
 .price-split{font-size:clamp(1rem,2vw,1.15rem);color:var(--accent-soft);font-weight:500}
 .price-note{font-size:.92rem;color:var(--gray-500);margin-top:14px}
+/* Condizione di accesso all'offerta. Deve leggersi, non essere una
+   postilla: stessa scala del corpo, colore pieno, accanto al prezzo. */
+.price-cond{
+  margin-top:20px;padding-top:18px;border-top:1px solid var(--line);
+  font-size:1rem;color:var(--white);font-weight:400;
+}
+.price-cond b{color:var(--accent-soft);font-weight:500}
 
 /* ── PRENOTAZIONE ────────────────── */
 .dates{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin-top:26px}
@@ -233,6 +240,7 @@ footer .legal{font-size:.78rem;color:#4a4a4a;margin-top:18px}
     <p class="lead">
       A 98 € non stai prenotando una pulizia dei denti. Stai facendo il punto completo
       sulla tua bocca, e te lo porti a casa scritto.
+      È un'offerta di primo accesso, riservata a chi non è ancora nostro paziente.
     </p>
 
     <div class="incl">
@@ -300,6 +308,7 @@ footer .legal{font-size:.78rem;color:#4a4a4a;margin-top:18px}
       <div class="price-big">Tutto a 98 €</div>
       <div class="price-split">15 € per bloccare l'appuntamento · 83 € in studio</div>
       <p class="price-note">Se serve un esame in più, te lo diciamo prima di farlo.</p>
+      <p class="price-cond"><b>Riservata ai nuovi pazienti</b> dello studio.</p>
     </div>
   </div>
 </section>
