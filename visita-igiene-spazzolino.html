@@ -319,8 +319,7 @@ footer .legal{font-size:.78rem;color:#4a4a4a;margin-top:18px}
     <div class="eyebrow">Prenotazione</div>
     <h2>Scegli quando venire</h2>
     <p class="lead">
-      A settembre c'è <strong>una sola giornata</strong>: martedì 8, dalle 10 alle 18.
-      Scegli l'orario che ti è comodo.
+      <span id="introGiornata">Carichiamo le prossime giornate disponibili…</span>
     </p>
 
     <div class="addr">
@@ -364,8 +363,8 @@ footer .legal{font-size:.78rem;color:#4a4a4a;margin-top:18px}
       <li><strong>Meno di 24 ore, o non ti presenti?</strong> La quota viene trattenuta.</li>
     </ul>
     <p class="lead" style="margin-top:22px">
-      La giornata è una e i posti sono sette: i 15 € servono a tenere l'orario davvero
-      occupato da chi verrà.
+      <span id="notaPosti">I posti sono limitati</span>: i 15 € servono a tenere l'orario
+      davvero occupato da chi verrà.
     </p>
   </div>
 </section>
@@ -399,9 +398,11 @@ footer .legal{font-size:.78rem;color:#4a4a4a;margin-top:18px}
    Per collegare un'altra offerta basta cambiare questa riga.           */
 var SERVICE_ID = 'igiene-sonicare';
 
-/* Gli orari NON stanno piu' qui: li tiene il database. La pagina li
-   chiede al backend, che restituisce solo quelli ancora prenotabili.
-   Uno slot pagato sparisce da solo, senza toccare questo file.         */
+/* ═══ COME AGGIUNGERE UNA GIORNATA NUOVA ═══════════════════════════
+   Non si tocca questo file. Vai su /admin/prenotazioni, scheda
+   Calendario, e aggiungi gli slot della data nuova: la pagina la
+   mostra da sola, con giorno della settimana, orari e posti residui.
+   ═══════════════════════════════════════════════════════════════════ */
 var API = 'https://healthysmile-checkout.nicolapalmia.workers.dev';
 
 var WA_NUMBER = '393924076794';
@@ -412,6 +413,34 @@ var WA_BASE   = "Ciao, vorrei informazioni o prenotare Visita + Igiene + Spazzol
 (function(){
   function ev(n,p){ if(typeof gtag==='function') gtag('event',n,p||{}); }
   function wa(msg){ return 'https://wa.me/'+WA_NUMBER+'?text='+encodeURIComponent(msg||WA_BASE); }
+
+  /* ── ATTRIBUZIONE ──────────────────────────────────────────────────
+     Il pagamento passa da checkout.stripe.com e torna indietro. I
+     parametri della campagna stanno solo nell'URL di atterraggio e non
+     sopravvivono a quel giro. Li mettiamo in archivio locale: e' legato
+     al dominio, quindi resta anche dopo il rimbalzo su Stripe, e la
+     pagina di conferma lo rilegge.                                    */
+  var ATTR_KEY='hs_attr', ATTR_GIORNI=90;
+  (function salvaAttribuzione(){
+    try{
+      var q=new URLSearchParams(location.search), trovato={};
+      ['gclid','gbraid','wbraid','fbclid','utm_source','utm_medium',
+       'utm_campaign','utm_term','utm_content'].forEach(function(k){
+        var v=q.get(k); if(v) trovato[k]=v;
+      });
+      if(!Object.keys(trovato).length) return;   // visita diretta: non sovrascrivere
+      trovato._t=Date.now();
+      localStorage.setItem(ATTR_KEY, JSON.stringify(trovato));
+    }catch(e){}
+  })();
+  function leggiAttribuzione(){
+    try{
+      var raw=localStorage.getItem(ATTR_KEY); if(!raw) return {};
+      var a=JSON.parse(raw);
+      if(a._t && Date.now()-a._t > ATTR_GIORNI*864e5){ localStorage.removeItem(ATTR_KEY); return {}; }
+      delete a._t; return a;
+    }catch(e){ return {}; }
+  }
 
   // tutti i link WhatsApp generici
   document.querySelectorAll('[data-wa]').forEach(function(a){
@@ -452,21 +481,58 @@ var WA_BASE   = "Ciao, vorrei informazioni o prenotare Visita + Igiene + Spazzol
            +' '+(+p[2])+' '+MESI[+p[1]-1];
   }
 
+  function oggiISO(){
+    var d=new Date();
+    return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  }
+
+  /* Quando non c'e' nessuna giornata futura la pagina NON deve mostrare
+     un'offerta scaduta: sopra c'e' traffico a pagamento, e un annuncio
+     che porta a una data passata viene disapprovato. Si passa a raccolta
+     contatto, mantenendo l'offerta credibile. */
+  function nessunaGiornata(motivo){
+    document.getElementById('introGiornata').innerHTML =
+      'La prossima giornata è in definizione. Lasciaci il tuo contatto: '+
+      'ti avvisiamo appena apriamo le date, prima che vengano pubblicate.';
+    document.getElementById('notaPosti').textContent = 'I posti sono limitati';
+    datesEl.innerHTML =
+      '<a class="btn" href="'+wa(WA_BASE+' Vorrei essere avvisato quando aprite la prossima giornata.')+'" '+
+      'target="_blank" rel="noopener" data-wa="lista-attesa">Avvisami quando apre la prossima →</a>';
+    if(recapEl) recapEl.hidden=true;
+    if(timesEl) timesEl.hidden=true;
+    ev('hs_no_slots',{page:'visita-igiene-spazzolino', motivo:motivo||'nessuna-data'});
+  }
+
   function renderDates(slots){
-    // raggruppa per giornata mantenendo l'ordine restituito dal backend
+    // raggruppa per giornata, scartando le date gia' passate: senza questo
+    // filtro una giornata non venduta resterebbe in vetrina per sempre
+    var oggi=oggiISO();
     var byDate={}, order=[];
     slots.forEach(function(s){
+      if(s.date < oggi) return;
       if(!byDate[s.date]){ byDate[s.date]=[]; order.push(s.date); }
       byDate[s.date].push(s.time);
     });
+    order.sort();
 
     datesEl.innerHTML='';
-    if(!order.length){
-      datesEl.innerHTML='<p class="lead" style="margin:0">Al momento non ci sono orari liberi. '+
-        '<a href="'+wa()+'" target="_blank" rel="noopener" style="color:var(--accent-soft)">Scrivici su WhatsApp</a> '+
-        'e troviamo posto.</p>';
-      return;
-    }
+    if(!order.length){ nessunaGiornata('nessuna-data-futura'); return; }
+
+    // i testi della pagina si scrivono da qui: una fonte sola, il database
+    var prima=order[0], orari=byDate[prima].slice().sort();
+    var quando=label(prima).toLowerCase();
+    var intro = order.length===1
+      ? 'La prossima giornata è <strong>'+quando+'</strong>, dalle '+
+        orari[0].slice(0,2)+' alle '+String(Math.min(23,parseInt(orari[orari.length-1].slice(0,2),10)+1))+'.'+
+        ' Scegli l\'orario che ti è comodo.'
+      : 'Le prossime giornate sono <strong>'+order.length+'</strong>, a partire da <strong>'+quando+'</strong>.'+
+        ' Scegli quella che ti è comoda.';
+    document.getElementById('introGiornata').innerHTML = intro;
+
+    var liberi=byDate[prima].length;
+    document.getElementById('notaPosti').innerHTML =
+      liberi===1 ? 'Resta <strong>un solo posto</strong> per '+quando
+                 : 'Restano <strong>'+liberi+' posti</strong> per '+quando;
 
     order.forEach(function(iso){
       var slot={ id: iso, label: label(iso), times: byDate[iso] };
@@ -484,10 +550,8 @@ var WA_BASE   = "Ciao, vorrei informazioni o prenotare Visita + Igiene + Spazzol
     .then(function(r){ if(!r.ok) throw new Error('no'); return r.json(); })
     .then(function(d){ renderDates(d.slots||[]); })
     .catch(function(){
-      // backend non raggiungibile: mai una pagina muta, si passa da WhatsApp
-      datesEl.innerHTML='<p class="lead" style="margin:0">Non riusciamo a caricare gli orari in questo momento. '+
-        '<a href="'+wa()+'" target="_blank" rel="noopener" style="color:var(--accent-soft)">Scrivici su WhatsApp</a> '+
-        'e fissiamo insieme l\'appuntamento.</p>';
+      // backend non raggiungibile: stesso trattamento, mai una pagina muta
+      nessunaGiornata('backend-irraggiungibile');
     });
 
   function pickDate(slot,btn){
@@ -516,13 +580,29 @@ var WA_BASE   = "Ciao, vorrei informazioni o prenotare Visita + Igiene + Spazzol
 
   btnEl.addEventListener('click',function(){
     if(!chosenDate||!chosenTime) return;
-    ev('hs_book_checkout',{page:'visita-igiene-spazzolino',date:chosenDate.id,time:chosenTime,value:15,currency:'EUR'});
-    if(typeof fbq==='function') fbq('track','InitiateCheckout',{value:15,currency:'EUR'});
+    // GA4 standard: e' l'evento che Google Ads sa gia' leggere
+    ev('begin_checkout',{
+      currency:'EUR', value:98,
+      items:[{item_id:SERVICE_ID, item_name:'Visita + Igiene + Spazzolino Sonicare',
+              price:98, quantity:1}],
+      appuntamento:chosenDate.id+' '+chosenTime
+    });
+    ev('hs_book_checkout',{page:'visita-igiene-spazzolino',date:chosenDate.id,time:chosenTime});
+
+    // eventID: se un domani arrivera' anche la Conversions API lato server,
+    // Meta riconoscera' i due invii come lo stesso evento
+    if(typeof fbq==='function'){
+      fbq('track','InitiateCheckout',{value:98,currency:'EUR',content_ids:[SERVICE_ID]},
+          {eventID:'ic-'+chosenDate.id+'-'+chosenTime+'-'+Date.now()});
+    }
     // Nessun prezzo nell'URL: price, deposit, total e balance li stabilisce
     // il backend a partire dal service_id.
-    location.href = '/checkout.html?service=' + encodeURIComponent(SERVICE_ID)
+    var url = '/checkout.html?service=' + encodeURIComponent(SERVICE_ID)
       + '&date=' + encodeURIComponent(chosenDate.id)
       + '&time=' + encodeURIComponent(chosenTime);
+    var a = leggiAttribuzione();
+    Object.keys(a).forEach(function(k){ url += '&'+k+'='+encodeURIComponent(a[k]); });
+    location.href = url;
   });
 
   // profondità di scroll
