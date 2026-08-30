@@ -67,6 +67,10 @@ h1{font-size:clamp(1.7rem,5.4vw,2.3rem);margin-bottom:10px}
 
 <script>
 var API = 'https://healthysmile-checkout.nicolapalmia.workers.dev';
+
+/* Etichetta dell'azione di conversione di Google Ads (Obiettivi →
+   Conversioni → "Prenotazione confermata" → Tag → "Etichetta conversione"). */
+var ADS_CONVERSION_LABEL = 'TAB0CJy2seocEPefhMQD';
 var WA  = 'https://wa.me/393924076794';
 var MAPS = 'https://maps.app.goo.gl/xG5N6YaYgg8Mxegp9';
 
@@ -157,9 +161,68 @@ var MAPS = 'https://maps.app.goo.gl/xG5N6YaYgg8Mxegp9';
         '<a class="btn btn-b" href="' + WA + '?text=' + waMsg + '" target="_blank" rel="noopener">Scrivici su WhatsApp</a>' +
       '</div>';
 
-    if(paid){
-      ev('hs_booking_confirmed',{service:b.service_id, value:b.amount_paid, currency:'EUR'});
-      if(typeof gtag==='function') gtag('event','conversion',{send_to:'AW-947982327', value:b.amount_paid, currency:'EUR'});
+    if(paid) conversione(b);
+  }
+
+  /* Conversione. Parte una volta sola per prenotazione: la pagina si puo'
+     ricaricare, si puo' tornare indietro dal browser, il paziente puo'
+     riaprire il link dalla mail. Senza questo blocco ogni riapertura
+     conterebbe un'altra vendita e il costo per acquisizione risulterebbe
+     piu' basso del vero. */
+  function conversione(b){
+    // Tutto il blocco e' incapsulato: render(b) gira dentro un .then() con un
+    // .catch() a monte (vedi poll() sopra) che, se non lo evitiamo, sostituisce
+    // la conferma gia' mostrata con un messaggio d'errore. Un adblocker che
+    // spezza gtag/fbq, o un eccezione qualunque qui dentro, non deve MAI
+    // arrivare a quel .catch(): la pagina di conferma resta quella buona
+    // anche se il tracciamento fallisce del tutto.
+    try{
+      var chiave='hs_conv_'+b.booking_id;
+      try{ if(localStorage.getItem(chiave)) return; }catch(e){}
+
+      var attr={};
+      try{
+        var raw=localStorage.getItem('hs_attr');
+        if(raw){ attr=JSON.parse(raw); delete attr._t; }
+      }catch(e){}
+
+      // GA4: evento standard di acquisto. value 98 = valore del servizio,
+      // non i 15 € incassati ora: serve a misurare il costo per paziente.
+      ev('purchase', Object.assign({
+        transaction_id: b.booking_id,
+        currency:'EUR', value:98,
+        items:[{item_id:b.service_id, item_name:b.service_name, price:98, quantity:1}],
+        acconto_incassato: b.amount_paid,
+        saldo_in_studio: b.balance_due
+      }, attr));
+
+      // duplicato con nome parlante, per chi guarda i rapporti
+      ev('prenotazione_confermata', Object.assign({
+        transaction_id: b.booking_id, currency:'EUR', value:98
+      }, attr));
+
+      // Google Ads: senza etichetta non registra, quindi non lo mandiamo
+      if(typeof gtag==='function' && ADS_CONVERSION_LABEL){
+        gtag('event','conversion',{
+          send_to:'AW-947982327/'+ADS_CONVERSION_LABEL,
+          value:98, currency:'EUR', transaction_id:b.booking_id,
+          new_customer: true // offerta riservata ai nuovi pazienti
+        });
+      }
+
+      // Meta: eventID = booking_id, cosi' un secondo invio e' scartato
+      if(typeof fbq==='function'){
+        fbq('track','Purchase',{value:98,currency:'EUR',content_ids:[b.service_id]},
+            {eventID:b.booking_id});
+      }
+
+      // scritta SOLO dopo che gli eventi sono partiti: se una riga sopra
+      // lancia un'eccezione, si salta qui senza passare da questa riga, la
+      // chiave resta assente e al prossimo caricamento si riprova per intero.
+      try{ localStorage.setItem(chiave,'1'); }catch(e){}
+    }catch(err){
+      // tracciamento fallito (adblocker, script terzi, qualunque causa):
+      // ingoiato di proposito, la conferma sopra resta visibile.
     }
   }
 })();
