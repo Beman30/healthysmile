@@ -580,13 +580,36 @@ var WA_BASE   = "Ciao, vorrei informazioni o prenotare Visita + Igiene + Spazzol
 
   btnEl.addEventListener('click',function(){
     if(!chosenDate||!chosenTime) return;
+
+    // Nessun prezzo nell'URL: price, deposit, total e balance li stabilisce
+    // il backend a partire dal service_id.
+    var url = '/checkout.html?service=' + encodeURIComponent(SERVICE_ID)
+      + '&date=' + encodeURIComponent(chosenDate.id)
+      + '&time=' + encodeURIComponent(chosenTime);
+    var a = leggiAttribuzione();
+    Object.keys(a).forEach(function(k){ url += '&'+k+'='+encodeURIComponent(a[k]); });
+
+    // Si naviga via SOLO dopo che l'evento e' partito (o al massimo dopo
+    // 300ms). gtag('event',...) accoda la richiesta, non la manda
+    // all'istante: un location.href subito dopo puo' interrompere l'invio
+    // a meta' prima che parta, soprattutto su mobile — l'evento si perde
+    // in silenzio. Il timeout e' una rete di sicurezza: se GA4 e' lento,
+    // bloccato da un adblocker, o gtag non e' caricato, la prenotazione
+    // deve procedere comunque, mai restare bloccata dal tracciamento.
+    var partito=false;
+    function vai(){ if(partito) return; partito=true; location.href=url; }
+
     // GA4 standard: e' l'evento che Google Ads sa gia' leggere
-    ev('begin_checkout',{
-      currency:'EUR', value:98,
-      items:[{item_id:SERVICE_ID, item_name:'Visita + Igiene + Spazzolino Sonicare',
-              price:98, quantity:1}],
-      appuntamento:chosenDate.id+' '+chosenTime
-    });
+    if(typeof gtag==='function'){
+      gtag('event','begin_checkout',{
+        currency:'EUR', value:98,
+        items:[{item_id:SERVICE_ID, item_name:'Visita + Igiene + Spazzolino Sonicare',
+                price:98, quantity:1}],
+        appuntamento:chosenDate.id+' '+chosenTime,
+        transport_type:'beacon',
+        event_callback: vai
+      });
+    }
     ev('hs_book_checkout',{page:'visita-igiene-spazzolino',date:chosenDate.id,time:chosenTime});
 
     // eventID: se un domani arrivera' anche la Conversions API lato server,
@@ -595,14 +618,8 @@ var WA_BASE   = "Ciao, vorrei informazioni o prenotare Visita + Igiene + Spazzol
       fbq('track','InitiateCheckout',{value:98,currency:'EUR',content_ids:[SERVICE_ID]},
           {eventID:'ic-'+chosenDate.id+'-'+chosenTime+'-'+Date.now()});
     }
-    // Nessun prezzo nell'URL: price, deposit, total e balance li stabilisce
-    // il backend a partire dal service_id.
-    var url = '/checkout.html?service=' + encodeURIComponent(SERVICE_ID)
-      + '&date=' + encodeURIComponent(chosenDate.id)
-      + '&time=' + encodeURIComponent(chosenTime);
-    var a = leggiAttribuzione();
-    Object.keys(a).forEach(function(k){ url += '&'+k+'='+encodeURIComponent(a[k]); });
-    location.href = url;
+
+    setTimeout(vai, 300);
   });
 
   // profondità di scroll
