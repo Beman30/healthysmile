@@ -126,6 +126,22 @@ a.tel:hover{text-decoration:underline}
       <div class="f" style="min-width:auto"><button class="btn" id="reload">Aggiorna</button></div>
     </div>
 
+    <div class="card" id="addDay" style="padding:16px 18px;display:none">
+      <div style="font-family:var(--serif);font-size:1.05rem;margin-bottom:12px">Aggiungi una giornata</div>
+      <div class="filters" style="margin-bottom:0">
+        <div class="f"><label for="ndService">Servizio</label><select id="ndService"></select></div>
+        <div class="f"><label for="ndDate">Data</label><input type="date" id="ndDate"></div>
+        <div class="f"><label for="ndFrom">Dalle</label><input type="time" id="ndFrom" value="10:00" step="3600"></div>
+        <div class="f"><label for="ndTo">Alle</label><input type="time" id="ndTo" value="18:00" step="3600"></div>
+        <div class="f" style="min-width:auto;padding-bottom:11px">
+          <label style="display:flex;align-items:center;gap:6px;text-transform:none;letter-spacing:normal;font-size:.85rem;color:var(--gray-300)">
+            <input type="checkbox" id="ndLunch" checked style="width:auto"> Salta 13:00–14:00
+          </label>
+        </div>
+        <div class="f" style="min-width:auto"><button class="btn" id="ndCreate">Crea giornata</button></div>
+      </div>
+    </div>
+
     <div class="tot" id="totals"></div>
     <div id="view"></div>
   </div>
@@ -188,12 +204,45 @@ var API = 'https://healthysmile-checkout.nicolapalmia.workers.dev';
 
   function loadServices(){
     fetch(API+'/api/health').then(function(r){return r.json();}).then(function(d){
-      var sel=$('fService');
       (d.services||[]).forEach(function(s){
-        var o=document.createElement('option'); o.value=s; o.textContent=s; sel.appendChild(o);
+        var o=document.createElement('option'); o.value=s; o.textContent=s; $('fService').appendChild(o);
+        var o2=document.createElement('option'); o2.value=s; o2.textContent=s; $('ndService').appendChild(o2);
       });
     }).catch(function(){});
   }
+
+  /* ── aggiungi giornata: crea uno slot orario per volta, dalle 'ndFrom'
+     alle 'ndTo' (esclusa), saltando la pausa pranzo se richiesto. L'endpoint
+     usa INSERT OR IGNORE: rilanciarlo su una giornata che ha gia' slot non
+     tocca quelli esistenti (prenotati compresi), aggiunge solo quelli mancanti. */
+  $('ndCreate').addEventListener('click', function(){
+    var service = $('ndService').value, date = $('ndDate').value,
+        from = $('ndFrom').value, to = $('ndTo').value;
+    if(!service || !date || !from || !to){ say('Compila servizio, data e orari.','err'); return; }
+    var fromH = parseInt(from.slice(0,2),10), toH = parseInt(to.slice(0,2),10);
+    if(!(fromH < toH)){ say("L'ora di fine deve essere dopo quella di inizio.",'err'); return; }
+    var skipLunch = $('ndLunch').checked, ore=[];
+    for(var h=fromH; h<toH; h++){
+      if(skipLunch && h===13) continue;
+      ore.push(String(h).padStart(2,'0')+':00');
+    }
+    if(!ore.length){ say('Nessun orario da creare con questi filtri.','err'); return; }
+
+    $('ndCreate').disabled = true;
+    var fatti=0, falliti=0;
+    (function prossimo(i){
+      if(i>=ore.length){
+        $('ndCreate').disabled = false;
+        say(fatti+' orari creati'+(falliti?', '+falliti+' falliti':'')+'.', falliti?'err':'ok');
+        load();
+        return;
+      }
+      api('/api/admin/slot-create',{method:'POST',body:JSON.stringify({service_id:service,date:date,time:ore[i]})})
+        .then(function(){ fatti++; })
+        .catch(function(){ falliti++; })
+        .then(function(){ prossimo(i+1); });
+    })(0);
+  });
 
   /* ── tab ── */
   $('tabList').addEventListener('click', function(){ mode='list'; tabs(); load(); });
@@ -202,6 +251,7 @@ var API = 'https://healthysmile-checkout.nicolapalmia.workers.dev';
     $('tabList').setAttribute('aria-selected', mode==='list');
     $('tabCal').setAttribute('aria-selected', mode==='cal');
     $('fStatusWrap').style.display = mode==='list' ? '' : 'none';
+    $('addDay').style.display = mode==='cal' ? '' : 'none';
   }
   $('reload').addEventListener('click', load);
   ['fDate','fService','fStatus'].forEach(function(id){ $(id).addEventListener('change', load); });
