@@ -68,11 +68,9 @@ h1{font-size:clamp(1.7rem,5.4vw,2.3rem);margin-bottom:10px}
 <script>
 var API = 'https://healthysmile-checkout.nicolapalmia.workers.dev';
 
-/* Etichetta dell'azione di conversione di Google Ads. Si trova in
-   Obiettivi → Conversioni → la tua azione → Tag → "Etichetta conversione".
-   Finche' resta vuota l'evento GA4 parte lo stesso, ma Google Ads NON
-   registra nulla: send_to senza etichetta viene ignorato.            */
-var ADS_CONVERSION_LABEL = '';
+/* Etichetta dell'azione di conversione di Google Ads (Obiettivi →
+   Conversioni → "Prenotazione confermata" → Tag → "Etichetta conversione"). */
+var ADS_CONVERSION_LABEL = 'TAB0CJy2seocEPefhMQD';
 var WA  = 'https://wa.me/393924076794';
 var MAPS = 'https://maps.app.goo.gl/xG5N6YaYgg8Mxegp9';
 
@@ -200,7 +198,8 @@ var MAPS = 'https://maps.app.goo.gl/xG5N6YaYgg8Mxegp9';
     if(typeof gtag==='function' && ADS_CONVERSION_LABEL){
       gtag('event','conversion',{
         send_to:'AW-947982327/'+ADS_CONVERSION_LABEL,
-        value:98, currency:'EUR', transaction_id:b.booking_id
+        value:98, currency:'EUR', transaction_id:b.booking_id,
+        new_customer: true // offerta riservata ai nuovi pazienti
       });
     }
 
