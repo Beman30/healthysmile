@@ -7,7 +7,7 @@ compatibility_date = "2026-08-01"
 [vars]
 SITE_URL = "https://healthysmile.it"
 ALLOWED_ORIGINS = "https://healthysmile.it,https://www.healthysmile.it"
-PAYPAL_ENV = "live"      # "sandbox" per provare senza soldi veri
+PAYPAL_ENV = "sandbox"   # passare a "live" dopo il collaudo
 
 # Area /admin/prenotazioni: la password si mette con
 #   wrangler secret put ADMIN_TOKEN
