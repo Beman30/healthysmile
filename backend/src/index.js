@@ -339,6 +339,28 @@ async function adminRoutes(request, env, url, path) {
     return ok({ booking_id: body.booking_id, booking_status: body.status }, env, request);
   }
 
+  /* Elimina definitivamente una prenotazione. Serve per ripulire le righe
+     di prova: "cancellata" libera l'orario ma lascia la riga in elenco.
+
+     L'orario va liberato PRIMA di cancellare la riga: farlo dopo, o non
+     farlo, lascerebbe uno slot segnato come occupato da una prenotazione
+     che non esiste piu' — invisibile in elenco e non piu' recuperabile.
+
+     Le righe di webhook_events restano dove sono: sono il registro di cio'
+     che i fornitori di pagamento hanno comunicato, non dati della
+     prenotazione, e servono a non riprocessare due volte la stessa notifica. */
+  if (request.method === 'POST' && path === '/api/admin/booking-delete') {
+    const body = await request.json().catch(() => ({}));
+    const b = await db.prepare(`SELECT booking_id FROM bookings WHERE booking_id=?`)
+      .bind(body.booking_id).first();
+    if (!b) return bad('Prenotazione non trovata', env, request, 404);
+
+    await freeSlot(db, { bookingId: b.booking_id });
+    await db.prepare(`DELETE FROM bookings WHERE booking_id=?`).bind(b.booking_id).run();
+
+    return ok({ booking_id: b.booking_id, deleted: true }, env, request);
+  }
+
   // libera uno slot a mano, o lo blocca perche' lo studio e' chiuso
   if (request.method === 'POST' && path === '/api/admin/slot-status') {
     const body = await request.json().catch(() => ({}));
