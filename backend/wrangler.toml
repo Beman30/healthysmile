@@ -1,0 +1,28 @@
+name = "healthysmile-checkout"
+main = "src/index.js"
+compatibility_date = "2026-08-01"
+
+# Le variabili non segrete stanno qui, in chiaro: non c'e' nulla di
+# sensibile. Le chiavi vanno messe con `wrangler secret put`, mai qui.
+[vars]
+SITE_URL = "https://healthysmile.it"
+ALLOWED_ORIGINS = "https://healthysmile.it,https://www.healthysmile.it"
+PAYPAL_ENV = "sandbox"   # passare a "live" quando si va in produzione
+
+# Area /admin/prenotazioni: la password si mette con
+#   wrangler secret put ADMIN_TOKEN
+# Senza, l'area resta chiusa a tutti.
+
+# Avviso allo studio quando arriva una prenotazione pagata.
+# La chiave va messa con: wrangler secret put RESEND_API_KEY
+NOTIFY_EMAIL_TO   = "DA_COMPILARE@healthysmile.it"
+NOTIFY_EMAIL_FROM = "Healthy Smile <prenotazioni@healthysmile.it>"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "healthysmile-checkout-db"
+database_id = "2f2f5af0-1a66-4caa-a41f-5d7974f7930c"
+
+# Libera gli slot con hold scaduto, ogni 10 minuti
+[triggers]
+crons = ["*/10 * * * *"]
