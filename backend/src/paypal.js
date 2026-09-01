@@ -83,6 +83,8 @@ export async function captureOrder(env, orderId) {
   const res = await fetch(`${base(env)}/v2/checkout/orders/${orderId}/capture`, {
     method: 'POST',
     headers: { Authorization: `Bearer ${access}`, 'Content-Type': 'application/json' },
+    // dichiariamo JSON: senza un corpo, anche vuoto, PayPal puo' rifiutare
+    body: '{}',
   });
   const data = await res.json();
   if (!res.ok) throw new Error(`PayPal capture: ${data.message || res.status}`);
