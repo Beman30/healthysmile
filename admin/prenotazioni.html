@@ -466,6 +466,7 @@ var API = 'https://healthysmile-checkout.nicolapalmia.workers.dev';
             '<button class="btn-s" data-act="completed" data-id="'+r.booking_id+'">Completata</button>'+
             '<button class="btn-s" data-act="no_show" data-id="'+r.booking_id+'">No-show</button>'+
             '<button class="btn-s danger" data-act="cancelled" data-id="'+r.booking_id+'">Cancella</button>'+
+            '<button class="btn-s danger" data-del="'+r.booking_id+'">Elimina</button>'+
           '</div></td>'+
         '</tr>';
       }).join('');
@@ -480,6 +481,25 @@ var API = 'https://healthysmile-checkout.nicolapalmia.workers.dev';
         btn.addEventListener('click', function(){
           var r=perId[btn.dataset.pdf];
           if(r) promemoriaPdf(r,btn);
+        });
+      });
+
+      $('view').querySelectorAll('[data-del]').forEach(function(btn){
+        btn.addEventListener('click', function(){
+          var r = perId[btn.dataset.del] || {};
+          var chi = [r.first_name, r.last_name].filter(Boolean).join(' ') || 'questa prenotazione';
+          var quando = r.appointment_date ? ' del '+r.appointment_date.split('-').reverse().join('/') : '';
+          // "cancellata" e' reversibile, questo no: va detto chiaramente
+          var testo = 'Eliminare DEFINITIVAMENTE la prenotazione di '+chi+quando+'?\n\n'
+                    + "L'orario torna prenotabile. L'operazione non si puo' annullare.";
+          if(r.payment_status === 'paid'){
+            testo += '\n\nATTENZIONE: risulta PAGATA ('+eur(r.amount_paid)+'). '
+                   + "Sparisce anche la traccia dell'incasso, che puo' servirti a fini contabili.";
+          }
+          if(!confirm(testo)) return;
+          api('/api/admin/booking-delete',{method:'POST',body:JSON.stringify({booking_id:btn.dataset.del})})
+            .then(function(){ say('Prenotazione eliminata.'); load(); })
+            .catch(function(e){ say(e.message,'err'); });
         });
       });
 
