@@ -66,6 +66,18 @@ export async function createOrder(env, { booking, service, amounts, successUrl, 
   return { id: data.id, url: approve?.href };
 }
 
+/** Legge un ordine. Serve quando la cattura fallisce perche' e' gia' stata
+    fatta da qualcun altro (il webhook), per capire com'e' finita davvero. */
+export async function getOrder(env, orderId) {
+  const access = await token(env);
+  const res = await fetch(`${base(env)}/v2/checkout/orders/${orderId}`, {
+    headers: { Authorization: `Bearer ${access}` },
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(`PayPal: ${data.message || res.status}`);
+  return data;
+}
+
 export async function captureOrder(env, orderId) {
   const access = await token(env);
   const res = await fetch(`${base(env)}/v2/checkout/orders/${orderId}/capture`, {

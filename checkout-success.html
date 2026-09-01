@@ -76,7 +76,10 @@ var WA  = 'https://wa.me/393924076794';
 var MAPS = 'https://maps.app.goo.gl/xG5N6YaYgg8Mxegp9';
 
 (function(){
-  var id = new URLSearchParams(location.search).get('booking');
+  var qs = new URLSearchParams(location.search);
+  var id = qs.get('booking');
+  // PayPal rimanda qui aggiungendo 'token', che e' l'id dell'ordine
+  var ordinePaypal = qs.get('provider') === 'paypal' ? qs.get('token') : null;
   var c  = document.getElementById('content');
   function ev(n,p){ if(typeof gtag==='function') gtag('event',n,p||{}); }
   function eur(n){ return Number(n).toLocaleString('it-IT',{minimumFractionDigits:0,maximumFractionDigits:2})+' €'; }
@@ -87,7 +90,7 @@ var MAPS = 'https://maps.app.goo.gl/xG5N6YaYgg8Mxegp9';
   // il pagamento lo conferma il webhook, che puo' arrivare un attimo dopo
   // il rientro dell'utente: si riprova qualche volta prima di arrendersi
   var tries = 0;
-  (function poll(){
+  function poll(){
     fetch(API + '/api/bookings/' + encodeURIComponent(id))
       .then(function(r){ if(!r.ok) throw new Error('Prenotazione non trovata'); return r.json(); })
       .then(function(b){
@@ -95,7 +98,21 @@ var MAPS = 'https://maps.app.goo.gl/xG5N6YaYgg8Mxegp9';
         render(b);
       })
       .catch(function(e){ c.innerHTML = '<div class="msg">'+esc(e.message)+'. Scrivici su WhatsApp: <a href="'+WA+'" style="color:#f0a0c0">'+WA.replace('https://','')+'</a></div>'; });
-  })();
+  }
+
+  /* Con PayPal il rientro qui significa che il compratore ha approvato, non
+     che i soldi siano stati presi: la cattura va chiesta noi. Aspettare il
+     solo webhook lasciava la prenotazione in sospeso a tempo indeterminato.
+     Qualunque esito abbia la chiamata si passa comunque al controllo dello
+     stato: se il webhook ha gia' fatto il lavoro, lo vedremo da li'.      */
+  if(ordinePaypal){
+    fetch(API + '/api/checkout/paypal/capture', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ booking_id:id, order_id:ordinePaypal })
+    }).catch(function(){}).then(poll);
+  } else {
+    poll();
+  }
 
   function fmtDate(iso){
     if(!iso) return '—';

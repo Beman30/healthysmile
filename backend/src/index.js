@@ -6,7 +6,7 @@
  */
 import { getService, resolveAmounts, publicService, SERVICES } from './services.js';
 import { createCheckoutSession, verifyStripeSignature } from './stripe.js';
-import { createOrder, captureOrder, verifyWebhook as verifyPaypal } from './paypal.js';
+import { createOrder, captureOrder, getOrder, verifyWebhook as verifyPaypal } from './paypal.js';
 import { notifyStudio } from './notify.js';
 
 const HOLD_MINUTES = 20; // quanto resta bloccato uno slot durante il pagamento
@@ -432,6 +432,49 @@ export default {
 
     if (request.method === 'POST' && path === '/api/checkout/stripe') return startCheckout(request, env, 'stripe');
     if (request.method === 'POST' && path === '/api/checkout/paypal') return startCheckout(request, env, 'paypal');
+
+    /* Cattura al ritorno dal sito di PayPal.
+
+       PayPal riporta il compratore qui appena approva, ma approvato non vuol
+       dire incassato: la cattura va chiesta noi. Farla dipendere solo dal
+       webhook lascia la prenotazione in sospeso ogni volta che quello tarda,
+       si perde o non e' configurato — e il paziente vede "pagamento in
+       verifica" all'infinito con i soldi mai presi. Il webhook resta come
+       rete di sicurezza per chi chiude il browser durante il rientro.      */
+    if (request.method === 'POST' && path === '/api/checkout/paypal/capture') {
+      const body = await request.json().catch(() => ({}));
+      const bookingId = body.booking_id, orderId = body.order_id;
+      if (!bookingId || !orderId) return bad('Dati mancanti', env, request);
+
+      const b = await env.DB.prepare(`SELECT payment_status FROM bookings WHERE booking_id=?`)
+        .bind(bookingId).first();
+      if (!b) return bad('Prenotazione non trovata', env, request, 404);
+      if (b.payment_status === 'paid') return ok({ payment_status: 'paid' }, env, request);
+
+      let order;
+      try {
+        order = await captureOrder(env, orderId);
+      } catch (e) {
+        // tipicamente ORDER_ALREADY_CAPTURED: il webhook e' arrivato prima.
+        // Non e' un errore, si rilegge l'ordine per vedere com'e' andata.
+        order = await getOrder(env, orderId).catch(() => null);
+        if (!order) return bad('Pagamento non completato', env, request);
+      }
+
+      // L'ordine deve appartenere a questa prenotazione: senza questo
+      // controllo chiunque potrebbe far risultare pagata la prenotazione di
+      // un altro passando un order_id qualsiasi.
+      const unit = order.purchase_units?.[0];
+      if (unit?.custom_id !== bookingId) return bad('Ordine non corrispondente', env, request, 403);
+
+      const cap = unit?.payments?.captures?.[0];
+      if (order.status === 'COMPLETED' && cap) {
+        const paid = await markPaid(env.DB, bookingId, Number(cap.amount.value), cap.id);
+        if (paid) alertStudio(ctx, env, paid);
+        return ok({ payment_status: 'paid' }, env, request);
+      }
+      return ok({ payment_status: 'pending' }, env, request);
+    }
 
     // ── WEBHOOK STRIPE ──
     if (request.method === 'POST' && path === '/api/webhooks/stripe') {
