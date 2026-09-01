@@ -105,11 +105,21 @@ var MAPS = 'https://maps.app.goo.gl/xG5N6YaYgg8Mxegp9';
      solo webhook lasciava la prenotazione in sospeso a tempo indeterminato.
      Qualunque esito abbia la chiamata si passa comunque al controllo dello
      stato: se il webhook ha gia' fatto il lavoro, lo vedremo da li'.      */
+  var motivoCattura = null;   // mostrato solo se il pagamento resta in sospeso
+
   if(ordinePaypal){
     fetch(API + '/api/checkout/paypal/capture', {
       method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ booking_id:id, order_id:ordinePaypal })
-    }).catch(function(){}).then(poll);
+    })
+    .then(function(r){
+      return r.json().catch(function(){ return {}; }).then(function(d){
+        if(!r.ok || d.error) motivoCattura = d.error || ('HTTP ' + r.status);
+        else if(d.payment_status && d.payment_status !== 'paid') motivoCattura = 'esito ' + d.payment_status;
+      });
+    })
+    .catch(function(e){ motivoCattura = 'chiamata non riuscita: ' + e.message; })
+    .then(poll);
   } else {
     poll();
   }
@@ -154,7 +164,9 @@ var MAPS = 'https://maps.app.goo.gl/xG5N6YaYgg8Mxegp9';
         ? 'Ti scriviamo su WhatsApp con il promemoria. Intanto puoi aggiungere l\'appuntamento al calendario qui sotto.'
         : 'Il pagamento risulta ancora in elaborazione. Se entro qualche minuto non ricevi conferma, scrivici.') + '</p>' +
 
-      (paid ? '' : '<div class="msg pending">Stato attuale: ' + esc(b.payment_status) + '</div>') +
+      (paid ? '' : '<div class="msg pending">Stato attuale: ' + esc(b.payment_status) +
+        (motivoCattura ? '<br><span style="opacity:.75;font-size:.86rem">Incasso non riuscito: ' +
+          esc(motivoCattura) + '</span>' : '') + '</div>') +
 
       '<div class="box">' +
         '<div class="svc">' + esc(b.service_name) + '</div>' +
