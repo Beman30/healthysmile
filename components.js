@@ -152,44 +152,76 @@
   // ── COOKIE BANNER ────────────────────────────────────────────────────
   var CONSENT_KEY = 'hs_cookie_consent';
 
-  function setGtag(granted){
+  /* Applica la scelta dell'utente.
+
+     Google (Analytics e Ads) si governa col Consent Mode: i tag sono gia'
+     caricati ma partono in stato "denied" (impostato inline nella <head> di
+     ogni pagina, prima della configurazione), quindi non scrivono cookie
+     finche' non arriva un update.
+
+     Clarity e Meta il Consent Mode non lo capiscono: per quelli l'unico
+     modo serio e' non caricarli affatto. Le pagine che li usano definiscono
+     hsCaricaClarity / hsCaricaMeta ma non le eseguono: le chiamiamo noi qui,
+     solo dopo un consenso esplicito.                                      */
+  function applicaConsenso(granted){
+    var v = granted ? 'granted' : 'denied';
     if(typeof gtag === 'function'){
-      var v = granted ? 'granted' : 'denied';
-      gtag('consent','update',{analytics_storage:v, ad_storage:v});
+      gtag('consent','update',{
+        analytics_storage:  v,
+        ad_storage:         v,
+        ad_user_data:       v,
+        ad_personalization: v
+      });
     }
-    if(!granted){
+    if(granted){
+      if(typeof window.hsCaricaClarity === 'function') window.hsCaricaClarity();
+      if(typeof window.hsCaricaMeta    === 'function') window.hsCaricaMeta();
+    } else {
       window['ga-disable-G-SRMDX8JXL5'] = true;
-      window['ga-disable-AW-947982327']  = true;
+      window['ga-disable-AW-947982327'] = true;
     }
   }
 
+  /* Revoca. Clarity e il pixel, una volta caricati, non si scaricano piu':
+     l'unico modo onesto di tornare indietro e' ricaricare la pagina senza
+     averli mai avviati. Richiamabile da qualsiasi pagina con
+     hsRivediCookie() — la cookie policy espone un link che fa questo.    */
+  window.hsRivediCookie = function(){
+    try{ localStorage.removeItem(CONSENT_KEY); }catch(e){}
+    location.reload();
+  };
+
   function injectCookieBanner(){
-    var existing = localStorage.getItem(CONSENT_KEY);
-    if(existing === 'accepted'){ setGtag(true);  return; }
-    if(existing === 'rejected'){ setGtag(false); return; }
+    // in navigazione privata localStorage puo' lanciare: senza questa
+    // protezione salterebbe anche l'iniezione di header e footer
+    var scelta = null;
+    try{ scelta = localStorage.getItem(CONSENT_KEY); }catch(e){}
+    if(scelta === 'accepted'){ applicaConsenso(true);  return; }
+    if(scelta === 'rejected'){ applicaConsenso(false); return; }
 
     var banner = document.createElement('div');
     banner.id = 'hs-cookie';
+    banner.setAttribute('role','dialog');
+    banner.setAttribute('aria-label','Preferenze cookie');
     banner.innerHTML =
-      '<p>Usiamo cookie analitici e di marketing per migliorare l\'esperienza sul sito. ' +
-      'Puoi accettarli o rifiutarli. Per maggiori informazioni consulta la nostra ' +
-      '<a href="https://healthysmile.it/cookie-policy">Cookie Policy</a>.</p>' +
+      '<p>Usiamo cookie analitici e di marketing per capire come viene usato il sito. ' +
+      'Restano spenti finche\' non li accetti. Dettagli nella ' +
+      '<a href="/cookie-policy.html">Cookie Policy</a>.</p>' +
       '<div class="hs-cookie-btns">' +
         '<button class="hs-cookie-reject" id="hs-cookie-reject">Rifiuta</button>' +
         '<button class="hs-cookie-accept" id="hs-cookie-accept">Accetta</button>' +
       '</div>';
     document.body.appendChild(banner);
 
-    document.getElementById('hs-cookie-accept').addEventListener('click', function(){
-      localStorage.setItem(CONSENT_KEY, 'accepted');
-      setGtag(true);
+    function scegli(valore, granted){
+      try{ localStorage.setItem(CONSENT_KEY, valore); }catch(e){}
+      applicaConsenso(granted);
       banner.remove();
-    });
-    document.getElementById('hs-cookie-reject').addEventListener('click', function(){
-      localStorage.setItem(CONSENT_KEY, 'rejected');
-      setGtag(false);
-      banner.remove();
-    });
+    }
+    document.getElementById('hs-cookie-accept')
+      .addEventListener('click', function(){ scegli('accepted', true); });
+    document.getElementById('hs-cookie-reject')
+      .addEventListener('click', function(){ scegli('rejected', false); });
   }
 
   function init(){

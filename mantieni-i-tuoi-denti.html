@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="it">
+<html lang="it" data-hs-custom-nav data-hs-custom-footer>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -13,21 +13,25 @@
 <script>
 window.dataLayer=window.dataLayer||[];
 function gtag(){dataLayer.push(arguments);}
+gtag('consent','default',{analytics_storage:'denied',ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied'});
 gtag('js',new Date());
 gtag('config','G-SRMDX8JXL5');
 gtag('config','AW-947982327');
 </script>
 <!-- Clarity -->
 <script type="text/javascript">
+window.hsCaricaClarity=function(){
 (function(c,l,a,r,i,t,y){
 c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
 t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
 y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
 })(window,document,"clarity","script","walfj3k79c");
+};
 </script>
 
 <!-- Meta Pixel Base Code -->
 <script>
+window.hsCaricaMeta=function(){
 !function(f,b,e,v,n,t,s)
 {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
 n.callMethod.apply(n,arguments):n.queue.push(arguments)};
@@ -39,11 +43,8 @@ s.parentNode.insertBefore(t,s)}(window, document,'script',
 
 fbq('init', '994311213389414');
 fbq('track', 'PageView');
+};
 </script>
-<noscript>
-  <img height="1" width="1" style="display:none"
-  src="https://www.facebook.com/tr?id=994311213389414&ev=PageView&noscript=1"/>
-</noscript>
 <!-- Fine Meta Pixel Base Code -->
 
 <!-- Meta Pixel — Eventi Custom Healthy Smile -->
@@ -1092,5 +1093,6 @@ document.querySelectorAll('.ai-trigger-btn').forEach(function(trigger){
 
 })();
 </script>
+<script src="/components.js"></script>
 </body>
 </html>

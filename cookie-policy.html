@@ -160,7 +160,9 @@ tbody td:first-child{font-weight:500;color:#0e0e0e;white-space:nowrap}
 
 <script>
 document.getElementById('cp-revoke-btn').addEventListener('click', function(){
-  localStorage.removeItem('hs_cookie_consent');
+  // definita in components.js; il ramo di riserva serve se quel file non carica
+  if(typeof window.hsRivediCookie === 'function') return window.hsRivediCookie();
+  try{ localStorage.removeItem('hs_cookie_consent'); }catch(e){}
   location.reload();
 });
 </script>
