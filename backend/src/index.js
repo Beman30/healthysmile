@@ -286,7 +286,8 @@ async function adminRoutes(request, env, url, path) {
     const where = cond.length ? 'WHERE ' + cond.join(' AND ') : '';
     const { results } = await db.prepare(
       `SELECT booking_id, service_id, first_name, last_name, phone, email,
-              appointment_date, appointment_time, total_price, amount_paid, balance_due,
+              appointment_date, appointment_time, total_price, amount_due_now,
+              amount_paid, balance_due,
               payment_provider, payment_status, booking_status, created_at
          FROM bookings ${where}
         ORDER BY appointment_date IS NULL, appointment_date, appointment_time, created_at`
@@ -337,6 +338,29 @@ async function adminRoutes(request, env, url, path) {
     if (body.status === 'cancelled') await freeSlot(db, { bookingId: body.booking_id });
 
     return ok({ booking_id: body.booking_id, booking_status: body.status }, env, request);
+  }
+
+  /* Registra a mano un incasso avvenuto fuori dal sistema.
+
+     Serve quando il pagamento e' andato a buon fine dal fornitore ma la
+     notifica non e' arrivata o e' stata scartata: senza questo, il paziente
+     ha pagato e per lo studio non esiste, e il suo orario resta in vendita.
+     Usa la stessa funzione dei webhook, quindi prenota lo slot e segna la
+     prenotazione confermata esattamente allo stesso modo. */
+  if (request.method === 'POST' && path === '/api/admin/booking-mark-paid') {
+    const body = await request.json().catch(() => ({}));
+    const importo = Number(body.amount_paid);
+    if (!Number.isFinite(importo) || importo <= 0) return bad('Importo non valido', env, request);
+
+    const b = await db.prepare(`SELECT payment_status FROM bookings WHERE booking_id=?`)
+      .bind(body.booking_id).first();
+    if (!b) return bad('Prenotazione non trovata', env, request, 404);
+    if (b.payment_status === 'paid') return bad('Risulta gia' + String.fromCharCode(39) + ' pagata', env, request);
+
+    const paid = await markPaid(db, body.booking_id, importo, body.payment_id || null);
+    if (!paid) return bad('Non e' + String.fromCharCode(39) + ' stato possibile registrare il pagamento', env, request);
+
+    return ok({ booking_id: body.booking_id, amount_paid: importo, payment_status: 'paid' }, env, request);
   }
 
   /* Elimina definitivamente una prenotazione. Serve per ripulire le righe
