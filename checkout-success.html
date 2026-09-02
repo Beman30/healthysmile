@@ -230,33 +230,44 @@ var MAPS = 'https://maps.app.goo.gl/xG5N6YaYgg8Mxegp9';
         if(raw){ attr=JSON.parse(raw); delete attr._t; }
       }catch(e){}
 
-      // GA4: evento standard di acquisto. value 98 = valore del servizio,
-      // non i 15 € incassati ora: serve a misurare il costo per paziente.
+      /* Il valore comunicato e' quello del servizio, non l'acconto appena
+         incassato: serve a misurare quanto vale un paziente acquisito.
+
+         Va letto dalla prenotazione, mai scritto qui. I servizi sono piu'
+         di uno e valgono cifre diverse: un numero fisso farebbe risultare
+         ogni visita da 15 € come una vendita da 98 €, e le campagne
+         verrebbero ottimizzate su un valore inventato. */
+      var valore = Number(b.total_price) || 0;
+
+      // GA4: evento standard di acquisto
       ev('purchase', Object.assign({
         transaction_id: b.booking_id,
-        currency:'EUR', value:98,
-        items:[{item_id:b.service_id, item_name:b.service_name, price:98, quantity:1}],
+        currency:'EUR', value: valore,
+        items:[{item_id:b.service_id, item_name:b.service_name, price: valore, quantity:1}],
         acconto_incassato: b.amount_paid,
         saldo_in_studio: b.balance_due
       }, attr));
 
       // duplicato con nome parlante, per chi guarda i rapporti
       ev('prenotazione_confermata', Object.assign({
-        transaction_id: b.booking_id, currency:'EUR', value:98
+        transaction_id: b.booking_id, currency:'EUR', value: valore
       }, attr));
 
       // Google Ads: senza etichetta non registra, quindi non lo mandiamo
       if(typeof gtag==='function' && ADS_CONVERSION_LABEL){
         gtag('event','conversion',{
           send_to:'AW-947982327/'+ADS_CONVERSION_LABEL,
-          value:98, currency:'EUR', transaction_id:b.booking_id,
-          new_customer: true // offerta riservata ai nuovi pazienti
+          value: valore, currency:'EUR', transaction_id:b.booking_id,
+          // dichiarato solo per le offerte davvero riservate ai nuovi
+          // pazienti: marcarle tutte cosi' falserebbe l'ottimizzazione
+          // di Google sull'acquisizione
+          new_customer: b.new_patients_only === true
         });
       }
 
       // Meta: eventID = booking_id, cosi' un secondo invio e' scartato
       if(typeof fbq==='function'){
-        fbq('track','Purchase',{value:98,currency:'EUR',content_ids:[b.service_id]},
+        fbq('track','Purchase',{value: valore,currency:'EUR',content_ids:[b.service_id]},
             {eventID:b.booking_id});
       }
 

@@ -592,7 +592,11 @@ export default {
       ).bind(id).first();
       if (!b) return bad('Prenotazione non trovata', env, request, 404);
       const s = getService(b.service_id);
-      return ok({ ...b, service_name: s ? s.name : b.service_id }, env, request);
+      return ok({ ...b,
+                  service_name: s ? s.name : b.service_id,
+                  // serve alla pagina di conferma per dichiarare a Google Ads
+                  // se questa e' un'acquisizione di nuovo paziente
+                  new_patients_only: !!(s && s.newPatientsOnly) }, env, request);
     }
 
     if (path.startsWith('/api/admin/')) return adminRoutes(request, env, url, path);
