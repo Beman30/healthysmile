@@ -30,6 +30,22 @@ export const SERVICES = {
       'vengono trattenuti.',
   },
 
+  'allineatori-visita': {
+    name: 'Visita per allineatori + teleradiografia',
+    totalPrice: 15,
+    paymentMode: 'full',
+    amountDueNow: 15,
+    balanceDueLater: 0,
+    requiresAppointment: true,
+    termsVersion: 'allineatori-2026-09',
+    terms:
+      'I 15 \u20ac comprendono la visita e la teleradiografia, eseguita ' +
+      'presso CDC. Se annulli o sposti l\u2019appuntamento con almeno 48 ore ' +
+      'di preavviso la quota ti viene rimborsata, oppure resta valida per ' +
+      'una nuova prenotazione. In caso di cancellazione nelle 48 ore ' +
+      'precedenti o mancata presentazione, la quota viene trattenuta.',
+  },
+
   sbiancamento: {
     name: 'Sbiancamento',
     totalPrice: 188,

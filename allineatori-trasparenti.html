@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Allineatori trasparenti a Torino — Healthy Smile</title>
-<meta name="description" content="Allineatori trasparenti a Torino: denti dritti si puliscono meglio e si consumano meno, e sostengono il labbro e la parte bassa del viso. Giornata di valutazione venerdi 2 ottobre, Via Madama Cristina 2.">
+<meta name="description" content="Allineatori trasparenti a Torino: denti dritti si puliscono meglio e si consumano meno, e sostengono il labbro e la parte bassa del viso. Visita di valutazione con teleradiografia inclusa, 15 euro. Via Madama Cristina 2, Torino.">
 <link rel="canonical" href="https://healthysmile.it/allineatori-trasparenti">
 <meta name="facebook-domain-verification" content="n44lud9of3ozu4rxfkehi796p0ulqk">
 <meta property="og:type" content="website">
@@ -12,7 +12,7 @@
 <meta property="og:site_name" content="Healthy Smile By N">
 <meta property="og:url" content="https://healthysmile.it/allineatori-trasparenti">
 <meta property="og:title" content="Allineare i denti non e un capriccio estetico">
-<meta property="og:description" content="Igiene, usura, morso. E il sostegno che i denti danno al labbro e alla parte bassa del viso. Giornata di valutazione venerdi 2 ottobre, Torino.">
+<meta property="og:description" content="Igiene, usura, morso. E il sostegno che i denti danno al labbro e alla parte bassa del viso. Visita di valutazione con teleradiografia inclusa, 15 euro. Torino.">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -237,7 +237,7 @@ footer .legal{font-size:.78rem;color:#4a4a4a;margin-top:18px}
     </div>
 
     <div class="ctas">
-      <a class="btn" href="#" data-wa="hero-prenota" data-msg="prenota">Prenota la visita del <span class="dataBreve">2 ottobre</span></a>
+      <a class="btn" href="#prenota">Prenota la visita</a>
       <a class="btn-ghost" href="#perche">Cosa cambia davvero</a>
     </div>
   </div>
@@ -482,21 +482,51 @@ footer .legal{font-size:.78rem;color:#4a4a4a;margin-top:18px}
 <section id="prenota">
   <div class="wrap">
     <p class="eyebrow">La giornata</p>
-    <h2>Venerd&igrave; <span class="dataLunga">2 ottobre</span>.</h2>
+    <h2>Scegli quando venire.</h2>
     <p class="lead">
-      Abbiamo tenuto libera una giornata per le valutazioni ortodontiche. Visita,
-      scansione digitale, e una risposta chiara: se gli allineatori hanno senso
-      per te, quanto durerebbero e quanto costerebbero. Se non hanno senso, anche
-      quello.
+      <span id="introGiornata">Carichiamo le prossime giornate disponibili&hellip;</span>
     </p>
     <p class="lead">
-      I posti della giornata sono limitati. Si prenota su WhatsApp: scrivici e ti
-      diamo l&rsquo;orario.
+      La visita comprende la valutazione, la scansione digitale delle arcate e
+      la <strong>teleradiografia</strong>, che si esegue presso <strong>CDC</strong>:
+      &egrave; l&rsquo;esame che ci fa vedere le ossa oltre ai denti, e senza quello
+      un piano ortodontico serio non si scrive. <strong>Costa 15 &euro; in tutto</strong>,
+      teleradiografia inclusa, e si paga qui.
     </p>
-    <div class="ctas">
-      <a class="btn" href="#" data-wa="prenota" data-msg="prenota">Prenota la visita</a>
-      <a class="btn-ghost" href="#" data-wa="domanda" data-msg="domanda">Ho prima una domanda</a>
+
+    <div class="addr">
+      <span class="pin">&#9679;</span>
+      <div>
+        <b>Healthy Smile</b>
+        <span>Via Madama Cristina 2 &middot; Torino</span><br>
+        <a href="https://maps.app.goo.gl/xG5N6YaYgg8Mxegp9" target="_blank" rel="noopener" data-maps="prenota">Apri su Maps &rarr;</a>
+      </div>
     </div>
+
+    <div class="dates" id="dates" role="group" aria-label="Scegli la giornata"></div>
+
+    <div class="times" id="times" hidden>
+      <div class="times-lab">Orari disponibili</div>
+      <div class="time-grid" id="timeGrid" role="group" aria-label="Scegli l&rsquo;orario"></div>
+    </div>
+
+    <div class="recap" id="recap" hidden>
+      <div class="place">Healthy Smile &middot; Via Madama Cristina 2, Torino</div>
+      <div class="when" id="recapWhen"></div>
+      <button class="btn" id="checkout" type="button">Prenota la visita &middot; 15 &euro;</button>
+      <p class="alt">Preferisci parlarne prima? <a href="#" data-wa="recap" data-msg="domanda">Scrivici su WhatsApp</a></p>
+    </div>
+
+    <p class="alt">
+      Non trovi un orario comodo? <a href="#" data-wa="prenota" data-msg="domanda">Scrivici su WhatsApp</a>
+      e troviamo insieme una soluzione.
+    </p>
+
+    <p class="alt" style="margin-top:22px">
+      <span id="notaPosti">I posti sono limitati</span>. Se annulli o sposti con almeno
+      48 ore di preavviso i 15 &euro; ti vengono rimborsati, oppure restano validi per
+      una nuova prenotazione. Con meno di 48 ore, o se non ti presenti, la quota viene trattenuta.
+    </p>
   </div>
 </section>
 
@@ -534,7 +564,7 @@ footer .legal{font-size:.78rem;color:#4a4a4a;margin-top:18px}
       Una visita, una scansione, una risposta. Poi decidi tu.
     </p>
     <div class="ctas" style="justify-content:center">
-      <a class="btn" href="#" data-wa="finale" data-msg="prenota">Prenota la visita del <span class="dataBreve">2 ottobre</span></a>
+      <a class="btn" href="#prenota">Prenota la visita</a>
     </div>
   </div>
 </section>
@@ -558,31 +588,33 @@ footer .legal{font-size:.78rem;color:#4a4a4a;margin-top:18px}
 </div>
 
 <script>
-/* ═══ LA DATA SI CAMBIA QUI, IN UN POSTO SOLO ═══════════════════════
-   Questa pagina non legge le disponibilita' dal gestionale: si prenota
-   via WhatsApp. Per spostare la giornata basta cambiare queste due
-   righe, il resto della pagina si aggiorna da solo.                  */
-var DATA_BREVE = '2 ottobre';
-var DATA_LUNGA = '2 ottobre';
+/* ═══ LE GIORNATE NON SI SCRIVONO QUI ═══════════════════════════════
+   Le date arrivano dal gestionale: si aggiungono da /admin/prenotazioni,
+   scheda Calendario. La pagina le mostra da sola con giorno della
+   settimana, orari e posti residui. Non c'e' nessuna data nel codice, e
+   quindi nessuna data che possa restare vecchia.                      */
+var SERVICE_ID = 'allineatori-visita';
+var API = 'https://healthysmile-checkout.nicolapalmia.workers.dev';
 
 var WA_NUMBER = '393924076794';
 var WA_MSG = {
-  prenota: 'Ciao, vorrei prenotare la visita per gli allineatori trasparenti della giornata del '
-         + DATA_BREVE + ' presso Healthy Smile in Via Madama Cristina 2.',
+  prenota: 'Ciao, vorrei prenotare la visita per gli allineatori trasparenti '
+         + 'presso Healthy Smile in Via Madama Cristina 2.',
   domanda: 'Ciao, ho una domanda sugli allineatori trasparenti prima di prenotare la visita.'
 };
 
 (function(){
   function ev(n,p){ if(typeof gtag==='function') gtag('event',n,p||{}); }
+  function waHref(tipo){
+    return 'https://wa.me/'+WA_NUMBER+'?text='+encodeURIComponent(WA_MSG[tipo] || WA_MSG.prenota);
+  }
 
-  document.querySelectorAll('.dataBreve').forEach(function(e){ e.textContent = DATA_BREVE; });
-  document.querySelectorAll('.dataLunga').forEach(function(e){ e.textContent = DATA_LUNGA; });
 
   // due messaggi diversi: chi prenota e chi deve ancora capire non
   // arrivano con la stessa richiesta, e rispondere e' piu' rapido
   document.querySelectorAll('[data-wa]').forEach(function(a){
     var tipo = a.dataset.msg || 'prenota';
-    a.setAttribute('href', 'https://wa.me/'+WA_NUMBER+'?text='+encodeURIComponent(WA_MSG[tipo]));
+    a.setAttribute('href', waHref(tipo));
     a.setAttribute('target','_blank');
     a.setAttribute('rel','noopener');
     a.addEventListener('click', function(){
@@ -597,6 +629,176 @@ var WA_MSG = {
   });
   document.querySelectorAll('[data-maps]').forEach(function(a){
     a.addEventListener('click',function(){ ev('hs_maps_click',{page:'allineatori-trasparenti',position:a.dataset.maps}); });
+  });
+
+  /* ── ATTRIBUZIONE ─────────────────────────────────────────────────
+     Il pagamento passa da un sito esterno e torna indietro: i parametri
+     della campagna stanno solo nell'URL di atterraggio e non
+     sopravvivono a quel giro. Si mettono in archivio locale, legato al
+     dominio, e la pagina di conferma li rilegge.                      */
+  var ATTR_KEY='hs_attr', ATTR_GIORNI=90;
+  (function salvaAttribuzione(){
+    try{
+      var q=new URLSearchParams(location.search), trovato={};
+      ['gclid','gbraid','wbraid','fbclid','utm_source','utm_medium',
+       'utm_campaign','utm_term','utm_content'].forEach(function(k){
+        var v=q.get(k); if(v) trovato[k]=v;
+      });
+      if(!Object.keys(trovato).length) return;   // visita diretta: non sovrascrivere
+      trovato._t=Date.now();
+      localStorage.setItem(ATTR_KEY, JSON.stringify(trovato));
+    }catch(e){}
+  })();
+  function leggiAttribuzione(){
+    try{
+      var raw=localStorage.getItem(ATTR_KEY); if(!raw) return {};
+      var a=JSON.parse(raw);
+      if(a._t && Date.now()-a._t > ATTR_GIORNI*864e5){ localStorage.removeItem(ATTR_KEY); return {}; }
+      delete a._t; return a;
+    }catch(e){ return {}; }
+  }
+
+  /* ── PRENOTAZIONE ─────────────────────────────────────────────────
+     Le giornate arrivano dal gestionale. La pagina non conosce prezzi:
+     manda solo l'identificativo del servizio al checkout, che li chiede
+     al server. Cosi' il prezzo non e' modificabile dal browser.      */
+  var datesEl=document.getElementById('dates'),
+      timesEl=document.getElementById('times'),
+      gridEl =document.getElementById('timeGrid'),
+      recapEl=document.getElementById('recap'),
+      whenEl =document.getElementById('recapWhen'),
+      btnEl  =document.getElementById('checkout');
+  var chosenDate=null, chosenTime=null;
+
+  var MESI=['gennaio','febbraio','marzo','aprile','maggio','giugno',
+            'luglio','agosto','settembre','ottobre','novembre','dicembre'];
+  var GIORNI=['domenica','lunedi','martedi','mercoledi','giovedi','venerdi','sabato'];
+  var GIORNI_ACC=['domenica','lunedì','martedì','mercoledì','giovedì','venerdì','sabato'];
+  function label(iso){
+    var p=iso.split('-'); var d=new Date(+p[0],+p[1]-1,+p[2]);
+    return GIORNI_ACC[d.getDay()].charAt(0).toUpperCase()+GIORNI_ACC[d.getDay()].slice(1)
+           +' '+(+p[2])+' '+MESI[+p[1]-1];
+  }
+  function oggiISO(){
+    var d=new Date();
+    return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  }
+
+  /* Senza giornate future la pagina non deve mostrare un'offerta scaduta:
+     sopra ci puo' essere traffico a pagamento, e un annuncio che porta a
+     una data passata viene disapprovato. Si passa a raccolta contatto. */
+  function nessunaGiornata(motivo){
+    document.getElementById('introGiornata').innerHTML =
+      'La prossima giornata &egrave; in definizione. Lasciaci il tuo contatto: ' +
+      'ti avvisiamo appena apriamo le date.';
+    document.getElementById('notaPosti').textContent = 'I posti sono limitati';
+    datesEl.innerHTML =
+      '<a class="btn" href="' + waHref('domanda') + '" target="_blank" rel="noopener">' +
+      'Avvisami quando apre la prossima &rarr;</a>';
+    if(recapEl) recapEl.hidden=true;
+    if(timesEl) timesEl.hidden=true;
+    ev('hs_no_slots',{page:'allineatori-trasparenti', motivo:motivo||'nessuna-data'});
+  }
+
+  function renderDates(slots){
+    var oggi=oggiISO(), byDate={}, order=[];
+    slots.forEach(function(s){
+      if(s.date < oggi) return;                 // le date passate non si mostrano
+      if(!byDate[s.date]){ byDate[s.date]=[]; order.push(s.date); }
+      byDate[s.date].push(s.time);
+    });
+    order.sort();
+
+    datesEl.innerHTML='';
+    if(!order.length){ nessunaGiornata('nessuna-data-futura'); return; }
+
+    var prima=order[0], orari=byDate[prima].slice().sort();
+    var quando=label(prima).toLowerCase();
+    document.getElementById('introGiornata').innerHTML = order.length===1
+      ? 'La prossima giornata &egrave; <strong>'+quando+'</strong>, dalle '+
+        orari[0].slice(0,2)+' alle '+String(Math.min(23,parseInt(orari[orari.length-1].slice(0,2),10)+1))+
+        '. Scegli l\'orario che ti &egrave; comodo.'
+      : 'Le prossime giornate sono <strong>'+order.length+'</strong>, a partire da <strong>'+quando+
+        '</strong>. Scegli quella che ti &egrave; comoda.';
+
+    var liberi=byDate[prima].length;
+    document.getElementById('notaPosti').innerHTML =
+      liberi===1 ? 'Resta <strong>un solo posto</strong> per '+quando
+                 : 'Restano <strong>'+liberi+' posti</strong> per '+quando;
+
+    order.forEach(function(iso){
+      var slot={ id: iso, label: label(iso), times: byDate[iso] };
+      var b=document.createElement('button');
+      b.type='button'; b.className='date-btn'; b.setAttribute('aria-pressed','false');
+      b.innerHTML=slot.label+'<small>'+slot.times.length+
+        (slot.times.length===1?' orario disponibile':' orari disponibili')+'</small>';
+      b.addEventListener('click',function(){ pickDate(slot,b); });
+      datesEl.appendChild(b);
+    });
+  }
+
+  datesEl.innerHTML='<p class="lead" style="margin:0;opacity:.6">Carico gli orari&hellip;</p>';
+  fetch(API+'/api/slots?service='+encodeURIComponent(SERVICE_ID))
+    .then(function(r){ if(!r.ok) throw new Error('no'); return r.json(); })
+    .then(function(d){ renderDates(d.slots||[]); })
+    .catch(function(){ nessunaGiornata('backend-irraggiungibile'); });
+
+  function pickDate(slot,btn){
+    chosenDate=slot; chosenTime=null;
+    datesEl.querySelectorAll('.date-btn').forEach(function(x){ x.setAttribute('aria-pressed','false'); });
+    btn.setAttribute('aria-pressed','true');
+    gridEl.innerHTML='';
+    slot.times.forEach(function(t){
+      var tb=document.createElement('button');
+      tb.type='button'; tb.className='time-btn'; tb.textContent=t; tb.setAttribute('aria-pressed','false');
+      tb.addEventListener('click',function(){ pickTime(t,tb); });
+      gridEl.appendChild(tb);
+    });
+    timesEl.hidden=false; recapEl.hidden=true;
+    ev('hs_book_date_select',{page:'allineatori-trasparenti',date:slot.id});
+  }
+
+  function pickTime(t,btn){
+    chosenTime=t;
+    gridEl.querySelectorAll('.time-btn').forEach(function(x){ x.setAttribute('aria-pressed','false'); });
+    btn.setAttribute('aria-pressed','true');
+    whenEl.textContent=chosenDate.label+' \u00b7 '+t;
+    recapEl.hidden=false;
+    ev('hs_book_time_select',{page:'allineatori-trasparenti',date:chosenDate.id,time:t});
+  }
+
+  btnEl.addEventListener('click',function(){
+    if(!chosenDate||!chosenTime) return;
+
+    var url = '/checkout.html?service=' + encodeURIComponent(SERVICE_ID)
+      + '&date=' + encodeURIComponent(chosenDate.id)
+      + '&time=' + encodeURIComponent(chosenTime);
+    var a = leggiAttribuzione();
+    Object.keys(a).forEach(function(k){ url += '&'+k+'='+encodeURIComponent(a[k]); });
+
+    /* Si naviga solo dopo che l'evento e' partito, o al massimo dopo
+       300ms: gtag accoda la richiesta e non la manda all'istante, e un
+       redirect immediato la interrompe prima che parta. Il timeout e'
+       la rete di sicurezza: il tracciamento non deve mai bloccare una
+       prenotazione. */
+    var partito=false;
+    function vai(){ if(partito) return; partito=true; location.href=url; }
+
+    if(typeof gtag==='function'){
+      gtag('event','begin_checkout',{
+        currency:'EUR', value:15,
+        items:[{item_id:SERVICE_ID, item_name:'Visita per allineatori + teleradiografia',
+                price:15, quantity:1}],
+        appuntamento:chosenDate.id+' '+chosenTime,
+        transport_type:'beacon',
+        event_callback: vai
+      });
+    }
+    if(typeof fbq==='function'){
+      fbq('track','InitiateCheckout',{value:15,currency:'EUR',content_ids:[SERVICE_ID]},
+          {eventID:'ic-'+chosenDate.id+'-'+chosenTime+'-'+Date.now()});
+    }
+    setTimeout(vai, 300);
   });
 
   // profondita' di lettura
