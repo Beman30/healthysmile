@@ -40,6 +40,8 @@ input:focus,select:focus{outline:none;border-color:var(--accent)}
 .btn-s:hover{border-color:var(--gray-500);color:#fff}
 .btn-s.danger:hover{border-color:var(--err);color:#ff9c9c}
 .btn-s.pdf{border-color:rgba(200,0,92,.45);color:var(--accent-soft)}
+.btn-s.paid{border-color:rgba(78,168,122,.5);color:#7fd3a5}
+.btn-s.paid:hover{border-color:var(--ok);color:#fff}
 .btn-s.pdf:hover{border-color:var(--accent);color:#fff}
 
 /* filtri */
@@ -462,7 +464,8 @@ var API = 'https://healthysmile-checkout.nicolapalmia.workers.dev';
           '<td><span class="pill '+st[1]+'">'+st[0]+'</span></td>'+
           '<td><div class="acts">'+
             (r.payment_status==='paid'
-              ? '<button class="btn-s pdf" data-pdf="'+r.booking_id+'">PDF</button>' : '')+
+              ? '<button class="btn-s pdf" data-pdf="'+r.booking_id+'">PDF</button>'
+              : '<button class="btn-s paid" data-paid="'+r.booking_id+'">Segna pagata</button>')+
             '<button class="btn-s" data-act="completed" data-id="'+r.booking_id+'">Completata</button>'+
             '<button class="btn-s" data-act="no_show" data-id="'+r.booking_id+'">No-show</button>'+
             '<button class="btn-s danger" data-act="cancelled" data-id="'+r.booking_id+'">Cancella</button>'+
@@ -481,6 +484,28 @@ var API = 'https://healthysmile-checkout.nicolapalmia.workers.dev';
         btn.addEventListener('click', function(){
           var r=perId[btn.dataset.pdf];
           if(r) promemoriaPdf(r,btn);
+        });
+      });
+
+      /* Riconciliazione a mano: il pagamento risulta al fornitore ma la
+         notifica non e' arrivata. Senza questo la prenotazione resta in
+         sospeso, l'orario torna in vendita e il paziente che ha pagato
+         non compare da nessuna parte. */
+      $('view').querySelectorAll('[data-paid]').forEach(function(btn){
+        btn.addEventListener('click', function(){
+          var r = perId[btn.dataset.paid] || {};
+          var chi = [r.first_name, r.last_name].filter(Boolean).join(' ') || 'questa prenotazione';
+          var proposto = r.amount_due_now || r.total_price || '';
+          var v = prompt('Quanto ha versato ' + chi + '? (in euro)\n\n'
+                       + 'Registralo solo se il pagamento risulta davvero incassato '
+                       + 'su Stripe o PayPal.', proposto);
+          if(v === null) return;
+          v = Number(String(v).replace(',', '.'));
+          if(!(v > 0)) { say('Importo non valido.', 'err'); return; }
+          api('/api/admin/booking-mark-paid',{method:'POST',
+              body:JSON.stringify({booking_id:btn.dataset.paid, amount_paid:v})})
+            .then(function(){ say('Registrata come pagata. Lo slot e ora prenotato.'); load(); })
+            .catch(function(e){ say(e.message,'err'); });
         });
       });
 
