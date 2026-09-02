@@ -504,7 +504,11 @@ var API = 'https://healthysmile-checkout.nicolapalmia.workers.dev';
           if(!(v > 0)) { say('Importo non valido.', 'err'); return; }
           api('/api/admin/booking-mark-paid',{method:'POST',
               body:JSON.stringify({booking_id:btn.dataset.paid, amount_paid:v})})
-            .then(function(){ say('Registrata come pagata. Lo slot e ora prenotato.'); load(); })
+            .then(function(d){
+              say(d && d.avviso ? d.avviso : 'Registrata come pagata. L\'orario e\' di nuovo assegnato.',
+                  d && d.avviso ? 'err' : 'ok');
+              load();
+            })
             .catch(function(e){ say(e.message,'err'); });
         });
       });

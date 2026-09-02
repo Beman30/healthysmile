@@ -360,7 +360,36 @@ async function adminRoutes(request, env, url, path) {
     const paid = await markPaid(db, body.booking_id, importo, body.payment_id || null);
     if (!paid) return bad('Non e' + String.fromCharCode(39) + ' stato possibile registrare il pagamento', env, request);
 
-    return ok({ booking_id: body.booking_id, amount_paid: importo, payment_status: 'paid' }, env, request);
+    /* Riaggancio dell'orario.
+
+       markPaid prenota lo slot cercandolo per booking_id. Ma se il lavoro
+       automatico ha gia' scaduto la prenotazione, quel collegamento e' stato
+       azzerato: la ricerca non trova nulla e l'orario resterebbe in vendita
+       anche dopo aver registrato l'incasso. Qui lo si ritrova per data e ora.
+
+       Se nel frattempo l'orario e' stato preso da qualcun altro non lo si
+       tocca: si registra comunque il pagamento e si avvisa, perche' e' una
+       sovrapposizione che deve risolvere una persona, non il codice.        */
+    let avviso = null;
+    if (paid.appointment_date && paid.appointment_time) {
+      const slot = await db.prepare(
+        `SELECT status, booking_id FROM slots WHERE service_id=? AND date=? AND time=?`
+      ).bind(paid.service_id, paid.appointment_date, paid.appointment_time).first();
+
+      if (!slot) {
+        avviso = 'Registrata, ma quell' + String.fromCharCode(39) + 'orario non esiste piu' + String.fromCharCode(39) + ' in calendario.';
+      } else if (slot.booking_id && slot.booking_id !== body.booking_id) {
+        avviso = 'ATTENZIONE: quell' + String.fromCharCode(39) + 'orario risulta gia' + String.fromCharCode(39) + ' assegnato a un' + String.fromCharCode(39) + 'altra prenotazione.';
+      } else {
+        await db.prepare(
+          `UPDATE slots SET status='booked', booking_id=?, held_until=NULL, updated_at=?
+             WHERE service_id=? AND date=? AND time=?`
+        ).bind(body.booking_id, now(), paid.service_id, paid.appointment_date, paid.appointment_time).run();
+      }
+    }
+
+    return ok({ booking_id: body.booking_id, amount_paid: importo,
+                payment_status: 'paid', avviso }, env, request);
   }
 
   /* Elimina definitivamente una prenotazione. Serve per ripulire le righe
