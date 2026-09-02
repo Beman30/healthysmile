@@ -230,8 +230,18 @@ async function seen(db, eventId, provider, type, bookingId, payload) {
        VALUES (?,?,?,?,?,?)`
     ).bind(eventId, provider, type, bookingId || null, now(), payload.slice(0, 8000)).run();
     return false; // non ancora visto
-  } catch {
-    return true;  // chiave duplicata: evento gia' processato
+  } catch (e) {
+    /* Solo la chiave duplicata significa "gia' processato".
+
+       Prima qui si ingoiava qualunque errore e si rispondeva "gia'
+       processato": un problema qualsiasi nello scrivere il registro
+       faceva scartare in silenzio un pagamento vero, restituendo 200 al
+       fornitore, che quindi non riprovava nemmeno. Ora ogni altro errore
+       viene rilanciato: il webhook fallisce, il fornitore riprova, e il
+       problema si vede invece di sparire. */
+    const msg = String(e && e.message || e);
+    if (/UNIQUE|PRIMARY KEY|constraint/i.test(msg)) return true;
+    throw e;
   }
 }
 
