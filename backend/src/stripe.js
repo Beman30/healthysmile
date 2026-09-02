@@ -99,6 +99,21 @@ function timingSafeEqual(a, b) {
   return diff === 0;
 }
 
+/** Chiede a Stripe com'e' andata una sessione di pagamento.
+
+    Serve a non dipendere dal solo webhook: se quella notifica si perde,
+    il pagamento resta invisibile al nostro sistema anche se i soldi sono
+    stati incassati davvero. Con questa possiamo sempre andare a chiedere. */
+export async function getSession(env, sessionId) {
+  const res = await fetch(
+    `https://api.stripe.com/v1/checkout/sessions/${encodeURIComponent(sessionId)}`,
+    { headers: { Authorization: `Bearer ${env.STRIPE_SECRET_KEY}` } }
+  );
+  const data = await res.json();
+  if (!res.ok) throw new Error(`Stripe: ${data.error?.message || res.status}`);
+  return data;
+}
+
 export async function verifyStripeSignature(payload, header, secret, toleranceSec = 300) {
   if (!header) return false;
   const parts = Object.fromEntries(
