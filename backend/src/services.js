@@ -15,7 +15,7 @@
  */
 export const SERVICES = {
   'igiene-sonicare': {
-    name: 'Visita + Igiene + Spazzolino Philips Sonicare',
+    name: 'Visita + Igiene + Spazzolino elettrico',
     totalPrice: 98,
     paymentMode: 'fixed',
     amountDueNow: 15,
