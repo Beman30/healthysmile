@@ -130,6 +130,27 @@ a.tel:hover{text-decoration:underline}
       <div class="f" style="min-width:auto"><button class="btn" id="reload">Aggiorna</button></div>
     </div>
 
+    <div class="card" id="addBooking" style="padding:16px 18px;display:none">
+      <div style="font-family:var(--serif);font-size:1.05rem;margin-bottom:4px">Aggiungi una prenotazione</div>
+      <p style="font-size:.84rem;color:var(--gray-500);margin-bottom:12px">
+        Per chi prenota al telefono, su WhatsApp o paga con un link: cose che non passano dal sito
+        e che altrimenti lascerebbero l&rsquo;orario in vendita.
+      </p>
+      <div class="filters" style="margin-bottom:10px">
+        <div class="f"><label for="nbService">Servizio</label><select id="nbService"></select></div>
+        <div class="f"><label for="nbFirst">Nome</label><input id="nbFirst" autocomplete="off"></div>
+        <div class="f"><label for="nbLast">Cognome</label><input id="nbLast" autocomplete="off"></div>
+        <div class="f"><label for="nbPhone">Telefono</label><input id="nbPhone" autocomplete="off"></div>
+        <div class="f"><label for="nbEmail">Email <span style="text-transform:none;letter-spacing:normal">(se ce l&rsquo;hai)</span></label><input id="nbEmail" autocomplete="off"></div>
+      </div>
+      <div class="filters" style="margin-bottom:0">
+        <div class="f"><label for="nbDate">Data</label><input type="date" id="nbDate"></div>
+        <div class="f"><label for="nbTime">Ora</label><input type="time" id="nbTime" step="3600"></div>
+        <div class="f"><label for="nbPaid">Gi&agrave; incassato (&euro;)</label><input id="nbPaid" inputmode="decimal" placeholder="0"></div>
+        <div class="f" style="min-width:auto"><button class="btn" id="nbCreate">Crea prenotazione</button></div>
+      </div>
+    </div>
+
     <div class="card" id="addDay" style="padding:16px 18px;display:none">
       <div style="font-family:var(--serif);font-size:1.05rem;margin-bottom:12px">Aggiungi una giornata</div>
       <div class="filters" style="margin-bottom:0">
@@ -204,13 +225,16 @@ var API = 'https://healthysmile-checkout.nicolapalmia.workers.dev';
   $('tok').addEventListener('keydown', function(e){ if(e.key==='Enter') enter(); });
   $('logout').addEventListener('click', logout);
 
-  function show(){ $('login').style.display='none'; $('app').hidden=false; loadServices(); load(); }
+  // tabs() va chiamata anche qui: senza, all'ingresso i pannelli restano
+  // com'erano scritti nel markup invece di seguire la scheda attiva
+  function show(){ $('login').style.display='none'; $('app').hidden=false; tabs(); loadServices(); load(); }
 
   function loadServices(){
     fetch(API+'/api/health').then(function(r){return r.json();}).then(function(d){
       (d.services||[]).forEach(function(s){
         var o=document.createElement('option'); o.value=s; o.textContent=s; $('fService').appendChild(o);
         var o2=document.createElement('option'); o2.value=s; o2.textContent=s; $('ndService').appendChild(o2);
+        var o3=document.createElement('option'); o3.value=s; o3.textContent=s; $('nbService').appendChild(o3);
       });
     }).catch(function(){});
   }
@@ -256,6 +280,7 @@ var API = 'https://healthysmile-checkout.nicolapalmia.workers.dev';
     $('tabCal').setAttribute('aria-selected', mode==='cal');
     $('fStatusWrap').style.display = mode==='list' ? '' : 'none';
     $('addDay').style.display = mode==='cal' ? '' : 'none';
+    $('addBooking').style.display = mode==='list' ? '' : 'none';
   }
   $('reload').addEventListener('click', load);
   ['fDate','fService','fStatus'].forEach(function(id){ $(id).addEventListener('change', load); });
@@ -270,6 +295,35 @@ var API = 'https://healthysmile-checkout.nicolapalmia.workers.dev';
 
   function load(){ return mode==='list' ? loadList() : loadCal(); }
 
+
+  $('nbCreate').addEventListener('click', function(){
+    var dati = {
+      service_id: $('nbService').value,
+      first_name: $('nbFirst').value.trim(),
+      last_name:  $('nbLast').value.trim(),
+      phone:      $('nbPhone').value.trim(),
+      email:      $('nbEmail').value.trim(),
+      appointment_date: $('nbDate').value,
+      appointment_time: $('nbTime').value,
+      amount_paid: Number(String($('nbPaid').value || '0').replace(',', '.')) || 0
+    };
+    if(!dati.service_id || !dati.first_name || !dati.last_name || !dati.phone){
+      say('Servono almeno servizio, nome, cognome e telefono.', 'err'); return;
+    }
+    if((dati.appointment_date && !dati.appointment_time) || (!dati.appointment_date && dati.appointment_time)){
+      say('Metti sia la data che l\'ora, oppure nessuna delle due.', 'err'); return;
+    }
+    $('nbCreate').disabled = true;
+    api('/api/admin/booking-create',{method:'POST',body:JSON.stringify(dati)})
+      .then(function(d){
+        say(d && d.avviso ? d.avviso : 'Prenotazione creata.', d && d.avviso ? 'err' : 'ok');
+        ['nbFirst','nbLast','nbPhone','nbEmail','nbDate','nbTime','nbPaid']
+          .forEach(function(id){ $(id).value = ''; });
+        load();
+      })
+      .catch(function(e){ say(e.message,'err'); })
+      .then(function(){ $('nbCreate').disabled = false; });
+  });
 
   /* ── PROMEMORIA PDF ──────────────────────────────────────────────
      Il paziente paga e non riceve nessuna mail: questo genera il

@@ -402,6 +402,88 @@ async function adminRoutes(request, env, url, path) {
                 payment_status: 'paid', avviso }, env, request);
   }
 
+  /* Crea una prenotazione a mano.
+
+     Non tutto passa dal sito: c'e' chi prenota al telefono, chi su
+     WhatsApp, chi paga con un link di pagamento creato dalla dashboard
+     del fornitore. Senza questo, quelle prenotazioni non esistono per il
+     calendario, e l'orario resta in vendita mentre in realta' e' preso:
+     e' cosi' che si vende due volte la stessa ora. */
+  if (request.method === 'POST' && path === '/api/admin/booking-create') {
+    const body = await request.json().catch(() => ({}));
+
+    const service = getService(body.service_id);
+    if (!service) return bad('Servizio non riconosciuto', env, request);
+
+    const nome = String(body.first_name || '').trim();
+    const cognome = String(body.last_name || '').trim();
+    const tel = String(body.phone || '').trim();
+    if (!nome || !cognome) return bad('Nome e cognome sono obbligatori', env, request);
+    if (!tel) return bad('Il telefono e' + Q + ' obbligatorio', env, request);
+
+    let date = null, time = null;
+    if (body.appointment_date || body.appointment_time) {
+      date = String(body.appointment_date || '');
+      time = String(body.appointment_time || '');
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !/^\d{2}:\d{2}$/.test(time)) {
+        return bad('Data o ora non valide', env, request);
+      }
+    }
+
+    const versato = Math.max(0, Number(body.amount_paid) || 0);
+    const totale = service.totalPrice;
+    const pagata = versato > 0;
+
+    const id = crypto.randomUUID();
+    const t = now();
+    await db.prepare(
+      `INSERT INTO bookings (
+         booking_id, service_id, first_name, last_name, phone, email,
+         appointment_date, appointment_time,
+         total_price, amount_due_now, amount_paid, balance_due,
+         payment_mode, payment_provider, payment_id, payment_status, booking_status,
+         terms_accepted, terms_version, terms_accepted_at, created_at, updated_at
+       ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,'manuale',?,?,?,0,NULL,NULL,?,?)`
+    ).bind(
+      id, body.service_id, nome, cognome, tel, String(body.email || '').trim(),
+      date, time,
+      totale, service.amountDueNow ?? totale, versato,
+      Math.round((totale - versato) * 100) / 100,
+      service.paymentMode,
+      String(body.payment_id || '').trim() || null,
+      pagata ? 'paid' : 'pending',
+      pagata ? 'confirmed' : 'awaiting_payment',
+      t, t
+    ).run();
+
+    /* L'orario. Se non e' mai stato messo in calendario lo si crea gia'
+       occupato: chi inserisce a mano sta dicendo che quell'ora e' presa,
+       e vale piu' della sua assenza dal calendario. Se invece esiste ed
+       e' di un altro paziente non si tocca nulla e si avvisa. */
+    let avviso = null;
+    if (date && time) {
+      const slot = await db.prepare(
+        `SELECT status, booking_id FROM slots WHERE service_id=? AND date=? AND time=?`
+      ).bind(body.service_id, date, time).first();
+
+      if (slot && slot.booking_id && slot.booking_id !== id) {
+        avviso = 'Prenotazione creata, ma attenzione: quell' + Q + 'orario risulta gia' + Q + ' assegnato a un' + Q + 'altra prenotazione.';
+      } else if (slot) {
+        await db.prepare(
+          `UPDATE slots SET status='booked', booking_id=?, held_until=NULL, updated_at=?
+             WHERE service_id=? AND date=? AND time=?`
+        ).bind(id, t, body.service_id, date, time).run();
+      } else {
+        await db.prepare(
+          `INSERT INTO slots (service_id,date,time,status,booking_id,updated_at)
+           VALUES (?,?,?,'booked',?,?)`
+        ).bind(body.service_id, date, time, id, t).run();
+      }
+    }
+
+    return ok({ booking_id: id, payment_status: pagata ? 'paid' : 'pending', avviso }, env, request);
+  }
+
   /* Elimina definitivamente una prenotazione. Serve per ripulire le righe
      di prova: "cancellata" libera l'orario ma lascia la riga in elenco.
 
