@@ -164,6 +164,39 @@
      modo serio e' non caricarli affatto. Le pagine che li usano definiscono
      hsCaricaClarity / hsCaricaMeta ma non le eseguono: le chiamiamo noi qui,
      solo dopo un consenso esplicito.                                      */
+  /* ── CLARITY ──────────────────────────────────────────────────────
+     Clarity viene caricato SEMPRE, anche senza consenso e anche dopo un
+     rifiuto. Microsoft prevede una modalita' senza cookie: si carica lo
+     script e gli si dichiara subito lo stato del consenso con
+     clarity('consent', true|false). Con lo stato negato Clarity registra
+     la sessione senza scrivere cookie e senza collegare fra loro visite
+     diverse; con lo stato concesso passa al tracciamento completo.
+
+     L'ordine e' cio' che rende la cosa sicura: lo snippet di Clarity
+     definisce window.clarity come funzione che ACCODA le chiamate, e la
+     libreria vera arriva dopo, in modo asincrono. Dichiarando il
+     consenso subito dopo il caricamento, quella dichiarazione e' la
+     prima cosa che la libreria elabora — prima di qualunque cookie.
+
+     PRESUPPOSTO: nel progetto Clarity deve essere attiva l'opzione di
+     consenso ai cookie. Senza quella, Clarity scrive i cookie per conto
+     suo e non aspetta di sentire cosa gli diciamo.                    */
+  var clarityAvviato = false;
+
+  function segnalaClarity(granted){
+    try{
+      if(typeof window.clarity === 'function') window.clarity('consent', !!granted);
+    }catch(e){}
+  }
+
+  function avviaClarity(granted){
+    if(clarityAvviato) return;                                   // mai due volte
+    if(typeof window.hsCaricaClarity !== 'function') return;      // pagina senza Clarity
+    window.hsCaricaClarity();
+    clarityAvviato = true;
+    segnalaClarity(granted);
+  }
+
   function applicaConsenso(granted){
     var v = granted ? 'granted' : 'denied';
     if(typeof gtag === 'function'){
@@ -174,10 +207,19 @@
         ad_personalization: v
       });
     }
+
+    // Clarity resta attivo in entrambi i casi: cambia solo cosa gli e'
+    // permesso fare. Se era gia' partito, gli si aggiorna lo stato.
+    avviaClarity(granted);
+    segnalaClarity(granted);
+
     if(granted){
-      if(typeof window.hsCaricaClarity === 'function') window.hsCaricaClarity();
-      if(typeof window.hsCaricaMeta    === 'function') window.hsCaricaMeta();
+      window['ga-disable-G-SRMDX8JXL5'] = false;
+      window['ga-disable-AW-947982327'] = false;
+      if(typeof window.hsCaricaMeta === 'function') window.hsCaricaMeta();
     } else {
+      // il pixel di Meta e' marketing e non ha una modalita' senza
+      // cookie: dopo un rifiuto non viene proprio caricato
       window['ga-disable-G-SRMDX8JXL5'] = true;
       window['ga-disable-AW-947982327'] = true;
     }
@@ -199,6 +241,12 @@
     try{ scelta = localStorage.getItem(CONSENT_KEY); }catch(e){}
     if(scelta === 'accepted'){ applicaConsenso(true);  return; }
     if(scelta === 'rejected'){ applicaConsenso(false); return; }
+
+    /* Nessuna scelta ancora espressa. Clarity parte comunque, dichiarando
+       consenso negato. GA4 e Google Ads restano in 'denied' per il default
+       gia' impostato nella head di ogni pagina, ma NON vengono disattivati:
+       l'utente puo' ancora accettare, e in quel caso devono poter partire. */
+    avviaClarity(false);
 
     var banner = document.createElement('div');
     banner.id = 'hs-cookie';
