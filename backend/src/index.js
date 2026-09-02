@@ -755,7 +755,7 @@ export default {
    * Senza questo, un checkout abbandonato terrebbe l'orario occupato
    * per sempre.
    */
-  async scheduled(_event, env) {
+  async scheduled(_event, env, ctx) {
     const scaduto = new Date(Date.now() - 60 * 60000).toISOString();
 
     /* Prima di dare per abbandonata una prenotazione, si chiede a Stripe
@@ -776,8 +776,11 @@ export default {
         try {
           const s = await getSession(env, b.payment_id);
           if (s.payment_status === 'paid') {
-            await markPaid(env.DB, b.booking_id, (s.amount_total || 0) / 100,
-                           s.payment_intent || s.id);
+            const rec = await markPaid(env.DB, b.booking_id, (s.amount_total || 0) / 100,
+                                       s.payment_intent || s.id);
+            // recuperato qui vuol dire che la notifica si era persa:
+            // l'avviso allo studio serve a maggior ragione
+            if (rec) alertStudio(ctx, env, rec);
             incassato = true;
           }
         } catch (e) {
