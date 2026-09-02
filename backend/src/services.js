@@ -21,6 +21,9 @@ export const SERVICES = {
     amountDueNow: 15,
     balanceDueLater: 83,
     requiresAppointment: true,
+    // dichiarato a Google Ads per l'ottimizzazione sull'acquisizione:
+    // vale solo per le offerte davvero riservate a chi non e' gia' paziente
+    newPatientsOnly: true,
     termsVersion: 'prenotazione-2026-09',
     terms:
       'I 15 € vengono scalati dal prezzo totale. Se annulli o sposti ' +
