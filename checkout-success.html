@@ -121,7 +121,21 @@ var MAPS = 'https://maps.app.goo.gl/xG5N6YaYgg8Mxegp9';
     .catch(function(e){ motivoCattura = 'chiamata non riuscita: ' + e.message; })
     .then(poll);
   } else {
-    poll();
+    /* Ritorno da Stripe. Stessa logica: non ci si fida del solo webhook,
+       si chiede a Stripe se il pagamento risulta incassato. Se il webhook
+       ha gia' fatto il suo lavoro questa chiamata trova tutto a posto e
+       non cambia nulla. */
+    fetch(API + '/api/checkout/stripe/verify', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ booking_id:id })
+    })
+    .then(function(r){
+      return r.json().catch(function(){ return {}; }).then(function(d){
+        if(!r.ok || d.error) motivoCattura = d.error || ('HTTP ' + r.status);
+      });
+    })
+    .catch(function(e){ motivoCattura = 'verifica non riuscita: ' + e.message; })
+    .then(poll);
   }
 
   function fmtDate(iso){

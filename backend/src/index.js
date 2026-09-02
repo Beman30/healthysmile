@@ -5,7 +5,7 @@
  * prezzi: mandano un service_id e questo backend decide il resto.
  */
 import { getService, resolveAmounts, publicService, SERVICES } from './services.js';
-import { createCheckoutSession, verifyStripeSignature } from './stripe.js';
+import { createCheckoutSession, getSession, verifyStripeSignature } from './stripe.js';
 import { createOrder, captureOrder, getOrder, verifyWebhook as verifyPaypal } from './paypal.js';
 import { notifyStudio } from './notify.js';
 
@@ -508,6 +508,39 @@ export default {
     if (request.method === 'POST' && path === '/api/checkout/stripe') return startCheckout(request, env, 'stripe');
     if (request.method === 'POST' && path === '/api/checkout/paypal') return startCheckout(request, env, 'paypal');
 
+    /* Verifica al ritorno da Stripe.
+
+       Stessa lezione imparata con PayPal: un pagamento non deve dipendere
+       da un solo canale. Se il webhook si perde, senza questo il paziente
+       ha pagato e il sistema non lo sa — e un'ora dopo il lavoro
+       automatico gli cancella pure la prenotazione. Qui andiamo a
+       chiedere a Stripe direttamente, e se risulta incassato lo
+       registriamo. Il webhook resta, come seconda strada.              */
+    if (request.method === 'POST' && path === '/api/checkout/stripe/verify') {
+      const body = await request.json().catch(() => ({}));
+      if (!body.booking_id) return bad('Dati mancanti', env, request);
+
+      const b = await env.DB.prepare(
+        `SELECT payment_id, payment_status FROM bookings WHERE booking_id=?`
+      ).bind(body.booking_id).first();
+      if (!b) return bad('Prenotazione non trovata', env, request, 404);
+      if (b.payment_status === 'paid') return ok({ payment_status: 'paid' }, env, request);
+      if (!b.payment_id) return ok({ payment_status: 'pending' }, env, request);
+
+      let s;
+      try { s = await getSession(env, b.payment_id); }
+      catch (e) { return bad(e.message, env, request, 502); }
+
+      // l'importo lo prendiamo da Stripe, mai da chi ci sta chiamando
+      if (s.payment_status === 'paid') {
+        const paid = await markPaid(env.DB, body.booking_id,
+          (s.amount_total || 0) / 100, s.payment_intent || s.id);
+        if (paid) alertStudio(ctx, env, paid);
+        return ok({ payment_status: 'paid' }, env, request);
+      }
+      return ok({ payment_status: s.payment_status || 'pending' }, env, request);
+    }
+
     /* Cattura al ritorno dal sito di PayPal.
 
        PayPal riporta il compratore qui appena approva, ma approvato non vuol
@@ -631,13 +664,51 @@ export default {
    * per sempre.
    */
   async scheduled(_event, env) {
+    const scaduto = new Date(Date.now() - 60 * 60000).toISOString();
+
+    /* Prima di dare per abbandonata una prenotazione, si chiede a Stripe
+       se per caso il pagamento e' andato a buon fine e la notifica si e'
+       persa per strada. Senza questo controllo il sistema archivia come
+       "fallito" un incasso realmente avvenuto, libera l'orario venduto e
+       cancella l'unica traccia che il paziente esiste: e' esattamente
+       quello che e' successo in produzione. */
+    const { results } = await env.DB.prepare(
+      `SELECT booking_id, payment_id, payment_provider FROM bookings
+        WHERE booking_status='held' AND payment_status='pending' AND created_at < ?`
+    ).bind(scaduto).all();
+
+    const abbandonate = [];
+    for (const b of results || []) {
+      let incassato = false;
+      if (b.payment_provider === 'stripe' && b.payment_id) {
+        try {
+          const s = await getSession(env, b.payment_id);
+          if (s.payment_status === 'paid') {
+            await markPaid(env.DB, b.booking_id, (s.amount_total || 0) / 100,
+                           s.payment_intent || s.id);
+            incassato = true;
+          }
+        } catch (e) {
+          // Stripe irraggiungibile: nel dubbio non si cancella nulla,
+          // si riprova al giro dopo. Meglio un orario fermo dieci minuti
+          // in piu' che una prenotazione pagata buttata via.
+          incassato = true;
+        }
+      }
+      if (!incassato) abbandonate.push(b.booking_id);
+    }
+
+    for (const id of abbandonate) {
+      await env.DB.prepare(
+        `UPDATE bookings SET booking_status='cancelled', payment_status='failed', updated_at=?
+           WHERE booking_id=?`
+      ).bind(now(), id).run();
+    }
+
+    // gli orari si liberano solo dopo aver deciso, non prima
     await env.DB.prepare(
       `UPDATE slots SET status='available', booking_id=NULL, held_until=NULL, updated_at=?
          WHERE status='held' AND held_until < ?`
     ).bind(now(), now()).run();
-    await env.DB.prepare(
-      `UPDATE bookings SET booking_status='cancelled', payment_status='failed', updated_at=?
-         WHERE booking_status='held' AND payment_status='pending' AND created_at < ?`
-    ).bind(now(), new Date(Date.now() - 60 * 60000).toISOString()).run();
   },
 };
