@@ -53,12 +53,12 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 
 <!-- GA4 -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-SRMDX8JXL5"></script>
 <script>
 window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}
-gtag('consent','default',{analytics_storage:'denied',ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied'});
+gtag('consent','default',{analytics_storage:'denied',ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied','wait_for_update':500});
 gtag('js',new Date());gtag('config','G-SRMDX8JXL5');gtag('config','AW-947982327');
 </script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-SRMDX8JXL5"></script>
 <!-- Clarity -->
 <script type="text/javascript">
 window.hsCaricaClarity=function(){
@@ -757,7 +757,10 @@ document.getElementById('hsForm').addEventListener('submit',function(e){
       if(r.ok){
         f.style.display='none';
         document.getElementById('formOk').classList.add('show');
-        if(window.gtag)gtag('event','conversion',{'send_to':'AW-947982327'});
+        if(window.gtag){
+          gtag('event','form_submit',{event_category:'conversione',event_label:'contatti_home'});
+          gtag('event','conversion',{'send_to':'AW-947982327'});
+        }
         if(window.fbq)fbq('track','Lead');
       } else { alert('Invio non riuscito. Scrivici su WhatsApp al +39 392 407 6794.'); }
     })
@@ -768,6 +771,31 @@ document.getElementById('hsForm').addEventListener('submit',function(e){
 document.querySelectorAll('[data-one]').forEach(function(a){
   a.addEventListener('click',function(){
     if(window.gtag)gtag('event','hs_one_click',{page:'home',position:a.dataset.one});
+  });
+});
+
+// Click WhatsApp, telefono e CTA principali (funziona anche con
+// analytics_storage:'denied': gtag accoda un ping cookieless, senza
+// scrivere _ga/_gid finche' il consenso non viene concesso)
+document.querySelectorAll('a[href^="https://wa.me/"]').forEach(function(a){
+  a.addEventListener('click',function(){
+    if(window.gtag){
+      gtag('event','whatsapp_click',{event_category:'conversione',event_label:a.textContent.trim().substring(0,50)});
+      gtag('event','conversion',{send_to:'AW-947982327/whatsapp_click'});
+    }
+  });
+});
+document.querySelectorAll('a[href^="tel:"]').forEach(function(a){
+  a.addEventListener('click',function(){
+    if(window.gtag){
+      gtag('event','phone_click',{event_category:'conversione',event_label:a.getAttribute('href')});
+      gtag('event','conversion',{send_to:'AW-947982327/phone_click'});
+    }
+  });
+});
+document.querySelectorAll('a.btn, a.nav-cta, a.drawer-cta').forEach(function(a){
+  a.addEventListener('click',function(){
+    if(window.gtag)gtag('event','cta_click',{event_category:'engagement',event_label:a.textContent.trim().substring(0,50)});
   });
 });
 </script>
