@@ -213,16 +213,12 @@
     avviaClarity(granted);
     segnalaClarity(granted);
 
-    if(granted){
-      window['ga-disable-G-SRMDX8JXL5'] = false;
-      window['ga-disable-AW-947982327'] = false;
-      if(typeof window.hsCaricaMeta === 'function') window.hsCaricaMeta();
-    } else {
-      // il pixel di Meta e' marketing e non ha una modalita' senza
-      // cookie: dopo un rifiuto non viene proprio caricato
-      window['ga-disable-G-SRMDX8JXL5'] = true;
-      window['ga-disable-AW-947982327'] = true;
-    }
+    // Il Google tag NON va mai disattivato (niente 'ga-disable-*'): con
+    // consenso negato deve continuare a girare in modalita' cookieless
+    // (Consent Mode Advanced), inviando ping senza scrivere _ga/_gid.
+    // Meta Pixel invece non ha una modalita' senza cookie: dopo un
+    // rifiuto non viene proprio caricato.
+    if(granted && typeof window.hsCaricaMeta === 'function') window.hsCaricaMeta();
   }
 
   /* Revoca. Clarity e il pixel, una volta caricati, non si scaricano piu':
