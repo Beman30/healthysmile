@@ -44,10 +44,15 @@
     "#hs-cookie p{font-size:13px;color:#aaa;margin:0;line-height:1.6;flex:1;min-width:200px}",
     "#hs-cookie a{color:#f0a0c0;text-decoration:underline}",
     "#hs-cookie .hs-cookie-btns{display:flex;gap:8px;flex-shrink:0}",
+    /* Accetta e Rifiuta hanno lo stesso peso visivo (stessa forma, stesso
+       riempimento pieno): cambia solo il colore. Un bottone pieno acceso
+       contro un bordo spento sarebbe un nudge verso "Accetta", il tipo di
+       asimmetria che le linee guida EDPB/Garante segnalano come scorretta:
+       la scelta deve restare libera, non suggerita dal design. */
     "#hs-cookie .hs-cookie-accept{font-family:var(--hs-sans);font-size:13px;font-weight:500;background:#C8005C;color:#fff;border:none;padding:9px 20px;border-radius:6px;cursor:pointer;transition:opacity 0.15s}",
     "#hs-cookie .hs-cookie-accept:hover{opacity:0.85}",
-    "#hs-cookie .hs-cookie-reject{font-family:var(--hs-sans);font-size:13px;font-weight:400;background:transparent;color:#888;border:1px solid #3a3a3a;padding:9px 20px;border-radius:6px;cursor:pointer;transition:border-color 0.15s,color 0.15s}",
-    "#hs-cookie .hs-cookie-reject:hover{border-color:#666;color:#ccc}",
+    "#hs-cookie .hs-cookie-reject{font-family:var(--hs-sans);font-size:13px;font-weight:500;background:#2a2a2a;color:#fff;border:none;padding:9px 20px;border-radius:6px;cursor:pointer;transition:opacity 0.15s}",
+    "#hs-cookie .hs-cookie-reject:hover{opacity:0.85}",
     "@media(max-width:600px){#hs-cookie{flex-direction:column;align-items:flex-start}#hs-cookie .hs-cookie-btns{width:100%}#hs-cookie .hs-cookie-accept,#hs-cookie .hs-cookie-reject{flex:1;text-align:center}}"
   ].join('');
   document.head.appendChild(style);
@@ -249,8 +254,9 @@
     banner.setAttribute('role','dialog');
     banner.setAttribute('aria-label','Preferenze cookie');
     banner.innerHTML =
-      '<p>Usiamo cookie analitici e di marketing per capire come viene usato il sito. ' +
-      'Restano spenti finche\' non li accetti. Dettagli nella ' +
+      '<p>Usiamo cookie di analisi e marketing per capire quali pagine aiutano davvero ' +
+      'chi cerca informazioni sui propri denti, e migliorarle. Restano spenti finche\' ' +
+      'non li attivi tu, e puoi cambiare idea quando vuoi. ' +
       '<a href="/cookie-policy.html">Cookie Policy</a>.</p>' +
       '<div class="hs-cookie-btns">' +
         '<button class="hs-cookie-reject" id="hs-cookie-reject">Rifiuta</button>' +
