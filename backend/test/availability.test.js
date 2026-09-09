@@ -249,8 +249,12 @@ test('automatic Palmia: merges STOP blocks, excludes breaks and requires full ho
 
 test('PALMIA title opens morning, subtracts breaks and is not a patient',async()=>{
  const {automaticWindows,preview}=await import('../src/teamup.js');
- const marker=event('hours','08:00','10:00',{title:'PALMIA 10-19'});
+ const marker=event('hours','08:00','10:00',{title:'CC/ PALMIA 10-19'});
  const events=[marker,event('break','13:00','14:00',{title:'PAUSA'}),event('closing','19:00','20:00',{title:'STOP'}),event('patient','10:00','13:00')];
+ for(const title of ['PALMIA 10-19','CC/ PALMIA 10-19','NB/ PALMIA 10-19','JG/ PALMIA 10-19','Nina/ PALMIA 10-19']) {
+  const ws=automaticWindows([{...marker,title},events[1]],day,1);
+  assert.deepEqual(ws.map(w=>[w.start,w.end]),[['10:00','13:00'],['14:00','19:00']]);
+ }
  const windows=automaticWindows(events,day,1);
  assert.deepEqual(windows.map(w=>[w.start,w.end]),[['10:00','13:00'],['14:00','19:00']]);
  const slots=windows.flatMap(w=>preview(events,{...w,subcalendar_ids:[1,2],palmia_calendar_id:1}).slots);
@@ -300,7 +304,7 @@ test('runtime automatic publication: closure, live changes, date horizon and aut
  const preview={date:day,subcalendar_ids:[1,2],palmia_calendar_id:1,staff_follows_palmia:true};
  r=await f.request('admin/teamup/auto-preview',preview);assert.equal(r.status,401);
  r=await f.request('admin/teamup/auto-preview',preview,true);assert.equal(r.status,200);assert.deepEqual(r.data.windows,[]);
- f.events([event('hours','08:00','10:00',{title:'PALMIA 10-19'}),event('pause','13:00','14:00',{title:'PAUSA'})]);
+ f.events([event('hours','08:00','10:00',{title:'CC/ PALMIA 10-19'}),event('pause','13:00','14:00',{title:'PAUSA'})]);
  r=await f.request('slots?service=igiene-sonicare&date='+day);
  assert.equal(r.status,200);assert.equal(r.data.slots[0].time,'10:00');assert.equal(r.data.slots.at(-1).time,'18:00');
  r=await f.request('admin/teamup/auto-preview',preview,true);

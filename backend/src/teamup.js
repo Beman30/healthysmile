@@ -22,7 +22,7 @@ function timestamp(value) {
 function palmiaHours(e, date, palmiaId) {
   if (!palmiaId || !e.subcalendar_ids?.includes(palmiaId)) return null;
   const title=String(e.title||'').trim();
-  const m=/^PALMIA\s+(\d{1,2})(?:[:.](\d{2}))?\s*[-–—]\s*(\d{1,2})(?:[:.](\d{2}))?$/i.exec(title);
+  const m=/^(?:[^\r\n/]{1,40}\/\s*)?PALMIA\s+(\d{1,2})(?:[:.](\d{2}))?\s*[-–—]\s*(\d{1,2})(?:[:.](\d{2}))?$/i.exec(title);
   if (!m) return null;
   const a=romeTime(date,`${m[1].padStart(2,'0')}:${m[2]||'00'}`);
   const b=romeTime(date,`${m[3].padStart(2,'0')}:${m[4]||'00'}`);
