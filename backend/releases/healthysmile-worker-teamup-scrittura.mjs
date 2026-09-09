@@ -174,6 +174,60 @@ async function readDay(env, date, ids, fetcher = fetch) {
   return data.events;
 }
 __name(readDay, "readDay");
+function automaticWindows(events, date, palmiaId) {
+  const dayStart = romeTime(date, "00:00");
+  const nextDate = new Date(Date.parse(date + "T12:00:00Z") + 864e5).toISOString().slice(0, 10);
+  const dayEnd = romeTime(nextDate, "00:00");
+  const blocks = [];
+  for (const e of events) {
+    if (e.delete_dt || !e.subcalendar_ids?.includes(palmiaId)) continue;
+    if (e.all_day) return [];
+    const a = timestamp(e.start_dt), b = timestamp(e.end_dt);
+    if (b <= a) throw new Error("Durata evento Teamup non valida");
+    if (a >= dayEnd || b <= dayStart) continue;
+    const title = String(e.title || "").replace(/<[^>]*>/g, " ");
+    if (/\b(?:STOP|PAUSA)\b/i.test(title)) blocks.push({ a: Math.max(a, dayStart), b: Math.min(b, dayEnd) });
+  }
+  blocks.sort((a, b) => a.a - b.a);
+  const merged = [];
+  for (const block of blocks) {
+    const last = merged.at(-1);
+    if (last && block.a <= last.b) last.b = Math.max(last.b, block.b);
+    else merged.push({ ...block });
+  }
+  const windows = [];
+  for (let i = 1; i < merged.length; i++) {
+    const a = Math.ceil(merged[i - 1].b / (15 * MINUTE)) * 15 * MINUTE, b = merged[i].a;
+    if (b - a >= 60 * MINUTE) windows.push({ date, start: localParts(a).slice(11), end: localParts(b).slice(11), window_confirmed: true });
+  }
+  return windows;
+}
+__name(automaticWindows, "automaticWindows");
+function rollingDates(clock = Date.now(), count = 14) {
+  const today = localParts(clock).slice(0, 10);
+  const base2 = Date.parse(today + "T12:00:00Z");
+  return Array.from({ length: count }, (_, i) => new Date(base2 + i * 864e5).toISOString().slice(0, 10));
+}
+__name(rollingDates, "rollingDates");
+async function teamupAutomaticPreview(env, input, fetcher = fetch) {
+  const ids = input.subcalendar_ids;
+  if (!Array.isArray(ids) || !ids.length || ids.some((id) => !Number.isSafeInteger(id) || id <= 0) || !ids.includes(input.palmia_calendar_id)) throw new Error("Seleziona tutte le agende Medici e Palmia");
+  if (input.staff_follows_palmia !== true) throw new Error("Conferma che l\u2019igienista segue gli orari Palmia");
+  romeTime(input.date, "12:00");
+  const visible = await calendars(env, fetcher);
+  if (ids.some((id) => !visible.some((c) => c.id === id))) throw new Error("Agenda non accessibile");
+  const events = await readDay(env, input.date, ids, fetcher);
+  const windows = automaticWindows(events, input.date, input.palmia_calendar_id);
+  const results = windows.map((w) => preview(events, { ...w, subcalendar_ids: ids }));
+  return {
+    date: input.date,
+    windows,
+    slots: results.flatMap((r) => r.slots),
+    warnings: [...new Set(results.flatMap((r) => r.warnings))],
+    notice: windows.length ? "Verifica della capienza Teamup. Le prenotazioni e i pagamenti in corso sul sito vengono controllati anche prima di vendere lo slot." : "Nessuna apertura ricavabile: servono blocchi STOP/PAUSA prima dell\u2019apertura e dalla chiusura, con almeno un\u2019ora libera tra i blocchi. Eventi giornalieri richiedono verifica."
+  };
+}
+__name(teamupAutomaticPreview, "teamupAutomaticPreview");
 
 // teamup-work/backend/src/teamup-write.js
 var WRITE_SCHEMA = `CREATE TABLE IF NOT EXISTS teamup_owned_events (
@@ -412,7 +466,12 @@ function validateSettings(body, currentTime = Date.now()) {
   if (typeof body.enabled !== "boolean" || !Number.isSafeInteger(body.revision) || body.revision < 0) throw new Error("Configurazione non valida");
   const ids = [...new Set(body.subcalendar_ids || [])].sort((a, b) => a - b);
   if (!Array.isArray(body.subcalendar_ids) || !ids.length || ids.some((id) => !Number.isSafeInteger(id) || id <= 0)) throw new Error("Seleziona tutte le agende Medici");
-  if (!Array.isArray(body.windows) || body.windows.length > 40 || body.enabled && !body.windows.length) throw new Error("Aggiungi le fasce da aprire (massimo 40)");
+  const schedule_mode = body.schedule_mode || "manual";
+  if (!["manual", "palmia"].includes(schedule_mode)) throw new Error("Modalit\xE0 agenda non valida");
+  const palmia_calendar_id = Number(body.palmia_calendar_id) || null;
+  if (schedule_mode === "palmia" && (!ids.includes(palmia_calendar_id) || body.staff_follows_palmia !== true)) throw new Error("Seleziona Palmia tra le agende Medici e conferma che l\u2019igienista segue gli stessi orari");
+  if (schedule_mode === "palmia") body = { ...body, windows: [] };
+  if (!Array.isArray(body.windows) || body.windows.length > 40 || body.enabled && schedule_mode === "manual" && !body.windows.length) throw new Error("Aggiungi le fasce da aprire (massimo 40)");
   const windows = body.windows.map((w) => {
     preview([], { ...w, subcalendar_ids: ids });
     if (body.enabled && (romeTime(w.date, w.end) <= currentTime || romeTime(w.date, w.start) > currentTime + 60 * 864e5)) throw new Error("Scegli date future entro 60 giorni");
@@ -423,7 +482,8 @@ function validateSettings(body, currentTime = Date.now()) {
   const write_enabled = body.write_enabled === true;
   const write_calendar_id = Number(body.write_calendar_id) || null;
   if (write_enabled && (!Number.isSafeInteger(write_calendar_id) || write_calendar_id <= 0)) throw new Error("Seleziona il calendario Prenotazioni sito");
-  return { enabled: body.enabled, subcalendar_ids: ids, windows, write_enabled, write_calendar_id };
+  if (schedule_mode === "palmia" && write_calendar_id === palmia_calendar_id) throw new Error("Palmia e Prenotazioni sito devono essere calendari diversi");
+  return { enabled: body.enabled, subcalendar_ids: ids, windows, write_enabled, write_calendar_id, schedule_mode, palmia_calendar_id, staff_follows_palmia: body.staff_follows_palmia === true };
 }
 __name(validateSettings, "validateSettings");
 async function accessible(env, ids, fetcher) {
@@ -461,16 +521,20 @@ async function liveSlots(env, date = null, ignoreId = "-none-", fetcher = fetch,
   if (!config) return null;
   if (!config.enabled) return [];
   if (date) romeTime(date, "12:00");
-  const windows = config.windows.filter((w) => (!date || w.date === date) && romeTime(w.date, w.end) > clock);
-  if (!windows.length) return [];
+  const automatic = config.schedule_mode === "palmia";
+  const horizon = rollingDates(clock);
+  if (automatic && date && !horizon.includes(date)) return [];
+  const windows = (config.windows || []).filter((w) => (!date || w.date === date) && romeTime(w.date, w.end) > clock);
+  if (!automatic && !windows.length) return [];
   const calendarIds = [.../* @__PURE__ */ new Set([...config.subcalendar_ids, ...config.write_calendar_id ? [config.write_calendar_id] : []])];
   await accessible(env, calendarIds, fetcher);
-  const dates = [...new Set(windows.map((w) => w.date))];
+  const dates = automatic ? date ? [date] : horizon : [...new Set(windows.map((w) => w.date))];
   const slots = [];
   for (const day of dates) {
     const events = await omitOwnEvent(env.DB, ignoreId, await readDay(env, day, calendarIds, fetcher));
     const busy = await siteBusy(env.DB, day, ignoreId);
-    for (const w of windows.filter((w2) => w2.date === day)) {
+    const dayWindows = automatic ? automaticWindows(events, day, config.palmia_calendar_id) : windows.filter((w) => w.date === day);
+    for (const w of dayWindows) {
       const result = preview(events, { ...w, subcalendar_ids: calendarIds });
       for (const s of result.slots) if (s.status === "candidate" && romeTime(day, s.time) > clock && !busy.some((b) => b.time < s.end_time && b.end_time > s.time)) slots.push({ date: day, time: s.time });
     }
@@ -1190,7 +1254,7 @@ function adminOk(request2, env) {
 __name(adminOk, "adminOk");
 async function adminRoutes(request2, env, url, path) {
   if (!adminOk(request2, env)) return bad("Non autorizzato", env, request2, 401);
-  if (path === "/api/admin/teamup/calendars" || path === "/api/admin/teamup/preview") {
+  if (path === "/api/admin/teamup/calendars" || path === "/api/admin/teamup/preview" || path === "/api/admin/teamup/auto-preview") {
     const reply = /* @__PURE__ */ __name((data, status) => {
       const response = json(data, status, env, request2);
       response.headers.set("Cache-Control", "no-store");
@@ -1198,6 +1262,7 @@ async function adminRoutes(request2, env, url, path) {
     }, "reply");
     try {
       if (request2.method === "GET" && path.endsWith("/calendars")) return reply({ calendars: await calendars(env) }, 200);
+      if (request2.method === "POST" && path.endsWith("/auto-preview")) return reply(await teamupAutomaticPreview(env, await request2.json()), 200);
       if (request2.method === "POST" && path.endsWith("/preview")) return reply(await teamupPreview(env, await request2.json()), 200);
       return reply({ error: "Metodo non consentito" }, 405);
     } catch (error) {
@@ -1212,7 +1277,7 @@ async function adminRoutes(request2, env, url, path) {
   }
   if (path === "/api/admin/teamup/settings") {
     try {
-      if (request2.method === "GET") return ok({ settings: await settings(db) }, env, request2);
+      if (request2.method === "GET") return ok({ settings: await settings(db), capabilities: { palmia_schedule: true } }, env, request2);
       if (request2.method === "POST") return ok({ settings: await saveSettings(env, await request2.json()) }, env, request2);
       return bad("Metodo non consentito", env, request2, 405);
     } catch (error) {
