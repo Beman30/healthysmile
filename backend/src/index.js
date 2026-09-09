@@ -1,3 +1,4 @@
+import { calendars, teamupPreview } from './teamup.js';
 /**
  * Healthy Smile — checkout universale
  *
@@ -280,6 +281,20 @@ function adminOk(request, env) {
 
 async function adminRoutes(request, env, url, path) {
   if (!adminOk(request, env)) return bad('Non autorizzato', env, request, 401);
+  if (path === '/api/admin/teamup/calendars' || path === '/api/admin/teamup/preview') {
+    const reply = (data, status) => {
+      const response = json(data, status, env, request);
+      response.headers.set('Cache-Control', 'no-store');
+      return response;
+    };
+    try {
+      if (request.method === 'GET' && path.endsWith('/calendars')) return reply({calendars: await calendars(env)}, 200);
+      if (request.method === 'POST' && path.endsWith('/preview')) return reply(await teamupPreview(env, await request.json()), 200);
+      return reply({error: 'Metodo non consentito'}, 405);
+    } catch (error) {
+      return reply({error: error instanceof SyntaxError ? 'Richiesta non valida' : error.message}, 400);
+    }
+  }
   const db = env.DB;
 
   // elenco prenotazioni, con filtri
@@ -811,3 +826,4 @@ export default {
     ).bind(now(), now()).run();
   },
 };
+
