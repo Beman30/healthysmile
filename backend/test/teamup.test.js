@@ -75,3 +75,12 @@ test('trims accidental outer whitespace on secrets without disclosing them',asyn
  });
  await assert.rejects(()=>calendars({...env,TEAMUP_API_KEY:'bad\nkey'}),/spazi o ritorni/);
 });
+
+test('Cloudflare-compatible manual redirect mode rejects redirects without forwarding credentials',async()=>{
+ let calls=0;
+ await assert.rejects(()=>calendars(env,async(url,options)=>{
+  calls++;assert.equal(options.redirect,'manual');
+  return new Response(null,{status:302,headers:{Location:'https://other.invalid/private'}});
+ }),e=>e.message.includes('HTTP 302')&&e.message.includes('reindirizzamento bloccato')&&!e.message.includes('other.invalid'));
+ assert.equal(calls,1);
+});
