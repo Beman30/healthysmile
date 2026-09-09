@@ -333,6 +333,11 @@ async function adminRoutes(request, env, url, path) {
   if(request.method==='GET' && path==='/api/admin/teamup/sync') {
     if(!await db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='teamup_owned_events'").first()) return ok({events:[]},env,request);
     const {results}=await db.prepare('SELECT booking_id,event_id,calendar_id,state,busy,updated_at FROM teamup_owned_events ORDER BY updated_at DESC LIMIT 100').all();
+    if(await db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='teamup_write_errors'").first()) {
+      const {results:errors}=await db.prepare('SELECT booking_id,code FROM teamup_write_errors').all();
+      const codes=new Map((errors||[]).map(e=>[e.booking_id,e.code]));
+      for(const row of results||[])row.error_code=codes.get(row.booking_id)||null;
+    }
     return ok({events:results||[]},env,request);
   }
   if (path === '/api/admin/teamup/settings') {

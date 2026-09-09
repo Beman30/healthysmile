@@ -83,7 +83,7 @@ $('syncCheck').onclick=async()=>{
  $('syncCheck').disabled=true;
  try {const d=await api('sync');$('syncResult').replaceChildren();
   const labels={creating:'Inserimento in corso',held:'Blocco inserito',confirmed:'Confermato in Teamup',deleted:'Rimosso',uncertain:'Esito incerto: verifica Teamup',review:'Conflitto: verifica Teamup'};
-  for(const row of d.events){const p=document.createElement('p');p.textContent=row.booking_id.slice(0,8)+' · '+(labels[row.state]||row.state)+(row.busy?' · operazione in corso':'');$('syncResult').append(p);}
+  for(const row of d.events){const p=document.createElement('p');p.textContent=row.booking_id.slice(0,8)+' · '+(labels[row.state]||row.state)+(row.busy?' · operazione in corso':'')+(row.error_code?' · '+row.error_code:'');$('syncResult').append(p);}
   if(!d.events.length)$('syncResult').textContent='Nessun evento ancora creato dal sito.';
  }catch(e){$('message').textContent=e.message;}finally{$('syncCheck').disabled=false;}
 };
