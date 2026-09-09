@@ -119,17 +119,17 @@ async function read(env, resource, params, fetcher) {
   } finally { clearTimeout(timer); }
 }
 export async function calendars(env, fetcher=fetch) {
+  // The documented configuration response lists calendars visible to this same key.
+  // Do not request inactive calendars or use an administrator credential.
+  const data = await read(env,'configuration',new URLSearchParams(),fetcher);
+  const items = data?.configuration?.subcalendars;
+  if (!Array.isArray(items)) throw new Error('Elenco agende Teamup incompleto nella configurazione');
   const result = [];
-  for (let offset=0;offset<1000;offset+=100) {
-    const data = await read(env,'subcalendars',new URLSearchParams({offset:String(offset),limit:'100',includeInactive:'false'}),fetcher);
-    if (!Array.isArray(data.subcalendars)) throw new Error('Elenco agende Teamup incompleto');
-    for (const c of data.subcalendars) {
-      if (!Number.isSafeInteger(c.id)) throw new Error('Identificativo agenda non valido');
-      result.push({id:c.id,name:String(c.name || ''),active:c.active!==false});
-    }
-    if (data.subcalendars.length<100) return result.filter(c=>c.active);
+  for (const c of items) {
+    if (!c || !Number.isSafeInteger(c.id)) throw new Error('Identificativo agenda non valido');
+    if (c.active !== false) result.push({id:c.id,name:String(c.name || ''),active:true});
   }
-  throw new Error('Troppe agende: restringere il collegamento ai calendari Medici');
+  return result;
 }
 export async function teamupPreview(env,input,fetcher=fetch) {
   preview([],input); // Validate input before contacting upstream.
