@@ -1,3 +1,50 @@
+## Orari automatici da Palmia (aggiornamento)
+
+Il Worker aggiornato supporta `schedule_mode: "palmia"`, `palmia_calendar_id` e
+`staff_follows_palmia: true`. Il consenso alla presenza riguarda la regola stabile:
+l'igienista segue gli orari di Palmia, come confermato dal titolare. Nessuna fascia
+giornaliera manuale è necessaria. Le impostazioni esistenti restano in modalità
+manuale finché l'amministratore seleziona e salva la nuova modalità.
+
+### Attivazione
+
+1. Distribuire la nuova versione di `releases/healthysmile-worker-teamup-scrittura.mjs`
+   nel Worker esistente (Edit code, sostituire tutto, Deploy). Nessun nuovo secret.
+2. Ricaricare `/admin/teamup.html`, selezionare tutte le agende Medici.
+3. Scegliere modalità **Automatica da STOP/PAUSA Palmia**, selezionare l'agenda
+   Medici → Palmia e confermare una volta che l'igienista ne segue gli orari.
+4. Mantenere il calendario dedicato alle prenotazioni e il permesso di modifica
+   dei soli eventi creati dal medesimo collegamento. Attivare la pubblicazione e salvare.
+5. Per verificare una giornata basta scegliere la data e premere Verifica la capienza.
+
+### Confini e disponibilità
+
+- Orizzonte mobile: oggi e i successivi 13 giorni, fuso Europe/Rome. Non occorre
+  aggiungere nuove date quando trascorre una giornata.
+- Per ricavare l'apertura si considerano solo eventi con STOP o PAUSA nel titolo
+  appartenenti all'agenda Palmia selezionata. I blocchi sovrapposti vengono uniti.
+- Le finestre possibili sono gli intervalli fra la fine di un blocco e l'inizio
+  del successivo. I blocchi prima dell'apertura e dalla chiusura devono essere
+  presenti in Teamup. Non si pubblicano orari prima del primo blocco o dopo l'ultimo.
+- Una giornata vuota, con un solo blocco o con un evento giornaliero Palmia
+  non genera disponibilità. Non si inferiscono turni da primo/ultimo paziente.
+- Gli altri controlli restano attivi: 60 minuti interi (45+15), massimo due poltrone,
+  eventi distinti sovrapposti nella stessa agenda, deduplicazione per ID,
+  note organizzative, pause, prenotazioni sito e pagamenti in corso.
+- Il pubblico riceve soltanto date e orari. Lettura senza cache all'apertura della
+  pagina, al ritorno sulla scheda dopo almeno un minuto e con Aggiorna disponibilità.
+  La selezione viene azzerata se l'elenco cambia; un errore nasconde le scelte obsolete.
+  Il controllo prima del checkout e il blocco atomico continuano a essere obbligatori.
+- Il pannello riconosce un Worker precedente e impedisce di salvare la modalità
+  automatica finché non è stata distribuita la versione compatibile.
+
+Validazione: 39 test, inclusi modalità automatica, STOP mancanti, pause, ora intera,
+orizzonte mobile e cambio ora, autenticazione, aggiornamenti Teamup, checkout e
+conferma del solo evento creato dal sito. Test eseguiti con dati fittizi e API simulate.
+Nessuna prova di scrittura o pagamento su servizi reali.
+
+---
+
 # Teamup: disponibilità pubbliche per l’offerta 98 €
 
 Il Worker legge Teamup e genera le disponibilità della pagina `visita-igiene-spazzolino.html`. L’attivazione è esplicita: prima del primo salvataggio restano gli slot manuali precedenti. Dopo il salvataggio, per `igiene-sonicare` vengono usate esclusivamente le fasce configurate; disattivare la pubblicazione restituisce zero disponibilità e non ripristina gli slot manuali.

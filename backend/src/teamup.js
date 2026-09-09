@@ -149,3 +149,54 @@ export async function readDay(env,date,ids,fetcher=fetch) {
   if (!Array.isArray(data.events)) throw new Error('Risposta Teamup incompleta');
   return data.events;
 }
+
+// Opening is inferred only between explicit Palmia STOP/PAUSA blocks.
+// Never infer opening from appointments or from an empty calendar.
+export function automaticWindows(events,date,palmiaId) {
+  const dayStart=romeTime(date,'00:00');
+  const nextDate=new Date(Date.parse(date+'T12:00:00Z')+86400000).toISOString().slice(0,10);
+  const dayEnd=romeTime(nextDate,'00:00');
+  const blocks=[];
+  for(const e of events) {
+    if(e.delete_dt || !e.subcalendar_ids?.includes(palmiaId)) continue;
+    if(e.all_day) return [];
+    const a=timestamp(e.start_dt),b=timestamp(e.end_dt);
+    if(b<=a) throw new Error('Durata evento Teamup non valida');
+    if(a>=dayEnd || b<=dayStart) continue;
+    const title=String(e.title||'').replace(/<[^>]*>/g,' ');
+    if(/\b(?:STOP|PAUSA)\b/i.test(title)) blocks.push({a:Math.max(a,dayStart),b:Math.min(b,dayEnd)});
+  }
+  blocks.sort((a,b)=>a.a-b.a);
+  const merged=[];
+  for(const block of blocks) {
+    const last=merged.at(-1);
+    if(last && block.a<=last.b) last.b=Math.max(last.b,block.b);
+    else merged.push({...block});
+  }
+  const windows=[];
+  for(let i=1;i<merged.length;i++) {
+    // Round candidate starts up to the next quarter hour, keeping the real closing boundary.
+    const a=Math.ceil(merged[i-1].b/(15*MINUTE))*15*MINUTE,b=merged[i].a;
+    if(b-a>=60*MINUTE) windows.push({date,start:localParts(a).slice(11),end:localParts(b).slice(11),window_confirmed:true});
+  }
+  return windows;
+}
+export function rollingDates(clock=Date.now(),count=14) {
+  const today=localParts(clock).slice(0,10);
+  const base=Date.parse(today+'T12:00:00Z');
+  return Array.from({length:count},(_,i)=>new Date(base+i*86400000).toISOString().slice(0,10));
+}
+
+export async function teamupAutomaticPreview(env,input,fetcher=fetch) {
+  const ids=input.subcalendar_ids;
+  if(!Array.isArray(ids)||!ids.length||ids.some(id=>!Number.isSafeInteger(id)||id<=0)||!ids.includes(input.palmia_calendar_id)) throw new Error('Seleziona tutte le agende Medici e Palmia');
+  if(input.staff_follows_palmia!==true) throw new Error('Conferma che l’igienista segue gli orari Palmia');
+  romeTime(input.date,'12:00');
+  const visible=await calendars(env,fetcher);
+  if(ids.some(id=>!visible.some(c=>c.id===id))) throw new Error('Agenda non accessibile');
+  const events=await readDay(env,input.date,ids,fetcher);
+  const windows=automaticWindows(events,input.date,input.palmia_calendar_id);
+  const results=windows.map(w=>preview(events,{...w,subcalendar_ids:ids}));
+  return {date:input.date,windows,slots:results.flatMap(r=>r.slots),warnings:[...new Set(results.flatMap(r=>r.warnings))],
+    notice:windows.length?'Verifica della capienza Teamup. Le prenotazioni e i pagamenti in corso sul sito vengono controllati anche prima di vendere lo slot.':'Nessuna apertura ricavabile: servono blocchi STOP/PAUSA prima dell’apertura e dalla chiusura, con almeno un’ora libera tra i blocchi. Eventi giornalieri richiedono verifica.'};
+}

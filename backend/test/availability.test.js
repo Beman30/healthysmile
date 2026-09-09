@@ -230,3 +230,64 @@ test('write runtime: uncertain create never starts payment or blindly creates a 
  assert.equal(f.created.size,1);assert.deepEqual(f.writes,['POST']);
  const booking=await f.db.prepare('SELECT payment_id,payment_status FROM bookings').first();assert.equal(booking.payment_id,null);assert.equal(booking.payment_status,'pending');
 });
+
+test('automatic Palmia: merges STOP blocks, excludes breaks and requires full hour',async()=>{
+ const {automaticWindows}=await import('../src/teamup.js');
+ const blocks=[event('a','08:00','10:00',{title:'CC STOP'}),event('p','13:00','14:00',{title:'PAUSA'}),event('z','19:00','20:00',{title:'STOP'})];
+ const w=automaticWindows(blocks,day,1);
+ assert.deepEqual(w.map(x=>[x.start,x.end]),[['10:00','13:00'],['14:00','19:00']]);
+ assert.deepEqual(automaticWindows([],day,1),[]);
+ assert.deepEqual(automaticWindows(blocks.slice(0,1),day,1),[]);
+ assert.deepEqual(automaticWindows(blocks,day,2),[]);
+ assert.deepEqual(automaticWindows([...blocks,event('closed','08:00','20:00',{title:'STOP'})],day,1),[]);
+ assert.deepEqual(automaticWindows([...blocks,{id:'all',subcalendar_ids:[1],all_day:true}],day,1),[]);
+ assert.deepEqual(automaticWindows([blocks[0],event('overlap','09:00','10:15',{title:'STOP'}),blocks[2]],day,1).map(x=>x.start),['10:15']);
+});
+
+test('automatic config requires explicit Palmia and shared staffing, accepts no manual windows',()=>{
+ const auto={...config,schedule_mode:'palmia',palmia_calendar_id:1,staff_follows_palmia:true,windows:[]};
+ assert.equal(validateSettings(auto).windows.length,0);
+ assert.throws(()=>validateSettings({...auto,palmia_calendar_id:3}));
+ assert.throws(()=>validateSettings({...auto,staff_follows_palmia:false}));
+});
+
+test('automatic dates roll in Rome across midnight and DST without gaps',async()=>{
+ const {rollingDates}=await import('../src/teamup.js');
+ assert.equal(rollingDates(Date.parse('2026-09-09T22:30:00Z'))[0],'2026-09-10');
+ const dates=rollingDates(Date.parse('2026-10-24T22:30:00Z'));
+ assert.equal(dates.length,14);assert.equal(new Set(dates).size,14);
+ assert.equal(dates[0],'2026-10-25');assert.equal(dates[1],'2026-10-26');
+});
+
+test('runtime automatic publication: closure, live changes, date horizon and authenticated preview',async t=>{
+ const f=await fixture(t);
+ const a={...config,revision:1,schedule_mode:'palmia',palmia_calendar_id:1,staff_follows_palmia:true,windows:[]};
+ let r=await f.request('admin/teamup/settings',a,true);assert.equal(r.status,200);
+ const blocks=[event('am','08:00','10:00',{title:'STOP'}),event('pm','13:00','20:00',{title:'STOP'})];
+ f.events(blocks);
+ r=await f.request('slots?service=igiene-sonicare&date='+day);
+ assert.equal(r.status,200);assert.equal(r.data.slots.at(-1).time,'12:00');
+ assert.ok(!r.data.slots.some(s=>s.time==='12:15'));
+ const far=new Date(Date.now()+30*86400000).toISOString().slice(0,10);
+ r=await f.request('slots?service=igiene-sonicare&date='+far);assert.deepEqual(r.data.slots,[]);
+ r=await f.request('slots?service=igiene-sonicare');assert.deepEqual([...new Set(r.data.slots.map(s=>s.date))],[day]);
+ f.events([...blocks,event('a','10:00','13:00'),event('b','10:00','11:00')]);
+ r=await f.request('slots?service=igiene-sonicare&date='+day);assert.equal(r.data.slots[0].time,'11:00');
+ f.events([blocks[0]]);
+ r=await f.request('checkout/stripe',{...patient,time:'11:00'});assert.equal(r.status,409);
+ const preview={date:day,subcalendar_ids:[1,2],palmia_calendar_id:1,staff_follows_palmia:true};
+ r=await f.request('admin/teamup/auto-preview',preview);assert.equal(r.status,401);
+ r=await f.request('admin/teamup/auto-preview',preview,true);assert.equal(r.status,200);assert.deepEqual(r.data.windows,[]);
+});
+
+test('runtime automatic + own events: payment confirms without double counting hold',async t=>{
+ const f=await fixture(t,true);
+ const r=await f.request('admin/teamup/settings',{...config,revision:1,schedule_mode:'palmia',palmia_calendar_id:1,staff_follows_palmia:true,windows:[],write_enabled:true,write_calendar_id:3},true);
+ assert.equal(r.status,200);
+ f.events([event('am','08:00','10:00',{title:'STOP'}),event('pm','13:00','20:00',{title:'STOP'})]);
+ const checkout=await f.request('checkout/stripe',{...patient,time:'10:00'});assert.equal(checkout.status,200);
+ f.paid(true);
+ const paid=await f.request('checkout/stripe/verify',{booking_id:checkout.data.booking_id});assert.equal(paid.status,200);
+ const b=await f.db.prepare('SELECT booking_status FROM bookings WHERE booking_id=?').bind(checkout.data.booking_id).first();
+ assert.equal(b.booking_status,'confirmed');assert.deepEqual(f.writes,['POST','PUT']);
+});
