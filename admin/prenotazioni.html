@@ -128,6 +128,7 @@ a.tel:hover{text-decoration:underline}
         <select id="fStatus">
           <option value="">Tutti</option>
           <option value="confirmed">Confermata</option>
+          <option value="needs_review">Da verificare</option>
           <option value="awaiting_payment">In attesa di pagamento</option>
           <option value="held">Bloccata</option>
           <option value="cancelled">Cancellata</option>
@@ -485,7 +486,7 @@ var API = 'https://healthysmile-checkout.nicolapalmia.workers.dev';
 
   /* ── elenco ── */
   var ST = {
-    confirmed:['Confermata','p-ok'], completed:['Completata','p-ok'],
+    needs_review:['Da verificare','p-err'], confirmed:['Confermata','p-ok'], completed:['Completata','p-ok'],
     awaiting_payment:['In attesa','p-warn'], held:['Bloccata','p-warn'],
     cancelled:['Cancellata','p-mut'], no_show:['Non presentato','p-err']
   };
@@ -524,6 +525,7 @@ var API = 'https://healthysmile-checkout.nicolapalmia.workers.dev';
           '<td><span class="pill '+ps[1]+'">'+ps[0]+'</span></td>'+
           '<td><span class="pill '+st[1]+'">'+st[0]+'</span></td>'+
           '<td><div class="acts">'+
+            (r.booking_status==='needs_review' ? '<button class="btn-s" data-act="confirmed" data-id="'+r.booking_id+'">Verifica e conferma</button>' : '')+
             (r.payment_status==='paid'
               ? '<button class="btn-s pdf" data-pdf="'+r.booking_id+'">PDF</button>'
               : '<button class="btn-s paid" data-paid="'+r.booking_id+'">Segna pagata</button>')+
