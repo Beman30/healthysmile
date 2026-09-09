@@ -64,7 +64,7 @@ test('Worker rejects unauthenticated access before reading Teamup',async()=>{
 
 test('diagnostics expose status and stage, never upstream body or credentials',async()=>{
  for(const code of [400,401,403,404,429,500,503]) {
-  await assert.rejects(()=>calendars(env,async()=>new Response('private patient kstest test-key',{status:code})),e=>e.message.includes(`HTTP ${code} (subcalendars)`)&&!/private|kstest|test-key/.test(e.message));
+  await assert.rejects(()=>calendars(env,async()=>new Response('private patient kstest test-key',{status:code})),e=>e.message.includes(`HTTP ${code} (subcalendars;`)&&!/private|kstest|test-key/.test(e.message));
  }
  await assert.rejects(()=>calendars(env,async()=>new Response('<html>private</html>')),/formato risposta non valido/);
  await assert.rejects(()=>calendars(env,async()=>{throw Error('private kstest')}),/connessione non riuscita/);
@@ -83,4 +83,13 @@ test('Cloudflare-compatible manual redirect mode rejects redirects without forwa
   return new Response(null,{status:302,headers:{Location:'https://other.invalid/private'}});
  }),e=>e.message.includes('HTTP 302')&&e.message.includes('reindirizzamento bloccato')&&!e.message.includes('other.invalid'));
  assert.equal(calls,1);
+});
+
+
+test('known Teamup error codes are explained without returning account text', async()=>{
+ for(const id of ['invalid_api_key','account_no_permission','login_required']) {
+  await assert.rejects(()=>calendars(env,async()=>Response.json({error:{id,message:'PRIVATE account patient',title:'PRIVATE'}},{status:403})), e=>e.message.includes(id)&&!e.message.includes('PRIVATE'));
+ }
+ await assert.rejects(()=>calendars(env,async()=>Response.json({error:{id:'PRIVATE_SECRET'}},{status:403})),e=>e.message.includes('non riconosciuto')&&!e.message.includes('PRIVATE_SECRET'));
+ await assert.rejects(()=>calendars(env,async()=>new Response('<!DOCTYPE html><html>PRIVATE</html>',{status:403})),e=>e.message.includes('risposta HTML')&&!e.message.includes('PRIVATE'));
 });
