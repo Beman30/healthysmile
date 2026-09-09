@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="it"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Verifica agenda — Healthy Smile</title>
+<style>body{font:16px system-ui;background:#f4f7f8;color:#18333f;margin:0}main{max-width:850px;margin:35px auto;padding:24px;background:white;border-radius:14px}h1{font-size:26px}fieldset{border:1px solid #ccd9df;border-radius:8px;margin:20px 0;padding:18px}label{display:block;margin:12px 0}input,button{font:inherit;padding:9px}button{background:#116d80;color:white;border:0;border-radius:6px;cursor:pointer}button:disabled{opacity:.5}table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:10px;border-bottom:1px solid #ddd}a{color:#116d80}.note{background:#eef5f6;padding:14px;border-radius:8px}#message{white-space:pre-line}input[type=checkbox]{margin-right:10px} @media(max-width:600px){main{margin:0;padding:16px}}</style>
+<main><a href="prenotazioni.html">← Prenotazioni</a><h1>Verifica disponibilità Teamup</h1>
+<p class="note">Anteprima per lo studio. Nessuna modifica all’agenda o agli slot pubblici. Si controlla la disponibilità di una poltrona per 60 minuti, su due poltrone totali.</p>
+<section id="login"><label>Token amministratore <input id="token" type="password" autocomplete="off"></label><button id="connect">Collega</button></section>
+<form id="form" hidden><fieldset><legend>Agende da considerare</legend><p>Seleziona tutte le agende del gruppo Medici, compresa quella dell’igienista. Escludi Prestazioni e Laboratori.</p><div id="calendars"></div></fieldset>
+<fieldset><legend>Finestra da verificare</legend><label>Data <input name="date" type="date" required></label><label>Dalle <input name="start" type="time" required></label><label>Alle <input name="end" type="time" required></label>
+<label><input name="confirmed" type="checkbox" required>Ho verificato le note di Teamup: in questa finestra lo studio è aperto, l’igienista è disponibile per i primi 45 minuti e il medico è presente per la visita finale di 15 minuti.</label></fieldset>
+<button id="verify">Verifica la capienza</button> <button id="logout" type="button">Esci</button></form>
+<p id="message" role="status"></p><section id="result"></section></main>
+<script type="module">
+const API='https://healthysmile-checkout.nicolapalmia.workers.dev';
+const $=id=>document.getElementById(id);
+let token=sessionStorage.getItem('hs_admin')||'';
+async function api(path,body){
+ const r=await fetch(API+'/api/admin/teamup/'+path,{method:body?'POST':'GET',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},...(body?{body:JSON.stringify(body)}:{})});
+ const data=await r.json();if(!r.ok)throw Error(data.error||'Richiesta non riuscita');return data;
+}
+async function connect(){
+ $('message').textContent='Lettura delle agende…';
+ try{
+  const data=await api('calendars');$('calendars').replaceChildren();
+  for(const c of data.calendars){const label=document.createElement('label'),box=document.createElement('input');box.type='checkbox';box.value=c.id;label.append(box,document.createTextNode(c.name));$('calendars').append(label);}
+  sessionStorage.setItem('hs_admin',token);$('token').value='';$('form').hidden=false;$('login').hidden=true;
+  $('message').textContent=data.calendars.length?'Seleziona le agende Medici e la finestra da controllare.':'Nessuna agenda accessibile: verifica il collegamento Teamup.';
+ }catch(e){$('message').textContent=e.message;$('form').hidden=true;$('login').hidden=false;}
+}
+$('connect').onclick=()=>{token=$('token').value.trim();connect();};
+$('logout').onclick=()=>{sessionStorage.removeItem('hs_admin');token='';$('form').hidden=true;$('login').hidden=false;$('result').replaceChildren();$('message').textContent='';};
+$('form').onsubmit=async e=>{
+ e.preventDefault();$('verify').disabled=true;$('result').replaceChildren();$('message').textContent='Controllo degli appuntamenti…';
+ try{
+  const f=new FormData(e.target),ids=[...$('calendars').querySelectorAll('input:checked')].map(x=>Number(x.value));
+  const data=await api('preview',{date:f.get('date'),start:f.get('start'),end:f.get('end'),subcalendar_ids:ids,window_confirmed:f.get('confirmed')==='on'});
+  $('message').textContent=[...data.warnings,data.notice].join('\n');
+  const table=document.createElement('table');table.innerHTML='<thead><tr><th>Orario</th><th>Poltrone già occupate (massimo)</th><th>Esito</th></tr></thead>';
+  const tbody=document.createElement('tbody');const labels={candidate:'Capienza compatibile · da verificare',full:'Due poltrone occupate',blocked:'Pausa / STOP',review:'Note da verificare'};
+  for(const slot of data.slots){const row=document.createElement('tr');for(const value of [`${slot.time}–${slot.end_time}`,slot.existing_chairs_peak,labels[slot.status]]){const cell=document.createElement('td');cell.textContent=value;row.append(cell);}tbody.append(row);}table.append(tbody);$('result').append(table);
+ }catch(e){$('message').textContent=e.message;}finally{$('verify').disabled=false;}
+};
+if(token)connect();
+</script></html>
