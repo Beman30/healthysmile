@@ -1,4 +1,4 @@
-import {romeTime} from './teamup.js';
+import {romeTime, readDay} from './teamup.js';
 
 export const WRITE_SCHEMA=`CREATE TABLE IF NOT EXISTS teamup_owned_events (
  booking_id TEXT PRIMARY KEY, event_id TEXT UNIQUE, remote_id TEXT NOT NULL UNIQUE,
@@ -19,9 +19,17 @@ async function request(env,method,path,body,version,fetcher=fetch) {
    headers:{'Teamup-Token':token,Accept:'application/json','Content-Type':'application/json'},...(body?{body:JSON.stringify(body)}:{})});
   if(!r.ok) {
    const data=await r.json().catch(()=>null);
-   const known=['no_permission','invalid_api_key','event_validation_conflict','event_validation_failed','validation_failed','invalid_input','invalid_date','calendar_not_found'];
-   const id=data?.error?.id;
-   throw writeError('TEAMUP_HTTP_'+r.status+(known.includes(id)?'_'+id:''));
+   const error=data?.error||data?.key?.error||data?.key||data;
+   const candidates=[error?.id,error?.code,data?.code];
+   const id=candidates.find(x=>typeof x==='string'&&/^[a-z][a-z0-9_-]{0,95}$/.test(x)&&![token,key(env)].some(secret=>x.includes(secret)||secret.includes(x)));
+   const failure=writeError('TEAMUP_HTTP_'+r.status+(id?'_'+id:''));
+   // Detailed upstream diagnostics are restricted to synthetic probe payloads.
+   if(typeof body?.title==='string'&&body.title.startsWith('PROVA TECNICA SITO')) {
+    let detail=JSON.stringify(error??{response:'non_json'});
+    for(const secret of [token,key(env)])detail=detail.split(secret).join('[omesso]');
+    failure.probeDetail=detail.replace(/https?:\/\/[^\s"<>]+/g,'[URL omesso]').replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi,'[email omessa]').slice(0,1500);
+   }
+   throw failure;
   }
   try {return await r.json();}catch {throw writeError('TEAMUP_RESPONSE_NOT_JSON');}
  } catch(e) {if(e.teamupCode)throw e;throw writeError(controller.signal.aborted?'TEAMUP_TIMEOUT':'TEAMUP_NETWORK');}
@@ -131,6 +139,20 @@ export async function testWrite(env, config) {
  await env.DB.prepare(`CREATE TABLE IF NOT EXISTS teamup_write_probe (
  id INTEGER PRIMARY KEY CHECK(id=1), booking_id TEXT NOT NULL, busy INTEGER NOT NULL,
  step TEXT NOT NULL, code TEXT, updated_at TEXT NOT NULL)`).run();
+ // Retry a rejected historical probe only after an authoritative read finds no trace.
+ const previous=await env.DB.prepare('SELECT * FROM teamup_write_probe WHERE id=1').first();
+ if(previous&&!previous.busy&&previous.step==='create'&&/^TEAMUP_HTTP_400(?:_|$)/.test(previous.code||'')) {
+  const held=await env.DB.prepare('UPDATE teamup_write_probe SET busy=1 WHERE id=1 AND busy=0 AND booking_id=?').bind(previous.booking_id).run();
+  if(held.meta.changes!==1)throw Error('Prova già in corso.');
+  try {
+   const row=await owned(env.DB,previous.booking_id);
+   if(!row||row.state!=='uncertain'||row.event_id||row.key_hash!==await digest(key(env))||row.calendar_id!==config.write_calendar_id)throw Error('Prova precedente da verificare: configurazione cambiata.');
+   await validateWriteAccess(env,config.write_calendar_id);
+   const events=await readDay(env,'2020-01-02',[config.write_calendar_id]);
+   if(events.some(e=>e.remote_id===row.remote_id||String(e.title||'').startsWith('PROVA TECNICA SITO')||String(e.notes||e.note||'').includes(previous.booking_id)))throw Error('Evento tecnico presente: nessuna nuova creazione.');
+   await env.DB.prepare("UPDATE teamup_owned_events SET state='deleted',updated_at=? WHERE booking_id=? AND state='uncertain'").bind(now(),previous.booking_id).run();
+  }finally{await env.DB.prepare('UPDATE teamup_write_probe SET busy=0 WHERE id=1 AND booking_id=?').bind(previous.booking_id).run();}
+ }
  const id='write-test-'+crypto.randomUUID();
  const lock=await env.DB.prepare(`INSERT INTO teamup_write_probe(id,booking_id,busy,step,updated_at)
  VALUES(1,?,1,'access',?) ON CONFLICT(id) DO UPDATE SET booking_id=excluded.booking_id,busy=1,step='access',code=NULL,updated_at=excluded.updated_at
@@ -152,6 +174,6 @@ export async function testWrite(env, config) {
  } catch(e) {
   const code=e.teamupCode||'TEAMUP_'+step.toUpperCase()+'_CHECK_FAILED';
   await env.DB.prepare('UPDATE teamup_write_probe SET code=? WHERE id=1 AND booking_id=?').bind(code,id).run();
-  return {ok:false,step,code,booking_id:id,message:'Prova fermata: '+step+' · '+code+'. La scrittura delle prenotazioni resta disattivata.'};
+  return {ok:false,step,code,booking_id:id,message:'Prova fermata: '+step+' · '+code+(e.probeDetail?' · '+e.probeDetail:'')+'. La scrittura delle prenotazioni resta disattivata.'};
  } finally {await env.DB.prepare('UPDATE teamup_write_probe SET busy=0,updated_at=? WHERE id=1 AND booking_id=?').bind(now(),id).run();}
 }

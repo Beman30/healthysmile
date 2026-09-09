@@ -12,7 +12,7 @@ function event(id,start,end,extra={}) {return {id,subcalendar_ids:[1],start_dt:n
 
 async function fixture(t,write=false) {
  let events=[],broken=false,paid=false,expired=false,count=0;
- const sessions=new Map(),created=new Map(),writes=[];let serial=1000,conflict=false,uncertainCreate=false;
+ const sessions=new Map(),created=new Map(),writes=[];let serial=1000,conflict=false,uncertainCreate=false,rejectCreate=null;
  const mf=new Miniflare({modules:true,compatibilityDate:'2025-09-01',scriptPath:new URL('../releases/healthysmile-worker-teamup-scrittura.mjs',import.meta.url).pathname,
    d1Databases:['DB'],bindings:{ADMIN_TOKEN:'test-admin',TEAMUP_API_KEY:'test-api',TEAMUP_CALENDAR_KEY:'kstest',STRIPE_SECRET_KEY:'sk_test',PAYPAL_CLIENT_ID:'test',PAYPAL_CLIENT_SECRET:'test',SITE_URL:'https://example.test'},
    outboundService:async req=>{
@@ -21,7 +21,7 @@ async function fixture(t,write=false) {
        if(broken)return Response.json({error:{id:'no_permission'}},{status:403});
        if(u.pathname.endsWith('/configuration'))return Response.json({configuration:{subcalendars:[{id:1,name:'Medici A',readonly:true},{id:2,name:'Medici B',readonly:true},{id:3,name:'Prenotazioni sito',readonly:false}]}});
        if(req.method==='POST') {
-         writes.push('POST');const body=await req.json();assert.deepEqual(body.subcalendar_ids,[3]);
+         writes.push('POST');const body=await req.json();if(rejectCreate)return Response.json(rejectCreate,{status:400});assert.deepEqual(body.subcalendar_ids,[3]);
          // Teamup write requests use whole seconds, not JS millisecond timestamps.
          assert.match(body.start_dt,/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\+00:00$/);
          assert.match(body.end_dt,/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\+00:00$/);
@@ -73,7 +73,7 @@ async function fixture(t,write=false) {
    return {status:r.status,data:await r.json()};
  };
  const save=await request('admin/teamup/settings',write?{...config,write_enabled:true,write_calendar_id:3}:config,true);assert.equal(save.status,200,JSON.stringify(save.data));
- return {db,request,mf,created,writes,conflict:x=>{conflict=x;},uncertainCreate:x=>{uncertainCreate=x;},events:x=>{events=x;},broken:x=>{broken=x;},paid:x=>{paid=x;},expired:x=>{expired=x;}};
+ return {db,request,mf,created,writes,rejectCreate:x=>{rejectCreate=x;},conflict:x=>{conflict=x;},uncertainCreate:x=>{uncertainCreate=x;},events:x=>{events=x;},broken:x=>{broken=x;},paid:x=>{paid=x;},expired:x=>{expired=x;}};
 }
 
 test('validates explicit staffing, dates, full hour and separate opening windows',()=>{
@@ -328,4 +328,30 @@ test('probe rejects unauthenticated calls and live write mode; uncertain probe c
  const r=await f.request('admin/teamup/write-test',{},true);
  assert.equal(r.data.ok,false);assert.equal(r.data.step,'create');assert.equal(r.data.code,'TEAMUP_HTTP_503');
  assert.equal((await f.request('admin/teamup/write-test',{},true)).status,409);assert.deepEqual(f.writes,['POST']);
+});
+
+
+test('probe exposes unknown validation detail safely and retries a 400 only after absence verification',async t=>{
+ const f=await fixture(t,true);
+ await f.request('admin/teamup/settings',{...config,revision:1,write_enabled:false,write_calendar_id:3},true);
+ f.rejectCreate({error:{id:'event_validation_remote_id',message:'Invalid remote_id; test-api kstest https://example.test private@example.test'}});
+ let r=await f.request('admin/teamup/write-test',{},true);
+ assert.equal(r.data.code,'TEAMUP_HTTP_400_event_validation_remote_id');
+ assert.match(r.data.message,/Invalid remote_id/);
+ for(const secret of ['test-api','kstest','https://example.test','private@example.test'])assert.ok(!r.data.message.includes(secret));
+ f.rejectCreate(null);
+ r=await f.request('admin/teamup/write-test',{},true);
+ assert.equal(r.data.ok,true,JSON.stringify(r.data));assert.equal(f.created.size,0);
+ assert.deepEqual(f.writes,['POST','POST','PUT','DELETE']);
+});
+
+test('rejected probe cannot retry when its marker is present in Teamup',async t=>{
+ const f=await fixture(t,true);
+ await f.request('admin/teamup/settings',{...config,revision:1,write_enabled:false,write_calendar_id:3},true);
+ f.rejectCreate({error:{id:'event_validation_remote_id'}});
+ await f.request('admin/teamup/write-test',{},true);
+ const row=await f.db.prepare('SELECT remote_id FROM teamup_owned_events').first();
+ f.events([{id:'1234',remote_id:row.remote_id,title:'Existing technical event',subcalendar_ids:[3]}]);
+ const r=await f.request('admin/teamup/write-test',{},true);
+ assert.equal(r.status,409);assert.deepEqual(f.writes,['POST']);
 });
