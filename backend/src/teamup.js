@@ -59,15 +59,35 @@ export function preview(events, input) {
     warnings: review ? ['Note organizzative o eventi giornalieri: verificare gli orari in Teamup. Nessuno slot approvato.'] : [],
     notice:'Solo capienza Teamup nelle agende selezionate. Verificare note, personale e prenotazioni del sito. Gli orari proposti sono alternativi, non prenotazioni confermate.'};
 }
+class TeamupReadError extends Error {}
 async function read(env, resource, params, fetcher) {
-  if (!env.TEAMUP_API_KEY || !/^ks[a-zA-Z0-9]+$/.test(env.TEAMUP_CALENDAR_KEY || '')) throw new Error('Configurare i secret TEAMUP_API_KEY e TEAMUP_CALENDAR_KEY nel Worker');
+  const apiKey = String(env.TEAMUP_API_KEY || '').trim();
+  const calendarKey = String(env.TEAMUP_CALENDAR_KEY || '').trim();
+  if (!apiKey || !/^ks[a-zA-Z0-9]+$/.test(calendarKey)) throw new Error('Configurare i secret TEAMUP_API_KEY e TEAMUP_CALENDAR_KEY nel Worker');
+  if (/\s/.test(apiKey)) throw new Error('TEAMUP_API_KEY contiene spazi o ritorni a capo interni. Ricopiare la chiave API.');
   const controller = new AbortController(), timer = setTimeout(() => controller.abort(),10000);
   try {
-    const response = await fetcher(`https://api.teamup.com/${env.TEAMUP_CALENDAR_KEY}/${resource}?${params}`, {headers:{'Teamup-Token':env.TEAMUP_API_KEY,Accept:'application/json'},signal:controller.signal,redirect:'error'});
-    if (!response.ok) throw new Error('upstream');
-    return await response.json();
-  } catch { throw new Error('Lettura Teamup non riuscita. Verificare chiave API, accesso al calendario e disponibilità del servizio.'); }
-  finally { clearTimeout(timer); }
+    const response = await fetcher(`https://api.teamup.com/${calendarKey}/${resource}?${params}`, {headers:{'Teamup-Token':apiKey,Accept:'application/json'},signal:controller.signal,redirect:'error'});
+    if (!response.ok) {
+      const hints = {
+        400: 'Richiesta rifiutata da Teamup: verificare i parametri dell’integrazione.',
+        401: 'Autenticazione rifiutata da Teamup: verificare chiave API e accesso al calendario.',
+        403: 'Accesso negato da Teamup: verificare permessi del collegamento e abilitazione della chiave API.',
+        404: 'Risorsa non trovata o non accessibile: verificare il collegamento del calendario.',
+        429: 'Limite di richieste Teamup raggiunto. Riprovare più tardi.'
+      };
+      throw new TeamupReadError(`Teamup HTTP ${response.status} (${resource}). ${hints[response.status] || (response.status >= 500 ? 'Errore del servizio Teamup. Riprovare più tardi.' : 'Risposta inattesa da Teamup.')}`);
+    }
+    try { return await response.json(); }
+    catch {
+      if (controller.signal.aborted) throw new TeamupReadError(`Teamup timeout (${resource}): nessuna risposta completa entro 10 secondi.`);
+      throw new TeamupReadError(`Teamup formato risposta non valido (${resource}): atteso JSON.`);
+    }
+  } catch (error) {
+    if (error instanceof TeamupReadError) throw error;
+    if (controller.signal.aborted) throw new TeamupReadError(`Teamup timeout (${resource}): nessuna risposta completa entro 10 secondi.`);
+    throw new TeamupReadError(`Teamup connessione non riuscita (${resource}): errore di rete o reindirizzamento inatteso.`);
+  } finally { clearTimeout(timer); }
 }
 export async function calendars(env, fetcher=fetch) {
   const result = [];
