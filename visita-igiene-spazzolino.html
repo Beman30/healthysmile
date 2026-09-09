@@ -462,6 +462,25 @@ var WA_BASE   = "Ciao, vorrei informazioni o prenotare Visita + Igiene + Spazzol
     });
   });
 
+  // Google Ads "Contatto": misura il clic WhatsApp, non la prenotazione.
+  // Un solo listener delegato copre anche la lista d'attesa creata dopo il fetch.
+  // Usa il Consent Mode gia' configurato, senza modificare il consenso.
+  document.addEventListener('click', function(event){
+    var target = event.target;
+    var link = target && typeof target.closest === 'function'
+      ? target.closest('a[data-wa]') : null;
+    if(!link || link.hostname !== 'wa.me') return;
+    try{
+      if(typeof gtag === 'function'){
+        gtag('event', 'conversion', {
+          send_to: 'AW-947982327/pwYjCKivvswbEPefhMQD',
+          transport_type: 'beacon'
+        });
+      }
+    }catch(e){}
+    // L'apertura del link resta nativa, anche con tag bloccati o non disponibili.
+  });
+
   document.querySelectorAll('[data-tel]').forEach(function(a){
     a.addEventListener('click',function(){ ev('hs_phone_click',{page:'visita-igiene-spazzolino'}); });
   });
