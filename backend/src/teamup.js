@@ -77,7 +77,29 @@ async function read(env, resource, params, fetcher) {
         404: 'Risorsa non trovata o non accessibile: verificare il collegamento del calendario.',
         429: 'Limite di richieste Teamup raggiunto. Riprovare più tardi.'
       };
-      throw new TeamupReadError(`Teamup HTTP ${response.status} (${resource}). ${hints[response.status] || (response.status >= 500 ? 'Errore del servizio Teamup. Riprovare più tardi.' : 'Risposta inattesa da Teamup.')}`);
+      // Only fixed diagnostic labels leave the server, never upstream text or account data.
+      let detail = 'dettaglio non disponibile';
+      try {
+        const raw = await response.text();
+        if (raw.length <= 65536) {
+          try {
+            const body = JSON.parse(raw);
+            const known = {
+              invalid_api_key: 'invalid_api_key: chiave API non riconosciuta',
+              account_no_permission: 'account_no_permission: accesso al calendario negato',
+              login_required: 'login_required: questo accesso richiede autenticazione Teamup',
+              password_required: 'password_required: collegamento protetto da password',
+              calendar_not_found: 'calendar_not_found: calendario non trovato',
+              key_not_found: 'key_not_found: collegamento non trovato'
+            };
+            const id = body?.error?.id;
+            detail = typeof id === 'string' && Object.hasOwn(known, id) ? known[id] : 'errore JSON non riconosciuto';
+          } catch {
+            detail = /<html|<!doctype html/i.test(raw) ? 'risposta HTML, non errore JSON dell’API' : 'risposta non JSON';
+          }
+        }
+      } catch { /* Preserve the HTTP status even when the error body cannot be read. */ }
+      throw new TeamupReadError(`Teamup HTTP ${response.status} (${resource}; ${detail}). ${hints[response.status] || (response.status >= 500 ? 'Errore del servizio Teamup. Riprovare più tardi.' : 'Risposta inattesa da Teamup.')}`);
     }
     try { return await response.json(); }
     catch {
