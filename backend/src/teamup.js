@@ -77,7 +77,7 @@ async function read(env, resource, params, fetcher) {
         404: 'Risorsa non trovata o non accessibile: verificare il collegamento del calendario.',
         429: 'Limite di richieste Teamup raggiunto. Riprovare più tardi.'
       };
-      // Only fixed diagnostic labels leave the server, never upstream text or account data.
+      // Return machine error codes only; never upstream messages, titles or account data.
       let detail = 'dettaglio non disponibile';
       try {
         const raw = await response.text();
@@ -92,8 +92,14 @@ async function read(env, resource, params, fetcher) {
               calendar_not_found: 'calendar_not_found: calendario non trovato',
               key_not_found: 'key_not_found: collegamento non trovato'
             };
-            const id = body?.error?.id;
-            detail = typeof id === 'string' && Object.hasOwn(known, id) ? known[id] : 'errore JSON non riconosciuto';
+            const candidates = [body?.error?.id, body?.error?.code, body?.code, body?.id, body?.errors?.[0]?.code, body?.error];
+            const id = candidates.find(value => {
+              const code = typeof value === 'number' && Number.isSafeInteger(value) ? String(value) : value;
+              return typeof code === 'string' && /^(?:[a-z][a-z0-9_-]{0,95}|[0-9]{1,8})$/.test(code) &&
+                ![apiKey, calendarKey].some(secret => code.includes(secret) || secret.includes(code));
+            });
+            detail = id !== undefined ? (Object.hasOwn(known, id) ? known[id] : `codice API: ${id}`) :
+              'JSON senza codice identificativo utilizzabile; verificare la risposta con il supporto Teamup';
           } catch {
             detail = /<html|<!doctype html/i.test(raw) ? 'risposta HTML, non errore JSON dell’API' : 'risposta non JSON';
           }
