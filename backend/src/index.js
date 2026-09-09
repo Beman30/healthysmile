@@ -1,3 +1,4 @@
+import {TEAMUP_SERVICE, settings, saveSettings, liveSlots, claimSlot, reservation, rememberCheckout, settlePayment} from './availability.js';
 import { calendars, teamupPreview } from './teamup.js';
 /**
  * Healthy Smile — checkout universale
@@ -33,7 +34,7 @@ function cors(env, request) {
 function json(data, status, env, request) {
   return new Response(JSON.stringify(data), {
     status,
-    headers: { 'Content-Type': 'application/json; charset=utf-8', ...cors(env, request) },
+    headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store', ...cors(env, request) },
   });
 }
 
@@ -137,11 +138,20 @@ async function startCheckout(request, env, provider) {
   const bookingId = crypto.randomUUID();
   const db = env.DB;
 
+  let managed = false;
   if (service.requiresAppointment) {
-    const held = await holdSlot(db, body.service_id, date, time, bookingId);
+    let held;
+    try {
+      const claim = await claimSlot(env, body.service_id, date, time, bookingId);
+      managed = claim === true;
+      held = managed || await holdSlot(db, body.service_id, date, time, bookingId);
+    } catch {
+      return bad('Non possiamo confermare questo orario. Aggiorna le disponibilità e riprova.', env, request, 409);
+    }
     if (!held) return bad('Questo orario è appena stato prenotato. Scegline un altro.', env, request, 409);
   }
 
+  try {
   await db.prepare(
     `INSERT INTO bookings (
        booking_id, service_id, first_name, last_name, phone, email,
@@ -158,6 +168,15 @@ async function startCheckout(request, env, provider) {
     service.requiresAppointment ? 'held' : 'awaiting_payment',
     service.termsVersion, now(), now(), now()
   ).run();
+  } catch {
+    // No provider has been contacted yet; this reservation can be released safely.
+    if(managed) await db.batch([
+      db.prepare("UPDATE teamup_reservations SET status='released',updated_at=? WHERE booking_id=?").bind(now(),bookingId),
+      db.prepare("UPDATE slots SET status='available',booking_id=NULL,held_until=NULL,updated_at=? WHERE booking_id=?").bind(now(),bookingId)
+    ]);
+    else await releaseSlot(db,bookingId);
+    return bad('Non riusciamo a registrare la prenotazione. Riprova tra poco.',env,request,503);
+  }
 
   const successUrl = `${env.SITE_URL}/checkout-success.html`;
   const cancelUrl = `${env.SITE_URL}/checkout.html?service=${encodeURIComponent(body.service_id)}`
@@ -175,6 +194,7 @@ async function startCheckout(request, env, provider) {
     last_name: clean.last_name,
     phone: clean.phone,
     date, time,
+    teamup_managed: managed,
   };
 
   try {
@@ -182,11 +202,14 @@ async function startCheckout(request, env, provider) {
       ? await createCheckoutSession(env, { booking, service, amounts, successUrl, cancelUrl })
       : await createOrder(env, { booking, service, amounts, successUrl, cancelUrl });
 
+    if (managed) await rememberCheckout(db, bookingId, session.id);
     await db.prepare(`UPDATE bookings SET payment_id=?, updated_at=? WHERE booking_id=?`)
       .bind(session.id, now(), bookingId).run();
 
     return ok({ booking_id: bookingId, redirect_url: session.url }, env, request);
   } catch (e) {
+    // An upstream timeout may occur AFTER a checkout was created. Keep its reservation.
+    if (managed) return bad('Il pagamento non è stato avviato correttamente. Contatta lo studio prima di riprovare.', env, request, 502);
     await releaseSlot(db, bookingId);
     await db.prepare(
       `UPDATE bookings SET payment_status='failed', booking_status='cancelled', updated_at=? WHERE booking_id=?`
@@ -197,10 +220,14 @@ async function startCheckout(request, env, provider) {
 
 /* ── esito pagamento (chiamato dai webhook) ───────────────── */
 
-async function markPaid(db, bookingId, paidAmount, providerPaymentId) {
+async function markPaid(env, bookingId, paidAmount, providerPaymentId) {
+  const db = env.DB;
   const b = await db.prepare(`SELECT * FROM bookings WHERE booking_id=?`).bind(bookingId).first();
   if (!b) return null;
   if (b.payment_status === 'paid') return null; // idempotente: webhook ripetuto = niente
+
+  const managed = await settlePayment(env, b, paidAmount, providerPaymentId);
+  if (managed !== undefined) return managed;
 
   const balance = Math.round((b.total_price - paidAmount) * 100) / 100;
   await db.prepare(
@@ -213,7 +240,7 @@ async function markPaid(db, bookingId, paidAmount, providerPaymentId) {
 
   // restituita al chiamante, che ci manda l'avviso allo studio.
   // Torna null se era gia' pagata: cosi' l'avviso parte una volta sola.
-  return { ...b, amount_paid: paidAmount, balance_due: balance };
+  return { ...b, amount_paid: paidAmount, balance_due: balance, payment_status:'paid', booking_status:'confirmed' };
 }
 
 async function markFailed(db, bookingId) {
@@ -296,6 +323,13 @@ async function adminRoutes(request, env, url, path) {
     }
   }
   const db = env.DB;
+  if (path === '/api/admin/teamup/settings') {
+    try {
+      if(request.method==='GET') return ok({settings:await settings(db)},env,request);
+      if(request.method==='POST') return ok({settings:await saveSettings(env,await request.json())},env,request);
+      return bad('Metodo non consentito',env,request,405);
+    } catch(error) { return bad(error instanceof SyntaxError?'Richiesta non valida':error.message,env,request); }
+  }
 
   // elenco prenotazioni, con filtri
   if (request.method === 'GET' && path === '/api/admin/bookings') {
@@ -355,6 +389,14 @@ async function adminRoutes(request, env, url, path) {
     const b = await db.prepare(`SELECT * FROM bookings WHERE booking_id=?`).bind(body.booking_id).first();
     if (!b) return bad('Prenotazione non trovata', env, request, 404);
 
+    if(body.status==='confirmed') {
+      const claim=await reservation(db,body.booking_id);
+      if(claim && b.booking_status!=='confirmed') {
+        let eligible=false;
+        try { eligible=claim.status!=='released' && (await liveSlots(env,claim.date,claim.booking_id))?.some(s=>s.time===claim.time); } catch {}
+        if(!eligible) return bad('Orario non confermabile: ricontrolla Teamup e le fasce pubblicate.',env,request,409);
+      }
+    }
     await db.prepare(`UPDATE bookings SET booking_status=?, updated_at=? WHERE booking_id=?`)
       .bind(body.status, now(), body.booking_id).run();
 
@@ -382,7 +424,7 @@ async function adminRoutes(request, env, url, path) {
     if (!b) return bad('Prenotazione non trovata', env, request, 404);
     if (b.payment_status === 'paid') return bad('Risulta gia' + String.fromCharCode(39) + ' pagata', env, request);
 
-    const paid = await markPaid(db, body.booking_id, importo, body.payment_id || null);
+    const paid = await markPaid(env, body.booking_id, importo, body.payment_id || null);
     if (!paid) return bad('Non e' + String.fromCharCode(39) + ' stato possibile registrare il pagamento', env, request);
 
     /* Riaggancio dell'orario.
@@ -395,6 +437,8 @@ async function adminRoutes(request, env, url, path) {
        Se nel frattempo l'orario e' stato preso da qualcun altro non lo si
        tocca: si registra comunque il pagamento e si avvisa, perche' e' una
        sovrapposizione che deve risolvere una persona, non il codice.        */
+    if(await reservation(db,body.booking_id)) return ok({booking_id:body.booking_id,amount_paid:importo,payment_status:'paid',booking_status:paid.booking_status,
+      avviso:paid.booking_status==='needs_review'?'Pagamento registrato. Appuntamento da verificare: non ancora confermato.':null},env,request);
     let avviso = null;
     if (paid.appointment_date && paid.appointment_time) {
       const slot = await db.prepare(
@@ -580,6 +624,12 @@ export default {
       const service = url.searchParams.get('service');
       const date = url.searchParams.get('date');
       if (!getService(service)) return bad('Servizio non riconosciuto', env, request, 404);
+      if(service===TEAMUP_SERVICE) {
+        try {
+          const slots=await liveSlots(env,date);
+          if(slots!==null) return ok({slots},env,request);
+        } catch { return bad('Disponibilità temporaneamente non verificabile. Riprova tra poco o contatta lo studio.',env,request,503); }
+      }
       const q = date
         ? env.DB.prepare(
             `SELECT date, time FROM slots
@@ -614,7 +664,10 @@ export default {
                   new_patients_only: !!(s && s.newPatientsOnly) }, env, request);
     }
 
-    if (path.startsWith('/api/admin/')) return adminRoutes(request, env, url, path);
+    if (path.startsWith('/api/admin/')) {
+      try { return await adminRoutes(request, env, url, path); }
+      catch(error) { if(String(error.message).includes('TEAMUP_SLOT_CONFLICT')) return bad('Orario occupato da una prenotazione del sito: scegli un altro orario.',env,request,409); throw error; }
+    }
 
     if (request.method === 'POST' && path === '/api/checkout/stripe') return startCheckout(request, env, 'stripe');
     if (request.method === 'POST' && path === '/api/checkout/paypal') return startCheckout(request, env, 'paypal');
@@ -644,7 +697,7 @@ export default {
 
       // l'importo lo prendiamo da Stripe, mai da chi ci sta chiamando
       if (s.payment_status === 'paid') {
-        const paid = await markPaid(env.DB, body.booking_id,
+        const paid = await markPaid(env, body.booking_id,
           (s.amount_total || 0) / 100, s.payment_intent || s.id);
         if (paid) alertStudio(ctx, env, paid);
         return ok({ payment_status: 'paid' }, env, request);
@@ -688,7 +741,7 @@ export default {
 
       const cap = unit?.payments?.captures?.[0];
       if (order.status === 'COMPLETED' && cap) {
-        const paid = await markPaid(env.DB, bookingId, Number(cap.amount.value), cap.id);
+        const paid = await markPaid(env, bookingId, Number(cap.amount.value), cap.id);
         if (paid) alertStudio(ctx, env, paid);
         return ok({ payment_status: 'paid' }, env, request);
       }
@@ -709,10 +762,10 @@ export default {
       }
 
       if (event.type === 'checkout.session.completed' && obj.payment_status === 'paid') {
-        const paid = await markPaid(env.DB, bookingId, (obj.amount_total || 0) / 100, obj.payment_intent || obj.id);
+        const paid = await markPaid(env, bookingId, (obj.amount_total || 0) / 100, obj.payment_intent || obj.id);
         if (paid) alertStudio(ctx, env, paid);
       } else if (event.type === 'checkout.session.expired' || event.type === 'payment_intent.payment_failed') {
-        await markFailed(env.DB, bookingId);
+        if(event.type==='checkout.session.expired' || !await reservation(env.DB,bookingId)) await markFailed(env.DB, bookingId);
       } else if (event.type === 'charge.refunded') {
         const full = obj.amount_refunded >= obj.amount;
         await env.DB.prepare(
@@ -745,11 +798,11 @@ export default {
         const cap = await captureOrder(env, res.id);
         const unit = cap.purchase_units?.[0]?.payments?.captures?.[0];
         if (cap.status === 'COMPLETED' && unit) {
-          const paid = await markPaid(env.DB, bookingId, Number(unit.amount.value), unit.id);
+          const paid = await markPaid(env, bookingId, Number(unit.amount.value), unit.id);
           if (paid) alertStudio(ctx, env, paid);
         }
       } else if (event.event_type === 'PAYMENT.CAPTURE.COMPLETED') {
-        const paid = await markPaid(env.DB, bookingId, Number(res.amount?.value || 0), res.id);
+        const paid = await markPaid(env, bookingId, Number(res.amount?.value || 0), res.id);
         if (paid) alertStudio(ctx, env, paid);
       } else if (['PAYMENT.CAPTURE.DENIED', 'CHECKOUT.ORDER.VOIDED'].includes(event.event_type)) {
         await markFailed(env.DB, bookingId);
@@ -790,12 +843,33 @@ export default {
 
     const abbandonate = [];
     for (const b of results || []) {
+      const claim = await reservation(env.DB,b.booking_id);
+      if(claim) {
+        // Managed holds have no time-based release. Only a terminal provider response releases them.
+        if(claim.checkout_id) try {
+          if(b.payment_provider==='stripe') {
+            const session=await getSession(env,claim.checkout_id);
+            if(session.payment_status==='paid') {
+              const rec=await markPaid(env,b.booking_id,(session.amount_total||0)/100,session.payment_intent||session.id);
+              if(rec) alertStudio(ctx,env,rec);
+            } else if(session.status==='expired') await markFailed(env.DB,b.booking_id);
+          } else if(b.payment_provider==='paypal') {
+            const order=await getOrder(env,claim.checkout_id);
+            const cap=order.purchase_units?.[0]?.payments?.captures?.[0];
+            if(order.status==='COMPLETED' && cap?.status==='COMPLETED' && order.purchase_units?.[0]?.custom_id===b.booking_id) {
+              const rec=await markPaid(env,b.booking_id,Number(cap.amount.value),cap.id);
+              if(rec) alertStudio(ctx,env,rec);
+            } else if(order.status==='VOIDED') await markFailed(env.DB,b.booking_id);
+          }
+        } catch { /* Retry next cron; never free inventory on a network error. */ }
+        continue;
+      }
       let incassato = false;
       if (b.payment_provider === 'stripe' && b.payment_id) {
         try {
           const s = await getSession(env, b.payment_id);
           if (s.payment_status === 'paid') {
-            const rec = await markPaid(env.DB, b.booking_id, (s.amount_total || 0) / 100,
+            const rec = await markPaid(env, b.booking_id, (s.amount_total || 0) / 100,
                                        s.payment_intent || s.id);
             // recuperato qui vuol dire che la notifica si era persa:
             // l'avviso allo studio serve a maggior ragione
