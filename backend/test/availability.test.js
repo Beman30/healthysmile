@@ -247,6 +247,25 @@ test('automatic Palmia: merges STOP blocks, excludes breaks and requires full ho
  assert.deepEqual(automaticWindows([blocks[0],event('overlap','09:00','10:15',{title:'STOP'}),blocks[2]],day,1).map(x=>x.start),['10:15']);
 });
 
+test('PALMIA title opens morning, subtracts breaks and is not a patient',async()=>{
+ const {automaticWindows,preview}=await import('../src/teamup.js');
+ const marker=event('hours','08:00','10:00',{title:'PALMIA 10-19'});
+ const events=[marker,event('break','13:00','14:00',{title:'PAUSA'}),event('closing','19:00','20:00',{title:'STOP'}),event('patient','10:00','13:00')];
+ const windows=automaticWindows(events,day,1);
+ assert.deepEqual(windows.map(w=>[w.start,w.end]),[['10:00','13:00'],['14:00','19:00']]);
+ const slots=windows.flatMap(w=>preview(events,{...w,subcalendar_ids:[1,2],palmia_calendar_id:1}).slots);
+ assert.equal(slots.find(s=>s.time==='10:00').status,'candidate');
+ assert.equal(slots.at(-1).time,'18:00');
+ assert.ok(!slots.some(s=>s.time==='12:15'||s.time==='13:00'));
+ const overlap=preview([...events,event('second','10:30','11:00')],{...windows[0],subcalendar_ids:[1],palmia_calendar_id:1});
+ assert.equal(overlap.slots.find(s=>s.time==='10:00').status,'full');
+ assert.deepEqual(automaticWindows([marker,event('allstop','09:00','20:00',{title:'STOP'})],day,1),[]);
+ assert.throws(()=>automaticWindows([marker,event('otherhours','08:00','10:00',{title:'PALMIA 11-19'})],day,1),/discordanti/);
+ const allday={...marker,all_day:true};
+ assert.equal(preview([allday],{...windows[0],subcalendar_ids:[1],palmia_calendar_id:1}).slots[0].status,'candidate');
+ assert.deepEqual(automaticWindows([{...marker,subcalendar_ids:[2]}],day,1),[]);
+});
+
 test('automatic config requires explicit Palmia and shared staffing, accepts no manual windows',()=>{
  const auto={...config,schedule_mode:'palmia',palmia_calendar_id:1,staff_follows_palmia:true,windows:[]};
  assert.equal(validateSettings(auto).windows.length,0);
@@ -281,6 +300,11 @@ test('runtime automatic publication: closure, live changes, date horizon and aut
  const preview={date:day,subcalendar_ids:[1,2],palmia_calendar_id:1,staff_follows_palmia:true};
  r=await f.request('admin/teamup/auto-preview',preview);assert.equal(r.status,401);
  r=await f.request('admin/teamup/auto-preview',preview,true);assert.equal(r.status,200);assert.deepEqual(r.data.windows,[]);
+ f.events([event('hours','08:00','10:00',{title:'PALMIA 10-19'}),event('pause','13:00','14:00',{title:'PAUSA'})]);
+ r=await f.request('slots?service=igiene-sonicare&date='+day);
+ assert.equal(r.status,200);assert.equal(r.data.slots[0].time,'10:00');assert.equal(r.data.slots.at(-1).time,'18:00');
+ r=await f.request('admin/teamup/auto-preview',preview,true);
+ assert.deepEqual(r.data.windows.map(w=>[w.start,w.end]),[['10:00','13:00'],['14:00','19:00']]);
 });
 
 test('runtime automatic + own events: payment confirms without double counting hold',async t=>{

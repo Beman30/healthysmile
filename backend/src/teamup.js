@@ -19,6 +19,16 @@ function timestamp(value) {
   if (!Number.isFinite(t)) throw new Error('Teamup ha restituito un orario non valido');
   return t;
 }
+function palmiaHours(e, date, palmiaId) {
+  if (!palmiaId || !e.subcalendar_ids?.includes(palmiaId)) return null;
+  const title=String(e.title||'').trim();
+  const m=/^PALMIA\s+(\d{1,2})(?:[:.](\d{2}))?\s*[-–—]\s*(\d{1,2})(?:[:.](\d{2}))?$/i.exec(title);
+  if (!m) return null;
+  const a=romeTime(date,`${m[1].padStart(2,'0')}:${m[2]||'00'}`);
+  const b=romeTime(date,`${m[3].padStart(2,'0')}:${m[4]||'00'}`);
+  if(b<=a) throw new Error('Orario PALMIA non valido: verificare apertura e chiusura');
+  return {a,b};
+}
 export function preview(events, input) {
   const start = romeTime(input.date,input.start), end = romeTime(input.date,input.end);
   if (end-start < 60*MINUTE) throw new Error('La finestra deve durare almeno un’ora');
@@ -32,6 +42,7 @@ export function preview(events, input) {
     if (!e || !Array.isArray(e.subcalendar_ids)) throw new Error('Evento Teamup incompleto');
     if (!e.subcalendar_ids.some(id => ids.includes(id)) || e.delete_dt) continue;
     if (!e.id) throw new Error('Evento Teamup senza identificativo');
+    if (palmiaHours(e,input.date,input.palmia_calendar_id)) continue;
     // All-day entries carry organizational information with different date semantics.
     if (e.all_day) { review = true; continue; }
     const a = timestamp(e.start_dt), b = timestamp(e.end_dt);
@@ -157,8 +168,11 @@ export function automaticWindows(events,date,palmiaId) {
   const nextDate=new Date(Date.parse(date+'T12:00:00Z')+86400000).toISOString().slice(0,10);
   const dayEnd=romeTime(nextDate,'00:00');
   const blocks=[];
+  const openings=[];
   for(const e of events) {
     if(e.delete_dt || !e.subcalendar_ids?.includes(palmiaId)) continue;
+    const hours=palmiaHours(e,date,palmiaId);
+    if(hours) { openings.push(hours); continue; }
     if(e.all_day) return [];
     const a=timestamp(e.start_dt),b=timestamp(e.end_dt);
     if(b<=a) throw new Error('Durata evento Teamup non valida');
@@ -174,6 +188,22 @@ export function automaticWindows(events,date,palmiaId) {
     else merged.push({...block});
   }
   const windows=[];
+  if(openings.length) {
+    if(openings.some(w=>w.a!==openings[0].a || w.b!==openings[0].b)) throw new Error('Orari PALMIA discordanti: verificare la giornata');
+    let cursor=openings[0].a;
+    const closing=openings[0].b;
+    const append=(a,b)=>{
+      a=Math.ceil(a/(15*MINUTE))*15*MINUTE;
+      if(b-a>=60*MINUTE) windows.push({date,start:localParts(a).slice(11),end:localParts(b).slice(11),window_confirmed:true});
+    };
+    for(const block of merged) {
+      if(block.b<=cursor || block.a>=closing) continue;
+      append(cursor,Math.min(block.a,closing));
+      cursor=Math.max(cursor,block.b);
+    }
+    append(cursor,closing);
+    return windows;
+  }
   for(let i=1;i<merged.length;i++) {
     // Round candidate starts up to the next quarter hour, keeping the real closing boundary.
     const a=Math.ceil(merged[i-1].b/(15*MINUTE))*15*MINUTE,b=merged[i].a;
@@ -196,7 +226,7 @@ export async function teamupAutomaticPreview(env,input,fetcher=fetch) {
   if(ids.some(id=>!visible.some(c=>c.id===id))) throw new Error('Agenda non accessibile');
   const events=await readDay(env,input.date,ids,fetcher);
   const windows=automaticWindows(events,input.date,input.palmia_calendar_id);
-  const results=windows.map(w=>preview(events,{...w,subcalendar_ids:ids}));
+  const results=windows.map(w=>preview(events,{...w,subcalendar_ids:ids,palmia_calendar_id:input.palmia_calendar_id}));
   return {date:input.date,windows,slots:results.flatMap(r=>r.slots),warnings:[...new Set(results.flatMap(r=>r.warnings))],
     notice:windows.length?'Verifica della capienza Teamup. Le prenotazioni e i pagamenti in corso sul sito vengono controllati anche prima di vendere lo slot.':'Nessuna apertura ricavabile: servono blocchi STOP/PAUSA prima dell’apertura e dalla chiusura, con almeno un’ora libera tra i blocchi. Eventi giornalieri richiedono verifica.'};
 }

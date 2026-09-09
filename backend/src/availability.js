@@ -140,7 +140,7 @@ export async function liveSlots(env,date=null,ignoreId='-none-',fetcher=fetch,cl
     const busy=await siteBusy(env.DB,day,ignoreId);
     const dayWindows=automatic?automaticWindows(events,day,config.palmia_calendar_id):windows.filter(w=>w.date===day);
     for(const w of dayWindows) {
-      const result=preview(events,{...w,subcalendar_ids:calendarIds});
+      const result=preview(events,{...w,subcalendar_ids:calendarIds,palmia_calendar_id:automatic?config.palmia_calendar_id:null});
       for(const s of result.slots) if(s.status==='candidate' && romeTime(day,s.time)>clock &&
         !busy.some(b=>b.time<s.end_time && b.end_time>s.time)) slots.push({date:day,time:s.time});
     }
