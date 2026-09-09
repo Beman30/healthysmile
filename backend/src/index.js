@@ -1,4 +1,4 @@
-import {createOwnedHold, syncOwnedEvent, cleanupOwnedEvents, owned} from './teamup-write.js';
+import {createOwnedHold, syncOwnedEvent, cleanupOwnedEvents, owned, testWrite} from './teamup-write.js';
 import {TEAMUP_SERVICE, settings, saveSettings, liveSlots, claimSlot, reservation, rememberCheckout, settlePayment} from './availability.js';
 import { calendars, teamupPreview, teamupAutomaticPreview } from './teamup.js';
 /**
@@ -330,6 +330,11 @@ async function adminRoutes(request, env, url, path) {
     }
   }
   const db = env.DB;
+  if(path==='/api/admin/teamup/write-test') {
+    if(request.method!=='POST')return bad('Metodo non consentito',env,request,405);
+    try{return ok(await testWrite(env,await settings(db)),env,request);}
+    catch(e){return bad(e.message,env,request,409);}
+  }
   if(request.method==='GET' && path==='/api/admin/teamup/sync') {
     if(!await db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='teamup_owned_events'").first()) return ok({events:[]},env,request);
     const {results}=await db.prepare('SELECT booking_id,event_id,calendar_id,state,busy,updated_at FROM teamup_owned_events ORDER BY updated_at DESC LIMIT 100').all();
@@ -342,7 +347,7 @@ async function adminRoutes(request, env, url, path) {
   }
   if (path === '/api/admin/teamup/settings') {
     try {
-      if(request.method==='GET') return ok({settings:await settings(db),capabilities:{palmia_schedule:true}},env,request);
+      if(request.method==='GET') return ok({settings:await settings(db),capabilities:{palmia_schedule:true,write_probe:true}},env,request);
       if(request.method==='POST') return ok({settings:await saveSettings(env,await request.json())},env,request);
       return bad('Metodo non consentito',env,request,405);
     } catch(error) { return bad(error instanceof SyntaxError?'Richiesta non valida':error.message,env,request); }

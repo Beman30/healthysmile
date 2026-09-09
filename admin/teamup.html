@@ -21,19 +21,19 @@
 <label><input id="writeEnabled" type="checkbox">Inserisci e aggiorna automaticamente gli eventi creati dal sito</label>
 <label>Calendario dedicato al sito <select id="writeCalendar"><option value="">Seleziona Prenotazioni sito</option></select></label>
 <p>Per questo calendario usa il permesso “Modify from same link” nel collegamento del Worker. Le agende Medici restano in sola lettura. Il sito non modifica eventi creati dalla segreteria.</p>
-<button id="save" type="button">Salva disponibilità</button><p id="saved"></p><button id="syncCheck" type="button">Controlla sincronizzazione</button><div id="syncResult"></div>
+<button id="save" type="button">Salva disponibilità</button><p id="saved"></p><button id="syncCheck" type="button">Controlla sincronizzazione</button><div id="syncResult"></div><p>Prova tecnica: crea, modifica e cancella un evento nel calendario del sito il 2 gennaio 2020 alle 12:00. Nessun paziente o pagamento. Lascia disattivata la scrittura delle prenotazioni durante la prova.</p><button id="writeTest" type="button">Prova scrittura Teamup</button><p id="writeTestResult" role="status"></p>
 <p class="note">Gli inizi a distanza di 15 minuti sono alternative: una prenotazione blocca gli altri inizi sovrapposti sul sito. Con la scrittura attiva, il sito inserisce un blocco in Teamup e lo conferma dopo il pagamento. Modifica soltanto gli eventi registrati come propri. Se l’agenda cambia durante il pagamento, la prenotazione viene segnalata da verificare.</p>
 </fieldset></section></main>
 <script type="module">
 const API='https://healthysmile-checkout.nicolapalmia.workers.dev';
 const $=id=>document.getElementById(id);
-let token=sessionStorage.getItem('hs_admin')||'',windows=[],revision=0,autoSupported=false;
+let token=sessionStorage.getItem('hs_admin')||'',windows=[],revision=0,autoSupported=false,writeProbeSupported=false;
 async function api(path,body){
- const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),20000);
+ const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),path==='write-test'?90000:20000);
  try {
   const r=await fetch(API+'/api/admin/teamup/'+path,{method:body?'POST':'GET',cache:'no-store',signal:controller.signal,headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},...(body?{body:JSON.stringify(body)}:{})});
   const data=await r.json();if(!r.ok)throw Error(data.error||'Richiesta non riuscita');return data;
- }catch(e){if(controller.signal.aborted)throw Error('Il server non ha risposto entro 20 secondi. Riprova la verifica.');throw e;}
+ }catch(e){if(controller.signal.aborted)throw Error(path==='write-test'?'Esito della prova non ricevuto: controlla la sincronizzazione prima di riprovare.':'Il server non ha risposto entro 20 secondi. Riprova la verifica.');throw e;}
  finally{clearTimeout(timer);}
 }
 function modeChanged(){
@@ -57,7 +57,7 @@ async function connect(){
   for(const c of data.calendars){$('palmiaCalendar').add(new Option(c.name,c.id));$('writeCalendar').add(new Option(c.name,c.id));const label=document.createElement('label'),box=document.createElement('input');box.type='checkbox';box.value=c.id;label.append(box,document.createTextNode(c.name));$('calendars').append(label);}
   sessionStorage.setItem('hs_admin',token);$('token').value='';$('form').hidden=false;$('login').hidden=true;
   try {
-   const response=await api('settings'),s=response.settings;autoSupported=response.capabilities?.palmia_schedule===true;
+   const response=await api('settings'),s=response.settings;autoSupported=response.capabilities?.palmia_schedule===true;writeProbeSupported=response.capabilities?.write_probe===true;
    $('scheduleMode').value=s?.schedule_mode||'palmia';$('palmiaCalendar').value=s?.palmia_calendar_id||'';$('staffFollows').checked=s?.staff_follows_palmia===true;modeChanged();revision=s?.revision||0;windows=s?.windows||[];$('enabled').checked=!!s?.enabled;$('writeEnabled').checked=!!s?.write_enabled;$('writeCalendar').value=s?.write_calendar_id||'';
    for(const box of $('calendars').querySelectorAll('input'))box.checked=!!s?.subcalendar_ids.includes(Number(box.value));
    $('publishing').hidden=false;$('add').disabled=false;draw();$('saved').textContent=s?(s.enabled?(s.schedule_mode==='palmia'?'Modalità Palmia attiva: disponibilità calcolate automaticamente.':'Sono ancora attive le fasce manuali salvate. Per passare a Palmia scegli la modalità automatica e salva.'):'Pubblicazione in pausa: nessuno slot automatico in vendita.'):'Non ancora attiva: sono in uso gli slot manuali esistenti.';
@@ -78,6 +78,14 @@ $('save').onclick=async()=>{
  $('save').disabled=true;$('message').textContent='Salvataggio…';
  try {const {settings:s}=await api('settings',{schedule_mode:$('scheduleMode').value,palmia_calendar_id:Number($('palmiaCalendar').value)||null,staff_follows_palmia:$('staffFollows').checked,enabled:$('enabled').checked,revision,windows,subcalendar_ids:input().subcalendar_ids,write_enabled:$('writeEnabled').checked,write_calendar_id:Number($('writeCalendar').value)||null});revision=s.revision;windows=s.windows;draw();$('saved').textContent=s.enabled?'Pubblicazione automatica attiva.':'Pubblicazione in pausa: nessuno slot automatico in vendita.';$('message').textContent=(s.schedule_mode==='palmia'?'Salvato: il sito calcola le disponibilità dei prossimi 14 giorni da Palmia, senza fasce manuali.':'Disponibilità manuali salvate.');}
  catch(e){$('message').textContent=e.message;}finally{$('save').disabled=false;}
+};
+$('writeTest').onclick=async()=>{
+ if(!writeProbeSupported){$('writeTestResult').textContent='Carica il Worker v21 e ricarica questa pagina.';return;}
+ if($('writeEnabled').checked){$('writeTestResult').textContent='Disattiva la scrittura automatica e premi Salva disponibilità prima della prova.';return;}
+ $('writeTest').disabled=true;$('writeTestResult').textContent='Prova in corso: creazione, modifica e cancellazione dell’evento tecnico…';
+ try{const d=await api('write-test',{});$('writeTestResult').textContent=d.message;}
+ catch(e){$('writeTestResult').textContent=e.message;}
+ finally{$('writeTest').disabled=false;}
 };
 $('syncCheck').onclick=async()=>{
  $('syncCheck').disabled=true;
