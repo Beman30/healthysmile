@@ -11,8 +11,11 @@
 <section id="publishing" hidden><fieldset><legend>Fasce da pubblicare</legend>
 <p>Inserisci fasce separate prima e dopo le pause. Se chiudi alle 19:00, l’ultimo inizio possibile è alle 18:00. Massimo 14 giornate entro 60 giorni.</p>
 <ul id="windows"></ul><label><input id="enabled" type="checkbox">Pubblica queste fasce sul sito con verifica automatica Teamup</label>
-<button id="save" type="button">Salva disponibilità</button><p id="saved"></p>
-<p class="note">Gli inizi a distanza di 15 minuti sono alternative: una prenotazione blocca gli altri inizi sovrapposti sul sito. Lo studio deve ancora inserire l’appuntamento in Teamup. Se l’agenda cambia durante il pagamento, la prenotazione viene segnalata da verificare.</p>
+<label><input id="writeEnabled" type="checkbox">Inserisci e aggiorna automaticamente gli eventi creati dal sito</label>
+<label>Calendario dedicato al sito <select id="writeCalendar"><option value="">Seleziona Prenotazioni sito</option></select></label>
+<p>Per questo calendario usa il permesso “Modify from same link” nel collegamento del Worker. Le agende Medici restano in sola lettura. Il sito non modifica eventi creati dalla segreteria.</p>
+<button id="save" type="button">Salva disponibilità</button><p id="saved"></p><button id="syncCheck" type="button">Controlla sincronizzazione</button><div id="syncResult"></div>
+<p class="note">Gli inizi a distanza di 15 minuti sono alternative: una prenotazione blocca gli altri inizi sovrapposti sul sito. Con la scrittura attiva, il sito inserisce un blocco in Teamup e lo conferma dopo il pagamento. Modifica soltanto gli eventi registrati come propri. Se l’agenda cambia durante il pagamento, la prenotazione viene segnalata da verificare.</p>
 </fieldset></section><p id="message" role="status"></p><section id="result"></section></main>
 <script type="module">
 const API='https://healthysmile-checkout.nicolapalmia.workers.dev';
@@ -32,10 +35,11 @@ async function connect(){
  $('message').textContent='Lettura delle agende…';
  try{
   const data=await api('calendars');$('calendars').replaceChildren();
-  for(const c of data.calendars){const label=document.createElement('label'),box=document.createElement('input');box.type='checkbox';box.value=c.id;label.append(box,document.createTextNode(c.name));$('calendars').append(label);}
+  $('writeCalendar').replaceChildren(new Option('Seleziona Prenotazioni sito',''));
+  for(const c of data.calendars){$('writeCalendar').add(new Option(c.name,c.id));const label=document.createElement('label'),box=document.createElement('input');box.type='checkbox';box.value=c.id;label.append(box,document.createTextNode(c.name));$('calendars').append(label);}
   sessionStorage.setItem('hs_admin',token);$('token').value='';$('form').hidden=false;$('login').hidden=true;
   try {
-   const {settings:s}=await api('settings');revision=s?.revision||0;windows=s?.windows||[];$('enabled').checked=!!s?.enabled;
+   const {settings:s}=await api('settings');revision=s?.revision||0;windows=s?.windows||[];$('enabled').checked=!!s?.enabled;$('writeEnabled').checked=!!s?.write_enabled;$('writeCalendar').value=s?.write_calendar_id||'';
    for(const box of $('calendars').querySelectorAll('input'))box.checked=!!s?.subcalendar_ids.includes(Number(box.value));
    $('publishing').hidden=false;$('add').disabled=false;draw();$('saved').textContent=s?(s.enabled?'Pubblicazione automatica attiva.':'Pubblicazione in pausa: nessuno slot automatico in vendita.'):'Non ancora attiva: sono in uso gli slot manuali esistenti.';
    $('message').textContent='Seleziona tutte le agende Medici e le fasce da aprire.';
@@ -52,8 +56,16 @@ $('add').onclick=()=>{
 };
 $('save').onclick=async()=>{
  $('save').disabled=true;$('message').textContent='Salvataggio…';
- try {const {settings:s}=await api('settings',{enabled:$('enabled').checked,revision,windows,subcalendar_ids:input().subcalendar_ids});revision=s.revision;windows=s.windows;draw();$('saved').textContent=s.enabled?'Pubblicazione automatica attiva.':'Pubblicazione in pausa: nessuno slot automatico in vendita.';$('message').textContent='Disponibilità salvate. Il sito mostrerà solo gli orari compatibili nelle fasce selezionate.';}
+ try {const {settings:s}=await api('settings',{enabled:$('enabled').checked,revision,windows,subcalendar_ids:input().subcalendar_ids,write_enabled:$('writeEnabled').checked,write_calendar_id:Number($('writeCalendar').value)||null});revision=s.revision;windows=s.windows;draw();$('saved').textContent=s.enabled?'Pubblicazione automatica attiva.':'Pubblicazione in pausa: nessuno slot automatico in vendita.';$('message').textContent='Disponibilità salvate. Il sito mostrerà solo gli orari compatibili nelle fasce selezionate.';}
  catch(e){$('message').textContent=e.message;}finally{$('save').disabled=false;}
+};
+$('syncCheck').onclick=async()=>{
+ $('syncCheck').disabled=true;
+ try {const d=await api('sync');$('syncResult').replaceChildren();
+  const labels={creating:'Inserimento in corso',held:'Blocco inserito',confirmed:'Confermato in Teamup',deleted:'Rimosso',uncertain:'Esito incerto: verifica Teamup',review:'Conflitto: verifica Teamup'};
+  for(const row of d.events){const p=document.createElement('p');p.textContent=row.booking_id.slice(0,8)+' · '+(labels[row.state]||row.state)+(row.busy?' · operazione in corso':'');$('syncResult').append(p);}
+  if(!d.events.length)$('syncResult').textContent='Nessun evento ancora creato dal sito.';
+ }catch(e){$('message').textContent=e.message;}finally{$('syncCheck').disabled=false;}
 };
 $('form').onsubmit=async e=>{
  e.preventDefault();$('verify').disabled=true;$('result').replaceChildren();$('message').textContent='Controllo degli appuntamenti…';
