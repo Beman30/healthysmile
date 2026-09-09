@@ -2,15 +2,21 @@
 <html lang="it"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Verifica agenda — Healthy Smile</title>
 <style>body{font:16px system-ui;background:#f4f7f8;color:#18333f;margin:0}main{max-width:850px;margin:35px auto;padding:24px;background:white;border-radius:14px}h1{font-size:26px}fieldset{border:1px solid #ccd9df;border-radius:8px;margin:20px 0;padding:18px}label{display:block;margin:12px 0}input,button{font:inherit;padding:9px}button{background:#116d80;color:white;border:0;border-radius:6px;cursor:pointer}button:disabled{opacity:.5}table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:10px;border-bottom:1px solid #ddd}a{color:#116d80}.note{background:#eef5f6;padding:14px;border-radius:8px}#message{white-space:pre-line}input[type=checkbox]{margin-right:10px} @media(max-width:600px){main{margin:0;padding:16px}}</style>
 <main><a href="prenotazioni.html">← Prenotazioni</a><h1>Verifica disponibilità Teamup</h1>
-<p class="note">Scegli le fasce da pubblicare per l’offerta 98 €. Teamup viene ricontrollato quando il sito mostra gli orari e prima del pagamento. Si controlla la disponibilità di una poltrona per 60 minuti, su due poltrone totali.</p>
+<p class="note">Per l’offerta 98 €, ricava automaticamente le disponibilità dai blocchi STOP/PAUSA di Palmia nei prossimi 14 giorni. Le date avanzano ogni giorno, senza reinserirle. Teamup viene ricontrollato quando il sito mostra gli orari e prima del pagamento. Si controlla la disponibilità di una poltrona per 60 minuti, su due poltrone totali.</p>
 <section id="login"><label>Token amministratore <input id="token" type="password" autocomplete="off"></label><button id="connect">Collega</button></section>
 <form id="form" hidden><fieldset><legend>Agende da considerare</legend><p>Seleziona tutte le agende del gruppo Medici, compresa quella dell’igienista. Escludi Prestazioni e Laboratori.</p><div id="calendars"></div></fieldset>
-<fieldset><legend>Finestra da verificare</legend><label>Data <input name="date" type="date" required></label><label>Dalle <input name="start" type="time" required></label><label>Alle <input name="end" type="time" required></label>
+<fieldset><legend>Orari di apertura</legend>
+<label>Modalità <select id="scheduleMode"><option value="palmia">Automatica da STOP/PAUSA Palmia</option><option value="manual">Fasce manuali</option></select></label>
+<div id="autoSettings"><label>Agenda con STOP/PAUSA <select id="palmiaCalendar"><option value="">Seleziona Medici → Palmia</option></select></label>
+<label><input id="staffFollows" type="checkbox">L’igienista segue gli stessi orari di apertura di Palmia.</label>
+<p>In Teamup i blocchi STOP/PAUSA devono delimitare l’apertura e la chiusura; le pause intermedie vengono escluse. Se mancano i blocchi ai due estremi, il sito non propone orari oltre i limiti riconoscibili. Non ricava l’apertura dal primo paziente e non considera aperta una giornata vuota.</p>
+<label>Giornata da verificare <input id="autoDate" type="date"></label></div></fieldset>
+<fieldset id="manualWindow"><legend>Finestra da verificare</legend><label>Data <input name="date" type="date" required></label><label>Dalle <input name="start" type="time" required></label><label>Alle <input name="end" type="time" required></label>
 <label><input name="confirmed" type="checkbox" required>Ho verificato le note di Teamup: in questa finestra lo studio è aperto, l’igienista è disponibile per i primi 45 minuti e il medico è presente per la visita finale di 15 minuti.</label></fieldset>
 <button id="verify">Verifica la capienza</button> <button id="add" type="button">Aggiungi fascia</button> <button id="logout" type="button">Esci</button></form>
-<section id="publishing" hidden><fieldset><legend>Fasce da pubblicare</legend>
+<section id="publishing" hidden><fieldset><legend>Pubblicazione sul sito</legend><div id="manualPublishing">
 <p>Inserisci fasce separate prima e dopo le pause. Se chiudi alle 19:00, l’ultimo inizio possibile è alle 18:00. Massimo 14 giornate entro 60 giorni.</p>
-<ul id="windows"></ul><label><input id="enabled" type="checkbox">Pubblica queste fasce sul sito con verifica automatica Teamup</label>
+<ul id="windows"></ul></div><label><input id="enabled" type="checkbox">Mostra sul sito le disponibilità aggiornate da Teamup</label>
 <label><input id="writeEnabled" type="checkbox">Inserisci e aggiorna automaticamente gli eventi creati dal sito</label>
 <label>Calendario dedicato al sito <select id="writeCalendar"><option value="">Seleziona Prenotazioni sito</option></select></label>
 <p>Per questo calendario usa il permesso “Modify from same link” nel collegamento del Worker. Le agende Medici restano in sola lettura. Il sito non modifica eventi creati dalla segreteria.</p>
@@ -20,11 +26,17 @@
 <script type="module">
 const API='https://healthysmile-checkout.nicolapalmia.workers.dev';
 const $=id=>document.getElementById(id);
-let token=sessionStorage.getItem('hs_admin')||'',windows=[],revision=0;
+let token=sessionStorage.getItem('hs_admin')||'',windows=[],revision=0,autoSupported=false;
 async function api(path,body){
  const r=await fetch(API+'/api/admin/teamup/'+path,{method:body?'POST':'GET',cache:'no-store',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},...(body?{body:JSON.stringify(body)}:{})});
  const data=await r.json();if(!r.ok)throw Error(data.error||'Richiesta non riuscita');return data;
 }
+function modeChanged(){
+ const auto=$('scheduleMode').value==='palmia';
+ $('autoSettings').hidden=!auto;$('manualWindow').hidden=auto;$('manualPublishing').hidden=auto;$('add').hidden=auto;
+ for(const el of $('manualWindow').querySelectorAll('input')) el.disabled=auto;
+}
+$('scheduleMode').onchange=modeChanged;
 function draw(){
  $('windows').replaceChildren();
  windows.forEach((w,i)=>{const li=document.createElement('li'),remove=document.createElement('button');remove.type='button';remove.textContent='Rimuovi';remove.onclick=()=>{windows.splice(i,1);draw();$('saved').textContent='Modifiche da salvare';};li.append(document.createTextNode(`${w.date} · ${w.start}–${w.end} `),remove);$('windows').append(li);});
@@ -35,14 +47,16 @@ async function connect(){
  $('message').textContent='Lettura delle agende…';
  try{
   const data=await api('calendars');$('calendars').replaceChildren();
+  $('palmiaCalendar').replaceChildren(new Option('Seleziona Medici → Palmia',''));
   $('writeCalendar').replaceChildren(new Option('Seleziona Prenotazioni sito',''));
-  for(const c of data.calendars){$('writeCalendar').add(new Option(c.name,c.id));const label=document.createElement('label'),box=document.createElement('input');box.type='checkbox';box.value=c.id;label.append(box,document.createTextNode(c.name));$('calendars').append(label);}
+  for(const c of data.calendars){$('palmiaCalendar').add(new Option(c.name,c.id));$('writeCalendar').add(new Option(c.name,c.id));const label=document.createElement('label'),box=document.createElement('input');box.type='checkbox';box.value=c.id;label.append(box,document.createTextNode(c.name));$('calendars').append(label);}
   sessionStorage.setItem('hs_admin',token);$('token').value='';$('form').hidden=false;$('login').hidden=true;
   try {
-   const {settings:s}=await api('settings');revision=s?.revision||0;windows=s?.windows||[];$('enabled').checked=!!s?.enabled;$('writeEnabled').checked=!!s?.write_enabled;$('writeCalendar').value=s?.write_calendar_id||'';
+   const response=await api('settings'),s=response.settings;autoSupported=response.capabilities?.palmia_schedule===true;
+   $('scheduleMode').value=s?.schedule_mode||'palmia';$('palmiaCalendar').value=s?.palmia_calendar_id||'';$('staffFollows').checked=s?.staff_follows_palmia===true;modeChanged();revision=s?.revision||0;windows=s?.windows||[];$('enabled').checked=!!s?.enabled;$('writeEnabled').checked=!!s?.write_enabled;$('writeCalendar').value=s?.write_calendar_id||'';
    for(const box of $('calendars').querySelectorAll('input'))box.checked=!!s?.subcalendar_ids.includes(Number(box.value));
-   $('publishing').hidden=false;$('add').disabled=false;draw();$('saved').textContent=s?(s.enabled?'Pubblicazione automatica attiva.':'Pubblicazione in pausa: nessuno slot automatico in vendita.'):'Non ancora attiva: sono in uso gli slot manuali esistenti.';
-   $('message').textContent='Seleziona tutte le agende Medici e le fasce da aprire.';
+   $('publishing').hidden=false;$('add').disabled=false;draw();$('saved').textContent=s?(s.enabled?(s.schedule_mode==='palmia'?'Modalità Palmia attiva: disponibilità calcolate automaticamente.':'Sono ancora attive le fasce manuali salvate. Per passare a Palmia scegli la modalità automatica e salva.'):'Pubblicazione in pausa: nessuno slot automatico in vendita.'):'Non ancora attiva: sono in uso gli slot manuali esistenti.';
+   $('message').textContent=autoSupported?'Seleziona tutte le agende Medici, indica Palmia per gli orari e salva. Nessuna fascia giornaliera necessaria in modalità automatica.':'Per la modalità automatica devi prima distribuire il Worker aggiornato su Cloudflare.';
   } catch { $('publishing').hidden=true;$('add').disabled=true;$('message').textContent='La verifica è disponibile. Per salvare e pubblicare le fasce occorre aggiornare il Worker.'; }
  }catch(e){$('message').textContent=e.message;$('form').hidden=true;$('publishing').hidden=true;$('login').hidden=false;}
 }
@@ -55,8 +69,9 @@ $('add').onclick=()=>{
  windows.push({date:w.date,start:w.start,end:w.end,window_confirmed:true});draw();$('saved').textContent='Modifiche da salvare';
 };
 $('save').onclick=async()=>{
+ if($('scheduleMode').value==='palmia'&&!autoSupported){$('message').textContent='Aggiorna prima il Worker su Cloudflare e ricarica questa pagina.';return;}
  $('save').disabled=true;$('message').textContent='Salvataggio…';
- try {const {settings:s}=await api('settings',{enabled:$('enabled').checked,revision,windows,subcalendar_ids:input().subcalendar_ids,write_enabled:$('writeEnabled').checked,write_calendar_id:Number($('writeCalendar').value)||null});revision=s.revision;windows=s.windows;draw();$('saved').textContent=s.enabled?'Pubblicazione automatica attiva.':'Pubblicazione in pausa: nessuno slot automatico in vendita.';$('message').textContent='Disponibilità salvate. Il sito mostrerà solo gli orari compatibili nelle fasce selezionate.';}
+ try {const {settings:s}=await api('settings',{schedule_mode:$('scheduleMode').value,palmia_calendar_id:Number($('palmiaCalendar').value)||null,staff_follows_palmia:$('staffFollows').checked,enabled:$('enabled').checked,revision,windows,subcalendar_ids:input().subcalendar_ids,write_enabled:$('writeEnabled').checked,write_calendar_id:Number($('writeCalendar').value)||null});revision=s.revision;windows=s.windows;draw();$('saved').textContent=s.enabled?'Pubblicazione automatica attiva.':'Pubblicazione in pausa: nessuno slot automatico in vendita.';$('message').textContent=(s.schedule_mode==='palmia'?'Salvato: il sito calcola le disponibilità dei prossimi 14 giorni da Palmia, senza fasce manuali.':'Disponibilità manuali salvate.');}
  catch(e){$('message').textContent=e.message;}finally{$('save').disabled=false;}
 };
 $('syncCheck').onclick=async()=>{
@@ -71,7 +86,9 @@ $('form').onsubmit=async e=>{
  e.preventDefault();$('verify').disabled=true;$('result').replaceChildren();$('message').textContent='Controllo degli appuntamenti…';
  try{
   const f=new FormData(e.target),ids=[...$('calendars').querySelectorAll('input:checked')].map(x=>Number(x.value));
-  const data=await api('preview',{date:f.get('date'),start:f.get('start'),end:f.get('end'),subcalendar_ids:ids,window_confirmed:f.get('confirmed')==='on'});
+  const auto=$('scheduleMode').value==='palmia';
+  if(auto&&!autoSupported)throw Error('Aggiorna prima il Worker su Cloudflare.');
+  const data=auto?await api('auto-preview',{date:$('autoDate').value,subcalendar_ids:ids,palmia_calendar_id:Number($('palmiaCalendar').value),staff_follows_palmia:$('staffFollows').checked}):await api('preview',{date:f.get('date'),start:f.get('start'),end:f.get('end'),subcalendar_ids:ids,window_confirmed:f.get('confirmed')==='on'});
   $('message').textContent=[...data.warnings,data.notice].join('\n');
   const table=document.createElement('table');table.innerHTML='<thead><tr><th>Orario</th><th>Poltrone già occupate (massimo)</th><th>Esito</th></tr></thead>';
   const tbody=document.createElement('tbody');const labels={candidate:'Capienza Teamup compatibile',full:'Due poltrone occupate',blocked:'Pausa / STOP',review:'Note da verificare'};
