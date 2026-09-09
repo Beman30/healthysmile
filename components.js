@@ -107,7 +107,8 @@
       '</div>' +
     '</div>' +
     '<div class="hs-footer-legal">' +
-      '&copy; ' + new Date().getFullYear() + ' Dominus Srl &nbsp;&middot;&nbsp; Via Lagrange 10, Torino &nbsp;&middot;&nbsp; P.IVA 12923420017' +
+      'Healthy Smile By N &mdash; studio dentistico operativo: Via Madama Cristina 2, 10125 Torino &nbsp;&middot;&nbsp; Tel. <a href="tel:+390112488248">011 2488248</a><br>' +
+      '&copy; ' + new Date().getFullYear() + ' Societ&agrave; titolare: Dominus Srl &nbsp;&middot;&nbsp; sede legale: Via Lagrange 10, Torino &nbsp;&middot;&nbsp; P.IVA 12923420017' +
     '</div>';
 
   // ── INJECT ───────────────────────────────────────────────────────────
