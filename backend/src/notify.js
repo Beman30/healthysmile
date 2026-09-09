@@ -39,27 +39,28 @@ const esc = (s) => String(s ?? '').replace(/[<>&]/g, (c) => ({ '<': '&lt;', '>':
 
 /** Costruisce oggetto e corpo. Esportata a parte per poterla testare. */
 export function buildMessage(booking, serviceName) {
+  const review = booking.booking_status === 'needs_review';
   const appt = booking.appointment_date && booking.appointment_time;
   const quando = appt ? `${fmtDate(booking.appointment_date)} alle ${booking.appointment_time}` : null;
   const wa = waNumber(booking.phone);
 
   const testo =
-    `Ciao ${booking.first_name}, ti confermo l'appuntamento da Healthy Smile` +
+    (review ? `Ciao ${booking.first_name}, abbiamo ricevuto il pagamento. Dobbiamo concordare la conferma dell'appuntamento da Healthy Smile` : `Ciao ${booking.first_name}, ti confermo l'appuntamento da Healthy Smile`) +
     (quando ? ` per ${quando}` : '') +
     `. ${serviceName}.` +
     (booking.balance_due > 0 ? ` Hai già versato ${eur(booking.amount_paid)}, il saldo di ${eur(booking.balance_due)} lo regoli in studio.` : '') +
-    ` Ti aspettiamo in Via Madama Cristina 2, Torino.`;
+    (review ? ` Ti ricontattiamo per concordare l’orario o il rimborso.` : ` Ti aspettiamo in Via Madama Cristina 2, Torino.`);
 
   const waLink = wa ? `https://wa.me/${wa}?text=${encodeURIComponent(testo)}` : null;
 
   const subject =
-    `Nuova prenotazione · ${booking.first_name} ${booking.last_name}` +
+    (review ? 'DA VERIFICARE · ' : '') + `Nuova prenotazione · ${booking.first_name} ${booking.last_name}` +
     (quando ? ` · ${quando}` : '');
 
   const html = `
 <div style="font-family:system-ui,-apple-system,sans-serif;max-width:520px;color:#111;line-height:1.6">
   <p style="font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:#C8005C;margin:0 0 6px">
-    Prenotazione pagata
+    ${review ? 'Pagamento ricevuto · appuntamento NON confermato' : 'Prenotazione pagata'}
   </p>
   <h2 style="font-size:20px;margin:0 0 18px">${esc(serviceName)}</h2>
 
@@ -96,7 +97,7 @@ export function buildMessage(booking, serviceName) {
      </p>`}
 
   <p style="margin-top:28px;font-size:12px;color:#999;border-top:1px solid #eee;padding-top:14px">
-    Ricordati di segnare l'appuntamento in agenda: il sito non è ancora collegato al gestionale.
+    ${review ? 'Ricontrolla la capienza prima di confermare. Se non disponibile, concorda un altro orario o il rimborso.' : 'Ricordati di segnare l’appuntamento in Teamup: il collegamento legge la disponibilità, ma non crea eventi in agenda.'}
   </p>
 </div>`.trim();
 
@@ -134,3 +135,4 @@ export async function notifyStudio(env, booking, serviceName) {
     return false;
   }
 }
+

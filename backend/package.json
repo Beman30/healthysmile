@@ -7,7 +7,13 @@
     "deploy": "wrangler deploy",
     "db:create": "wrangler d1 create healthysmile-checkout-db",
     "db:schema": "wrangler d1 execute healthysmile-checkout-db --remote --file=./schema.sql",
-    "db:seed": "wrangler d1 execute healthysmile-checkout-db --remote --file=./seed-slots.sql"
+    "db:seed": "wrangler d1 execute healthysmile-checkout-db --remote --file=./seed-slots.sql",
+    "test": "node --test test/*.test.js",
+    "build:teamup": "esbuild src/index.js --bundle --format=esm --platform=browser --target=es2022 --keep-names --outfile=releases/healthysmile-worker-teamup-slot.mjs"
   },
-  "devDependencies": { "wrangler": "^3.90.0" }
+  "devDependencies": {
+    "wrangler": "^3.90.0",
+    "esbuild": "0.25.9",
+    "miniflare": "4.20250906.0"
+  }
 }

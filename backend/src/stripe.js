@@ -38,6 +38,7 @@ export async function createCheckoutSession(env, { booking, service, amounts, su
 
   const body = form({
     mode: 'payment',
+    ...(booking.teamup_managed ? {expires_at:Math.floor(Date.now()/1000)+35*60} : {}),
     // Stripe ragiona in centesimi interi
     'line_items[0][price_data][currency]': 'eur',
     'line_items[0][price_data][unit_amount]': Math.round(amounts.amountDueNow * 100),
@@ -77,6 +78,7 @@ export async function createCheckoutSession(env, { booking, service, amounts, su
     method: 'POST',
     headers: {
       Authorization: `Bearer ${env.STRIPE_SECRET_KEY}`,
+      'Idempotency-Key': booking.booking_id,
       'Content-Type': 'application/x-www-form-urlencoded',
     },
     body,
@@ -138,3 +140,4 @@ export async function verifyStripeSignature(payload, header, secret, toleranceSe
   const expected = [...new Uint8Array(sig)].map((b) => b.toString(16).padStart(2, '0')).join('');
   return timingSafeEqual(expected, v1);
 }
+

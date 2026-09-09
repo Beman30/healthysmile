@@ -171,17 +171,19 @@ var MAPS = 'https://maps.app.goo.gl/xG5N6YaYgg8Mxegp9';
 
   function render(b){
     var paid = b.payment_status === 'paid';
+    var confirmed = paid && ['confirmed','completed'].indexOf(b.booking_status) !== -1;
+    var review = paid && !confirmed;
     var appt = b.appointment_date && b.appointment_time;
-    var cal = ics(b);
+    var cal = confirmed ? ics(b) : null;
     var waMsg = encodeURIComponent(
-      'Ciao, ho appena prenotato ' + b.service_name +
+      (review ? 'Ciao, ho pagato e devo verificare l’appuntamento per ' : 'Ciao, ho appena prenotato ') + b.service_name +
       (appt ? ' per ' + fmtDate(b.appointment_date) + ' alle ' + b.appointment_time : '') + '.'
     );
 
     c.innerHTML =
       '<div class="tick">✓</div>' +
-      '<h1>' + (paid ? 'Appuntamento confermato' : 'Pagamento in verifica') + '</h1>' +
-      '<p class="sub">' + (paid
+      '<h1>' + (confirmed ? 'Appuntamento confermato' : review ? 'Pagamento ricevuto' : 'Pagamento in verifica') + '</h1>' +
+      '<p class="sub">' + (review ? 'Abbiamo ricevuto il pagamento, ma l’orario richiede una verifica dello studio. Contattaci su WhatsApp per concordare la conferma o il rimborso.' : confirmed
         ? 'Ti scriviamo su WhatsApp con il promemoria. Intanto puoi aggiungere l\'appuntamento al calendario qui sotto.'
         : 'Il pagamento risulta ancora in elaborazione. Se entro qualche minuto non ricevi conferma, scrivici.') + '</p>' +
 
@@ -212,7 +214,7 @@ var MAPS = 'https://maps.app.goo.gl/xG5N6YaYgg8Mxegp9';
         '<a class="btn btn-b" href="' + WA + '?text=' + waMsg + '" target="_blank" rel="noopener">Scrivici su WhatsApp</a>' +
       '</div>';
 
-    if(paid) conversione(b);
+    if(confirmed) conversione(b);
   }
 
   /* Conversione. Parte una volta sola per prenotazione: la pagina si puo'
@@ -293,3 +295,4 @@ var MAPS = 'https://maps.app.goo.gl/xG5N6YaYgg8Mxegp9';
 <script src="/components.js"></script>
 </body>
 </html>
+

@@ -1,0 +1,173 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
+import {Miniflare} from 'miniflare';
+import {validateSettings} from '../src/availability.js';
+import {romeTime} from '../src/teamup.js';
+
+const day=new Date(Date.now()+7*86400000).toISOString().slice(0,10);
+const config={enabled:true,revision:0,subcalendar_ids:[1,2],windows:[{date:day,start:'10:00',end:'13:00',window_confirmed:true}]};
+const patient={service_id:'igiene-sonicare',date:day,first_name:'Test',last_name:'Fittizio',email:'test@example.test',phone:'+390000000000',terms_accepted:true};
+function event(id,start,end,extra={}) {return {id,subcalendar_ids:[1],start_dt:new Date(romeTime(day,start)).toISOString(),end_dt:new Date(romeTime(day,end)).toISOString(),title:'Test',...extra};}
+
+async function fixture(t) {
+ let events=[],broken=false,paid=false,expired=false,count=0;
+ const sessions=new Map();
+ const mf=new Miniflare({modules:true,compatibilityDate:'2025-09-01',scriptPath:new URL('../releases/healthysmile-worker-teamup-slot.mjs',import.meta.url).pathname,
+   d1Databases:['DB'],bindings:{ADMIN_TOKEN:'test-admin',TEAMUP_API_KEY:'test-api',TEAMUP_CALENDAR_KEY:'kstest',STRIPE_SECRET_KEY:'sk_test',PAYPAL_CLIENT_ID:'test',PAYPAL_CLIENT_SECRET:'test',SITE_URL:'https://example.test'},
+   outboundService:async req=>{
+     const u=new URL(req.url);
+     if(u.hostname==='api.teamup.com') {
+       if(broken)return Response.json({error:{id:'no_permission'}},{status:403});
+       if(u.pathname.endsWith('/configuration'))return Response.json({configuration:{subcalendars:[{id:1,name:'Medici A'},{id:2,name:'Medici B'}]}});
+       return Response.json({events});
+     }
+     if(u.hostname==='api.stripe.com') {
+       if(req.method==='POST') {
+         const body=new URLSearchParams(await req.text());
+         assert.ok(Number(body.get('expires_at'))>Date.now()/1000+30*60);
+         const id='cs_'+(++count);sessions.set(id,{id,amount_total:1500,payment_intent:'pi_'+count,metadata:{booking_id:body.get('metadata[booking_id]')}});
+         return Response.json({id,url:'https://checkout.stripe.test/'+id});
+       }
+       const session=sessions.get(u.pathname.split('/').pop());
+       return Response.json({...session,payment_status:paid?'paid':'unpaid',status:paid?'complete':expired?'expired':'open'});
+     }
+     if(u.hostname==='api-m.sandbox.paypal.com') {
+       if(u.pathname.endsWith('/token')) return Response.json({access_token:'fake'});
+       if(u.pathname.endsWith('/orders') && req.method==='POST') {
+         const body=await req.json(),id='pp_'+(++count);sessions.set(id,body);
+         return Response.json({id,links:[{rel:'payer-action',href:'https://paypal.test/'+id}]});
+       }
+       const parts=u.pathname.split('/'),capture=parts.at(-1)==='capture',id=capture?parts.at(-2):parts.at(-1);
+       const body=sessions.get(id);if(capture)paid=true;
+       return Response.json({id,status:paid?'COMPLETED':'CREATED',purchase_units:[{...body.purchase_units[0],...(paid?{payments:{captures:[{id:'cap_'+id,status:'COMPLETED',amount:{value:'15.00',currency_code:'EUR'}}]}}:{})}]});
+     }
+     throw Error('Unexpected external request');
+   }});
+ t.after(()=>mf.dispose());
+ const db=await mf.getD1Database('DB');
+ const schema=await readFile(new URL('../schema.sql',import.meta.url),'utf8');
+ await db.batch(schema.split(';').map(x=>x.trim()).filter(Boolean).map(sql=>db.prepare(sql)));
+ const request=async(path,body,admin=false)=>{
+   const r=await mf.dispatchFetch('https://worker.test/api/'+path,{method:body?'POST':'GET',headers:{'Content-Type':'application/json',...(admin?{Authorization:'Bearer test-admin'}:{})},...(body?{body:JSON.stringify(body)}:{})});
+   return {status:r.status,data:await r.json()};
+ };
+ const save=await request('admin/teamup/settings',config,true);assert.equal(save.status,200,JSON.stringify(save.data));
+ return {db,request,mf,events:x=>{events=x;},broken:x=>{broken=x;},paid:x=>{paid=x;},expired:x=>{expired=x;}};
+}
+
+test('validates explicit staffing, dates, full hour and separate opening windows',()=>{
+ assert.throws(()=>validateSettings({...config,windows:[{...config.windows[0],window_confirmed:false}]}));
+ assert.throws(()=>validateSettings({...config,windows:[{...config.windows[0],start:'12:45'}]}));
+ assert.throws(()=>validateSettings({...config,windows:[config.windows[0],{...config.windows[0],start:'11:00'}]}));
+ assert.equal(validateSettings(config).windows.length,1);
+});
+
+test('runtime: full hour, selected windows, closure, pause, two overlapping patients, fail closed',async t=>{
+ const f=await fixture(t);
+ let r=await f.request('slots?service=igiene-sonicare');
+ assert.equal(r.status,200);assert.equal(r.data.slots.at(-1).time,'12:00');assert.equal(r.data.slots.length,9);
+ f.events([event('long','10:00','13:00'),event('short','10:00','10:30'),event('short2','11:00','11:30')]);
+ r=await f.request('slots?service=igiene-sonicare');
+ assert.deepEqual(r.data.slots.map(s=>s.time),['11:30','11:45','12:00']);
+ f.events([event('pause','11:00','12:00',{title:'PAUSA'})]);
+ r=await f.request('slots?service=igiene-sonicare');assert.deepEqual(r.data.slots.map(s=>s.time),['10:00','12:00']);
+ f.events([event('note','10:00','10:15',{notes:'Chiudiamo prima'})]);
+ r=await f.request('slots?service=igiene-sonicare');assert.deepEqual(r.data.slots,[]);
+ f.broken(true);r=await f.request('slots?service=igiene-sonicare');assert.equal(r.status,503);assert.ok(!JSON.stringify(r.data).includes('test-api'));
+});
+
+test('runtime: concurrent overlapping starts sell once; adjacent full hour remains available',async t=>{
+ const f=await fixture(t);
+ const results=await Promise.all(['10:00','10:15'].map(time=>f.request('checkout/stripe',{...patient,time})));
+ assert.deepEqual(results.map(r=>r.status).sort(),[200,409]);
+ const winner=results.find(r=>r.status===200).data.booking_id;
+ const claim=await f.db.prepare('SELECT * FROM teamup_reservations WHERE booking_id=?').bind(winner).first();
+ const r=await f.request('slots?service=igiene-sonicare');
+ assert.ok(r.data.slots.every(s=>s.time>=claim.end_time));
+ assert.ok(r.data.slots.some(s=>s.time===claim.end_time));
+ const adjacent=await f.request('checkout/stripe',{...patient,time:claim.end_time});assert.equal(adjacent.status,200);
+ const manual=await f.request('admin/booking-create',{service_id:'allineatori-visita',first_name:'Test',last_name:'Other',phone:'0000000000',appointment_date:day,appointment_time:claim.time},true);
+ assert.equal(manual.status,409);
+});
+
+test('runtime: stale selection is rejected before starting payment',async t=>{
+ const f=await fixture(t);await f.request('slots?service=igiene-sonicare');
+ f.events([event('a','10:00','11:00'),event('b','10:00','11:00')]);
+ const r=await f.request('checkout/stripe',{...patient,time:'10:00'});assert.equal(r.status,409);
+ assert.equal((await f.db.prepare('SELECT count(*) n FROM bookings').first()).n,0);
+});
+
+test('runtime: payment succeeds, rechecks calendar, duplicate verification stays idempotent',async t=>{
+ const f=await fixture(t);const checkout=await f.request('checkout/stripe',{...patient,time:'10:00'});
+ assert.equal(checkout.status,200,JSON.stringify(checkout.data));f.paid(true);
+ await Promise.all([1,2].map(()=>f.request('checkout/stripe/verify',{booking_id:checkout.data.booking_id})));
+ const result=await f.request('bookings/'+checkout.data.booking_id);
+ assert.equal(result.data.payment_status,'paid');assert.equal(result.data.booking_status,'confirmed');
+ const slots=await f.request('slots?service=igiene-sonicare');assert.ok(slots.data.slots.every(s=>s.time>='11:00'));
+});
+
+test('runtime: changed calendar during payment records money but does not confirm appointment',async t=>{
+ const f=await fixture(t);const checkout=await f.request('checkout/stripe',{...patient,time:'10:00'});
+ f.events([event('a','10:00','11:00'),event('b','10:00','11:00')]);f.paid(true);
+ const paid=await f.request('checkout/stripe/verify',{booking_id:checkout.data.booking_id});assert.equal(paid.status,200);
+ const result=await f.request('bookings/'+checkout.data.booking_id);
+ assert.equal(result.data.payment_status,'paid');assert.equal(result.data.amount_paid,15);assert.equal(result.data.booking_status,'needs_review');
+ const confirm=await f.request('admin/booking-status',{booking_id:checkout.data.booking_id,status:'confirmed'},true);assert.equal(confirm.status,409);
+});
+
+test('runtime: cancelled checkout paid late cannot take a replacement reservation',async t=>{
+ const f=await fixture(t);const a=await f.request('checkout/stripe',{...patient,time:'10:00'});
+ await f.request('admin/booking-status',{booking_id:a.data.booking_id,status:'cancelled'},true);
+ const b=await f.request('checkout/stripe',{...patient,time:'10:00'});assert.equal(b.status,200);
+ f.paid(true);await f.request('checkout/stripe/verify',{booking_id:a.data.booking_id});
+ const old=await f.request('bookings/'+a.data.booking_id);assert.equal(old.data.booking_status,'needs_review');assert.equal(old.data.payment_status,'paid');
+ const slot=await f.db.prepare('SELECT booking_id FROM slots WHERE date=? AND time=?').bind(day,'10:00').first();assert.equal(slot.booking_id,b.data.booking_id);
+});
+
+test('runtime: admin-only settings, revision conflict and pause close public availability',async t=>{
+ const f=await fixture(t);const unauthorized=await f.request('admin/teamup/settings',{...config,revision:1,enabled:false});assert.equal(unauthorized.status,401);
+ const stale=await f.request('admin/teamup/settings',config,true);assert.equal(stale.status,400);
+ f.broken(true); // Pausing must work even if Teamup access was revoked.
+ const paused=await f.request('admin/teamup/settings',{...config,revision:1,enabled:false},true);assert.equal(paused.status,200);
+ assert.deepEqual((await f.request('slots?service=igiene-sonicare')).data.slots,[]);
+ assert.equal((await f.request('checkout/stripe',{...patient,time:'10:00'})).status,409);
+});
+
+test('runtime: cron preserves open checkouts and releases only expired Stripe sessions',async t=>{
+ const f=await fixture(t),checkout=await f.request('checkout/stripe',{...patient,time:'10:00'});
+ await f.db.prepare('UPDATE bookings SET created_at=? WHERE booking_id=?').bind(new Date(Date.now()-7200000).toISOString(),checkout.data.booking_id).run();
+ const worker=await f.mf.getWorker();
+ await worker.scheduled({cron:'*/10 * * * *',scheduledTime:Date.now()});
+ let b=await f.request('bookings/'+checkout.data.booking_id);assert.equal(b.data.booking_status,'held');
+ f.expired(true);await worker.scheduled({cron:'*/10 * * * *',scheduledTime:Date.now()});
+ b=await f.request('bookings/'+checkout.data.booking_id);assert.equal(b.data.booking_status,'cancelled');
+ const slots=await f.request('slots?service=igiene-sonicare');assert.ok(slots.data.slots.some(s=>s.time==='10:00'));
+});
+
+test('runtime: an explicit website block and existing booking exclude overlapping choices',async t=>{
+ const f=await fixture(t);
+ await f.db.prepare("INSERT INTO slots(service_id,date,time,status,updated_at) VALUES('igiene-sonicare',?,'10:00','blocked',?)").bind(day,new Date().toISOString()).run();
+ let slots=await f.request('slots?service=igiene-sonicare');assert.ok(slots.data.slots.every(s=>s.time>='11:00'));
+ const manual=await f.request('admin/booking-create',{service_id:'allineatori-visita',first_name:'Test',last_name:'Existing',phone:'0000000000',appointment_date:day,appointment_time:'11:00'},true);assert.equal(manual.status,200);
+ slots=await f.request('slots?service=igiene-sonicare');assert.deepEqual(slots.data.slots,[{date:day,time:'12:00'}]);
+});
+
+test('runtime: PayPal hold survives an open order and capture confirms after rechecking Teamup',async t=>{
+ const f=await fixture(t),checkout=await f.request('checkout/paypal',{...patient,time:'10:00'});
+ assert.equal(checkout.status,200,JSON.stringify(checkout.data));
+ await f.db.prepare('UPDATE bookings SET created_at=? WHERE booking_id=?').bind(new Date(Date.now()-7200000).toISOString(),checkout.data.booking_id).run();
+ const worker=await f.mf.getWorker();await worker.scheduled({cron:'*/10 * * * *',scheduledTime:Date.now()});
+ let b=await f.request('bookings/'+checkout.data.booking_id);assert.equal(b.data.booking_status,'held');
+ const claim=await f.db.prepare('SELECT checkout_id FROM teamup_reservations WHERE booking_id=?').bind(checkout.data.booking_id).first();
+ const capture=await f.request('checkout/paypal/capture',{booking_id:checkout.data.booking_id,order_id:claim.checkout_id});assert.equal(capture.status,200);
+ b=await f.request('bookings/'+checkout.data.booking_id);assert.equal(b.data.payment_status,'paid');assert.equal(b.data.booking_status,'confirmed');
+});
+
+
+test('runtime: database refusal before contacting payment provider releases the reservation',async t=>{
+ const f=await fixture(t);
+ await f.db.prepare("CREATE TRIGGER refuse_test_booking BEFORE INSERT ON bookings BEGIN SELECT RAISE(ABORT,'test failure'); END").run();
+ const result=await f.request('checkout/stripe',{...patient,time:'10:00'});assert.equal(result.status,503);
+ const slots=await f.request('slots?service=igiene-sonicare');assert.ok(slots.data.slots.some(s=>s.time==='10:00'));
+});
