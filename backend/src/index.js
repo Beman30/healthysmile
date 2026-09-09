@@ -1,6 +1,6 @@
 import {createOwnedHold, syncOwnedEvent, cleanupOwnedEvents, owned} from './teamup-write.js';
 import {TEAMUP_SERVICE, settings, saveSettings, liveSlots, claimSlot, reservation, rememberCheckout, settlePayment} from './availability.js';
-import { calendars, teamupPreview } from './teamup.js';
+import { calendars, teamupPreview, teamupAutomaticPreview } from './teamup.js';
 /**
  * Healthy Smile — checkout universale
  *
@@ -314,7 +314,7 @@ function adminOk(request, env) {
 
 async function adminRoutes(request, env, url, path) {
   if (!adminOk(request, env)) return bad('Non autorizzato', env, request, 401);
-  if (path === '/api/admin/teamup/calendars' || path === '/api/admin/teamup/preview') {
+  if (path === '/api/admin/teamup/calendars' || path === '/api/admin/teamup/preview' || path === '/api/admin/teamup/auto-preview') {
     const reply = (data, status) => {
       const response = json(data, status, env, request);
       response.headers.set('Cache-Control', 'no-store');
@@ -322,6 +322,7 @@ async function adminRoutes(request, env, url, path) {
     };
     try {
       if (request.method === 'GET' && path.endsWith('/calendars')) return reply({calendars: await calendars(env)}, 200);
+      if (request.method === 'POST' && path.endsWith('/auto-preview')) return reply(await teamupAutomaticPreview(env, await request.json()), 200);
       if (request.method === 'POST' && path.endsWith('/preview')) return reply(await teamupPreview(env, await request.json()), 200);
       return reply({error: 'Metodo non consentito'}, 405);
     } catch (error) {
@@ -336,7 +337,7 @@ async function adminRoutes(request, env, url, path) {
   }
   if (path === '/api/admin/teamup/settings') {
     try {
-      if(request.method==='GET') return ok({settings:await settings(db)},env,request);
+      if(request.method==='GET') return ok({settings:await settings(db),capabilities:{palmia_schedule:true}},env,request);
       if(request.method==='POST') return ok({settings:await saveSettings(env,await request.json())},env,request);
       return bad('Metodo non consentito',env,request,405);
     } catch(error) { return bad(error instanceof SyntaxError?'Richiesta non valida':error.message,env,request); }
