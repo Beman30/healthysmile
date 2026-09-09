@@ -76,6 +76,7 @@ export async function createOwnedHold(env,b,config,fetcher=fetch) {
  const date=b.date||b.appointment_date,time=b.time||b.appointment_time,start=romeTime(date,time);
  const payload={subcalendar_ids:[row.calendar_id],remote_id:marker,title:b.teamup_test?'PROVA TECNICA SITO — da rimuovere':'Sito · in attesa di pagamento · '+b.booking_id.slice(0,8),
   start_dt:apiDate(start),end_dt:apiDate(start+3600000),all_day:false,
+  who:b.teamup_test?'Prova tecnica - nessun importo':'Pagamento online in attesa',
   notes:'Prenotazione sito '+b.booking_id,signup_enabled:false,comments_enabled:false,attachments:[]};
  try {
   const {event}=await request(env,'POST','events',payload,null,fetcher);
@@ -111,7 +112,7 @@ export async function syncOwnedEvent(env,b,action,fetcher=fetch) {
     comments_enabled:event.comments_enabled,attachments:event.attachments,
     title:b.teamup_test?'PROVA TECNICA SITO — modifica verificata':`Sito · ${b.last_name} ${b.first_name} · Visita + Igiene`,
     notes:b.teamup_test?'Prova tecnica senza paziente o pagamento.':`Prenotazione sito ${b.booking_id}\nTelefono: ${b.phone}\nAcconto ricevuto.`,
-    location:event.location,who:event.who,custom:event.custom};
+    location:event.location,who:b.teamup_test?'Prova tecnica - nessun importo':(Number.isFinite(Number(b.balance_due))&&Number(b.balance_due)>0?'Saldo in studio: '+Number(b.balance_due).toFixed(2)+' EUR':'Pagamento ricevuto - nessun saldo'),custom:event.custom};
    const {event:updated}=await request(env,'PUT','events/'+row.event_id,payload,null,fetcher);
    if(!identity(updated,row))throw Error('Aggiornamento Teamup non verificabile');
    await env.DB.prepare("UPDATE teamup_owned_events SET version=?,state='confirmed',updated_at=? WHERE booking_id=?")

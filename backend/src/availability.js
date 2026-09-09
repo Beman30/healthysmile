@@ -189,7 +189,7 @@ export async function settlePayment(env,booking,amount,paymentId) {
     try {
       const slots=await liveSlots(env,r.date,r.booking_id);
       confirmed=!!slots?.some(s=>s.time===r.time);
-      if(confirmed) await syncOwnedEvent(env,booking,'confirm');
+      if(confirmed) await syncOwnedEvent(env,{...booking,amount_paid:amount,balance_due:Math.round((booking.total_price-amount)*100)/100},'confirm');
     } catch(error) { if(error.code==='TEAMUP_BUSY') throw error; confirmed=false; /* Fail closed: payment is real, appointment needs staff review. */ }
   }
   const status=confirmed?'confirmed':'needs_review';

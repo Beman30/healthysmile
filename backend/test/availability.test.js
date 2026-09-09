@@ -21,7 +21,7 @@ async function fixture(t,write=false) {
        if(broken)return Response.json({error:{id:'no_permission'}},{status:403});
        if(u.pathname.endsWith('/configuration'))return Response.json({configuration:{subcalendars:[{id:1,name:'Medici A',readonly:true},{id:2,name:'Medici B',readonly:true},{id:3,name:'Prenotazioni sito',readonly:false}]}});
        if(req.method==='POST') {
-         writes.push('POST');const body=await req.json();if(rejectCreate)return Response.json(rejectCreate,{status:400});assert.deepEqual(body.subcalendar_ids,[3]);
+         writes.push('POST');const body=await req.json();if(rejectCreate)return Response.json(rejectCreate,{status:400});assert.deepEqual(body.subcalendar_ids,[3]);assert.ok(typeof body.who==='string'&&body.who.trim().length>0,'Teamup requires renamed built-in who field: Deve pagare');
          // Teamup write requests use whole seconds, not JS millisecond timestamps.
          assert.match(body.start_dt,/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\+00:00$/);
          assert.match(body.end_dt,/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\+00:00$/);
@@ -36,7 +36,7 @@ async function fixture(t,write=false) {
          const body=req.method==='PUT'?await req.json():null,version=body?.version||u.searchParams.get('version');
          assert.ok(version);if(conflict||version!==event.version)return Response.json({error:'version_mismatch'},{status:409});
          if(req.method==='DELETE'){created.delete(event.id);return Response.json({undo_id:'fake'});}
-         assert.equal(body.id,event.id);assert.equal(body.remote_id,event.remote_id);
+         assert.ok(typeof body.who==='string'&&body.who.trim().length>0);assert.equal(body.id,event.id);assert.equal(body.remote_id,event.remote_id);
          const next={...event,...body,version:'v2'};created.set(next.id,next);return Response.json({event:next});
        }
        if(/\/events\/[^/]+$/.test(u.pathname))return event?Response.json({event}):Response.json({error:'missing'},{status:404});
@@ -197,9 +197,9 @@ test('write runtime: creates hold, confirms with version and deletes only its ma
  const f=await fixture(t,true);
  f.events([event('staff','10:00','13:00')]);
  const r=await f.request('checkout/stripe',{...patient,time:'10:00'});assert.equal(r.status,200,JSON.stringify(r.data));
- assert.equal(f.created.size,1);assert.deepEqual(f.writes,['POST']);
+ assert.equal(f.created.size,1);assert.deepEqual(f.writes,['POST']);assert.equal([...f.created.values()][0].who,'Pagamento online in attesa');
  f.paid(true);await f.request('checkout/stripe/verify',{booking_id:r.data.booking_id});
- const b=await f.request('bookings/'+r.data.booking_id);assert.equal(b.data.booking_status,'confirmed');assert.deepEqual(f.writes,['POST','PUT']);
+ const b=await f.request('bookings/'+r.data.booking_id);assert.equal(b.data.booking_status,'confirmed');assert.deepEqual(f.writes,['POST','PUT']);assert.equal([...f.created.values()][0].who,'Saldo in studio: 83.00 EUR');
  const cancel=await f.request('admin/booking-status',{booking_id:r.data.booking_id,status:'cancelled',event_id:'staff'},true);
  assert.equal(cancel.status,200,JSON.stringify(cancel.data));assert.deepEqual(f.writes,['POST','PUT','DELETE']);assert.equal(f.created.size,0);
 });
@@ -230,7 +230,7 @@ test('write runtime: uncertain create never starts payment or blindly creates a 
  const f=await fixture(t,true);f.uncertainCreate(true);
  const a=await f.request('checkout/stripe',{...patient,time:'10:00'});assert.equal(a.status,502);
  const b=await f.request('checkout/stripe',{...patient,time:'10:00'});assert.equal(b.status,409);
- assert.equal(f.created.size,1);assert.deepEqual(f.writes,['POST']);
+ assert.equal(f.created.size,1);assert.deepEqual(f.writes,['POST']);assert.equal([...f.created.values()][0].who,'Pagamento online in attesa');
  const booking=await f.db.prepare('SELECT payment_id,payment_status FROM bookings').first();assert.equal(booking.payment_id,null);assert.equal(booking.payment_status,'pending');
 });
 
