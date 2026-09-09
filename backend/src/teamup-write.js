@@ -149,12 +149,15 @@ export async function testWrite(env, config) {
    const row=await owned(env.DB,previous.booking_id);
    if(!row||row.state!=='uncertain'||row.event_id||row.key_hash!==await digest(key(env))||row.calendar_id!==config.write_calendar_id)throw Error('Prova precedente da verificare: configurazione cambiata.');
    await validateWriteAccess(env,config.write_calendar_id);
-   const events=await readDay(env,'2020-01-02',[config.write_calendar_id]);
+   const previousDate=/^write-test-(\d{4}-\d{2}-\d{2})-/.exec(previous.booking_id)?.[1]||'2020-01-02';
+   // Explicit retention rejection means creation was refused. Do not query dates the plan forbids.
+   const events=previous.code==='TEAMUP_HTTP_400_event_historical_limit'?[]:await readDay(env,previousDate,[config.write_calendar_id]);
    if(events.some(e=>e.remote_id===row.remote_id||String(e.title||'').startsWith('PROVA TECNICA SITO')||String(e.notes||e.note||'').includes(previous.booking_id)))throw Error('Evento tecnico presente: nessuna nuova creazione.');
    await env.DB.prepare("UPDATE teamup_owned_events SET state='deleted',updated_at=? WHERE booking_id=? AND state='uncertain'").bind(now(),previous.booking_id).run();
   }finally{await env.DB.prepare('UPDATE teamup_write_probe SET busy=0 WHERE id=1 AND booking_id=?').bind(previous.booking_id).run();}
  }
- const id='write-test-'+crypto.randomUUID();
+ const probeDate=new Date(Date.now()-86400000).toLocaleDateString('sv-SE',{timeZone:'Europe/Rome'});
+ const id='write-test-'+probeDate+'-'+crypto.randomUUID();
  const lock=await env.DB.prepare(`INSERT INTO teamup_write_probe(id,booking_id,busy,step,updated_at)
  VALUES(1,?,1,'access',?) ON CONFLICT(id) DO UPDATE SET booking_id=excluded.booking_id,busy=1,step='access',code=NULL,updated_at=excluded.updated_at
  WHERE teamup_write_probe.busy=0 AND (teamup_write_probe.step='done' OR NOT EXISTS(
@@ -162,8 +165,8 @@ export async function testWrite(env, config) {
  if(lock.meta.changes!==1)throw Error('Una prova è in corso o ha lasciato un evento da verificare. Nessun nuovo evento creato.');
  let step='access';
  const progress=async value=>{step=value;await env.DB.prepare('UPDATE teamup_write_probe SET step=?,updated_at=? WHERE id=1 AND booking_id=?').bind(step,now(),id).run();};
- // Fixed historical date: probe never occupies a currently bookable slot.
- const b={booking_id:id,date:'2020-01-02',time:'12:00',teamup_test:true};
+ // Yesterday in Rome: outside bookable slots, within normal calendar retention.
+ const b={booking_id:id,date:probeDate,time:'12:00',teamup_test:true};
  try {
   await validateWriteAccess(env,config.write_calendar_id);
   await progress('create');

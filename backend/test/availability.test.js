@@ -355,3 +355,15 @@ test('rejected probe cannot retry when its marker is present in Teamup',async t=
  const r=await f.request('admin/teamup/write-test',{},true);
  assert.equal(r.status,409);assert.deepEqual(f.writes,['POST']);
 });
+
+
+test('probe uses yesterday in Rome and can recover an explicit historical-limit rejection',async t=>{
+ const f=await fixture(t,true);
+ await f.request('admin/teamup/settings',{...config,revision:1,write_enabled:false,write_calendar_id:3},true);
+ f.rejectCreate({error:{id:'event_historical_limit',message:'Outside plan retention'}});
+ let r=await f.request('admin/teamup/write-test',{},true);assert.equal(r.data.code,'TEAMUP_HTTP_400_event_historical_limit');
+ const yesterday=new Date(Date.now()-86400000).toLocaleDateString('sv-SE',{timeZone:'Europe/Rome'});
+ assert.ok(r.data.booking_id.startsWith('write-test-'+yesterday+'-'));
+ f.rejectCreate(null);r=await f.request('admin/teamup/write-test',{},true);
+ assert.equal(r.data.ok,true,JSON.stringify(r.data));assert.deepEqual(f.writes,['POST','POST','PUT','DELETE']);
+});
