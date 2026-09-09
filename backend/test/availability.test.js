@@ -307,3 +307,25 @@ test('write failure records a safe diagnostic for admin without launching paymen
  const booking=await f.db.prepare('SELECT payment_id FROM bookings').first();assert.equal(booking.payment_id,null);
  assert.ok(!JSON.stringify(sync.data).includes('test-api'));
 });
+
+
+test('admin probe creates updates deletes a technical event with website writes disabled; no payment or slots',async t=>{
+ const f=await fixture(t,true);
+ const save=await f.request('admin/teamup/settings',{...config,revision:1,write_enabled:false,write_calendar_id:3},true);assert.equal(save.status,200);
+ const r=await f.request('admin/teamup/write-test',{},true);
+ assert.equal(r.status,200);assert.equal(r.data.ok,true,JSON.stringify(r.data));assert.deepEqual(f.writes,['POST','PUT','DELETE']);
+ assert.equal(f.created.size,0);
+ for(const table of ['bookings','slots','teamup_reservations'])assert.equal((await f.db.prepare('SELECT count(*) AS n FROM '+table).first()).n,0);
+ const saved=await f.request('admin/teamup/settings',null,true);assert.equal(saved.data.settings.write_enabled,false);
+});
+
+test('probe rejects unauthenticated calls and live write mode; uncertain probe cannot create another event',async t=>{
+ const f=await fixture(t,true);
+ assert.equal((await f.request('admin/teamup/write-test',{})).status,401);
+ assert.equal((await f.request('admin/teamup/write-test',{},true)).status,409);assert.deepEqual(f.writes,[]);
+ await f.request('admin/teamup/settings',{...config,revision:1,write_enabled:false,write_calendar_id:3},true);
+ f.uncertainCreate(true);
+ const r=await f.request('admin/teamup/write-test',{},true);
+ assert.equal(r.data.ok,false);assert.equal(r.data.step,'create');assert.equal(r.data.code,'TEAMUP_HTTP_503');
+ assert.equal((await f.request('admin/teamup/write-test',{},true)).status,409);assert.deepEqual(f.writes,['POST']);
+});

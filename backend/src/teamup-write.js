@@ -66,7 +66,7 @@ export async function createOwnedHold(env,b,config,fetcher=fetch) {
  await env.DB.prepare(`INSERT INTO teamup_owned_events(booking_id,remote_id,calendar_id,key_hash,state,busy,updated_at)
   VALUES(?,?,?,?,'creating',1,?)`).bind(row.booking_id,marker,row.calendar_id,row.key_hash,now()).run();
  const date=b.date||b.appointment_date,time=b.time||b.appointment_time,start=romeTime(date,time);
- const payload={subcalendar_ids:[row.calendar_id],remote_id:marker,title:'Sito · in attesa di pagamento · '+b.booking_id.slice(0,8),
+ const payload={subcalendar_ids:[row.calendar_id],remote_id:marker,title:b.teamup_test?'PROVA TECNICA SITO — da rimuovere':'Sito · in attesa di pagamento · '+b.booking_id.slice(0,8),
   start_dt:apiDate(start),end_dt:apiDate(start+3600000),all_day:false,
   notes:'Prenotazione sito '+b.booking_id,signup_enabled:false,comments_enabled:false,attachments:[]};
  try {
@@ -101,8 +101,8 @@ export async function syncOwnedEvent(env,b,action,fetcher=fetch) {
    const payload={id:row.event_id,version:event.version,subcalendar_ids:[row.calendar_id],remote_id:row.remote_id,
     start_dt:event.start_dt,end_dt:event.end_dt,all_day:false,signup_enabled:event.signup_enabled,
     comments_enabled:event.comments_enabled,attachments:event.attachments,
-    title:`Sito · ${b.last_name} ${b.first_name} · Visita + Igiene`,
-    notes:`Prenotazione sito ${b.booking_id}\nTelefono: ${b.phone}\nAcconto ricevuto.`,
+    title:b.teamup_test?'PROVA TECNICA SITO — modifica verificata':`Sito · ${b.last_name} ${b.first_name} · Visita + Igiene`,
+    notes:b.teamup_test?'Prova tecnica senza paziente o pagamento.':`Prenotazione sito ${b.booking_id}\nTelefono: ${b.phone}\nAcconto ricevuto.`,
     location:event.location,who:event.who,custom:event.custom};
    const {event:updated}=await request(env,'PUT','events/'+row.event_id,payload,null,fetcher);
    if(!identity(updated,row))throw Error('Aggiornamento Teamup non verificabile');
@@ -121,4 +121,37 @@ export async function cleanupOwnedEvents(env) {
  const {results}=await env.DB.prepare(`SELECT e.booking_id FROM teamup_owned_events e LEFT JOIN bookings b ON b.booking_id=e.booking_id
   WHERE e.state IN ('held','confirmed','review') AND e.busy=0 AND (b.booking_status='cancelled' OR b.booking_id IS NULL) LIMIT 10`).all();
  for(const b of results||[]) {try {await syncOwnedEvent(env,b,'delete');}catch{/* Keep event and journal for staff review. */}}
+}
+
+// Isolated admin probe: no patient booking, slot, payment or settings mutation.
+export async function testWrite(env, config) {
+ if(!config?.write_calendar_id)throw Error('Salva prima il calendario dedicato al sito.');
+ if(config.write_enabled)throw Error('Disattiva e salva la scrittura automatica prima della prova.');
+ if(config.subcalendar_ids?.includes(config.write_calendar_id))throw Error('Il calendario della prova deve essere separato dalle agende Medici.');
+ await env.DB.prepare(`CREATE TABLE IF NOT EXISTS teamup_write_probe (
+ id INTEGER PRIMARY KEY CHECK(id=1), booking_id TEXT NOT NULL, busy INTEGER NOT NULL,
+ step TEXT NOT NULL, code TEXT, updated_at TEXT NOT NULL)`).run();
+ const id='write-test-'+crypto.randomUUID();
+ const lock=await env.DB.prepare(`INSERT INTO teamup_write_probe(id,booking_id,busy,step,updated_at)
+ VALUES(1,?,1,'access',?) ON CONFLICT(id) DO UPDATE SET booking_id=excluded.booking_id,busy=1,step='access',code=NULL,updated_at=excluded.updated_at
+ WHERE teamup_write_probe.busy=0 AND (teamup_write_probe.step='done' OR NOT EXISTS(
+ SELECT 1 FROM teamup_owned_events WHERE booking_id=teamup_write_probe.booking_id AND state<>'deleted'))`).bind(id,now()).run();
+ if(lock.meta.changes!==1)throw Error('Una prova è in corso o ha lasciato un evento da verificare. Nessun nuovo evento creato.');
+ let step='access';
+ const progress=async value=>{step=value;await env.DB.prepare('UPDATE teamup_write_probe SET step=?,updated_at=? WHERE id=1 AND booking_id=?').bind(step,now(),id).run();};
+ // Fixed historical date: probe never occupies a currently bookable slot.
+ const b={booking_id:id,date:'2020-01-02',time:'12:00',teamup_test:true};
+ try {
+  await validateWriteAccess(env,config.write_calendar_id);
+  await progress('create');
+  await createOwnedHold(env,b,{...config,write_enabled:true});
+  await progress('update');await syncOwnedEvent(env,b,'confirm');
+  await progress('delete');await syncOwnedEvent(env,b,'delete');
+  await progress('done');
+  return {ok:true,step,booking_id:id,message:'Prova riuscita: evento creato, modificato e cancellato. Nessun pagamento avviato.'};
+ } catch(e) {
+  const code=e.teamupCode||'TEAMUP_'+step.toUpperCase()+'_CHECK_FAILED';
+  await env.DB.prepare('UPDATE teamup_write_probe SET code=? WHERE id=1 AND booking_id=?').bind(code,id).run();
+  return {ok:false,step,code,booking_id:id,message:'Prova fermata: '+step+' · '+code+'. La scrittura delle prenotazioni resta disattivata.'};
+ } finally {await env.DB.prepare('UPDATE teamup_write_probe SET busy=0,updated_at=? WHERE id=1 AND booking_id=?').bind(now(),id).run();}
 }
