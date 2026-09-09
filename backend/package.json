@@ -9,7 +9,7 @@
     "db:schema": "wrangler d1 execute healthysmile-checkout-db --remote --file=./schema.sql",
     "db:seed": "wrangler d1 execute healthysmile-checkout-db --remote --file=./seed-slots.sql",
     "test": "node --test test/*.test.js",
-    "build:teamup": "esbuild src/index.js --bundle --format=esm --platform=browser --target=es2022 --keep-names --outfile=releases/healthysmile-worker-teamup-slot.mjs"
+    "build:teamup": "esbuild src/index.js --bundle --format=esm --platform=browser --target=es2022 --keep-names --outfile=releases/healthysmile-worker-teamup-scrittura.mjs"
   },
   "devDependencies": {
     "wrangler": "^3.90.0",
