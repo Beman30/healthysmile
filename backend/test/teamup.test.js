@@ -42,7 +42,7 @@ test('API requests use secret header, selected calendars, and sanitize output',a
  const urls=[];
  const result=await teamupPreview(env,input,async(url,opts)=>{
   assert.equal(opts.headers['Teamup-Token'],'test-key');urls.push(url);
-  return Response.json(url.includes('/subcalendars?')?{subcalendars:[{id:1,name:'Medici > A'},{id:2,name:'Medici > B'}]}:{events:[event('a','10:00','11:00',{title:'PRIVATE',notes:'PRIVATE NOTES'})]});
+  return Response.json(url.includes('/configuration?')?{configuration:{subcalendars:[{id:1,name:'Medici > A'},{id:2,name:'Medici > B'}]}}:{events:[event('a','10:00','11:00',{title:'PRIVATE',notes:'PRIVATE NOTES'})]});
  });
  assert.ok(urls[1].includes('subcalendarId%5B%5D=1'));assert.ok(!JSON.stringify(result).includes('PRIVATE'));
 });
@@ -64,14 +64,14 @@ test('Worker rejects unauthenticated access before reading Teamup',async()=>{
 
 test('diagnostics expose status and stage, never upstream body or credentials',async()=>{
  for(const code of [400,401,403,404,429,500,503]) {
-  await assert.rejects(()=>calendars(env,async()=>new Response('private patient kstest test-key',{status:code})),e=>e.message.includes(`HTTP ${code} (subcalendars;`)&&!/private|kstest|test-key/.test(e.message));
+  await assert.rejects(()=>calendars(env,async()=>new Response('private patient kstest test-key',{status:code})),e=>e.message.includes(`HTTP ${code} (configuration;`)&&!/private|kstest|test-key/.test(e.message));
  }
  await assert.rejects(()=>calendars(env,async()=>new Response('<html>private</html>')),/formato risposta non valido/);
  await assert.rejects(()=>calendars(env,async()=>{throw Error('private kstest')}),/connessione non riuscita/);
 });
 test('trims accidental outer whitespace on secrets without disclosing them',async()=>{
  await calendars({TEAMUP_API_KEY:' test-key\n',TEAMUP_CALENDAR_KEY:' kstest '},async(url,options)=>{
-  assert.ok(url.startsWith('https://api.teamup.com/kstest/'));assert.equal(options.headers['Teamup-Token'],'test-key');return Response.json({subcalendars:[]});
+  assert.ok(url.startsWith('https://api.teamup.com/kstest/'));assert.equal(options.headers['Teamup-Token'],'test-key');return Response.json({configuration:{subcalendars:[]}});
  });
  await assert.rejects(()=>calendars({...env,TEAMUP_API_KEY:'bad\nkey'}),/spazi o ritorni/);
 });
@@ -102,4 +102,19 @@ test('extracts previously unknown machine codes across error response structures
  for(const id of ['kstest','test-key','private@example.com','https://secret.invalid','Account Mario Rossi']) {
   await assert.rejects(()=>calendars(env,async()=>Response.json({error:{id}},{status:403})),e=>e.message.includes('senza codice')&&!e.message.includes(id));
  }
+});
+
+
+test('reads authorized configuration, filters inactive calendars and strips sensitive metadata',async()=>{
+ const data=await calendars(env,async(url,options)=>{
+  assert.equal(new URL(url).pathname,'/kstest/configuration');
+  assert.equal(new URL(url).search,'');
+  assert.equal(options.headers['Teamup-Token'],'test-key');
+  return Response.json({configuration:{link:{key:'PRIVATE'},user:{name:'PRIVATE'},subcalendars:[{id:1,name:'Medici',active:true,link_permissions:{secret:'PRIVATE'}},{id:2,name:'Inactive',active:false}]}});
+ });
+ assert.deepEqual(data,[{id:1,name:'Medici',active:true}]);
+ await assert.rejects(()=>calendars(env,async()=>Response.json({configuration:{}})),/incompleto/);
+ let calls=0;
+ await assert.rejects(()=>calendars(env,async()=>{calls++;return Response.json({error:{id:'no_permission'}},{status:403});}),/no_permission/);
+ assert.equal(calls,1); // No alternate keys, credential changes or silent fallback.
 });
