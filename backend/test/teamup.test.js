@@ -90,6 +90,16 @@ test('known Teamup error codes are explained without returning account text', as
  for(const id of ['invalid_api_key','account_no_permission','login_required']) {
   await assert.rejects(()=>calendars(env,async()=>Response.json({error:{id,message:'PRIVATE account patient',title:'PRIVATE'}},{status:403})), e=>e.message.includes(id)&&!e.message.includes('PRIVATE'));
  }
- await assert.rejects(()=>calendars(env,async()=>Response.json({error:{id:'PRIVATE_SECRET'}},{status:403})),e=>e.message.includes('non riconosciuto')&&!e.message.includes('PRIVATE_SECRET'));
+ await assert.rejects(()=>calendars(env,async()=>Response.json({error:{id:'PRIVATE_SECRET'}},{status:403})),e=>e.message.includes('senza codice')&&!e.message.includes('PRIVATE_SECRET'));
  await assert.rejects(()=>calendars(env,async()=>new Response('<!DOCTYPE html><html>PRIVATE</html>',{status:403})),e=>e.message.includes('risposta HTML')&&!e.message.includes('PRIVATE'));
+});
+
+
+test('extracts previously unknown machine codes across error response structures',async()=>{
+ for(const body of [{error:{id:'no_permission',message:'PRIVATE'}},{error:{code:'access_denied'}},{code:1006},{error:'forbidden'},{errors:[{code:'ip_blocked'}]}]) {
+  await assert.rejects(()=>calendars(env,async()=>Response.json(body,{status:403})),e=>e.message.includes('codice API:')&&!e.message.includes('PRIVATE'));
+ }
+ for(const id of ['kstest','test-key','private@example.com','https://secret.invalid','Account Mario Rossi']) {
+  await assert.rejects(()=>calendars(env,async()=>Response.json({error:{id}},{status:403})),e=>e.message.includes('senza codice')&&!e.message.includes(id));
+ }
 });
