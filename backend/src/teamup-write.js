@@ -5,6 +5,9 @@ export const WRITE_SCHEMA=`CREATE TABLE IF NOT EXISTS teamup_owned_events (
  calendar_id INTEGER NOT NULL, key_hash TEXT NOT NULL, version TEXT,
  state TEXT NOT NULL, busy INTEGER NOT NULL DEFAULT 0, updated_at TEXT NOT NULL)`;
 const now=()=>new Date().toISOString();
+const apiDate=ms=>new Date(ms).toISOString().replace(/\.\d{3}Z$/, '+00:00');
+function writeError(code) {const e=new Error(code);e.teamupCode=code;return e;}
+
 async function digest(s) {return [...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s)))].map(x=>x.toString(16).padStart(2,'0')).join('');}
 function key(env) {const k=String(env.TEAMUP_CALENDAR_KEY||'').trim();if(!/^ks[a-zA-Z0-9]+$/.test(k))throw Error('Collegamento Teamup non configurato');return k;}
 async function request(env,method,path,body,version,fetcher=fetch) {
@@ -14,9 +17,14 @@ async function request(env,method,path,body,version,fetcher=fetch) {
  try {
   const r=await fetcher(`https://api.teamup.com/${key(env)}/${path}?${params}`,{method,redirect:'manual',signal:controller.signal,
    headers:{'Teamup-Token':token,Accept:'application/json','Content-Type':'application/json'},...(body?{body:JSON.stringify(body)}:{})});
-  if(!r.ok)throw Error(`Scrittura Teamup HTTP ${r.status}: nessuna modifica confermata. Verificare permessi o modifiche in agenda.`);
-  return await r.json();
- } catch(e) {if(/^Scrittura Teamup HTTP/.test(e.message))throw e;throw Error('Esito Teamup non verificabile: controllare l’agenda prima di riprovare.');}
+  if(!r.ok) {
+   const data=await r.json().catch(()=>null);
+   const known=['no_permission','invalid_api_key','event_validation_conflict','event_validation_failed','validation_failed','invalid_input','invalid_date','calendar_not_found'];
+   const id=data?.error?.id;
+   throw writeError('TEAMUP_HTTP_'+r.status+(known.includes(id)?'_'+id:''));
+  }
+  try {return await r.json();}catch {throw writeError('TEAMUP_RESPONSE_NOT_JSON');}
+ } catch(e) {if(e.teamupCode)throw e;throw writeError(controller.signal.aborted?'TEAMUP_TIMEOUT':'TEAMUP_NETWORK');}
  finally {clearTimeout(timer);}
 }
 export async function owned(db,id) {
@@ -51,6 +59,7 @@ export async function omitOwnEvent(db,bookingId,events) {
 export async function createOwnedHold(env,b,config,fetcher=fetch) {
  if(!config?.write_enabled)return false;
  if(await owned(env.DB,b.booking_id))throw Error('Inserimento Teamup già tentato: non viene duplicato');
+ await env.DB.prepare('CREATE TABLE IF NOT EXISTS teamup_write_errors (booking_id TEXT PRIMARY KEY, code TEXT NOT NULL)').run();
  const marker='hs-site-'+crypto.randomUUID();
  const row={booking_id:b.booking_id,remote_id:marker,calendar_id:config.write_calendar_id,key_hash:await digest(key(env))};
  // Journal BEFORE the POST. A timeout must never cause a blind second creation.
@@ -58,15 +67,16 @@ export async function createOwnedHold(env,b,config,fetcher=fetch) {
   VALUES(?,?,?,?,'creating',1,?)`).bind(row.booking_id,marker,row.calendar_id,row.key_hash,now()).run();
  const date=b.date||b.appointment_date,time=b.time||b.appointment_time,start=romeTime(date,time);
  const payload={subcalendar_ids:[row.calendar_id],remote_id:marker,title:'Sito · in attesa di pagamento · '+b.booking_id.slice(0,8),
-  start_dt:new Date(start).toISOString(),end_dt:new Date(start+3600000).toISOString(),all_day:false,
+  start_dt:apiDate(start),end_dt:apiDate(start+3600000),all_day:false,
   notes:'Prenotazione sito '+b.booking_id,signup_enabled:false,comments_enabled:false,attachments:[]};
  try {
   const {event}=await request(env,'POST','events',payload,null,fetcher);
-  if(!identity(event,row)||Date.parse(event.start_dt)!==start||Date.parse(event.end_dt)!==start+3600000)throw Error('Risposta alla creazione Teamup non verificabile');
+  if(!identity(event,row)||Date.parse(event.start_dt)!==start||Date.parse(event.end_dt)!==start+3600000)throw writeError(!identity(event,row)?'TEAMUP_EVENT_IDENTITY_MISMATCH':'TEAMUP_EVENT_TIME_MISMATCH');
   await env.DB.prepare("UPDATE teamup_owned_events SET event_id=?,version=?,state='held',busy=0,updated_at=? WHERE booking_id=?")
    .bind(String(event.id),event.version,now(),b.booking_id).run();
   return true;
  } catch(e) {
+  await env.DB.prepare('INSERT OR REPLACE INTO teamup_write_errors(booking_id,code) VALUES(?,?)').bind(b.booking_id,e.teamupCode||'TEAMUP_LOCAL_WRITE_FAILURE').run();
   await env.DB.prepare("UPDATE teamup_owned_events SET state='uncertain',busy=0,updated_at=? WHERE booking_id=?").bind(now(),b.booking_id).run();
   throw e;
  }

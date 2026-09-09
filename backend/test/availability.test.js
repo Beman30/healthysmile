@@ -22,6 +22,9 @@ async function fixture(t,write=false) {
        if(u.pathname.endsWith('/configuration'))return Response.json({configuration:{subcalendars:[{id:1,name:'Medici A',readonly:true},{id:2,name:'Medici B',readonly:true},{id:3,name:'Prenotazioni sito',readonly:false}]}});
        if(req.method==='POST') {
          writes.push('POST');const body=await req.json();assert.deepEqual(body.subcalendar_ids,[3]);
+         // Teamup write requests use whole seconds, not JS millisecond timestamps.
+         assert.match(body.start_dt,/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\+00:00$/);
+         assert.match(body.end_dt,/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\+00:00$/);
          assert.equal(body.signup_enabled,false);assert.equal(body.comments_enabled,false);assert.deepEqual(body.attachments,[]);
          const event={...body,id:String(++serial),version:'v1',readonly:false};created.set(event.id,event);
          if(uncertainCreate)return Response.json({error:'uncertain'},{status:503});
@@ -290,4 +293,17 @@ test('runtime automatic + own events: payment confirms without double counting h
  const paid=await f.request('checkout/stripe/verify',{booking_id:checkout.data.booking_id});assert.equal(paid.status,200);
  const b=await f.db.prepare('SELECT booking_status FROM bookings WHERE booking_id=?').bind(checkout.data.booking_id).first();
  assert.equal(b.booking_status,'confirmed');assert.deepEqual(f.writes,['POST','PUT']);
+});
+
+
+test('write failure records a safe diagnostic for admin without launching payment or retrying',async t=>{
+ const f=await fixture(t,true);f.uncertainCreate(true);
+ const r=await f.request('checkout/stripe',{...patient,time:'10:00'});
+ assert.equal(r.status,502);
+ const sync=await f.request('admin/teamup/sync',null,true);
+ assert.equal(sync.status,200);assert.equal(sync.data.events[0].state,'uncertain');
+ assert.equal(sync.data.events[0].error_code,'TEAMUP_HTTP_503');
+ assert.deepEqual(f.writes,['POST']);
+ const booking=await f.db.prepare('SELECT payment_id FROM bookings').first();assert.equal(booking.payment_id,null);
+ assert.ok(!JSON.stringify(sync.data).includes('test-api'));
 });
