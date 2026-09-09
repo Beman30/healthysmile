@@ -1,5 +1,5 @@
 import {WRITE_SCHEMA, validateWriteAccess, omitOwnEvent, syncOwnedEvent} from './teamup-write.js';
-import {calendars, preview, readDay, romeTime} from './teamup.js';
+import {calendars, preview, readDay, romeTime, automaticWindows, rollingDates} from './teamup.js';
 
 export const TEAMUP_SERVICE = 'igiene-sonicare';
 const stamp = () => new Date().toISOString();
@@ -70,7 +70,12 @@ export function validateSettings(body, currentTime=Date.now()) {
   if (typeof body.enabled!=='boolean' || !Number.isSafeInteger(body.revision) || body.revision<0) throw new Error('Configurazione non valida');
   const ids = [...new Set(body.subcalendar_ids || [])].sort((a,b)=>a-b);
   if (!Array.isArray(body.subcalendar_ids) || !ids.length || ids.some(id=>!Number.isSafeInteger(id)||id<=0)) throw new Error('Seleziona tutte le agende Medici');
-  if (!Array.isArray(body.windows) || body.windows.length>40 || (body.enabled&&!body.windows.length)) throw new Error('Aggiungi le fasce da aprire (massimo 40)');
+  const schedule_mode=body.schedule_mode||'manual';
+  if(!['manual','palmia'].includes(schedule_mode)) throw new Error('Modalità agenda non valida');
+  const palmia_calendar_id=Number(body.palmia_calendar_id)||null;
+  if(schedule_mode==='palmia' && (!ids.includes(palmia_calendar_id) || body.staff_follows_palmia!==true)) throw new Error('Seleziona Palmia tra le agende Medici e conferma che l’igienista segue gli stessi orari');
+  if(schedule_mode==='palmia') body={...body,windows:[]};
+  if (!Array.isArray(body.windows) || body.windows.length>40 || (body.enabled&&schedule_mode==='manual'&&!body.windows.length)) throw new Error('Aggiungi le fasce da aprire (massimo 40)');
   const windows = body.windows.map(w=>{
     preview([],{...w,subcalendar_ids:ids});
     if (body.enabled && (romeTime(w.date,w.end)<=currentTime || romeTime(w.date,w.start)>currentTime+60*86400000)) throw new Error('Scegli date future entro 60 giorni');
@@ -81,7 +86,8 @@ export function validateSettings(body, currentTime=Date.now()) {
   const write_enabled=body.write_enabled===true;
   const write_calendar_id=Number(body.write_calendar_id)||null;
   if(write_enabled && (!Number.isSafeInteger(write_calendar_id)||write_calendar_id<=0)) throw new Error('Seleziona il calendario Prenotazioni sito');
-  return {enabled:body.enabled,subcalendar_ids:ids,windows,write_enabled,write_calendar_id};
+  if(schedule_mode==='palmia' && write_calendar_id===palmia_calendar_id) throw new Error('Palmia e Prenotazioni sito devono essere calendari diversi');
+  return {enabled:body.enabled,subcalendar_ids:ids,windows,write_enabled,write_calendar_id,schedule_mode,palmia_calendar_id,staff_follows_palmia:body.staff_follows_palmia===true};
 }
 async function accessible(env,ids,fetcher) {
   const visible=await calendars(env,fetcher);
@@ -119,17 +125,21 @@ export async function liveSlots(env,date=null,ignoreId='-none-',fetcher=fetch,cl
   if(!config) return null;
   if(!config.enabled) return [];
   if(date) romeTime(date,'12:00');
-  const windows=config.windows.filter(w=>(!date||w.date===date)&&romeTime(w.date,w.end)>clock);
-  if(!windows.length) return [];
+  const automatic=config.schedule_mode==='palmia';
+  const horizon=rollingDates(clock);
+  if(automatic && date && !horizon.includes(date)) return [];
+  const windows=(config.windows||[]).filter(w=>(!date||w.date===date)&&romeTime(w.date,w.end)>clock);
+  if(!automatic && !windows.length) return [];
   const calendarIds=[...new Set([...config.subcalendar_ids,...(config.write_calendar_id?[config.write_calendar_id]:[])])];
   await accessible(env,calendarIds,fetcher);
-  const dates=[...new Set(windows.map(w=>w.date))];
+  const dates=automatic?(date?[date]:horizon):[...new Set(windows.map(w=>w.date))];
   const slots=[];
   // At most 14 days; one upstream events request per day, no patient data in output/cache.
   for(const day of dates) {
     const events=await omitOwnEvent(env.DB,ignoreId,await readDay(env,day,calendarIds,fetcher));
     const busy=await siteBusy(env.DB,day,ignoreId);
-    for(const w of windows.filter(w=>w.date===day)) {
+    const dayWindows=automatic?automaticWindows(events,day,config.palmia_calendar_id):windows.filter(w=>w.date===day);
+    for(const w of dayWindows) {
       const result=preview(events,{...w,subcalendar_ids:calendarIds});
       for(const s of result.slots) if(s.status==='candidate' && romeTime(day,s.time)>clock &&
         !busy.some(b=>b.time<s.end_time && b.end_time>s.time)) slots.push({date:day,time:s.time});
