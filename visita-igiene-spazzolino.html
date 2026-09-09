@@ -550,17 +550,14 @@ var WA_BASE   = "Ciao, vorrei informazioni o prenotare Visita + Igiene + Spazzol
     var prima=order[0], orari=byDate[prima].slice().sort();
     var quando=label(prima).toLowerCase();
     var intro = order.length===1
-      ? 'La prossima giornata è <strong>'+quando+'</strong>, dalle '+
-        orari[0].slice(0,2)+' alle '+String(Math.min(23,parseInt(orari[orari.length-1].slice(0,2),10)+1))+'.'+
-        ' Scegli l\'orario che ti è comodo.'
-      : 'Le prossime giornate sono <strong>'+order.length+'</strong>, a partire da <strong>'+quando+'</strong>.'+
-        ' Scegli quella che ti è comoda.';
+      ? 'La prossima giornata è <strong>'+quando+'</strong>. Scegli l’orario che ti è comodo.'
+      : 'Le prossime giornate sono <strong>'+order.length+'</strong>, a partire da <strong>'+quando+'</strong>. Scegli quella che ti è comoda.';
     document.getElementById('introGiornata').innerHTML = intro;
 
     var liberi=byDate[prima].length;
     document.getElementById('notaPosti').innerHTML =
-      liberi===1 ? 'Resta <strong>un solo posto</strong> per '+quando
-                 : 'Restano <strong>'+liberi+' posti</strong> per '+quando;
+      liberi===1 ? '<strong>Un orario disponibile</strong> per '+quando
+                 : '<strong>'+liberi+' orari tra cui scegliere</strong> per '+quando;
 
     order.forEach(function(iso){
       var slot={ id: iso, label: label(iso), times: byDate[iso] };
@@ -669,3 +666,4 @@ var WA_BASE   = "Ciao, vorrei informazioni o prenotare Visita + Igiene + Spazzol
 <script src="/components.js"></script>
 </body>
 </html>
+
