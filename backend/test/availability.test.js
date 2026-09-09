@@ -10,17 +10,34 @@ const config={enabled:true,revision:0,subcalendar_ids:[1,2],windows:[{date:day,s
 const patient={service_id:'igiene-sonicare',date:day,first_name:'Test',last_name:'Fittizio',email:'test@example.test',phone:'+390000000000',terms_accepted:true};
 function event(id,start,end,extra={}) {return {id,subcalendar_ids:[1],start_dt:new Date(romeTime(day,start)).toISOString(),end_dt:new Date(romeTime(day,end)).toISOString(),title:'Test',...extra};}
 
-async function fixture(t) {
+async function fixture(t,write=false) {
  let events=[],broken=false,paid=false,expired=false,count=0;
- const sessions=new Map();
- const mf=new Miniflare({modules:true,compatibilityDate:'2025-09-01',scriptPath:new URL('../releases/healthysmile-worker-teamup-slot.mjs',import.meta.url).pathname,
+ const sessions=new Map(),created=new Map(),writes=[];let serial=1000,conflict=false,uncertainCreate=false;
+ const mf=new Miniflare({modules:true,compatibilityDate:'2025-09-01',scriptPath:new URL('../releases/healthysmile-worker-teamup-scrittura.mjs',import.meta.url).pathname,
    d1Databases:['DB'],bindings:{ADMIN_TOKEN:'test-admin',TEAMUP_API_KEY:'test-api',TEAMUP_CALENDAR_KEY:'kstest',STRIPE_SECRET_KEY:'sk_test',PAYPAL_CLIENT_ID:'test',PAYPAL_CLIENT_SECRET:'test',SITE_URL:'https://example.test'},
    outboundService:async req=>{
      const u=new URL(req.url);
      if(u.hostname==='api.teamup.com') {
        if(broken)return Response.json({error:{id:'no_permission'}},{status:403});
-       if(u.pathname.endsWith('/configuration'))return Response.json({configuration:{subcalendars:[{id:1,name:'Medici A'},{id:2,name:'Medici B'}]}});
-       return Response.json({events});
+       if(u.pathname.endsWith('/configuration'))return Response.json({configuration:{subcalendars:[{id:1,name:'Medici A',readonly:true},{id:2,name:'Medici B',readonly:true},{id:3,name:'Prenotazioni sito',readonly:false}]}});
+       if(req.method==='POST') {
+         writes.push('POST');const body=await req.json();assert.deepEqual(body.subcalendar_ids,[3]);
+         assert.equal(body.signup_enabled,false);assert.equal(body.comments_enabled,false);assert.deepEqual(body.attachments,[]);
+         const event={...body,id:String(++serial),version:'v1',readonly:false};created.set(event.id,event);
+         if(uncertainCreate)return Response.json({error:'uncertain'},{status:503});
+         return Response.json({event},{status:201});
+       }
+       const event=created.get(u.pathname.split('/').at(-1));
+       if(req.method==='PUT'||req.method==='DELETE') {
+         writes.push(req.method);if(!event)return Response.json({error:'missing'},{status:404});
+         const body=req.method==='PUT'?await req.json():null,version=body?.version||u.searchParams.get('version');
+         assert.ok(version);if(conflict||version!==event.version)return Response.json({error:'version_mismatch'},{status:409});
+         if(req.method==='DELETE'){created.delete(event.id);return Response.json({undo_id:'fake'});}
+         assert.equal(body.id,event.id);assert.equal(body.remote_id,event.remote_id);
+         const next={...event,...body,version:'v2'};created.set(next.id,next);return Response.json({event:next});
+       }
+       if(/\/events\/[^/]+$/.test(u.pathname))return event?Response.json({event}):Response.json({error:'missing'},{status:404});
+       return Response.json({events:[...events,...created.values()]});
      }
      if(u.hostname==='api.stripe.com') {
        if(req.method==='POST') {
@@ -52,8 +69,8 @@ async function fixture(t) {
    const r=await mf.dispatchFetch('https://worker.test/api/'+path,{method:body?'POST':'GET',headers:{'Content-Type':'application/json',...(admin?{Authorization:'Bearer test-admin'}:{})},...(body?{body:JSON.stringify(body)}:{})});
    return {status:r.status,data:await r.json()};
  };
- const save=await request('admin/teamup/settings',config,true);assert.equal(save.status,200,JSON.stringify(save.data));
- return {db,request,mf,events:x=>{events=x;},broken:x=>{broken=x;},paid:x=>{paid=x;},expired:x=>{expired=x;}};
+ const save=await request('admin/teamup/settings',write?{...config,write_enabled:true,write_calendar_id:3}:config,true);assert.equal(save.status,200,JSON.stringify(save.data));
+ return {db,request,mf,created,writes,conflict:x=>{conflict=x;},uncertainCreate:x=>{uncertainCreate=x;},events:x=>{events=x;},broken:x=>{broken=x;},paid:x=>{paid=x;},expired:x=>{expired=x;}};
 }
 
 test('validates explicit staffing, dates, full hour and separate opening windows',()=>{
@@ -170,4 +187,46 @@ test('runtime: database refusal before contacting payment provider releases the 
  await f.db.prepare("CREATE TRIGGER refuse_test_booking BEFORE INSERT ON bookings BEGIN SELECT RAISE(ABORT,'test failure'); END").run();
  const result=await f.request('checkout/stripe',{...patient,time:'10:00'});assert.equal(result.status,503);
  const slots=await f.request('slots?service=igiene-sonicare');assert.ok(slots.data.slots.some(s=>s.time==='10:00'));
+});
+
+
+test('write runtime: creates hold, confirms with version and deletes only its mapped event',async t=>{
+ const f=await fixture(t,true);
+ f.events([event('staff','10:00','13:00')]);
+ const r=await f.request('checkout/stripe',{...patient,time:'10:00'});assert.equal(r.status,200,JSON.stringify(r.data));
+ assert.equal(f.created.size,1);assert.deepEqual(f.writes,['POST']);
+ f.paid(true);await f.request('checkout/stripe/verify',{booking_id:r.data.booking_id});
+ const b=await f.request('bookings/'+r.data.booking_id);assert.equal(b.data.booking_status,'confirmed');assert.deepEqual(f.writes,['POST','PUT']);
+ const cancel=await f.request('admin/booking-status',{booking_id:r.data.booking_id,status:'cancelled',event_id:'staff'},true);
+ assert.equal(cancel.status,200,JSON.stringify(cancel.data));assert.deepEqual(f.writes,['POST','PUT','DELETE']);assert.equal(f.created.size,0);
+});
+
+test('write runtime: foreign booking and a client-supplied event ID never authorize a Teamup mutation',async t=>{
+ const f=await fixture(t,true);f.events([event('staff','10:00','11:00')]);
+ const manual=await f.request('admin/booking-create',{service_id:'allineatori-visita',first_name:'Test',last_name:'Manuale',phone:'0000000000',appointment_date:day,appointment_time:'12:00'},true);
+ assert.equal(manual.status,200);
+ const cancel=await f.request('admin/booking-status',{booking_id:manual.data.booking_id,status:'cancelled',event_id:'staff'},true);
+ assert.equal(cancel.status,200);assert.deepEqual(f.writes,[]);
+});
+
+test('write runtime: staff edits block update/delete and preserve the real payment',async t=>{
+ const f=await fixture(t,true),r=await f.request('checkout/stripe',{...patient,time:'10:00'});
+ assert.equal(r.status,200);const e=[...f.created.values()][0];e.version='staff-v2';e.title='Modificato dalla segreteria';
+ f.paid(true);await f.request('checkout/stripe/verify',{booking_id:r.data.booking_id});
+ const b=await f.request('bookings/'+r.data.booking_id);assert.equal(b.data.payment_status,'paid');assert.equal(b.data.booking_status,'needs_review');
+ const cancel=await f.request('admin/booking-status',{booking_id:r.data.booking_id,status:'cancelled'},true);assert.equal(cancel.status,409);assert.deepEqual(f.writes,['POST']);
+});
+
+test('write runtime: version conflict between GET and PUT cannot become a confirmed appointment',async t=>{
+ const f=await fixture(t,true),r=await f.request('checkout/stripe',{...patient,time:'10:00'});assert.equal(r.status,200);
+ f.conflict(true);f.paid(true);await f.request('checkout/stripe/verify',{booking_id:r.data.booking_id});
+ const b=await f.request('bookings/'+r.data.booking_id);assert.equal(b.data.payment_status,'paid');assert.equal(b.data.booking_status,'needs_review');
+});
+
+test('write runtime: uncertain create never starts payment or blindly creates a duplicate',async t=>{
+ const f=await fixture(t,true);f.uncertainCreate(true);
+ const a=await f.request('checkout/stripe',{...patient,time:'10:00'});assert.equal(a.status,502);
+ const b=await f.request('checkout/stripe',{...patient,time:'10:00'});assert.equal(b.status,409);
+ assert.equal(f.created.size,1);assert.deepEqual(f.writes,['POST']);
+ const booking=await f.db.prepare('SELECT payment_id,payment_status FROM bookings').first();assert.equal(booking.payment_id,null);assert.equal(booking.payment_status,'pending');
 });
