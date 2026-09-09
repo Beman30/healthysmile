@@ -1,4 +1,4 @@
-// Read-only Teamup preview. Never used by checkout until booking coordination exists.
+// Read-only Teamup access. Booking coordination lives in availability.js.
 const ZONE = 'Europe/Rome';
 const MINUTE = 60000;
 const formatter = new Intl.DateTimeFormat('sv-SE', {timeZone: ZONE, year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit', hourCycle:'h23'});
@@ -139,4 +139,13 @@ export async function teamupPreview(env,input,fetcher=fetch) {
   input.subcalendar_ids.forEach(id=>params.append('subcalendarId[]',String(id)));
   const data = await read(env,'events',params,fetcher);
   return preview(data.events,input);
+}
+
+export async function readDay(env,date,ids,fetcher=fetch) {
+  romeTime(date,'12:00');
+  const params = new URLSearchParams({startDate:date,endDate:date,tz:ZONE,format:'markdown'});
+  ids.forEach(id=>params.append('subcalendarId[]',String(id)));
+  const data = await read(env,'events',params,fetcher);
+  if (!Array.isArray(data.events)) throw new Error('Risposta Teamup incompleta');
+  return data.events;
 }
