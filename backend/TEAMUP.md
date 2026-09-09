@@ -4,7 +4,7 @@ Il Worker legge Teamup e genera le disponibilità della pagina `visita-igiene-sp
 
 ## Attivazione
 
-1. Nel Worker Cloudflare `healthysmile-checkout`, aprire **Edit code**, sostituire tutto il modulo con `backend/releases/healthysmile-worker-teamup-slot.mjs` e premere **Deploy**. Conservare il binding D1 `DB` e i secret esistenti. In alternativa: dalla cartella backend, `npm install`, `npm run build:teamup`, `npx wrangler deploy`.
+1. Nel Worker Cloudflare `healthysmile-checkout`, aprire **Edit code**, sostituire tutto il modulo con `backend/releases/healthysmile-worker-teamup-scrittura.mjs` e premere **Deploy**. Conservare il binding D1 `DB` e i secret esistenti. In alternativa: dalla cartella backend, `npm install`, `npm run build:teamup`, `npx wrangler deploy`.
 2. Aprire `/admin/teamup.html` e accedere con il token amministratore esistente.
 3. Selezionare **tutte** le agende Medici, compresa l’igienista. Non selezionare Prestazioni, Laboratori o Caduti.
 4. Per ogni fascia: scegliere data, inizio e fine, verificare note e presenza del personale, spuntare la conferma, usare **Verifica la capienza**, poi **Aggiungi fascia**. Inserire fasce separate prima e dopo le pause.
@@ -29,9 +29,9 @@ Una prenotazione automatica in pagamento non viene liberata solo perché sono tr
 
 Gli ordini PayPal aperti e gli avvii di pagamento con esito tecnico incerto restano bloccati fino a un esito definitivo o alla gestione dello studio. Si vedono come prenotazioni bloccate nell’area amministrativa. Una cancellazione libera l’intervallo; se successivamente arriva un pagamento tardivo, viene registrato **Da verificare**, senza sottrarre il posto a una nuova prenotazione. Non si eseguono rimborsi automatici.
 
-## Limite del collegamento di sola lettura
+## Limite rispetto alle modifiche manuali
 
-Il Worker **non crea appuntamenti in Teamup**. Lo studio deve continuare a inserirli. Il sistema protegge le prenotazioni che passano dal sito, ma non può impedire a una persona di inserire manualmente in Teamup un altro paziente dopo l’ultimo controllo. Non costituisce una prenotazione atomica condivisa con Teamup.
+Con **scrittura disattivata**, il Worker non crea appuntamenti in Teamup e lo studio deve inserirli. Con scrittura attiva, gli eventi nuovi dell’offerta 98 € vengono inseriti e aggiornati come descritto sotto. Il sistema protegge le prenotazioni che passano dal sito, ma non può impedire a una persona di inserire manualmente in Teamup un altro paziente dopo l’ultimo controllo. Non costituisce una prenotazione atomica condivisa con Teamup.
 
 Per sospendere nuovi ingressi, disattivare la pubblicazione e salvare. Le prenotazioni esistenti restano registrate. Dopo l’attivazione non tornare al vecchio Worker per sospendere il servizio: il vecchio codice non conosce queste protezioni sui pagamenti e sulle sovrapposizioni.
 
@@ -46,3 +46,29 @@ L’obiettivo di 30 pazienti/settimana non è un limite automatico né una previ
 Eseguire `npm run build:teamup` e `npm test`. I test usano dati fittizi, Miniflare/workerd e D1: nessuna chiamata di pagamento o scrittura su calendari reali. Sono coperti intervalli adiacenti e sovrapposti, pause/chiusura, note, errori Teamup, prenotazioni concorrenti, cambio agenda durante checkout, pagamento tardivo, Stripe/PayPal e rilascio dei blocchi.
 
 Riferimenti tecnici: [transazioni D1 batch](https://developers.cloudflare.com/d1/worker-api/d1-database/), [scadenza delle sessioni Stripe](https://docs.stripe.com/payments/checkout/managing-limited-inventory).
+
+
+## Scrittura limitata agli eventi del sito
+
+### Configurazione
+
+1. In Teamup creare un sottocalendario **Prenotazioni sito**.
+2. Nel collegamento riservato al Worker, rendere questo sottocalendario accessibile con **Modify from same link**. Le agende Medici rimangono **Read-only** con dettagli. Non usare il collegamento del sito per inserimenti manuali della segreteria: la titolarità nativa è legata al collegamento. Non usare Add-only, che permette modifiche solo per un breve periodo.
+3. Pubblicare il bundle `releases/healthysmile-worker-teamup-scrittura.mjs` nel Worker. Non occorre una nuova chiave API.
+4. In `/admin/teamup.html` mantenere tutte le agende Medici selezionate, scegliere **Prenotazioni sito** nel nuovo elenco **Calendario dedicato al sito**, attivare **Inserisci e aggiorna automaticamente gli eventi creati dal sito**, quindi salvare. Il calendario di destinazione viene incluso automaticamente nei controlli di capienza. Nessun evento reale viene creato dal salvataggio.
+
+Il primo salvataggio crea il registro privato `teamup_owned_events`. Le impostazioni esistenti hanno scrittura disattivata per impostazione predefinita. Le prenotazioni precedenti all’attivazione non vengono importate né convertite in eventi di proprietà del sito.
+
+### Funzionamento e confini
+
+- Prima del pagamento viene creato un blocco Teamup di 60 minuti. Il calendario viene ricontrollato anche dopo l’inserimento, escludendo soltanto il blocco verificato della stessa prenotazione.
+- Al pagamento il sito aggiorna titolo e note del proprio evento con nome e telefono del paziente. Nessun dato clinico viene trasferito. Un errore di aggiornamento impedisce la conferma automatica e conserva il pagamento come **Da verificare**.
+- La cancellazione dalla gestione prenotazioni rimuove prima l’evento verificato. Se la rimozione fallisce, l’operazione si ferma. Il cron elimina anche i blocchi delle prenotazioni cancellate o scadute. Appuntamenti completati o non presentati restano in agenda.
+- Il registro associa un codice prenotazione a un ID Teamup, a un identificativo remoto casuale e al collegamento che ha creato l’evento. Gli ID inviati dal browser non autorizzano alcuna modifica. Non sono gestite serie ricorrenti.
+- Prima di modificare o eliminare vengono controllati ID, identificativo remoto, calendario, collegamento e versione dell’evento. La richiesta include obbligatoriamente la versione Teamup: una modifica concorrente viene rifiutata anche se avviene dopo la lettura.
+- Una creazione dall’esito incerto non viene ripetuta alla cieca e non avvia il pagamento. Un aggiornamento dall’esito incerto non sovrascrive la versione eventualmente modificata. Il blocco rimane prudenzialmente riservato e richiede verifica dello studio.
+- **Controlla sincronizzazione** mostra gli esiti nel registro. Eventi con stato **Esito incerto** o **Conflitto** vanno verificati prima di procedere. Non esiste un comando che adotti arbitrariamente eventi preesistenti o ignori il controllo di proprietà/versione.
+- Questa versione automatizza inserimento, conferma e cancellazione. Non introduce uno spostamento automatico di data/ora: spostare manualmente l’evento in Teamup viene rilevato come modifica esterna e sospende gli aggiornamenti automatici.
+- I controlli proteggono gli eventi gestiti dal sito. Non impediscono alla segreteria di creare altri appuntamenti direttamente in Teamup dopo l’ultimo controllo di disponibilità.
+
+Fonti: [permesso Modify from same link](https://calendar.teamup.com/kb/how-to-use-the-modify-my-events-access-permission/), [specifica API ufficiale, version per aggiornamenti e cancellazioni](https://stoplight.io/api/v1/projects/teamup/api/nodes/reference/generated_docs_public.yaml).

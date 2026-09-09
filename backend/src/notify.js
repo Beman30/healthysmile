@@ -97,7 +97,7 @@ export function buildMessage(booking, serviceName) {
      </p>`}
 
   <p style="margin-top:28px;font-size:12px;color:#999;border-top:1px solid #eee;padding-top:14px">
-    ${review ? 'Ricontrolla la capienza prima di confermare. Se non disponibile, concorda un altro orario o il rimborso.' : 'Ricordati di segnare l’appuntamento in Teamup: il collegamento legge la disponibilità, ma non crea eventi in agenda.'}
+    ${review ? 'Ricontrolla la capienza prima di confermare. Se non disponibile, concorda un altro orario o il rimborso.' : booking.teamup_synced ? 'Appuntamento inserito e confermato automaticamente in Teamup.' : 'Ricordati di segnare l’appuntamento in Teamup: la scrittura automatica non risulta confermata.'}
   </p>
 </div>`.trim();
 

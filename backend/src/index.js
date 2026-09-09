@@ -1,3 +1,4 @@
+import {createOwnedHold, syncOwnedEvent, cleanupOwnedEvents, owned} from './teamup-write.js';
 import {TEAMUP_SERVICE, settings, saveSettings, liveSlots, claimSlot, reservation, rememberCheckout, settlePayment} from './availability.js';
 import { calendars, teamupPreview } from './teamup.js';
 /**
@@ -198,6 +199,11 @@ async function startCheckout(request, env, provider) {
   };
 
   try {
+    if(managed) {
+      await createOwnedHold(env,booking,await settings(db));
+      const stillAvailable=await liveSlots(env,date,bookingId);
+      if(!stillAvailable?.some(s=>s.time===time)) throw new Error('Agenda cambiata prima del pagamento');
+    }
     const session = provider === 'stripe'
       ? await createCheckoutSession(env, { booking, service, amounts, successUrl, cancelUrl })
       : await createOrder(env, { booking, service, amounts, successUrl, cancelUrl });
@@ -283,7 +289,7 @@ async function seen(db, eventId, provider, type, bookingId, payload) {
 function alertStudio(ctx, env, booking) {
   const service = getService(booking.service_id);
   const name = service ? service.name : booking.service_id;
-  const p = notifyStudio(env, booking, name).catch(() => false);
+  const p = owned(env.DB,booking.booking_id).then(row=>notifyStudio(env,{...booking,teamup_synced:row?.state==='confirmed'},name)).catch(() => false);
   if (ctx && typeof ctx.waitUntil === 'function') ctx.waitUntil(p);
 }
 
@@ -323,6 +329,11 @@ async function adminRoutes(request, env, url, path) {
     }
   }
   const db = env.DB;
+  if(request.method==='GET' && path==='/api/admin/teamup/sync') {
+    if(!await db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='teamup_owned_events'").first()) return ok({events:[]},env,request);
+    const {results}=await db.prepare('SELECT booking_id,event_id,calendar_id,state,busy,updated_at FROM teamup_owned_events ORDER BY updated_at DESC LIMIT 100').all();
+    return ok({events:results||[]},env,request);
+  }
   if (path === '/api/admin/teamup/settings') {
     try {
       if(request.method==='GET') return ok({settings:await settings(db)},env,request);
@@ -388,6 +399,9 @@ async function adminRoutes(request, env, url, path) {
     if (!valid.includes(body.status)) return bad('Stato non valido', env, request);
     const b = await db.prepare(`SELECT * FROM bookings WHERE booking_id=?`).bind(body.booking_id).first();
     if (!b) return bad('Prenotazione non trovata', env, request, 404);
+    if(body.status==='cancelled') {
+      try {await syncOwnedEvent(env,b,'delete');}catch(error){return bad(error.message,env,request,409);}
+    }
 
     if(body.status==='confirmed') {
       const claim=await reservation(db,body.booking_id);
@@ -395,6 +409,7 @@ async function adminRoutes(request, env, url, path) {
         let eligible=false;
         try { eligible=claim.status!=='released' && (await liveSlots(env,claim.date,claim.booking_id))?.some(s=>s.time===claim.time); } catch {}
         if(!eligible) return bad('Orario non confermabile: ricontrolla Teamup e le fasce pubblicate.',env,request,409);
+        try {await syncOwnedEvent(env,b,'confirm');}catch(error){return bad(error.message,env,request,409);}
       }
     }
     await db.prepare(`UPDATE bookings SET booking_status=?, updated_at=? WHERE booking_id=?`)
@@ -559,6 +574,7 @@ async function adminRoutes(request, env, url, path) {
       .bind(body.booking_id).first();
     if (!b) return bad('Prenotazione non trovata', env, request, 404);
 
+    try {await syncOwnedEvent(env,b,'delete');}catch(error){return bad(error.message,env,request,409);}
     await freeSlot(db, { bookingId: b.booking_id });
     await db.prepare(`DELETE FROM bookings WHERE booking_id=?`).bind(b.booking_id).run();
 
@@ -828,6 +844,7 @@ export default {
    * per sempre.
    */
   async scheduled(_event, env, ctx) {
+    await cleanupOwnedEvents(env);
     const scaduto = new Date(Date.now() - 60 * 60000).toISOString();
 
     /* Prima di dare per abbandonata una prenotazione, si chiede a Stripe

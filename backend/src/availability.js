@@ -1,3 +1,4 @@
+import {WRITE_SCHEMA, validateWriteAccess, omitOwnEvent, syncOwnedEvent} from './teamup-write.js';
 import {calendars, preview, readDay, romeTime} from './teamup.js';
 
 export const TEAMUP_SERVICE = 'igiene-sonicare';
@@ -22,7 +23,7 @@ export async function reservation(db,id) {
 
 // Called only after authentication. DDL and triggers are installed in one transaction.
 export async function install(db) {
-  const commands = [
+  const commands = [WRITE_SCHEMA,
     'CREATE TABLE IF NOT EXISTS teamup_settings (id INTEGER PRIMARY KEY CHECK(id=1), value TEXT NOT NULL, revision INTEGER NOT NULL)',
     `CREATE TABLE IF NOT EXISTS teamup_reservations (
       booking_id TEXT PRIMARY KEY, date TEXT NOT NULL, time TEXT NOT NULL, end_time TEXT NOT NULL,
@@ -77,7 +78,10 @@ export function validateSettings(body, currentTime=Date.now()) {
   }).sort((a,b)=>(a.date+a.start).localeCompare(b.date+b.start));
   if (new Set(windows.map(w=>w.date)).size>14) throw new Error('Pubblica al massimo 14 giornate per volta');
   for(let i=1;i<windows.length;i++) if(windows[i].date===windows[i-1].date && windows[i].start<windows[i-1].end) throw new Error('Le fasce della stessa giornata non devono sovrapporsi');
-  return {enabled:body.enabled,subcalendar_ids:ids,windows};
+  const write_enabled=body.write_enabled===true;
+  const write_calendar_id=Number(body.write_calendar_id)||null;
+  if(write_enabled && (!Number.isSafeInteger(write_calendar_id)||write_calendar_id<=0)) throw new Error('Seleziona il calendario Prenotazioni sito');
+  return {enabled:body.enabled,subcalendar_ids:ids,windows,write_enabled,write_calendar_id};
 }
 async function accessible(env,ids,fetcher) {
   const visible=await calendars(env,fetcher);
@@ -85,8 +89,11 @@ async function accessible(env,ids,fetcher) {
 }
 export async function saveSettings(env,body,fetcher=fetch) {
   const config=validateSettings(body);
-  if(config.enabled) await accessible(env,config.subcalendar_ids,fetcher);
+  if(config.enabled) await accessible(env,[...config.subcalendar_ids,...(config.write_calendar_id?[config.write_calendar_id]:[])],fetcher);
+  if(config.write_enabled) await validateWriteAccess(env,config.write_calendar_id,fetcher);
   await install(env.DB);
+  const active=await env.DB.prepare("SELECT calendar_id FROM teamup_owned_events WHERE state<>'deleted' LIMIT 1").first();
+  if(active && active.calendar_id!==config.write_calendar_id) throw new Error('Mantieni il calendario del sito: contiene eventi ancora gestiti dal collegamento.');
   const sql=body.revision===0 ? 'INSERT OR IGNORE INTO teamup_settings(id,value,revision) VALUES(1,?,1)' :
     'UPDATE teamup_settings SET value=?,revision=revision+1 WHERE id=1 AND revision=?';
   const args=body.revision===0 ? [JSON.stringify(config)] : [JSON.stringify(config),body.revision];
@@ -114,15 +121,16 @@ export async function liveSlots(env,date=null,ignoreId='-none-',fetcher=fetch,cl
   if(date) romeTime(date,'12:00');
   const windows=config.windows.filter(w=>(!date||w.date===date)&&romeTime(w.date,w.end)>clock);
   if(!windows.length) return [];
-  await accessible(env,config.subcalendar_ids,fetcher);
+  const calendarIds=[...new Set([...config.subcalendar_ids,...(config.write_calendar_id?[config.write_calendar_id]:[])])];
+  await accessible(env,calendarIds,fetcher);
   const dates=[...new Set(windows.map(w=>w.date))];
   const slots=[];
   // At most 14 days; one upstream events request per day, no patient data in output/cache.
   for(const day of dates) {
-    const events=await readDay(env,day,config.subcalendar_ids,fetcher);
+    const events=await omitOwnEvent(env.DB,ignoreId,await readDay(env,day,calendarIds,fetcher));
     const busy=await siteBusy(env.DB,day,ignoreId);
     for(const w of windows.filter(w=>w.date===day)) {
-      const result=preview(events,{...w,subcalendar_ids:config.subcalendar_ids});
+      const result=preview(events,{...w,subcalendar_ids:calendarIds});
       for(const s of result.slots) if(s.status==='candidate' && romeTime(day,s.time)>clock &&
         !busy.some(b=>b.time<s.end_time && b.end_time>s.time)) slots.push({date:day,time:s.time});
     }
@@ -171,7 +179,8 @@ export async function settlePayment(env,booking,amount,paymentId) {
     try {
       const slots=await liveSlots(env,r.date,r.booking_id);
       confirmed=!!slots?.some(s=>s.time===r.time);
-    } catch { /* Fail closed: payment is real, appointment needs staff review. */ }
+      if(confirmed) await syncOwnedEvent(env,booking,'confirm');
+    } catch(error) { if(error.code==='TEAMUP_BUSY') throw error; confirmed=false; /* Fail closed: payment is real, appointment needs staff review. */ }
   }
   const status=confirmed?'confirmed':'needs_review';
   const balance=Math.round((booking.total_price-amount)*100)/100;
