@@ -67,7 +67,8 @@ async function read(env, resource, params, fetcher) {
   if (/\s/.test(apiKey)) throw new Error('TEAMUP_API_KEY contiene spazi o ritorni a capo interni. Ricopiare la chiave API.');
   const controller = new AbortController(), timer = setTimeout(() => controller.abort(),10000);
   try {
-    const response = await fetcher(`https://api.teamup.com/${calendarKey}/${resource}?${params}`, {headers:{'Teamup-Token':apiKey,Accept:'application/json'},signal:controller.signal,redirect:'error'});
+    const response = await fetcher(`https://api.teamup.com/${calendarKey}/${resource}?${params}`, {headers:{'Teamup-Token':apiKey,Accept:'application/json'},signal:controller.signal,redirect:'manual'});
+    if (response.status >= 300 && response.status < 400) throw new TeamupReadError(`Teamup HTTP ${response.status} (${resource}): reindirizzamento bloccato. Nessuna credenziale inoltrata.`);
     if (!response.ok) {
       const hints = {
         400: 'Richiesta rifiutata da Teamup: verificare i parametri dell’integrazione.',
