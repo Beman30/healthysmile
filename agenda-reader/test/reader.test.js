@@ -42,7 +42,7 @@ test('contradictory openings are reported; legacy hygiene fields are ignored',()
 });
 test('worker endpoints, persistent reports and repeated updates are read-only upstream',async t=>{
  let events=base(),fail=false,calls=[];
- const mf=new Miniflare({modules:true,compatibilityDate:'2025-09-01',scriptPath:new URL('../releases/healthysmile-agenda-reader-v4.mjs',import.meta.url).pathname,d1Databases:['DB'],bindings:{ADMIN_TOKEN:'admin',TEAMUP_API_KEY:'key',TEAMUP_CALENDAR_KEY:'kstest'},outboundService:async req=>{
+ const mf=new Miniflare({modules:true,compatibilityDate:'2025-09-01',scriptPath:new URL('../releases/healthysmile-agenda-reader-v5.mjs',import.meta.url).pathname,d1Databases:['DB'],bindings:{ADMIN_TOKEN:'admin',TEAMUP_API_KEY:'key',TEAMUP_CALENDAR_KEY:'kstest'},outboundService:async req=>{
   calls.push(req.method);assert.equal(req.method,'GET');
   if(fail)return new Response('{}',{status:503});
   if(new URL(req.url).pathname.endsWith('/configuration'))return Response.json({configuration:{subcalendars:[{id:1,name:'Medici Palmia'},{id:2,name:'Medici Igienista'},{id:3,name:'Sito'}]}});
@@ -78,4 +78,14 @@ test('September 11 actual notice and prefixed lunch read opening from title, not
  const other=interpretDay(events.map(e=>({...e,subcalendar_ids:[2]})),date,cfg,0);
  assert.ok(other.issues.length);assert.equal(other.windows.length,0);
  assert.equal(openingText('CC- Rossi 10.00-16.00 visita'),null);
+});
+
+test('patient notes do not close the day and patient still occupies a chair',()=>{
+ for(const notes of ['paziente in ferie','stop terapia','telefonare in pausa','apertura bocca limitata']) {
+  const r=interpretDay([...base(),{...event('patient','10:00','11:00'),notes}],date,cfg,0);
+  assert.equal(r.issues.length,0);
+  assert.equal(r.free_intervals[0].free_chairs,1);
+  assert.equal(Date.parse(r.free_intervals[0].end_dt),romeTime(date,'11:00'));
+  assert.ok(!r.free_intervals.some(f=>Date.parse(f.start_dt)<romeTime(date,'14:00')&&Date.parse(f.end_dt)>romeTime(date,'13:00')));
+ }
 });

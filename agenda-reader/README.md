@@ -1,4 +1,4 @@
-# Lettore Teamup separato — versione 4
+# Lettore Teamup separato — versione 5
 
 Worker di diagnosi in sola lettura. Non sostituisce healthysmile-checkout.
 Non contiene chiamate Stripe/PayPal, né POST/PUT/DELETE verso Teamup.
@@ -8,7 +8,7 @@ i blocchi di pagamento D1 del sito non sono inclusi.
 ## Prima prova live
 
 1. Creare un nuovo Worker **healthysmile-agenda-reader** e incollare il bundle
-   `releases/healthysmile-agenda-reader-v4.mjs` in Edit code, quindi Deploy.
+   `releases/healthysmile-agenda-reader-v5.mjs` in Edit code, quindi Deploy.
 2. Aggiungere i secret `TEAMUP_API_KEY`, `TEAMUP_CALENDAR_KEY`, `ADMIN_TOKEN`.
    Usare le credenziali già funzionanti del Worker attuale. Il token admin resta nel browser
    solo in memoria; non inviarlo in chat. Il collegamento Teamup può essere di sola lettura.
@@ -62,3 +62,6 @@ La pagina mostra giorno, apertura, chiusura, pause e intervalli con una o due po
 
 ## Lettura avvisi v4
 Riconosce nell’agenda Palmia anche intervalli senza la parola PALMIA, come CC-10.00-16.00, NB-10.00-16.00 e 10:00-16:00. Le sigle o i nomi davanti a barra o trattino sono ignorati; gli orari sono ricavati dal testo. CC- PAUSA è riconosciuta usando la durata effettiva dell’evento. Test del formato reale dell’11 settembre superato localmente.
+
+## Correzione v5
+Le parole organizzative nelle note di un appuntamento non bloccano tutta la giornata. Il paziente resta conteggiato per la durata effettiva. Apertura e avvisi STOP/PAUSA continuano a essere interpretati; le aperture discordanti restano da verificare.

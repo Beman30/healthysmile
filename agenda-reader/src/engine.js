@@ -80,9 +80,6 @@ export function interpretDay(raw,date,input,now=Date.now()) {
   if(e.all_day||/^(?:PALMIA|DOTT\.?\s+PALMIA|APERTURA|CHIUSURA|APRIAMO|CHIUDIAMO|ASSENTE|FERIE)\b/i.test(bare(title))) {
    r.kind='ambiguous';r.reason='Avviso organizzativo non interpretato: verifica necessaria';issue(id,r.reason);continue;
   }
-  if(/\b(?:apriamo|chiudiamo|apertura|chiusura|pausa|stop|assente|ferie)\b/i.test(notes)) {
-   issue(id,'Nota con possibile vincolo organizzativo: leggere il dettaglio');
-  }
   const p={a,b,ids:e.subcalendar_ids,event_id:id};patients.push(p);
   if(c.site_id&&e.subcalendar_ids.includes(c.site_id))site.push(p);
  }

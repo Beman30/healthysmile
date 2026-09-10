@@ -1,6 +1,6 @@
 export const PAGE=String.raw`<!doctype html><html lang="it"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Lettore agenda Healthy Smile</title>
 <style>body{font:16px system-ui;max-width:1100px;margin:30px auto;padding:0 20px;color:#20252b;background:#f5f7fa}fieldset,article{background:white;border:1px solid #ccc;border-radius:8px;padding:18px;margin:16px 0}button{padding:12px;margin:8px 8px 8px 0;cursor:pointer}label{display:block;margin:10px 0}select,input{padding:8px;max-width:100%}table{border-collapse:collapse;width:100%}td,th{padding:8px;border-bottom:1px solid #ddd;text-align:left}pre{white-space:pre-wrap;overflow-wrap:anywhere}#message{font-weight:bold;white-space:pre-wrap}.warn{color:#9a3412}summary{cursor:pointer;padding:8px}.scroll{overflow:auto}</style>
-<h1>Lettore agenda · v4</h1><p>Apertura, pause e poltrone libere nelle agende selezionate. Solo lettura.</p>
+<h1>Lettore agenda · v5</h1><p>Apertura, pause e poltrone libere nelle agende selezionate. Solo lettura.</p>
 
 <label>Token amministratore <input id="token" type="password" autocomplete="off"></label><button id="connect">Connetti</button><p id="message" role="status"></p>
 <fieldset id="config" hidden><legend>Agende</legend><p>Apertura e pause vengono lette dall’agenda Palmia. Le agende Medici selezionate servono a leggere gli appuntamenti e la capienza.</p><div id="choices"></div>
