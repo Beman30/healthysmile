@@ -42,16 +42,17 @@ test('contradictory openings are reported; legacy hygiene fields are ignored',()
 });
 test('worker endpoints, persistent reports and repeated updates are read-only upstream',async t=>{
  let events=base(),fail=false,calls=[];
- const mf=new Miniflare({modules:true,compatibilityDate:'2025-09-01',scriptPath:new URL('../releases/healthysmile-agenda-reader-v7.mjs',import.meta.url).pathname,d1Databases:['DB'],bindings:{ADMIN_TOKEN:'admin',TEAMUP_API_KEY:'key',TEAMUP_CALENDAR_KEY:'kstest'},outboundService:async req=>{
+ const mf=new Miniflare({modules:true,compatibilityDate:'2025-09-01',scriptPath:new URL('../releases/healthysmile-agenda-reader-v8.mjs',import.meta.url).pathname,d1Databases:['DB'],bindings:{ADMIN_TOKEN:'admin',TEAMUP_API_KEY:'key',TEAMUP_CALENDAR_KEY:'kstest'},outboundService:async req=>{
   calls.push(req.method);assert.equal(req.method,'GET');
   if(fail)return new Response('{}',{status:503});
-  if(new URL(req.url).pathname.endsWith('/configuration'))return Response.json({configuration:{subcalendars:[{id:1,name:'Medici Palmia'},{id:2,name:'Medici Igienista'},{id:3,name:'Sito'}]}});
+  if(new URL(req.url).pathname.endsWith('/configuration'))return Response.json({configuration:{subcalendars:[{id:1,name:'Medici Palmia'},{id:2,name:'Medici Igienista'},{id:3,name:'Sito'},{id:4,name:'Prime Visite'}]}});
+  if(new URL(req.url).searchParams.getAll('subcalendarId[]').includes('4'))return Response.json({events:[event('first','10:00','11:00','Prima visita',[1,4])]});
   return Response.json({events});
  }});t.after(()=>mf.dispose());
  const request=(path,body,auth=true)=>mf.dispatchFetch('https://reader.test/api/'+path,{method:body?'POST':'GET',headers:auth?{Authorization:'Bearer admin','Content-Type':'application/json'}:{},body:body?JSON.stringify(body):undefined});
  assert.equal((await request('reports',null,false)).status,401);
  assert.equal((await request('config',cfg)).status,200);
- let r=await(await request('scan',{date})).json();assert.equal(at(r.reports[0],'10:00').status,'candidate');
+ let r=await(await request('scan',{date})).json();assert.equal(at(r.reports[0],'10:00').status,'candidate');assert.equal(r.reports[0].visits.length,1);
  events=[...base(),event('a','10:00','11:00'),event('b','10:00','11:00')];
  r=await(await request('scan',{date})).json();assert.equal(at(r.reports[0],'10:00').status,'excluded');
  r=await(await request('reports')).json();assert.equal(r.reports.length,1);assert.equal(r.reports[0].stale,false);
@@ -116,4 +117,15 @@ test('inclusive ranges and totals exclude uncertain amounts and duplicate events
  const p={event_id:'a',start_dt:'x',amount_due:10.1,status:'due'};
  const result=paymentTotal([{payments:[p,p,{...p,event_id:'b',amount_due:20.2},{...p,event_id:'c',status:'review',amount_due:null}]},{error:'failed'}]);
  assert.deepEqual(result,{amount:30.3,review:1,missing:1});
+});
+
+import {findVisitsCalendar,readVisits,visitsTotal} from '../src/visits.js';
+test('Prime Visite matches calendar, counts once per occurrence and excludes deleted events',()=>{
+ assert.equal(findVisitsCalendar([{id:4,name:'Prestazioni > Prime Visite'}]),4);
+ assert.throws(()=>findVisitsCalendar([]));
+ const e=event('v','10:00','11:00','Prima visita',[1,4]);
+ const visits=readVisits([e,e,{...e,id:'deleted',delete_dt:'yes'},{...e,id:'other',subcalendar_ids:[1]}],date,4);
+ assert.equal(visits.length,1);
+ assert.deepEqual(visitsTotal([{visits},{visits},{visits_error:'unavailable'}]),{count:1,missing:1});
+ assert.equal(readVisits([e],rollingDates()[2],4).length,0);
 });

@@ -1,8 +1,9 @@
+import {findVisitsCalendar,readVisits} from './visits.js';
 import {dateRange} from './range.js';
 import {calendars,readDay} from '../../backend/src/teamup.js';
 import {interpretDay,validateConfig,rollingDates} from './engine.js';
 import {PAGE} from './page.js';
-const VERSION='agenda-reader-7';
+const VERSION='agenda-reader-8';
 const json=(data,status=200)=>new Response(JSON.stringify(data),{status,headers:{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'}});
 function authorized(req,env) {
  const a=req.headers.get('Authorization')||'',b='Bearer '+(env.ADMIN_TOKEN||'');
@@ -28,11 +29,14 @@ async function scan(env,date=null,until=null) {
   const days=date?dateRange(date,until||date,7):rollingDates();
   const ids=[...c.medical_ids,...c.site_id?[c.site_id]:[]],visible=await calendars(env);
   if(ids.some(id=>!visible.some(v=>v.id===id)))throw Error('Una delle agende configurate non è accessibile');
+  let visitsId=null,visitsError=null;try{visitsId=findVisitsCalendar(visible);}catch(e){visitsError=e.message;}
   const reports=[];
   for(const day of days) {
    let report;
    try { report=interpretDay(await readDay(env,day,ids),day,c); }
    catch(error){report={date:day,error:error.message,slots:[],events:[],issues:[],candidate_count:0,mode:'read_only_review'};}
+   if(visitsError)report.visits_error=visitsError;
+   else try{report.visits=readVisits(await readDay(env,day,[visitsId]),day,visitsId);}catch(e){report.visits_error=e.message;}
    const checked_at=new Date().toISOString();
    reports.push({...report,checked_at});
    await env.DB.prepare(`INSERT INTO agenda_reader_reports(date,value,checked_at,revision)

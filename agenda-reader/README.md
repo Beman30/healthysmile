@@ -1,4 +1,4 @@
-# Lettore Teamup separato — versione 7
+# Lettore Teamup separato — versione 8
 
 Worker di diagnosi in sola lettura. Non sostituisce healthysmile-checkout.
 Non contiene chiamate Stripe/PayPal, né POST/PUT/DELETE verso Teamup.
@@ -8,7 +8,7 @@ i blocchi di pagamento D1 del sito non sono inclusi.
 ## Prima prova live
 
 1. Creare un nuovo Worker **healthysmile-agenda-reader** e incollare il bundle
-   `releases/healthysmile-agenda-reader-v7.mjs` in Edit code, quindi Deploy.
+   `releases/healthysmile-agenda-reader-v8.mjs` in Edit code, quindi Deploy.
 2. Aggiungere i secret `TEAMUP_API_KEY`, `TEAMUP_CALENDAR_KEY`, `ADMIN_TOKEN`.
    Usare le credenziali già funzionanti del Worker attuale. Il token admin resta nel browser
    solo in memoria; non inviarlo in chat. Il collegamento Teamup può essere di sola lettura.
@@ -71,3 +71,6 @@ Pulsanti Igieni sito e Pagamenti. Fonte importi: campo Teamup who (Deve pagare) 
 
 ## Periodi e somme v7
 Dal/Al inclusivi, fino a 366 giorni per lettura manuale, inclusi giorni passati se accessibili in Teamup. Il browser suddivide la lettura in gruppi di sette giorni; lasciare aperta la pagina. Totali per giornata e periodo in centesimi interi, valori da verificare esclusi e conteggiati separatamente. Giorni mancanti o non aggiornati producono un totale parziale. Il totale somma gli importi degli appuntamenti, non rappresenta un saldo contabile univoco per paziente. Mostra ultima lettura filtra il periodo selezionato. Cron invariato sui prossimi 14 giorni.
+
+## Prime visite v8
+Terza vista Prime visite. Il lettore individua un solo calendario con nome Prime Visite (anche sotto un gruppo) tra quelli accessibili e legge gli eventi separatamente dalla capienza. Conteggia eventi per data di inizio Europe/Rome, deduplicando ID e inizio, escludendo cancellazioni API; non deduce presenze reali o annullamenti scritti nel titolo. Totale giornaliero e del periodo. Calendario assente/ambiguo o letture fallite sono segnalati come mancanti, non come zero. Le viste esistenti continuano a funzionare se il calendario Prime Visite non è accessibile. Nessuna modifica di permessi Teamup da parte del Worker.
