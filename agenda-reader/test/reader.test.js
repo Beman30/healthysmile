@@ -6,7 +6,7 @@ import {createRequire} from 'node:module';
 const require=createRequire(new URL('../../backend/package.json',import.meta.url));
 const {Miniflare}=require('miniflare');
 const date=rollingDates()[1];
-const cfg={medical_ids:[1,2],palmia_id:1,hygienist_ids:[2],staff_follows_palmia:true,site_id:3};
+const cfg={medical_ids:[1,2],palmia_id:1,site_id:3};
 const event=(id,a,b,title='Paziente',ids=[1])=>({id,start_dt:new Date(romeTime(date,a)).toISOString(),end_dt:new Date(romeTime(date,b)).toISOString(),title,subcalendar_ids:ids});
 const base=()=>[event('opening','06:00','10:00','CC/ PALMIA 10-19'),event('pause','13:00','14:00','NB/ PAUSA'),event('stop','19:00','23:00','STOP')];
 const at=(r,t)=>r.slots.find(x=>x.time===t);
@@ -21,9 +21,10 @@ test('same event deduplicates; overlapping same doctor fills two chairs',()=>{
  let r=interpretDay([...base(),p,p],date,cfg,0);assert.equal(at(r,'10:00').chairs_peak,1);assert.equal(at(r,'10:00').status,'candidate');
  r=interpretDay([...base(),p,event('q','10:30','11:00')],date,cfg,0);assert.equal(at(r,'10:00').status,'excluded');assert.equal(at(r,'11:00').status,'candidate');
 });
-test('hygienist needs 45 minutes, Palmia last 15 may overlap',()=>{
- let r=interpretDay([...base(),event('h','10:30','11:00','Paziente',[2])],date,cfg,0);assert.ok(at(r,'10:00').reasons.includes('Nessun igienista libero per i primi 45 minuti'));
- r=interpretDay([...base(),event('p','10:45','11:00')],date,cfg,0);assert.equal(at(r,'10:00').status,'candidate');
+test('reader needs no hygienist configuration',()=>{
+ const r=interpretDay([...base(),event('h','10:30','11:00','Paziente',[2])],date,cfg,0);
+ assert.equal(at(r,'10:00').status,'candidate');
+ assert.ok(!r.slots.some(s=>s.reasons.some(x=>/igienista/i.test(x))));
 });
 test('unknown opening remains visible with reason; no silent missing date',()=>{
  const r=interpretDay([event('o','06:00','10:00','CC/ PALMIA dalle dieci fino a sera')],date,cfg,0);
@@ -35,13 +36,13 @@ test('move and delete change calculated slots without old holds',()=>{
  assert.equal(at(interpretDay([...base(),{...p,delete_dt:'deleted'}],date,cfg,0),'10:00').status,'candidate');
  assert.equal(at(interpretDay([...base(),event('p','12:00','13:00','Sito',[3])],date,cfg,0),'10:00').status,'candidate');
 });
-test('contradictory openings and missing hygiene do not approve candidates',()=>{
+test('contradictory openings are reported; legacy hygiene fields are ignored',()=>{
  assert.ok(interpretDay([...base(),event('other','06:00','10:00','PALMIA 11-19')],date,cfg,0).issues.some(x=>/discordanti/.test(x.reason)));
- assert.equal(interpretDay(base(),date,{...cfg,hygienist_ids:[]},0).candidate_count,0);
+ assert.ok(interpretDay(base(),date,{...cfg,hygienist_ids:[],staff_follows_palmia:false},0).candidate_count>0);
 });
 test('worker endpoints, persistent reports and repeated updates are read-only upstream',async t=>{
  let events=base(),fail=false,calls=[];
- const mf=new Miniflare({modules:true,compatibilityDate:'2025-09-01',scriptPath:new URL('../releases/healthysmile-agenda-reader-v1.mjs',import.meta.url).pathname,d1Databases:['DB'],bindings:{ADMIN_TOKEN:'admin',TEAMUP_API_KEY:'key',TEAMUP_CALENDAR_KEY:'kstest'},outboundService:async req=>{
+ const mf=new Miniflare({modules:true,compatibilityDate:'2025-09-01',scriptPath:new URL('../releases/healthysmile-agenda-reader-v2.mjs',import.meta.url).pathname,d1Databases:['DB'],bindings:{ADMIN_TOKEN:'admin',TEAMUP_API_KEY:'key',TEAMUP_CALENDAR_KEY:'kstest'},outboundService:async req=>{
   calls.push(req.method);assert.equal(req.method,'GET');
   if(fail)return new Response('{}',{status:503});
   if(new URL(req.url).pathname.endsWith('/configuration'))return Response.json({configuration:{subcalendars:[{id:1,name:'Medici Palmia'},{id:2,name:'Medici Igienista'},{id:3,name:'Sito'}]}});

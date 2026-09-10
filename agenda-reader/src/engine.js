@@ -33,11 +33,9 @@ export function validateConfig(c) {
  const ids=c.medical_ids;
  if(!Array.isArray(ids)||!ids.length||ids.length>30||ids.some(x=>!Number.isSafeInteger(x)||x<=0))throw Error('Seleziona le agende Medici');
  if(!ids.includes(c.palmia_id))throw Error('Seleziona Dott. Palmia tra le agende Medici');
- const hygiene=c.hygienist_ids||[];
- if(!Array.isArray(hygiene)||hygiene.some(x=>!ids.includes(x)))throw Error('L’igienista deve appartenere alle agende selezionate');
  const site=c.site_id||null;
  if(site&&(!Number.isSafeInteger(site)||site<=0||ids.includes(site)))throw Error('Il calendario del sito deve essere distinto dalle agende Medici');
- return {medical_ids:[...new Set(ids)],palmia_id:c.palmia_id,hygienist_ids:[...new Set(hygiene)],site_id:site,staff_follows_palmia:c.staff_follows_palmia===true};
+ return {medical_ids:[...new Set(ids)],palmia_id:c.palmia_id,site_id:site};
 }
 export function interpretDay(raw,date,input,now=Date.now()) {
  const c=validateConfig(input),start=romeTime(date,'00:00');
@@ -109,10 +107,7 @@ export function interpretDay(raw,date,input,now=Date.now()) {
   const chairs=peak(patients,a,b);
   if(chairs>=2)why.push('Due poltrone occupate durante l’ora');
   if(site.some(e=>hit(e,a,b)))why.push('Prenotazione sito sovrapposta');
-  const freeHygiene=c.hygienist_ids.filter(id=>![...patients,...staffBlocks].some(e=>e.ids.includes(id)&&hit(e,a,a+45*MIN)));
-  if(!c.staff_follows_palmia||!c.hygienist_ids.length)why.push('Presenza e agenda igienista da configurare');
-  else if(!freeHygiene.length)why.push('Nessun igienista libero per i primi 45 minuti');
   slots.push({time:clock(minute),status:why.length?'excluded':'candidate',chairs_peak:chairs,reasons:why,event_ids:patients.filter(e=>hit(e,a,b)).map(e=>e.event_id)});
  }
- return {date,opening_source:source,windows:windows.map(w=>({start_dt:new Date(w.a).toISOString(),end_dt:new Date(w.b).toISOString()})),issues,events:records,slots,candidate_count:slots.filter(s=>s.status==='candidate').length,mode:'read_only_review',note:'Candidati alternativi. Pagamenti e blocchi interni del sito non inclusi. Nessuno slot pubblicato.'};
+ return {date,opening_source:source,windows:windows.map(w=>({start_dt:new Date(w.a).toISOString(),end_dt:new Date(w.b).toISOString()})),issues,events:records,slots,candidate_count:slots.filter(s=>s.status==='candidate').length,mode:'read_only_review',note:'Lettura di apertura, pause e capienza delle agende selezionate. Nessuna verifica del personale o dei pagamenti. Nessuno slot pubblicato.'};
 }

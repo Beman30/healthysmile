@@ -1,4 +1,4 @@
-# Lettore Teamup separato — versione 1
+# Lettore Teamup separato — versione 2
 
 Worker di diagnosi in sola lettura. Non sostituisce healthysmile-checkout.
 Non contiene chiamate Stripe/PayPal, né POST/PUT/DELETE verso Teamup.
@@ -8,7 +8,7 @@ i blocchi di pagamento D1 del sito non sono inclusi.
 ## Prima prova live
 
 1. Creare un nuovo Worker **healthysmile-agenda-reader** e incollare il bundle
-   `releases/healthysmile-agenda-reader-v1.mjs` in Edit code, quindi Deploy.
+   `releases/healthysmile-agenda-reader-v2.mjs` in Edit code, quindi Deploy.
 2. Aggiungere i secret `TEAMUP_API_KEY`, `TEAMUP_CALENDAR_KEY`, `ADMIN_TOKEN`.
    Usare le credenziali già funzionanti del Worker attuale. Il token admin resta nel browser
    solo in memoria; non inviarlo in chat. Il collegamento Teamup può essere di sola lettura.
@@ -16,8 +16,8 @@ i blocchi di pagamento D1 del sito non sono inclusi.
    `healthysmile-checkout-db`, oppure uno dedicato. Vengono scritte esclusivamente
    tre nuove tabelle `agenda_reader_*`; nessuna modifica a bookings/slots/teamup_settings.
 4. Aprire l'indirizzo del nuovo Worker. Inserire il token, Connetti, selezionare tutte
-   le agende Medici, Palmia, le agende dell'igienista e facoltativamente Prenotazioni sito.
-   Confermare la presenza dell'igienista secondo l'apertura di Palmia, se corretta.
+   le agende Medici e Palmia; facoltativamente Prenotazioni sito. Palmia viene preselezionato
+   se il nome è univoco. Non serve configurare agende o presenza dell’igienista.
 5. Salvare e premere **Leggi questa giornata adesso**. Controllare prima 10, 11, 22 settembre
    se compresi nei prossimi 14 giorni. Ogni data è visibile anche con zero candidati.
 6. Dopo la prima lettura verificata, aggiungere un Cron Trigger `*/5 * * * *` al nuovo
@@ -31,7 +31,7 @@ Titoli come `CC/ PALMIA 10-19`, anche con altre sigle prima della barra e minuti
 `10:30`/`10.30`. Un avviso identico nella descrizione è riconosciuto se costituisce
 l'intera descrizione. Apertura valida soltanto nel calendario Palmia configurato.
 STOP/PAUSA nel titolo sono indisponibilità, non pazienti. Quelli Palmia riducono
-l'apertura; quelli degli altri operatori ne riducono la disponibilità.
+l'apertura; quelli degli altri operatori sono mostrati come avvisi.
 In assenza di avviso, sono possibili solo finestre tra due STOP/PAUSA Palmia.
 Avvisi non compresi o contraddittori sono elencati esplicitamente come problemi.
 La lettura è basata su regole, non usa ancora un modello AI per testo libero.
@@ -39,8 +39,7 @@ Non deduce nuove convenzioni e non scarta silenziosamente i problemi.
 
 Ogni evento clinico distinto occupa una poltrona; duplicati con stesso ID contano una
 volta; ricorrenze sono lette come occorrenze restituite dall'API. Un candidato richiede
-60 minuti di capienza e 45 minuti liberi su almeno un'agenda igienista configurata.
-I 15 minuti di Palmia possono sovrapporsi ad un suo paziente. Due pazienti già presenti
+60 minuti di capienza nell’apertura Palmia. Non viene verificata la disponibilità del personale. Due pazienti già presenti
 in qualsiasi segmento dell'ora escludono lo slot. Gli eventi sito sovrapposti sono esclusi.
 
 La pagina è protetta via API con ADMIN_TOKEN. Titoli e note sono mostrati solo dopo
@@ -49,7 +48,7 @@ nella pagina pubblica iniziale. I report contengono dati dello studio: non condi
 
 ## Validazione e limiti
 
-Test locali su orari, pause, occupazione, duplicati, igienista, spostamenti e
+Test locali su orari, pause, occupazione, duplicati, assenza di requisiti sull’igienista, spostamenti e
 cancellazioni; integrazione simulata Worker/D1/API con sole GET verso Teamup.
 La verifica live richiede il deploy e i secret dell'account, non disponibili alla chat.
 I risultati vecchi oltre 10 minuti o da configurazione precedente sono marcati come
