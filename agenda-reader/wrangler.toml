@@ -1,0 +1,14 @@
+name = "healthysmile-agenda-reader"
+main = "src/worker.js"
+compatibility_date = "2026-09-10"
+
+[triggers]
+crons = ["*/5 * * * *"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "healthysmile-checkout-db"
+database_id = "2f2f5af0-1a66-4caa-a41f-5d7974f7930c"
+
+# Configure secrets separately: TEAMUP_API_KEY, TEAMUP_CALENDAR_KEY, ADMIN_TOKEN.
+# Only agenda_reader_* tables are written; existing checkout tables are untouched.
