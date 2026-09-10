@@ -42,7 +42,7 @@ test('contradictory openings are reported; legacy hygiene fields are ignored',()
 });
 test('worker endpoints, persistent reports and repeated updates are read-only upstream',async t=>{
  let events=base(),fail=false,calls=[];
- const mf=new Miniflare({modules:true,compatibilityDate:'2025-09-01',scriptPath:new URL('../releases/healthysmile-agenda-reader-v2.mjs',import.meta.url).pathname,d1Databases:['DB'],bindings:{ADMIN_TOKEN:'admin',TEAMUP_API_KEY:'key',TEAMUP_CALENDAR_KEY:'kstest'},outboundService:async req=>{
+ const mf=new Miniflare({modules:true,compatibilityDate:'2025-09-01',scriptPath:new URL('../releases/healthysmile-agenda-reader-v3.mjs',import.meta.url).pathname,d1Databases:['DB'],bindings:{ADMIN_TOKEN:'admin',TEAMUP_API_KEY:'key',TEAMUP_CALENDAR_KEY:'kstest'},outboundService:async req=>{
   calls.push(req.method);assert.equal(req.method,'GET');
   if(fail)return new Response('{}',{status:503});
   if(new URL(req.url).pathname.endsWith('/configuration'))return Response.json({configuration:{subcalendars:[{id:1,name:'Medici Palmia'},{id:2,name:'Medici Igienista'},{id:3,name:'Sito'}]}});
@@ -60,4 +60,10 @@ test('worker endpoints, persistent reports and repeated updates are read-only up
  r=await(await request('reports')).json();assert.ok(r.run.error);assert.ok(r.reports.every(x=>x.stale));
  const db=await mf.getD1Database('DB');const tables=await db.prepare("SELECT name FROM sqlite_master WHERE type='table'").all();assert.ok(!tables.results.some(x=>x.name==='bookings'));
  assert.ok(calls.length>0);assert.ok(calls.every(x=>x==='GET'));
+});
+
+test('free chair intervals use actual event boundaries, merge equal capacity and omit lunch',()=>{
+ const r=interpretDay([...base(),event('a','10:00','10:20'),event('b','10:10','10:40')],date,cfg,0);
+ const spans=r.free_intervals.map(f=>[new Date(f.start_dt).getTime(),new Date(f.end_dt).getTime(),f.free_chairs]);
+ assert.deepEqual(spans,[['10:00','10:10',1],['10:20','10:40',1],['10:40','13:00',2],['14:00','19:00',2]].map(([a,b,n])=>[romeTime(date,a),romeTime(date,b),n]));
 });

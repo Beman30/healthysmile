@@ -1,7 +1,7 @@
 import {calendars,readDay} from '../../backend/src/teamup.js';
 import {interpretDay,validateConfig,rollingDates} from './engine.js';
 import {PAGE} from './page.js';
-const VERSION='agenda-reader-2';
+const VERSION='agenda-reader-3';
 const json=(data,status=200)=>new Response(JSON.stringify(data),{status,headers:{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'}});
 function authorized(req,env) {
  const a=req.headers.get('Authorization')||'',b='Bearer '+(env.ADMIN_TOKEN||'');

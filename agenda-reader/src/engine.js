@@ -97,6 +97,17 @@ export function interpretDay(raw,date,input,now=Date.now()) {
  }
  if(!windows.length)issue(null,'Apertura non ricavabile dai dati letti');
  for(const block of merge(blocks))windows=windows.flatMap(w=>!hit(block,w.a,w.b)?[w]:[{a:w.a,b:Math.min(w.b,block.a)},{a:Math.max(w.a,block.b),b:w.b}].filter(x=>x.b>x.a));
+ const capacity=[];
+ for(const w of windows) {
+  const points=[...new Set([w.a,w.b,...patients.filter(e=>hit(e,w.a,w.b)).flatMap(e=>[Math.max(w.a,e.a),Math.min(w.b,e.b)])])].sort((a,b)=>a-b);
+  for(let i=1;i<points.length;i++) {
+   const a=points[i-1],b=points[i],free=Math.max(0,2-patients.filter(e=>hit(e,a,b)).length);
+   const previous=capacity.at(-1);
+   if(previous&&previous.b===a&&previous.free===free)previous.b=b;
+   else capacity.push({a,b,free});
+  }
+ }
+ const free_intervals=issues.length?[]:capacity.filter(e=>e.free>0).map(e=>({start_dt:new Date(e.a).toISOString(),end_dt:new Date(e.b).toISOString(),free_chairs:e.free}));
  const slots=[];
  for(let minute=0;minute<1440;minute+=15) {
   let a;try{a=romeTime(date,clock(minute));}catch{continue;}
@@ -109,5 +120,5 @@ export function interpretDay(raw,date,input,now=Date.now()) {
   if(site.some(e=>hit(e,a,b)))why.push('Prenotazione sito sovrapposta');
   slots.push({time:clock(minute),status:why.length?'excluded':'candidate',chairs_peak:chairs,reasons:why,event_ids:patients.filter(e=>hit(e,a,b)).map(e=>e.event_id)});
  }
- return {date,opening_source:source,windows:windows.map(w=>({start_dt:new Date(w.a).toISOString(),end_dt:new Date(w.b).toISOString()})),issues,events:records,slots,candidate_count:slots.filter(s=>s.status==='candidate').length,mode:'read_only_review',note:'Lettura di apertura, pause e capienza delle agende selezionate. Nessuna verifica del personale o dei pagamenti. Nessuno slot pubblicato.'};
+ return {date,free_intervals,opening_source:source,windows:windows.map(w=>({start_dt:new Date(w.a).toISOString(),end_dt:new Date(w.b).toISOString()})),issues,events:records,slots,candidate_count:slots.filter(s=>s.status==='candidate').length,mode:'read_only_review',note:'Lettura di apertura, pause e capienza delle agende selezionate. Nessuna verifica del personale o dei pagamenti. Nessuno slot pubblicato.'};
 }

@@ -1,4 +1,4 @@
-# Lettore Teamup separato — versione 2
+# Lettore Teamup separato — versione 3
 
 Worker di diagnosi in sola lettura. Non sostituisce healthysmile-checkout.
 Non contiene chiamate Stripe/PayPal, né POST/PUT/DELETE verso Teamup.
@@ -8,7 +8,7 @@ i blocchi di pagamento D1 del sito non sono inclusi.
 ## Prima prova live
 
 1. Creare un nuovo Worker **healthysmile-agenda-reader** e incollare il bundle
-   `releases/healthysmile-agenda-reader-v2.mjs` in Edit code, quindi Deploy.
+   `releases/healthysmile-agenda-reader-v3.mjs` in Edit code, quindi Deploy.
 2. Aggiungere i secret `TEAMUP_API_KEY`, `TEAMUP_CALENDAR_KEY`, `ADMIN_TOKEN`.
    Usare le credenziali già funzionanti del Worker attuale. Il token admin resta nel browser
    solo in memoria; non inviarlo in chat. Il collegamento Teamup può essere di sola lettura.
@@ -56,3 +56,6 @@ da aggiornare. Errori di lettura restano visibili; non autorizzano pubblicazione
 Un errore di configurazione del ciclo è riportato nella pagina dell'ultima lettura.
 Il sistema non considera un cron un aggiornamento istantaneo: il checkout futuro
 richiederà una lettura e prenotazione coordinate, progettate separatamente.
+
+## Output v3
+La pagina mostra giorno, apertura, chiusura, pause e intervalli con una o due poltrone libere. Gli intervalli seguono gli orari effettivi degli eventi, anche se più brevi di un trattamento. Nessun dettaglio tecnico o elenco di esclusioni nella pagina. La disponibilità del personale e i pagamenti non sono verificati. I report v2 richiedono una nuova lettura.
