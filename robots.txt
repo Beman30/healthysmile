@@ -1,0 +1,17 @@
+User-agent: *
+Allow: /
+
+Disallow: /admin/
+Disallow: /agenda-reader/
+Disallow: /backend/
+Disallow: /pazienti/
+Disallow: /agenda.html
+Disallow: /cartellaclinica.html
+Disallow: /checkout.html
+Disallow: /checkout-success.html
+Disallow: /editorv2.html
+Disallow: /HealthySmile-Editor.html
+Disallow: /registro-pazienti.html
+Disallow: /scheda-demo.html
+
+Sitemap: https://healthysmile.it/sitemap.xml
