@@ -11,6 +11,58 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Igiene dentale Torino | Healthy Smile</title>
 <meta name="description" content="Igiene dentale a Torino da Healthy Smile. Non solo pulizia: controllo gengive, tartaro, sanguinamento e prevenzione personalizzata con tariffa trasparente.">
+<link rel="canonical" href="https://healthysmile.it/prevenzione">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Dentist",
+      "@id": "https://healthysmile.it/#studio",
+      "name": "Healthy Smile By N",
+      "url": "https://healthysmile.it/",
+      "telephone": "+390112488248",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "Via Madama Cristina 2",
+        "addressLocality": "Torino",
+        "postalCode": "10125",
+        "addressRegion": "TO",
+        "addressCountry": "IT"
+      }
+    },
+    {
+      "@type": "Service",
+      "@id": "https://healthysmile.it/prevenzione#servizio",
+      "name": "Igiene dentale e prevenzione a Torino",
+      "serviceType": "Igiene dentale professionale e prevenzione orale",
+      "url": "https://healthysmile.it/prevenzione",
+      "description": "Seduta di igiene dentale professionale con screening gengivale e mappatura digitale.",
+      "provider": {"@id": "https://healthysmile.it/#studio"},
+      "areaServed": {"@type": "City", "name": "Torino"},
+      "offers": {
+        "@type": "Offer",
+        "name": "Igiene completa",
+        "price": "90",
+        "priceCurrency": "EUR",
+        "url": "https://healthysmile.it/prevenzione",
+        "availability": "https://schema.org/InStock"
+      }
+    },
+    {
+      "@type": "Offer",
+      "@id": "https://healthysmile.it/visita-igiene-spazzolino#offerta",
+      "name": "Visita + Igiene + Spazzolino elettrico",
+      "description": "Visita odontoiatrica, igiene professionale e spazzolino elettrico incluso nelle giornate dedicate.",
+      "price": "98",
+      "priceCurrency": "EUR",
+      "url": "https://healthysmile.it/visita-igiene-spazzolino",
+      "seller": {"@id": "https://healthysmile.it/#studio"}
+    }
+  ]
+}
+</script>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -171,6 +223,9 @@ nav{position:sticky;top:0;z-index:100;background:var(--black);border-bottom:1px 
 .price-right{flex:1}
 .price-text{font-size:15px;color:#b5b3ac;font-weight:300;line-height:1.7}
 .price-text strong{color:var(--white);font-weight:500}
+.price-package{font-size:14px;color:#b5b3ac;font-weight:300;line-height:1.65;margin-top:16px;padding-top:16px;border-top:1px solid #333}
+.price-package strong{color:var(--white);font-weight:500}
+.price-package a{color:var(--white);text-decoration:underline;text-underline-offset:3px}
 .price-cta{margin-top:20px}
 
 /* ACCORDION SECTION */
@@ -381,7 +436,7 @@ footer{background:#0a0a0a;padding:24px 32px;border-top:1px solid #1e1e1e;display
     <div class="case-card" id="case-1">
       <div class="case-rule"></div>
       <p class="case-label">Caso 1 · Tartaro e macchie</p>
-      <p class="case-title">I depositi si induriranno<br>ancora di più se <em>aspetti.</em></p>
+      <h2 class="case-title">I depositi si induriranno<br>ancora di più se <em>aspetti.</em></h2>
       <div class="case-body">
         <span class="body-step">Cosa significa</span>
         <p>Il tartaro è <strong>placca batterica che si è indurita</strong> e non può più essere rimossa con lo spazzolino normale. Le macchie sono spesso dovute ad abitudini alimentari (caffè, tè) o fumo.</p>
@@ -425,7 +480,7 @@ footer{background:#0a0a0a;padding:24px 32px;border-top:1px solid #1e1e1e;display
     <div class="case-card" id="case-2">
       <div class="case-rule"></div>
       <p class="case-label">Caso 2 · Sanguinamento gengivale</p>
-      <p class="case-title">Le gengive ci stanno<br><em>mandando un segnale.</em></p>
+      <h2 class="case-title">Le gengive ci stanno<br><em>mandando un segnale.</em></h2>
       <div class="case-body">
         <span class="body-step">Cosa significa</span>
         <p>Il sanguinamento è il modo in cui i tessuti segnalano la presenza di un'<strong>infiammazione causata dall'accumulo di placca batterica</strong> vicino al bordo gengivale.</p>
@@ -469,7 +524,7 @@ footer{background:#0a0a0a;padding:24px 32px;border-top:1px solid #1e1e1e;display
     <div class="case-card" id="case-3">
       <div class="case-rule"></div>
       <p class="case-label">Caso 3 · Alito cattivo</p>
-      <p class="case-title">Spesso la causa è<br><em>nascosta sotto le gengive.</em></p>
+      <h2 class="case-title">Spesso la causa è<br><em>nascosta sotto le gengive.</em></h2>
       <div class="case-body">
         <span class="body-step">Cosa significa</span>
         <p>Spesso l'alito pesante è causato da <strong>batteri anaerobi che proliferano nei depositi di tartaro</strong> nascosti o sulla superficie della lingua — dove lo spazzolino non arriva.</p>
@@ -513,7 +568,7 @@ footer{background:#0a0a0a;padding:24px 32px;border-top:1px solid #1e1e1e;display
     <div class="case-card" id="case-4">
       <div class="case-rule"></div>
       <p class="case-label">Caso 4 · Prevenzione attiva</p>
-      <p class="case-title">Stai facendo<br>la scelta <em>più intelligente.</em></p>
+      <h2 class="case-title">Stai facendo<br>la scelta <em>più intelligente.</em></h2>
       <div class="case-body">
         <span class="body-step">Cosa significa</span>
         <p>Significa <strong>anticipare i tempi</strong>. Monitorare regolarmente la bocca permette di intercettare piccoli segnali prima che diventino fastidi o richiedano cure lunghe e costose.</p>
@@ -557,7 +612,7 @@ footer{background:#0a0a0a;padding:24px 32px;border-top:1px solid #1e1e1e;display
     <div class="case-card" id="case-5">
       <div class="case-rule"></div>
       <p class="case-label">Caso 5 · Lunga assenza</p>
-      <p class="case-title">Nessun giudizio.<br><em>Ripartiamo da zero insieme.</em></p>
+      <h2 class="case-title">Nessun giudizio.<br><em>Ripartiamo da zero insieme.</em></h2>
       <div class="case-body">
         <span class="body-step">Cosa significa</span>
         <p>È assolutamente normale, <strong>non c'è da preoccuparsi o sentirsi giudicati</strong>. Il tartaro si stratifica e diventa solo più compatto e resistente nel tempo.</p>
@@ -604,7 +659,7 @@ footer{background:#0a0a0a;padding:24px 32px;border-top:1px solid #1e1e1e;display
 <div class="card-section">
   <div class="card-inner">
     <span class="card-tag">Cosa facciamo da Healthy Smile</span>
-    <p class="card-headline">Prima capiamo. <em>Poi ti diciamo cosa fare.</em></p>
+    <h2 class="card-headline">Prima capiamo. <em>Poi ti diciamo cosa fare.</em></h2>
     <div class="card-body">
       <p>Da Healthy Smile l'igiene non è una prestazione isolata. Prima guardiamo <strong>gengive, tartaro, sanguinamento, sensibilità e abitudini</strong>. Poi ti spieghiamo cosa sta succedendo e ti diciamo ogni quanto ha senso tornare.</p>
       <p>L'obiettivo non è farti venire più spesso. <em>L'obiettivo è farti arrivare prima</em>, quando i problemi sono ancora piccoli.</p>
@@ -616,6 +671,7 @@ footer{background:#0a0a0a;padding:24px 32px;border-top:1px solid #1e1e1e;display
       </div>
       <div class="price-right">
         <p class="price-text"><strong>Trasparenza dall'inizio alla fine.</strong> Nessuna sorpresa, nessun costo nascosto e nessun trattamento non necessario proposto a fine seduta per gonfiare il conto. È la tariffa corretta per dedicare tutto il tempo necessario alla salute della tua bocca, includendo lo <strong>screening gengivale e la mappatura digitale completa</strong>.</p>
+        <p class="price-package"><strong>È una proposta diversa dal pacchetto dedicato:</strong> nelle giornate disponibili puoi scegliere anche <a href="/visita-igiene-spazzolino">Visita + Igiene + Spazzolino elettrico a 98 €</a>.</p>
       </div>
     </div>
     <div class="price-cta">
@@ -637,7 +693,7 @@ footer{background:#0a0a0a;padding:24px 32px;border-top:1px solid #1e1e1e;display
 <div class="acc-section">
   <div class="acc-inner">
     <span class="acc-eyebrow">In dettaglio</span>
-    <p class="acc-title">Cosa controlliamo<br><em>durante l'igiene</em></p>
+    <h2 class="acc-title">Cosa controlliamo<br><em>durante l'igiene</em></h2>
     <div class="acc-list">
 
       <div class="acc-item">
@@ -781,10 +837,10 @@ footer{background:#0a0a0a;padding:24px 32px;border-top:1px solid #1e1e1e;display
   <div class="cta-inner">
     <span class="cta-eyebrow">Primo passo consigliato</span>
     <p class="cta-pull">Prima lo guardi, prima si risolve.</p>
-    <p class="cta-headline">Prenota valutazione<br>+ igiene <em>a 90€</em></p>
+    <h2 class="cta-headline">Prenota valutazione<br>+ igiene <em>a 90€</em></h2>
     <div class="cta-body">
       <p>Il primo passo è una seduta con <strong>screening gengivale e mappatura digitale inclusi</strong>. Ti diciamo subito cosa c'è, cosa rischi se aspetti e ogni quanto ha senso tornare.</p>
-      <p>Per il pacchetto <a href="/visita-igiene-spazzolino.html#prenota">Visita + Igiene + Spazzolino elettrico</a>, la prenotazione online è self-service: scegli giorno e ora disponibili, inserisci i tuoi dati e confermi l'appuntamento pagando l'acconto, senza attendere un ricontatto.</p>
+      <p>Il pacchetto <a href="/visita-igiene-spazzolino#prenota">Visita + Igiene + Spazzolino elettrico a 98 €</a> è una proposta distinta, disponibile nelle giornate dedicate. La prenotazione online è self-service: scegli giorno e ora disponibili, inserisci i tuoi dati e confermi l'appuntamento pagando l'acconto, senza attendere un ricontatto.</p>
     </div>
     <div class="dual-cta-lg" id="ctaBookBtns">
       <a class="btn-tel-lg" href="tel:+390112488248" id="ctaTelBtn">
