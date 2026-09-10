@@ -42,15 +42,13 @@
     ".hs-drawer-close{position:absolute;top:16px;right:16px;background:none;border:none;color:#666;font-size:1.5rem;cursor:pointer;padding:8px;line-height:1;transition:color 0.15s}",
     ".hs-drawer-close:hover{color:#fff}",
     "@media(max-width:900px){.hs-hamburger{display:flex}#hs-nav .hs-nav-links{display:none}#hs-nav{padding:0 16px}}",
-    "#hs-footer{background:#0a0a0a;padding:28px 24px 20px;border-top:1px solid #2a2a2a;display:flex;flex-direction:column;gap:0}",
-    "#hs-footer .hs-footer-top{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;padding-bottom:20px}",
-    "#hs-footer .hs-footer-logo{font-family:var(--hs-serif);font-size:16px;color:#888}",
+    "#hs-footer{background:#080808;padding:36px 24px 44px;border-top:1px solid var(--hs-line);text-align:center;font-family:var(--hs-sans)}",
+    "#hs-footer .hs-footer-logo{display:block;font-family:var(--hs-serif);font-size:1.05rem;color:#8a8880;margin-bottom:18px}",
     "#hs-footer .hs-footer-logo em{font-style:italic;color:#f0a0c0}",
-    "#hs-footer .hs-footer-links{display:flex;gap:16px;flex-wrap:wrap}",
-    "#hs-footer .hs-footer-links a{font-size:13px;color:#888;text-decoration:none;transition:color 0.15s}",
-    "#hs-footer .hs-footer-links a:hover{color:#ccc}",
-    "#hs-footer .hs-footer-legal{font-size:12px;color:#555;border-top:1px solid #1e1e1e;padding-top:16px}",
-    "@media(max-width:768px){#hs-footer .hs-footer-top{flex-direction:column;align-items:flex-start}}",
+    "#hs-footer .hs-footer-links{display:flex;gap:20px;justify-content:center;flex-wrap:wrap;margin-bottom:20px}",
+    "#hs-footer .hs-footer-links a{font-size:.84rem;color:#777;text-decoration:none;transition:color .15s}",
+    "#hs-footer .hs-footer-links a:hover{color:#c8c6c0}",
+    "#hs-footer .hs-footer-legal{font-size:.76rem;color:#55534e;line-height:1.7;max-width:640px;margin:0 auto}",
     "#hs-cookie{position:fixed;bottom:0;left:0;right:0;z-index:500;background:#111;border-top:1px solid #2a2a2a;padding:16px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;box-shadow:0 -4px 24px rgba(0,0,0,0.4)}",
     "#hs-cookie p{font-size:13px;color:#aaa;margin:0;line-height:1.6;flex:1;min-width:200px}",
     "#hs-cookie a{color:#f0a0c0;text-decoration:underline}",
@@ -136,21 +134,19 @@
   var footer = document.createElement('footer');
   footer.id = 'hs-footer';
   footer.innerHTML =
-    '<div class="hs-footer-top">' +
-      '<span class="hs-footer-logo">Healthy Smile <em>By N</em> &middot; Torino</span>' +
-      '<div class="hs-footer-links">' +
-        '<a href="https://healthysmile.it/prevenzione">Prevenzione</a>' +
-        '<a href="https://healthysmile.it/salva-il-tuo-dente">Non estrarre</a>' +
-        '<a href="https://www.instagram.com/healthy.smile.by.n" target="_blank" rel="noopener">Instagram</a>' +
-        '<a href="tel:+390112488248">011 2488248</a>' +
-        '<a href="https://healthysmile.it/privacy-policy">Privacy</a>' +
-        '<a href="https://healthysmile.it/cookie-policy">Cookie</a>' +
-        '<a href="https://healthysmile.it/termini-servizio">Termini</a>' +
-      '</div>' +
+    '<span class="hs-footer-logo">Healthy Smile <em>By N</em></span>' +
+    '<div class="hs-footer-links">' +
+      '<a href="/prevenzione">Prevenzione</a>' +
+      '<a href="/medicina-estetica">Medicina estetica</a>' +
+      '<a href="/schedadigitale">Scheda digitale</a>' +
+      '<a href="/privacy-policy.html">Privacy</a>' +
+      '<a href="/cookie-policy.html">Cookie</a>' +
+      '<a href="/termini-servizio.html">Termini</a>' +
     '</div>' +
     '<div class="hs-footer-legal">' +
-      'Healthy Smile By N &mdash; studio dentistico, sede operativa: Via Madama Cristina 2, 10125 Torino &middot; Tel. 011 2488248<br>' +
-      '&copy; ' + new Date().getFullYear() + ' Societ&agrave; titolare: Dominus Srl &nbsp;&middot;&nbsp; sede legale: Via Lagrange 10, Torino &nbsp;&middot;&nbsp; P.IVA 12923420017' +
+      'Healthy Smile By N &mdash; studio dentistico, sede operativa: Via Madama Cristina 2, 10125 Torino &middot; Tel. <a href="tel:+390112488248">011 2488248</a><br>' +
+      'Societ&agrave; titolare: Dominus Srl &middot; sede legale: Via Lagrange 10, Torino &middot; P.IVA 12923420017<br>' +
+      'Le informazioni di questa pagina hanno finalit&agrave; informativa e non sostituiscono la valutazione clinica.' +
     '</div>';
 
   // ── INJECT ───────────────────────────────────────────────────────────
@@ -162,10 +158,19 @@
   var SKIP_FOOTER = document.documentElement.hasAttribute('data-hs-custom-footer');
 
   function inject(){
+    if(!SKIP_NAV){
+      // Le vecchie landing avevano copie autonome del menu. Vengono rimosse
+      // qui, così il sito usa davvero una sola sorgente grafica e funzionale.
+      document.querySelectorAll('body > nav#nav, body > .nav').forEach(function(oldNav){oldNav.remove()});
+      document.querySelectorAll('body > #overlay, body > #drawer, body > #drawerOverlay, body > #mobileDrawer').forEach(function(oldMenu){oldMenu.remove()});
+    }
     if(!SKIP_NAV && !document.getElementById('hs-nav')){
       document.body.insertBefore(nav, document.body.firstChild);
       document.body.insertBefore(overlay, nav.nextSibling);
       document.body.insertBefore(drawer, overlay.nextSibling);
+    }
+    if(!SKIP_FOOTER){
+      document.querySelectorAll('body > footer:not(#hs-footer)').forEach(function(oldFooter){oldFooter.remove()});
     }
     if(!SKIP_FOOTER && !document.getElementById('hs-footer')){
       document.body.appendChild(footer);
