@@ -2,7 +2,7 @@ import {romeTime, rollingDates} from '../../backend/src/teamup.js';
 export {rollingDates};
 const MIN=60000;
 const clean=s=>String(s||'').replace(/<[^>]*>/g,' ').replace(/&nbsp;/g,' ').trim();
-const bare=s=>clean(s).replace(/^[^/\r\n]{1,40}\/\s*/, '').trim();
+const bare=s=>clean(s).replace(/^[^/\r\n]{1,40}\/\s*/, '').replace(/^[A-Za-zÀ-ÿ][A-Za-zÀ-ÿ .]{0,39}\s*[-–—]\s*(?=\d|PALMIA\b|STOP\b|PAUSA\b)/i,'').trim();
 const clock=m=>`${String(Math.floor(m/60)).padStart(2,'0')}:${String(m%60).padStart(2,'0')}`;
 const hit=(e,a,b)=>e.a<b&&e.b>a;
 function parseTime(s) {
@@ -11,7 +11,7 @@ function parseTime(s) {
  return +m[1]*60+ +(m[2]||0);
 }
 export function openingText(text) {
- const m=/^(?:DOTT\.?\s*)?PALMIA\s+(\d{1,2}(?:[.:]\d{2})?)\s*[-–—]\s*(\d{1,2}(?:[.:]\d{2})?)\s*$/i.exec(bare(text));
+ const m=/^(?:(?:DOTT\.?\s*)?PALMIA\s+)?(\d{1,2}(?:[.:]\d{2})?)\s*[-–—]\s*(\d{1,2}(?:[.:]\d{2})?)\s*$/i.exec(bare(text));
  if(!m)return null;
  const a=parseTime(m[1]),b=parseTime(m[2]);
  if(b<=a)throw Error('Apertura e chiusura discordanti');

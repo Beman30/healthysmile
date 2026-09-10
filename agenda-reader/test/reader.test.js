@@ -42,7 +42,7 @@ test('contradictory openings are reported; legacy hygiene fields are ignored',()
 });
 test('worker endpoints, persistent reports and repeated updates are read-only upstream',async t=>{
  let events=base(),fail=false,calls=[];
- const mf=new Miniflare({modules:true,compatibilityDate:'2025-09-01',scriptPath:new URL('../releases/healthysmile-agenda-reader-v3.mjs',import.meta.url).pathname,d1Databases:['DB'],bindings:{ADMIN_TOKEN:'admin',TEAMUP_API_KEY:'key',TEAMUP_CALENDAR_KEY:'kstest'},outboundService:async req=>{
+ const mf=new Miniflare({modules:true,compatibilityDate:'2025-09-01',scriptPath:new URL('../releases/healthysmile-agenda-reader-v4.mjs',import.meta.url).pathname,d1Databases:['DB'],bindings:{ADMIN_TOKEN:'admin',TEAMUP_API_KEY:'key',TEAMUP_CALENDAR_KEY:'kstest'},outboundService:async req=>{
   calls.push(req.method);assert.equal(req.method,'GET');
   if(fail)return new Response('{}',{status:503});
   if(new URL(req.url).pathname.endsWith('/configuration'))return Response.json({configuration:{subcalendars:[{id:1,name:'Medici Palmia'},{id:2,name:'Medici Igienista'},{id:3,name:'Sito'}]}});
@@ -66,4 +66,16 @@ test('free chair intervals use actual event boundaries, merge equal capacity and
  const r=interpretDay([...base(),event('a','10:00','10:20'),event('b','10:10','10:40')],date,cfg,0);
  const spans=r.free_intervals.map(f=>[new Date(f.start_dt).getTime(),new Date(f.end_dt).getTime(),f.free_chairs]);
  assert.deepEqual(spans,[['10:00','10:10',1],['10:20','10:40',1],['10:40','13:00',2],['14:00','19:00',2]].map(([a,b,n])=>[romeTime(date,a),romeTime(date,b),n]));
+});
+
+test('September 11 actual notice and prefixed lunch read opening from title, not event position',()=>{
+ for(const title of ['CC-10.00-16.00','NB-10.00-16.00','Nina / 10:00-16:00','10.00-16.00'])assert.deepEqual(openingText(title),{start:'10:00',end:'16:00'});
+ const events=[event('o','06:00','10:00','CC-10.00-16.00'),event('l','13:00','14:00','CC- PAUSA')];
+ const r=interpretDay(events,date,cfg,0);
+ assert.equal(r.issues.length,0);
+ assert.deepEqual(r.events.map(e=>e.kind),['opening','pause']);
+ assert.deepEqual(r.free_intervals.map(f=>[Date.parse(f.start_dt),Date.parse(f.end_dt),f.free_chairs]),[['10:00','13:00'],['14:00','16:00']].map(([a,b])=>[romeTime(date,a),romeTime(date,b),2]));
+ const other=interpretDay(events.map(e=>({...e,subcalendar_ids:[2]})),date,cfg,0);
+ assert.ok(other.issues.length);assert.equal(other.windows.length,0);
+ assert.equal(openingText('CC- Rossi 10.00-16.00 visita'),null);
 });
