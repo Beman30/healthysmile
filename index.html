@@ -253,6 +253,10 @@ p strong{color:var(--white);font-weight:500}
 .btn:hover{background:#a0004a}
 .btn-ghost{background:transparent;border:1px solid var(--line);color:var(--gray-300)}
 .btn-ghost:hover{background:#1e1e20;border-color:var(--gray-500)}
+.hero-booking{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:12px}
+.hero-booking-or{color:var(--gray-500);font-size:.9rem}
+.hero-booking-note{margin:12px 0 0;color:var(--gray-500);font-size:.85rem}
+@media(max-width:620px){.hero-booking{flex-direction:column}.hero-booking .btn{width:100%;max-width:380px;text-align:center}}
 
 /* ── DUE PROVE ─────────────────────── */
 .proof{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin:44px 0 32px}
@@ -481,7 +485,12 @@ footer .legal{font-size:.76rem;color:#55534e;line-height:1.7;max-width:640px;mar
       Non sai da dove partire? <a href="/homepage-conversazionale.html">Poche domande e ti indirizziamo →</a>
     </p>
 
-    <a class="btn" href="https://wa.me/393924076794?text=Ciao%2C%20vorrei%20prenotare%20igiene%20e%20visita">Prenota igiene e visita — €90</a>
+    <div class="hero-booking">
+      <a class="btn" href="https://wa.me/393924076794?text=Ciao%2C%20vorrei%20prenotare%20igiene%20e%20visita">Prenota igiene e visita — €90</a>
+      <span class="hero-booking-or">oppure</span>
+      <a class="btn btn-ghost" href="/visita-igiene-spazzolino">Visita + igiene + spazzolino — €98</a>
+    </div>
+    <p class="hero-booking-note">Pacchetto da €98 riservato ai nuovi pazienti, nelle giornate disponibili.</p>
   </div>
 </section>
 
@@ -653,6 +662,7 @@ footer .legal{font-size:.76rem;color:#55534e;line-height:1.7;max-width:640px;mar
     <div class="eyebrow">Contatti</div>
     <h2>Il primo passo è <em>una visita.</em></h2>
     <p class="lead">Igiene e visita a €90: 45 minuti con l'igienista. Esci con la tua scheda digitale e sai esattamente come stai.</p>
+    <p class="note" style="margin-top:14px">Oppure scegli <a href="/visita-igiene-spazzolino" style="color:var(--accent-soft)">Visita + igiene + spazzolino elettrico a €98 →</a>, per i nuovi pazienti nelle giornate disponibili.</p>
     <p class="note" style="margin-top:14px">Vuoi essere seguito tutto l'anno? <a href="/one" data-one="contatti" style="color:var(--accent-soft)">Scopri One →</a></p>
 
     <div class="contact-grid">
