@@ -4,33 +4,44 @@
   style.id = 'hs-components-style';
   style.textContent = [
     "@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap');",
-    ":root{--hs-black:#0e0e0e;--hs-white:#fafaf8;--hs-accent:#C8005C;--hs-serif:'DM Serif Display',Georgia,serif;--hs-sans:'DM Sans',system-ui,sans-serif;}",
-    "#hs-nav{position:sticky;top:0;z-index:100;background:var(--hs-black);border-bottom:1px solid #2a2a2a;padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:56px}",
-    "#hs-nav .hs-nav-logo{font-family:var(--hs-serif);font-size:18px;color:var(--hs-black);text-decoration:none;letter-spacing:-0.01em}",
-    "#hs-nav .hs-nav-links{display:flex;gap:8px;align-items:center}",
-    "#hs-nav .hs-nav-links a{font-size:13px;font-weight:400;color:#ffffff;text-decoration:none;padding:6px 12px;border-radius:6px;transition:background 0.15s}",
-    "#hs-nav .hs-nav-links a:hover{background:#222}",
-    "#hs-nav .hs-nav-links a.active{color:var(--hs-accent);font-weight:500}",
-    "#hs-nav .hs-nav-cta{font-size:13px!important;font-weight:500!important;background:#C8005C;color:var(--hs-white)!important;padding:8px 16px!important;border-radius:6px;transition:opacity 0.15s}",
-    "#hs-nav .hs-nav-cta:hover{opacity:0.85;background:#a0004a!important}",
-    ".hs-hamburger{display:none;flex-direction:column;justify-content:center;gap:5px;width:36px;height:36px;cursor:pointer;padding:4px;background:none;border:none;flex-shrink:0}",
+    ":root{--hs-black:#0e0e0e;--hs-white:#fafaf8;--hs-panel:#1a1a1c;--hs-line:#2a2a2c;--hs-gray-300:#c8c6c0;--hs-gray-500:#777;--hs-accent:#C8005C;--hs-serif:'DM Serif Display',Georgia,serif;--hs-sans:'DM Sans',system-ui,sans-serif;}",
+    "#hs-nav{position:sticky;top:0;z-index:100;background:rgba(14,14,14,.94);backdrop-filter:blur(10px);border-bottom:1px solid var(--hs-line);height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 24px}",
+    "#hs-nav .hs-nav-logo{display:block;text-decoration:none}",
+    "#hs-nav .hs-nav-logo img{height:40px;width:auto;display:block}",
+    "#hs-nav .hs-nav-links{display:flex;gap:4px;align-items:center}",
+    "#hs-nav .hs-nav-item{position:relative}",
+    "#hs-nav .hs-nav-item>a,#hs-nav .hs-nav-item>button{font-family:var(--hs-sans);font-size:.85rem;font-weight:400;color:var(--hs-white);background:none;border:none;cursor:pointer;text-decoration:none;padding:8px 14px;border-radius:6px;display:flex;align-items:center;gap:6px;transition:background .15s}",
+    "#hs-nav .hs-nav-item>a:hover,#hs-nav .hs-nav-item>button:hover{background:#222}",
+    "#hs-nav .hs-nav-item>a.active,#hs-nav .hs-nav-item>button.active{color:#f0a0c0;font-weight:500}",
+    "#hs-nav .hs-caret{width:7px;height:7px;border-right:1.5px solid var(--hs-gray-500);border-bottom:1.5px solid var(--hs-gray-500);transform:rotate(45deg) translateY(-2px);transition:transform .2s}",
+    "#hs-nav .hs-nav-item.open .hs-caret{transform:rotate(-135deg) translateY(-2px)}",
+    "#hs-nav .hs-dropdown{position:absolute;top:calc(100% + 6px);left:0;min-width:250px;background:var(--hs-panel);border:1px solid var(--hs-line);border-radius:10px;padding:8px;opacity:0;visibility:hidden;transform:translateY(-6px);transition:opacity .18s,transform .18s,visibility .18s}",
+    "#hs-nav .hs-nav-item.open .hs-dropdown{opacity:1;visibility:visible;transform:translateY(0)}",
+    "#hs-nav .hs-dropdown a{display:block;padding:10px 14px;border-radius:6px;text-decoration:none;font-family:var(--hs-sans);font-size:.88rem;color:var(--hs-gray-300);transition:background .15s,color .15s}",
+    "#hs-nav .hs-dropdown a:hover{background:#26262a;color:var(--hs-white)}",
+    "#hs-nav .hs-dropdown a.active{color:#f0a0c0}",
+    "#hs-nav .hs-nav-cta{background:var(--hs-accent);color:#fff!important;font-family:var(--hs-sans);font-size:.85rem;font-weight:500;padding:9px 18px!important;border-radius:6px;text-decoration:none;transition:background .15s}",
+    "#hs-nav .hs-nav-cta:hover{background:#a0004a}",
+    ".hs-hamburger{display:none;flex-direction:column;justify-content:center;gap:5px;width:38px;height:38px;cursor:pointer;padding:0;background:none;border:none;flex-shrink:0}",
     ".hs-hamburger span{display:block;height:2px;background:#ffffff;border-radius:2px;transition:transform 0.3s,opacity 0.3s}",
     ".hs-hamburger:hover span{background:#f0a0c0}",
     ".hs-hamburger.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}",
     ".hs-hamburger.open span:nth-child(2){opacity:0}",
     ".hs-hamburger.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}",
-    ".hs-drawer{position:fixed;top:0;right:0;bottom:0;width:260px;background:#1C1C1C;z-index:300;transform:translateX(100%);transition:transform 0.35s cubic-bezier(0.4,0,0.2,1);display:flex;flex-direction:column;padding:80px 32px 40px;gap:8px;border-left:1px solid #2a2a2a}",
+    ".hs-drawer{position:fixed;top:0;right:0;bottom:0;width:290px;max-width:85vw;background:#1c1c1c;z-index:300;transform:translateX(100%);transition:transform .35s cubic-bezier(.4,0,.2,1);padding:76px 28px 40px;overflow-y:auto;border-left:1px solid var(--hs-line)}",
     ".hs-drawer.open{transform:translateX(0)}",
-    ".hs-drawer-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:290;opacity:0;pointer-events:none;transition:opacity 0.35s}",
+    ".hs-drawer-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:290;opacity:0;pointer-events:none;transition:opacity .35s}",
     ".hs-drawer-overlay.open{opacity:1;pointer-events:auto}",
-    ".hs-drawer a{font-family:var(--hs-sans);font-size:1.05rem;color:#aaa;text-decoration:none;padding:12px 0;border-bottom:1px solid #2a2a2a;transition:color 0.15s;display:block}",
+    ".hs-drawer-group{font-family:var(--hs-sans);font-size:.68rem;letter-spacing:.2em;text-transform:uppercase;color:#f0a0c0;margin:26px 0 8px;font-weight:500}",
+    ".hs-drawer-group:first-of-type{margin-top:0}",
+    ".hs-drawer a{font-family:var(--hs-sans);font-size:1rem;color:var(--hs-gray-300);text-decoration:none;padding:11px 0;border-bottom:1px solid var(--hs-line);transition:color .15s;display:block}",
     ".hs-drawer a:hover,.hs-drawer a.active{color:#fff}",
     ".hs-drawer a.active{color:#f0a0c0}",
-    ".hs-drawer .hs-drawer-cta{margin-top:24px;background:var(--hs-accent);color:#fff!important;text-align:center;padding:14px 20px!important;border-radius:4px;border:none!important;font-weight:500;display:block}",
+    ".hs-drawer .hs-drawer-cta{margin-top:28px;background:var(--hs-accent);color:#fff!important;text-align:center;padding:14px 20px!important;border-radius:6px;border:none!important;font-weight:500;display:block}",
     ".hs-drawer .hs-drawer-cta:hover{background:#a0004a!important}",
     ".hs-drawer-close{position:absolute;top:16px;right:16px;background:none;border:none;color:#666;font-size:1.5rem;cursor:pointer;padding:8px;line-height:1;transition:color 0.15s}",
     ".hs-drawer-close:hover{color:#fff}",
-    "@media(max-width:768px){.hs-hamburger{display:flex}#hs-nav .hs-nav-links{display:none}#hs-nav{padding:0 16px}}",
+    "@media(max-width:900px){.hs-hamburger{display:flex}#hs-nav .hs-nav-links{display:none}#hs-nav{padding:0 16px}}",
     "#hs-footer{background:#0a0a0a;padding:28px 24px 20px;border-top:1px solid #2a2a2a;display:flex;flex-direction:column;gap:0}",
     "#hs-footer .hs-footer-top{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;padding-bottom:20px}",
     "#hs-footer .hs-footer-logo{font-family:var(--hs-serif);font-size:16px;color:#888}",
@@ -65,17 +76,33 @@
   nav.id = 'hs-nav';
   nav.innerHTML =
     '<a href="https://healthysmile.it" class="hs-nav-logo">' +
-      '<img src="' + LOGO_SRC + '" alt="Healthy Smile By N" style="height:44px;width:auto;display:block;">' +
+      '<img src="' + LOGO_SRC + '" alt="Healthy Smile By N">' +
     '</a>' +
     '<div class="hs-nav-links">' +
-      '<a href="https://healthysmile.it/problemi/gengivite">Problemi gengive</a>' +
-      '<a href="https://healthysmile.it/sbiancamento-dentale-torino">Sbiancamento</a>' +
-      '<a href="https://healthysmile.it/salva-il-tuo-dente">Non estrarre</a>' +
-      '<a href="https://healthysmile.it">Chi siamo</a>' +
-      '<a href="https://healthysmile.it/prevenzione">Prevenzione</a>' +
+      '<div class="hs-nav-item" data-hs-drop>' +
+        '<button aria-expanded="false">Denti <span class="hs-caret"></span></button>' +
+        '<div class="hs-dropdown">' +
+          '<a href="/odontoiatria">Odontoiatria</a>' +
+          '<a href="/prevenzione">Igiene e prevenzione</a>' +
+          '<a href="/problemi/gengivite">Gengive che sanguinano</a>' +
+          '<a href="/salva-il-tuo-dente">Non estrarre</a>' +
+          '<a href="/sbiancamento-dentale-torino">Sbiancamento</a>' +
+          '<a href="/allineatori-trasparenti">Ortodonzia</a>' +
+          '<a href="/riabilitazione-completa">Riabilitazione completa</a>' +
+        '</div>' +
+      '</div>' +
+      '<div class="hs-nav-item" data-hs-drop>' +
+        '<button aria-expanded="false">Viso <span class="hs-caret"></span></button>' +
+        '<div class="hs-dropdown">' +
+          '<a href="/medicina-estetica">Medicina estetica</a>' +
+          '<a href="/trattamenti/ringiovanimentoviso">Ringiovanimento viso</a>' +
+        '</div>' +
+      '</div>' +
+      '<div class="hs-nav-item"><a href="/#principio">Chi siamo</a></div>' +
+      '<div class="hs-nav-item"><a href="/filosofia">Filosofia</a></div>' +
       '<a href="' + WA_URL + '" class="hs-nav-cta">Scrivici</a>' +
     '</div>' +
-    '<button class="hs-hamburger" id="hs-hamburger" aria-label="Menu">' +
+    '<button class="hs-hamburger" id="hs-hamburger" aria-label="Menu" aria-expanded="false">' +
       '<span></span><span></span><span></span>' +
     '</button>';
 
@@ -87,12 +114,22 @@
   drawer.className = 'hs-drawer';
   drawer.id = 'hs-drawer';
   drawer.innerHTML =
-    '<button class="hs-drawer-close" id="hs-drawer-close">&#x2715;</button>' +
-    '<a href="https://healthysmile.it/problemi/gengivite">Problemi gengive</a>' +
-    '<a href="https://healthysmile.it/sbiancamento-dentale-torino">Sbiancamento</a>' +
-    '<a href="https://healthysmile.it/salva-il-tuo-dente">Non estrarre</a>' +
-    '<a href="https://healthysmile.it">Chi siamo</a>' +
-    '<a href="https://healthysmile.it/prevenzione">Prevenzione</a>' +
+    '<button class="hs-drawer-close" id="hs-drawer-close" aria-label="Chiudi">&#x2715;</button>' +
+    '<div class="hs-drawer-group">Denti</div>' +
+    '<a href="/odontoiatria">Odontoiatria</a>' +
+    '<a href="/prevenzione">Igiene e prevenzione</a>' +
+    '<a href="/problemi/gengivite">Gengive che sanguinano</a>' +
+    '<a href="/salva-il-tuo-dente">Non estrarre</a>' +
+    '<a href="/sbiancamento-dentale-torino">Sbiancamento</a>' +
+    '<a href="/allineatori-trasparenti">Ortodonzia</a>' +
+    '<a href="/riabilitazione-completa">Riabilitazione completa</a>' +
+    '<div class="hs-drawer-group">Viso</div>' +
+    '<a href="/medicina-estetica">Medicina estetica</a>' +
+    '<a href="/trattamenti/ringiovanimentoviso">Ringiovanimento viso</a>' +
+    '<div class="hs-drawer-group">Studio</div>' +
+    '<a href="/#principio">Chi siamo</a>' +
+    '<a href="/filosofia">Filosofia</a>' +
+    '<a href="/#contatti">Contatti</a>' +
     '<a href="' + WA_URL + '" class="hs-drawer-cta">Scrivici su WhatsApp</a>';
 
   // ── FOOTER ───────────────────────────────────────────────────────────
@@ -136,9 +173,31 @@
 
     // Mark active link
     var path = location.pathname.replace(/\/index\.html$/, '/').replace(/\/$/, '') || '/';
-    document.querySelectorAll('#hs-nav .hs-nav-links a, .hs-drawer a').forEach(function(a){
+    document.querySelectorAll('#hs-nav a, .hs-drawer a').forEach(function(a){
       var ap = (new URL(a.href)).pathname.replace(/\/$/, '') || '/';
       if(ap === path) a.classList.add('active'); else a.classList.remove('active');
+    });
+
+    // Dropdown desktop: stesso comportamento della home.
+    document.querySelectorAll('[data-hs-drop]').forEach(function(item){
+      var dropBtn = item.querySelector('button');
+      if(item.querySelector('a.active')) dropBtn.classList.add('active');
+      dropBtn.addEventListener('click', function(e){
+        e.stopPropagation();
+        var opening = !item.classList.contains('open');
+        document.querySelectorAll('[data-hs-drop]').forEach(function(other){
+          other.classList.remove('open');
+          other.querySelector('button').setAttribute('aria-expanded', 'false');
+        });
+        item.classList.toggle('open', opening);
+        dropBtn.setAttribute('aria-expanded', opening ? 'true' : 'false');
+      });
+    });
+    document.addEventListener('click', function(){
+      document.querySelectorAll('[data-hs-drop]').forEach(function(item){
+        item.classList.remove('open');
+        item.querySelector('button').setAttribute('aria-expanded', 'false');
+      });
     });
 
     // Drawer logic
@@ -149,11 +208,13 @@
     // Se il nav è stato saltato questi elementi non esistono: esci senza
     // rompere, così il cookie banner viene comunque iniettato.
     if(!btn || !drw || !ovl || !closeBtn) return;
-    function openDrawer(){btn.classList.add('open');drw.classList.add('open');ovl.classList.add('open');document.body.style.overflow='hidden'}
-    function closeDrawer(){btn.classList.remove('open');drw.classList.remove('open');ovl.classList.remove('open');document.body.style.overflow=''}
-    btn.addEventListener('click', openDrawer);
+    function toggleDrawer(open){btn.classList.toggle('open',open);drw.classList.toggle('open',open);ovl.classList.toggle('open',open);btn.setAttribute('aria-expanded',open?'true':'false');document.body.style.overflow=open?'hidden':''}
+    function closeDrawer(){toggleDrawer(false)}
+    btn.addEventListener('click', function(){toggleDrawer(!drw.classList.contains('open'))});
     closeBtn.addEventListener('click', closeDrawer);
     ovl.addEventListener('click', closeDrawer);
+    drw.querySelectorAll('a').forEach(function(a){a.addEventListener('click',closeDrawer)});
+    document.addEventListener('keydown',function(e){if(e.key==='Escape')closeDrawer()});
   }
 
   // ── COOKIE BANNER ────────────────────────────────────────────────────
