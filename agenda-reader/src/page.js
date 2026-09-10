@@ -1,24 +1,26 @@
 export const PAGE=String.raw`<!doctype html><html lang="it"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Lettore agenda Healthy Smile</title>
-<style>body{font:16px system-ui;max-width:1100px;margin:30px auto;padding:0 20px;color:#20252b;background:#f5f7fa}fieldset,article{background:white;border:1px solid #ccc;border-radius:8px;padding:18px;margin:16px 0}button{padding:12px;margin:8px 8px 8px 0;cursor:pointer}label{display:block;margin:10px 0}select,input{padding:8px;max-width:100%}table{border-collapse:collapse;width:100%}td,th{padding:8px;border-bottom:1px solid #ddd;text-align:left}pre{white-space:pre-wrap;overflow-wrap:anywhere}#message{font-weight:bold;white-space:pre-wrap}.warn{color:#9a3412}summary{cursor:pointer;padding:8px}.scroll{overflow:auto}</style>
-<h1>Lettore agenda · v5</h1><p>Apertura, pause e poltrone libere nelle agende selezionate. Solo lettura.</p>
+<style>body{font:16px system-ui;max-width:1100px;margin:30px auto;padding:0 20px;color:#20252b;background:#f5f7fa}fieldset,article{background:white;border:1px solid #ccc;border-radius:8px;padding:18px;margin:16px 0}button[aria-pressed="true"]{background:#20252b;color:white}button{padding:12px;margin:8px 8px 8px 0;cursor:pointer}label{display:block;margin:10px 0}select,input{padding:8px;max-width:100%}table{border-collapse:collapse;width:100%}td,th{padding:8px;border-bottom:1px solid #ddd;text-align:left}pre{white-space:pre-wrap;overflow-wrap:anywhere}#message{font-weight:bold;white-space:pre-wrap}.warn{color:#9a3412}summary{cursor:pointer;padding:8px}.scroll{overflow:auto}</style>
+<h1>Agenda studio · v6</h1><p>Igieni sito e pagamenti dalle agende selezionate. Solo lettura.</p>
 
 <label>Token amministratore <input id="token" type="password" autocomplete="off"></label><button id="connect">Connetti</button><p id="message" role="status"></p>
 <fieldset id="config" hidden><legend>Agende</legend><p>Apertura e pause vengono lette dall’agenda Palmia. Le agende Medici selezionate servono a leggere gli appuntamenti e la capienza.</p><div id="choices"></div>
 <label>Dott. Palmia: apertura e pause <select id="palmia"></select></label><label>Prenotazioni sito (facoltativo) <select id="site"></select></label>
 <button id="save">Salva configurazione lettore</button></fieldset>
-<section id="actions" hidden><label>Giornata <input id="date" type="date"></label><button id="day">Leggi questa giornata adesso</button><button id="all">Leggi prossimi 14 giorni</button><button id="reload">Mostra ultima lettura</button><p id="last"></p></section><div id="reports"></div>
+<section id="actions" hidden><nav><button id="view-slots" aria-pressed="true">Igieni sito</button><button id="view-payments" aria-pressed="false">Pagamenti</button></nav><label>Giornata <input id="date" type="date"></label><button id="day">Leggi questa giornata adesso</button><button id="all">Leggi prossimi 14 giorni</button><button id="reload">Mostra ultima lettura</button><p id="last"></p></section><div id="reports"></div>
 <script>
-const $=id=>document.getElementById(id);let token='',busy=false;
+const $=id=>document.getElementById(id);let token='',busy=false,view='slots',lastData={reports:[]};
 async function api(path,body){const r=await fetch('/api/'+path,{method:body?'POST':'GET',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined,cache:'no-store'});const d=await r.json();if(!r.ok)throw Error(d.error||'Errore '+r.status);return d;}
 async function run(fn){if(busy)return;busy=true;$('message').textContent='Lettura in corso…';try{await fn();}catch(e){$('message').textContent=e.message;}finally{busy=false;}}
 function text(tag,value,parent){const e=document.createElement(tag);e.textContent=value;parent.append(e);return e;}
 const hour=v=>new Date(v).toLocaleTimeString('it-IT',{timeZone:'Europe/Rome',hour:'2-digit',minute:'2-digit'});
 function render(d){
+ lastData=d;
  $('reports').replaceChildren();
  if(!d.reports.length)text('p','Premi Leggi questa giornata adesso.',$('reports'));
  for(const r of d.reports){
   const a=document.createElement('article');$('reports').append(a);
   text('h2',new Date(r.date+'T12:00:00Z').toLocaleDateString('it-IT',{timeZone:'Europe/Rome',weekday:'long',day:'numeric',month:'long',year:'numeric'}),a);
+  if(view==='payments'){renderPayments(r,a);continue;}
   if(r.error||r.issues?.length){text('p','Orari da verificare: '+(r.error||r.issues.map(i=>i.reason).join('; ')),a);continue;}
   const windows=r.windows||[];
   if(!windows.length){text('p','Nessun orario di apertura riconosciuto.',a);continue;}
@@ -33,10 +35,22 @@ function render(d){
   for(const f of r.free_intervals){const tr=document.createElement('tr');table.append(tr);text('td',hour(f.start_dt)+'–'+hour(f.end_dt),tr);text('td',f.free_chairs===2?'2 libere':'1 libera',tr);}
  }
 }
+const money=n=>Number(n).toLocaleString('it-IT',{style:'currency',currency:'EUR'});
+function renderPayments(r,a){
+ if(r.error){text('p','Lettura non riuscita: '+r.error,a);return;}
+ if(r.stale){text('p','Rileggi la giornata per aggiornare gli importi.',a);return;}
+ if(!Array.isArray(r.payments)){text('p','Rileggi la giornata per caricare i pagamenti.',a);return;}
+ text('p','Importi riportati in agenda per questi appuntamenti.',a);
+ if(!r.payments.length){text('p','Nessun importo da pagare riconosciuto.',a);return;}
+ const table=document.createElement('table');a.append(table);const head=document.createElement('tr');table.append(head);
+ for(const name of ['Ora','Paziente / appuntamento','Da pagare','Indicazione in agenda'])text('th',name,head);
+ for(const p of r.payments){const tr=document.createElement('tr');table.append(tr);text('td',p.all_day?'Giornata':hour(p.start_dt),tr);text('td',p.appointment,tr);text('td',p.amount_due===null?'Da verificare':money(p.amount_due),tr);text('td',(p.field_text?'Deve pagare: '+p.field_text+'. ':'')+(p.title_amounts.length?'Titolo: '+p.title_amounts.map(money).join(', ')+'. ':'')+(p.reason||p.source),tr);}
+}
+for(const [id,next] of [['view-slots','slots'],['view-payments','payments']])$(id).onclick=()=>{view=next;$('view-slots').setAttribute('aria-pressed',String(view==='slots'));$('view-payments').setAttribute('aria-pressed',String(view==='payments'));render(lastData);};
 $('connect').onclick=()=>run(async()=>{token=$('token').value;const d=await api('config');$('choices').replaceChildren();$('palmia').replaceChildren(new Option('Seleziona',''));$('site').replaceChildren(new Option('Nessuno',''));for(const c of d.calendars){const row=document.createElement('div');$('choices').append(row);const label=document.createElement('label'),check=document.createElement('input');check.type='checkbox';check.dataset.medical=c.id;check.checked=d.config?d.config.medical_ids.includes(c.id):/^Medici\b/i.test(c.name);label.append(check,document.createTextNode(c.name+' ['+c.id+']'));row.append(label);$('palmia').add(new Option(c.name,c.id));$('site').add(new Option(c.name,c.id));}
 const palmias=d.calendars.filter(c=>/\bPalmia\b/i.test(c.name));$('palmia').value=d.config?.palmia_id||(palmias.length===1?palmias[0].id:'');$('site').value=d.config?.site_id||'';$('config').hidden=false;$('actions').hidden=false;$('date').value=new Date().toLocaleDateString('sv-SE',{timeZone:'Europe/Rome'});$('message').textContent='Connesso. Configura le agende e avvia una lettura.';});
 $('save').onclick=()=>run(async()=>{await api('config',{medical_ids:[...document.querySelectorAll('[data-medical]:checked')].map(x=>+x.dataset.medical),palmia_id:+$('palmia').value,site_id:+$('site').value||null});$('message').textContent='Configurazione del lettore salvata. Nessuna modifica al sito.';});
-$('day').onclick=()=>run(async()=>{if(!$('date').value)throw Error('Scegli la giornata');render(await api('scan',{date:$('date').value}));$('message').textContent='Lettura completata. Controlla interpretazione e motivi qui sotto.';});
+$('day').onclick=()=>run(async()=>{if(!$('date').value)throw Error('Scegli la giornata');render(await api('scan',{date:$('date').value}));$('message').textContent='Lettura completata. ';});
 $('all').onclick=()=>run(async()=>{render(await api('scan',{}));$('message').textContent='Lettura completata.';});
 $('reload').onclick=()=>run(async()=>{render(await api('reports'));$('message').textContent='Risultati caricati.';});
 </script></html>`;

@@ -42,7 +42,7 @@ test('contradictory openings are reported; legacy hygiene fields are ignored',()
 });
 test('worker endpoints, persistent reports and repeated updates are read-only upstream',async t=>{
  let events=base(),fail=false,calls=[];
- const mf=new Miniflare({modules:true,compatibilityDate:'2025-09-01',scriptPath:new URL('../releases/healthysmile-agenda-reader-v5.mjs',import.meta.url).pathname,d1Databases:['DB'],bindings:{ADMIN_TOKEN:'admin',TEAMUP_API_KEY:'key',TEAMUP_CALENDAR_KEY:'kstest'},outboundService:async req=>{
+ const mf=new Miniflare({modules:true,compatibilityDate:'2025-09-01',scriptPath:new URL('../releases/healthysmile-agenda-reader-v6.mjs',import.meta.url).pathname,d1Databases:['DB'],bindings:{ADMIN_TOKEN:'admin',TEAMUP_API_KEY:'key',TEAMUP_CALENDAR_KEY:'kstest'},outboundService:async req=>{
   calls.push(req.method);assert.equal(req.method,'GET');
   if(fail)return new Response('{}',{status:503});
   if(new URL(req.url).pathname.endsWith('/configuration'))return Response.json({configuration:{subcalendars:[{id:1,name:'Medici Palmia'},{id:2,name:'Medici Igienista'},{id:3,name:'Sito'}]}});
@@ -88,4 +88,22 @@ test('patient notes do not close the day and patient still occupies a chair',()=
   assert.equal(Date.parse(r.free_intervals[0].end_dt),romeTime(date,'11:00'));
   assert.ok(!r.free_intervals.some(f=>Date.parse(f.start_dt)<romeTime(date,'14:00')&&Date.parse(f.end_dt)>romeTime(date,'13:00')));
  }
+});
+
+import {paymentFor,readPayments} from '../src/payments.js';
+test('payments reconcile both fields without adding them or reading tooth numbers',()=>{
+ const p=(title,who)=>paymentFor({id:'p',title,who});
+ assert.equal(p('CC/Rossi (85/22) ott 26','-'),null);
+ assert.equal(p('Rossi','150').amount_due,150);
+ assert.equal(p('Rossi €150','150').amount_due,150);
+ assert.equal(p('Rossi €150','200').status,'review');
+ assert.equal(p('Rossi €150','0').status,'review');
+ assert.equal(p('Rossi €150 pagato','-').status,'review');
+ assert.equal(p('Rossi','1.200,50 €').amount_due,1200.5);
+ assert.equal(p('Rossi €200 e €50','-').status,'review');
+ assert.equal(p('Rossi non saldato','-').amount_due,null);
+ const e={...event('p','10:00','11:00','Rossi'),who:'188'};
+ const r=interpretDay([...base(),e,e],date,cfg,0);
+ assert.equal(r.payments.length,1);assert.equal(r.payments[0].amount_due,188);
+ assert.equal(r.free_intervals[0].free_chairs,1);
 });

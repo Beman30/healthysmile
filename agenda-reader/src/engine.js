@@ -1,3 +1,4 @@
+import {readPayments} from './payments.js';
 import {romeTime, rollingDates} from '../../backend/src/teamup.js';
 export {rollingDates};
 const MIN=60000;
@@ -117,5 +118,5 @@ export function interpretDay(raw,date,input,now=Date.now()) {
   if(site.some(e=>hit(e,a,b)))why.push('Prenotazione sito sovrapposta');
   slots.push({time:clock(minute),status:why.length?'excluded':'candidate',chairs_peak:chairs,reasons:why,event_ids:patients.filter(e=>hit(e,a,b)).map(e=>e.event_id)});
  }
- return {date,free_intervals,opening_source:source,windows:windows.map(w=>({start_dt:new Date(w.a).toISOString(),end_dt:new Date(w.b).toISOString()})),issues,events:records,slots,candidate_count:slots.filter(s=>s.status==='candidate').length,mode:'read_only_review',note:'Lettura di apertura, pause e capienza delle agende selezionate. Nessuna verifica del personale o dei pagamenti. Nessuno slot pubblicato.'};
+ return {date,payments:readPayments(raw,records),free_intervals,opening_source:source,windows:windows.map(w=>({start_dt:new Date(w.a).toISOString(),end_dt:new Date(w.b).toISOString()})),issues,events:records,slots,candidate_count:slots.filter(s=>s.status==='candidate').length,mode:'read_only_review',note:'Lettura di apertura, pause e capienza delle agende selezionate. Nessuna verifica del personale o dei pagamenti. Nessuno slot pubblicato.'};
 }
