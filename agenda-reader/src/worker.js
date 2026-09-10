@@ -1,7 +1,8 @@
+import {dateRange} from './range.js';
 import {calendars,readDay} from '../../backend/src/teamup.js';
 import {interpretDay,validateConfig,rollingDates} from './engine.js';
 import {PAGE} from './page.js';
-const VERSION='agenda-reader-6';
+const VERSION='agenda-reader-7';
 const json=(data,status=200)=>new Response(JSON.stringify(data),{status,headers:{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'}});
 function authorized(req,env) {
  const a=req.headers.get('Authorization')||'',b='Bearer '+(env.ADMIN_TOKEN||'');
@@ -17,15 +18,14 @@ async function setup(env) {
  ]);
 }
 async function config(env){return env.DB.prepare('SELECT * FROM agenda_reader_config WHERE id=1').first();}
-async function scan(env,date=null) {
+async function scan(env,date=null,until=null) {
  await setup(env);const row=await config(env);if(!row)throw Error('Salva prima la configurazione del lettore');
  const c=validateConfig(JSON.parse(row.value)),owner=crypto.randomUUID(),ts=new Date().toISOString();
  const lock=await env.DB.prepare(`INSERT INTO agenda_reader_run(id,owner,until_ms,attempted_at,error) VALUES(1,?,?,?,NULL)
  ON CONFLICT(id) DO UPDATE SET owner=excluded.owner,until_ms=excluded.until_ms,attempted_at=excluded.attempted_at,error=NULL WHERE agenda_reader_run.until_ms<?`).bind(owner,Date.now()+240000,ts,Date.now()).run();
  if(lock.meta.changes!==1)throw Error('Lettura già in corso: attendi e carica i risultati');
  try {
-  const days=date?[date]:rollingDates();
-  if(date&&!rollingDates().includes(date))throw Error('Scegli una data nei prossimi 14 giorni');
+  const days=date?dateRange(date,until||date,7):rollingDates();
   const ids=[...c.medical_ids,...c.site_id?[c.site_id]:[]],visible=await calendars(env);
   if(ids.some(id=>!visible.some(v=>v.id===id)))throw Error('Una delle agende configurate non è accessibile');
   const reports=[];
@@ -41,7 +41,6 @@ async function scan(env,date=null) {
     ON CONFLICT(date) DO UPDATE SET value=excluded.value,checked_at=excluded.checked_at,revision=excluded.revision`)
     .bind(day,JSON.stringify(report),checked_at,row.revision,row.revision,owner).run();
   }
-  await env.DB.prepare("DELETE FROM agenda_reader_reports WHERE date<?").bind(rollingDates()[0]).run();
   return {version:VERSION,reports};
  }catch(error){await env.DB.prepare('UPDATE agenda_reader_run SET error=? WHERE id=1 AND owner=?').bind(error.message,owner).run();throw error;}
  finally {await env.DB.prepare('UPDATE agenda_reader_run SET until_ms=0,finished_at=? WHERE id=1 AND owner=?').bind(new Date().toISOString(),owner).run();}
@@ -63,7 +62,7 @@ export default {
     await env.DB.prepare('INSERT INTO agenda_reader_config(id,value,revision) VALUES(1,?,?) ON CONFLICT(id) DO UPDATE SET value=excluded.value,revision=excluded.revision').bind(JSON.stringify(c),crypto.randomUUID()).run();
     return json({saved:true});
    }
-   if(req.method==='POST'&&u.pathname==='/api/scan')return json(await scan(env,(await req.json()).date||null));
+   if(req.method==='POST'&&u.pathname==='/api/scan'){const body=await req.json();return json(await scan(env,body.from||body.date||null,body.to||null));}
    if(req.method==='GET'&&u.pathname==='/api/reports') {
     const c=await config(env);const {results}=await env.DB.prepare('SELECT * FROM agenda_reader_reports ORDER BY date').all();
     const run=await env.DB.prepare('SELECT attempted_at,finished_at,error,until_ms FROM agenda_reader_run WHERE id=1').first();

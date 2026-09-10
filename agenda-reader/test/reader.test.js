@@ -42,7 +42,7 @@ test('contradictory openings are reported; legacy hygiene fields are ignored',()
 });
 test('worker endpoints, persistent reports and repeated updates are read-only upstream',async t=>{
  let events=base(),fail=false,calls=[];
- const mf=new Miniflare({modules:true,compatibilityDate:'2025-09-01',scriptPath:new URL('../releases/healthysmile-agenda-reader-v6.mjs',import.meta.url).pathname,d1Databases:['DB'],bindings:{ADMIN_TOKEN:'admin',TEAMUP_API_KEY:'key',TEAMUP_CALENDAR_KEY:'kstest'},outboundService:async req=>{
+ const mf=new Miniflare({modules:true,compatibilityDate:'2025-09-01',scriptPath:new URL('../releases/healthysmile-agenda-reader-v7.mjs',import.meta.url).pathname,d1Databases:['DB'],bindings:{ADMIN_TOKEN:'admin',TEAMUP_API_KEY:'key',TEAMUP_CALENDAR_KEY:'kstest'},outboundService:async req=>{
   calls.push(req.method);assert.equal(req.method,'GET');
   if(fail)return new Response('{}',{status:503});
   if(new URL(req.url).pathname.endsWith('/configuration'))return Response.json({configuration:{subcalendars:[{id:1,name:'Medici Palmia'},{id:2,name:'Medici Igienista'},{id:3,name:'Sito'}]}});
@@ -56,6 +56,7 @@ test('worker endpoints, persistent reports and repeated updates are read-only up
  r=await(await request('scan',{date})).json();assert.equal(at(r.reports[0],'10:00').status,'excluded');
  r=await(await request('reports')).json();assert.equal(r.reports.length,1);assert.equal(r.reports[0].stale,false);
  r=await(await request('scan',{})).json();assert.equal(r.reports.length,14);assert.equal(new Set(r.reports.map(x=>x.date)).size,14);
+ r=await(await request('scan',{from:'2026-08-01',to:'2026-08-03'})).json();assert.equal(r.reports.length,3);assert.equal(r.reports[0].date,'2026-08-01');
  fail=true;assert.equal((await request('scan',{date})).status,400);
  r=await(await request('reports')).json();assert.ok(r.run.error);assert.ok(r.reports.every(x=>x.stale));
  const db=await mf.getD1Database('DB');const tables=await db.prepare("SELECT name FROM sqlite_master WHERE type='table'").all();assert.ok(!tables.results.some(x=>x.name==='bookings'));
@@ -106,4 +107,13 @@ test('payments reconcile both fields without adding them or reading tooth number
  const r=interpretDay([...base(),e,e],date,cfg,0);
  assert.equal(r.payments.length,1);assert.equal(r.payments[0].amount_due,188);
  assert.equal(r.free_intervals[0].free_chairs,1);
+});
+
+import {dateRange,paymentTotal} from '../src/range.js';
+test('inclusive ranges and totals exclude uncertain amounts and duplicate events',()=>{
+ assert.deepEqual(dateRange('2026-09-10','2026-09-12'),['2026-09-10','2026-09-11','2026-09-12']);
+ assert.throws(()=>dateRange('2026-02-30','2026-03-01'));assert.throws(()=>dateRange('2026-09-12','2026-09-10'));
+ const p={event_id:'a',start_dt:'x',amount_due:10.1,status:'due'};
+ const result=paymentTotal([{payments:[p,p,{...p,event_id:'b',amount_due:20.2},{...p,event_id:'c',status:'review',amount_due:null}]},{error:'failed'}]);
+ assert.deepEqual(result,{amount:30.3,review:1,missing:1});
 });
