@@ -105,6 +105,8 @@ h2{font-size:clamp(1.6rem,3.8vw,2.4rem);margin-bottom:22px;max-width:22ch}
 .hero h1{font-size:clamp(1.95rem,5.4vw,3.4rem);margin-bottom:22px;max-width:16ch}
 .hero h1 .price{color:var(--accent-soft);white-space:nowrap}
 .hero-sub{font-size:clamp(1.02rem,2vw,1.2rem);color:var(--gray-300);max-width:52ch;margin-bottom:26px}
+.hero-offer{font-size:clamp(1.08rem,2.1vw,1.28rem);color:var(--white);max-width:52ch;margin:-8px 0 26px}
+.hero-offer strong{color:var(--accent-soft);font-weight:500}
 
 /* ── INDIRIZZO ───────────────────── */
 .addr{
@@ -126,6 +128,7 @@ h2{font-size:clamp(1.6rem,3.8vw,2.4rem);margin-bottom:22px;max-width:22ch}
 .btn-ghost{display:inline-block;color:var(--white);text-decoration:none;font-size:1rem;padding:15px 30px;
            border:1px solid var(--line);border-radius:8px;transition:border-color .2s}
 .btn-ghost:hover{border-color:var(--gray-500)}
+.section-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:28px}
 
 /* ── COSA COMPRENDE ──────────────── */
 .incl{display:grid;gap:14px;margin-top:34px}
@@ -224,14 +227,14 @@ footer .legal{font-size:.78rem;color:#4a4a4a;margin-top:18px}
 
 <section class="hero">
   <div class="wrap">
-    <p class="eyebrow">Allineatori trasparenti</p>
-    <h1>Lo vuoi per il sorriso? <em>Ottima ragione</em>.</h1>
+    <p class="eyebrow">Allineatori trasparenti a Torino</p>
+    <h1>Prima di parlare di apparecchio, vediamo cosa serve davvero al tuo sorriso.</h1>
     <p class="hero-sub">
-      &Egrave; il motivo per cui quasi tutti allineano i denti, e non c&rsquo;&egrave;
-      niente da giustificare. Quello che invece quasi nessuno dice &egrave; che,
-      insieme al sorriso, ci guadagni dell&rsquo;altro: denti che si puliscono
-      meglio, che si consumano meno, e pi&ugrave; sostegno per il labbro.
+      Valutazione ortodontica con <strong>scansione digitale</strong> delle arcate e
+      <strong>teleradiografia</strong>. Capisci se gli allineatori sono indicati per te,
+      quali risultati puoi ottenere, i tempi e il costo del tuo trattamento.
     </p>
+    <p class="hero-offer"><strong>Prima valutazione completa: 15 &euro;</strong></p>
 
     <div class="addr">
       <span class="pin">&#9679;</span>
@@ -243,8 +246,67 @@ footer .legal{font-size:.78rem;color:#4a4a4a;margin-top:18px}
     </div>
 
     <div class="ctas">
-      <a class="btn" href="#prenota">Prenota la visita</a>
-      <a class="btn-ghost" href="#perche">Cosa cambia davvero</a>
+      <a class="btn" href="#prenota" data-cta-book="hero">Prenota la valutazione &middot; 15 &euro;</a>
+      <a class="btn-ghost" href="#" data-wa="hero" data-msg="domanda">Scrivici su WhatsApp</a>
+    </div>
+  </div>
+</section>
+
+<section id="valutazione">
+  <div class="wrap">
+    <p class="eyebrow">Prima si capisce, poi si sceglie</p>
+    <h2>Non devi decidere oggi se mettere gli allineatori.</h2>
+    <p class="lead">
+      La prima valutazione serve a capire <strong>se ne vale la pena nel tuo caso</strong>.
+      Ricevi le informazioni necessarie per decidere con calma, senza alcun obbligo
+      di iniziare il trattamento.
+    </p>
+    <div class="incl">
+      <div class="card">
+        <div class="n">Scansione digitale</div>
+        <h3>Guardiamo il tuo sorriso senza impronte tradizionali</h3>
+        <p>Acquisiamo digitalmente le arcate e valutiamo denti, gengive e occlusione.</p>
+      </div>
+      <div class="card">
+        <div class="n">Valutazione completa</div>
+        <h3>Non raddrizziamo denti alla cieca</h3>
+        <p>Consideriamo anche il morso, il profilo del viso e ci&ograve; che &egrave; realmente correggibile.</p>
+      </div>
+      <div class="card">
+        <div class="n">Risultato possibile</div>
+        <h3>Vedi la direzione prima di iniziare</h3>
+        <p>Ti spieghiamo il risultato perseguibile, i limiti e le alternative sensate per il tuo caso.</p>
+      </div>
+      <div class="card">
+        <div class="n">Tempi e costi</div>
+        <h3>Il preventivo arriva dopo averti valutato</h3>
+        <p>Definiamo durata e costo complessivo prima che tu scelga se iniziare.</p>
+      </div>
+    </div>
+    <div class="section-actions">
+      <a class="btn" href="#prenota" data-cta-book="valutazione">Prenota la valutazione &middot; 15 &euro;</a>
+      <a class="btn-ghost" href="#" data-wa="valutazione" data-msg="domanda">Fai una domanda su WhatsApp</a>
+    </div>
+  </div>
+</section>
+
+<section id="prezzo">
+  <div class="wrap">
+    <p class="eyebrow">Costi chiari</p>
+    <h2>Quanto costano gli allineatori trasparenti?</h2>
+    <p class="lead">
+      Un piccolo riallineamento e un trattamento ortodontico completo richiedono
+      tempi e numeri di allineatori diversi. Per questo il costo totale non pu&ograve;
+      essere serio senza prima valutare il caso.
+    </p>
+    <div class="price-box">
+      <div class="price-big">da 200 &euro;<span style="font-size:.42em">/mese</span></div>
+      <div class="price-split">Possibilit&agrave; di piani di pagamento dilazionati</div>
+      <p class="price-cond">
+        <b>Non &egrave; il prezzo totale del trattamento.</b> Il costo complessivo dipende
+        dalla complessit&agrave; e dalla durata del caso e viene definito dopo la valutazione.
+      </p>
+      <p class="price-note">Disponibilit&agrave; e condizioni del piano di pagamento vengono confermate con il preventivo.</p>
     </div>
   </div>
 </section>
@@ -487,8 +549,8 @@ footer .legal{font-size:.78rem;color:#4a4a4a;margin-top:18px}
 
 <section id="prenota">
   <div class="wrap">
-    <p class="eyebrow">La giornata</p>
-    <h2>Scegli quando venire.</h2>
+    <p class="eyebrow">Data prioritaria</p>
+    <h2>Scegli l&rsquo;orario per la prossima giornata dedicata.</h2>
     <p class="lead">
       <span id="introGiornata">Carichiamo le prossime giornate disponibili&hellip;</span>
     </p>
@@ -511,6 +573,12 @@ footer .legal{font-size:.78rem;color:#4a4a4a;margin-top:18px}
 
     <div class="dates" id="dates" role="group" aria-label="Scegli la giornata"></div>
 
+    <div class="section-actions">
+      <a class="btn-ghost" id="alternativeDate" href="#" data-wa="altra-data" data-msg="altra_data">
+        Non posso nella data prioritaria &ndash; proponimi un&rsquo;altra data
+      </a>
+    </div>
+
     <div class="times" id="times" hidden>
       <div class="times-lab">Orari disponibili</div>
       <div class="time-grid" id="timeGrid" role="group" aria-label="Scegli l&rsquo;orario"></div>
@@ -522,11 +590,6 @@ footer .legal{font-size:.78rem;color:#4a4a4a;margin-top:18px}
       <button class="btn" id="checkout" type="button">Prenota la visita &middot; 15 &euro;</button>
       <p class="alt">Preferisci parlarne prima? <a href="#" data-wa="recap" data-msg="domanda">Scrivici su WhatsApp</a></p>
     </div>
-
-    <p class="alt">
-      Non trovi un orario comodo? <a href="#" data-wa="prenota" data-msg="domanda">Scrivici su WhatsApp</a>
-      e troviamo insieme una soluzione.
-    </p>
 
     <p class="alt" style="margin-top:22px">
       <span id="notaPosti">I posti sono limitati</span>. Se annulli o sposti con almeno
@@ -570,7 +633,7 @@ footer .legal{font-size:.78rem;color:#4a4a4a;margin-top:18px}
       Una visita, una scansione, una risposta. Poi decidi tu.
     </p>
     <div class="ctas" style="justify-content:center">
-      <a class="btn" href="#prenota">Prenota la visita</a>
+      <a class="btn" href="#prenota" data-cta-book="finale">Prenota la valutazione &middot; 15 &euro;</a>
     </div>
   </div>
 </section>
@@ -589,7 +652,8 @@ footer .legal{font-size:.78rem;color:#4a4a4a;margin-top:18px}
 <div class="sticky">
   <div class="sticky-addr">Via Madama Cristina 2 &middot; Torino</div>
   <div class="sticky-row">
-    <a href="#" class="sticky-wa" data-wa="sticky" data-msg="prenota">Prenota su WhatsApp</a>
+    <a href="#prenota" class="sticky-book" data-cta-book="sticky">Prenota &middot; 15 &euro;</a>
+    <a href="#" class="sticky-wa" data-wa="sticky" data-msg="domanda">WhatsApp</a>
   </div>
 </div>
 
@@ -606,7 +670,9 @@ var WA_NUMBER = '393924076794';
 var WA_MSG = {
   prenota: 'Ciao, vorrei prenotare la visita per gli allineatori trasparenti '
          + 'presso Healthy Smile in Via Madama Cristina 2.',
-  domanda: 'Ciao, ho una domanda sugli allineatori trasparenti prima di prenotare la visita.'
+  domanda: 'Ciao, ho una domanda sugli allineatori trasparenti prima di prenotare la valutazione.',
+  altra_data: 'Ciao, non posso partecipare alla prossima giornata dedicata agli allineatori. '
+             + 'Vorrei ricevere una proposta per un\'altra data.'
 };
 
 (function(){
@@ -626,7 +692,14 @@ var WA_MSG = {
     a.addEventListener('click', function(){
       ev('hs_whatsapp_click',{page:'allineatori-trasparenti', position:a.dataset.wa, tipo:tipo});
       ev('generate_lead',{page:'allineatori-trasparenti', method:'whatsapp', tipo:tipo});
+      if(tipo==='altra_data') ev('hs_altra_data_click',{page:'allineatori-trasparenti',source:'landing'});
       if(typeof fbq==='function') fbq('track','Contact');
+    });
+  });
+
+  document.querySelectorAll('[data-cta-book]').forEach(function(a){
+    a.addEventListener('click',function(){
+      ev('hs_prenota_valutazione_click',{page:'allineatori-trasparenti',position:a.dataset.ctaBook});
     });
   });
 
@@ -720,12 +793,22 @@ var WA_MSG = {
 
     var prima=order[0], orari=byDate[prima].slice().sort();
     var quando=label(prima).toLowerCase();
+    var partiPrima=prima.split('-');
+    var quandoBreve=(+partiPrima[2])+' '+MESI[+partiPrima[1]-1];
     document.getElementById('introGiornata').innerHTML = order.length===1
-      ? 'La prossima giornata &egrave; <strong>'+quando+'</strong>, dalle '+
+      ? 'La prossima giornata dedicata agli allineatori &egrave; <strong>'+quando+'</strong>: &egrave; la data prioritaria. Scegli un orario dalle '+
         orari[0].slice(0,2)+' alle '+String(Math.min(23,parseInt(orari[orari.length-1].slice(0,2),10)+1))+
-        '. Scegli l\'orario che ti &egrave; comodo.'
-      : 'Le prossime giornate sono <strong>'+order.length+'</strong>, a partire da <strong>'+quando+
-        '</strong>. Scegli quella che ti &egrave; comoda.';
+        ', oppure chiedici un\'altra data.'
+      : 'La prossima giornata dedicata agli allineatori &egrave; <strong>'+quando+
+        '</strong>: &egrave; la data prioritaria. Sono disponibili anche altre giornate.';
+
+    var altra=document.getElementById('alternativeDate');
+    if(altra){
+      WA_MSG.altra_data='Ciao, non posso partecipare '+quando+
+        ' alla giornata dedicata agli allineatori. Vorrei ricevere una proposta per un\'altra data.';
+      altra.textContent='Non posso il '+quandoBreve+' \u2013 proponimi un\'altra data';
+      altra.setAttribute('href',waHref('altra_data'));
+    }
 
     var liberi=byDate[prima].length;
     document.getElementById('notaPosti').innerHTML =
@@ -796,6 +879,8 @@ var WA_MSG = {
         items:[{item_id:SERVICE_ID, item_name:'Visita per allineatori + teleradiografia',
                 price:15, quantity:1}],
         appuntamento:chosenDate.id+' '+chosenTime,
+        booking_type:'open_day',
+        open_day_date:chosenDate.id,
         transport_type:'beacon',
         event_callback: vai
       });
