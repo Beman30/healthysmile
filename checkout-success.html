@@ -18,6 +18,12 @@
 <script>
 window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}
 gtag('consent','default',{analytics_storage:'denied',ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied','wait_for_update':500});
+// Ripristina la scelta gia' espressa prima di configurare i tag e inviare eventi.
+try{
+  if(localStorage.getItem('hs_cookie_consent')==='accepted'){
+    gtag('consent','update',{analytics_storage:'granted',ad_storage:'granted',ad_user_data:'granted',ad_personalization:'granted'});
+  }
+}catch(e){}
 gtag('js',new Date());gtag('config','G-SRMDX8JXL5');gtag('config','AW-947982327');
 </script>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-SRMDX8JXL5"></script>
@@ -223,6 +229,18 @@ var MAPS = 'https://maps.app.goo.gl/xG5N6YaYgg8Mxegp9';
      conterebbe un'altra vendita e il costo per acquisizione risulterebbe
      piu' basso del vero. */
   function conversione(b){
+    // Ads usa transaction_id per deduplicare. La vecchia chiave locale non
+    // prova la consegna: consentiamo un nuovo tentativo quando si riapre la
+    // conferma. Un errore di altri strumenti non deve impedire questo invio.
+    try{
+      if(typeof gtag==='function' && ADS_CONVERSION_LABEL){
+        gtag('event','conversion',{
+          send_to:'AW-947982327/'+ADS_CONVERSION_LABEL,
+          value:Number(b.total_price)||0, currency:'EUR', transaction_id:b.booking_id,
+          new_customer:b.new_patients_only===true
+        });
+      }
+    }catch(e){}
     // Tutto il blocco e' incapsulato: render(b) gira dentro un .then() con un
     // .catch() a monte (vedi poll() sopra) che, se non lo evitiamo, sostituisce
     // la conferma gia' mostrata con un messaggio d'errore. Un adblocker che
@@ -262,27 +280,14 @@ var MAPS = 'https://maps.app.goo.gl/xG5N6YaYgg8Mxegp9';
         transaction_id: b.booking_id, currency:'EUR', value: valore
       }, attr));
 
-      // Google Ads: senza etichetta non registra, quindi non lo mandiamo
-      if(typeof gtag==='function' && ADS_CONVERSION_LABEL){
-        gtag('event','conversion',{
-          send_to:'AW-947982327/'+ADS_CONVERSION_LABEL,
-          value: valore, currency:'EUR', transaction_id:b.booking_id,
-          // dichiarato solo per le offerte davvero riservate ai nuovi
-          // pazienti: marcarle tutte cosi' falserebbe l'ottimizzazione
-          // di Google sull'acquisizione
-          new_customer: b.new_patients_only === true
-        });
-      }
-
       // Meta: eventID = booking_id, cosi' un secondo invio e' scartato
       if(typeof fbq==='function'){
         fbq('track','Purchase',{value: valore,currency:'EUR',content_ids:[b.service_id]},
             {eventID:b.booking_id});
       }
 
-      // scritta SOLO dopo che gli eventi sono partiti: se una riga sopra
-      // lancia un'eccezione, si salta qui senza passare da questa riga, la
-      // chiave resta assente e al prossimo caricamento si riprova per intero.
+      // Limita i reinvii degli eventi GA4/Meta. Non attesta la consegna e
+      // non deve impedire i tentativi Ads, deduplicati tramite transaction_id.
       try{ localStorage.setItem(chiave,'1'); }catch(e){}
     }catch(err){
       // tracciamento fallito (adblocker, script terzi, qualunque causa):
@@ -295,4 +300,3 @@ var MAPS = 'https://maps.app.goo.gl/xG5N6YaYgg8Mxegp9';
 <script src="/components.js"></script>
 </body>
 </html>
-
