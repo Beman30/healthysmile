@@ -518,7 +518,7 @@ var WA_BASE   = "Ciao, vorrei informazioni o prenotare Visita + Igiene + Spazzol
      un'offerta scaduta: sopra c'e' traffico a pagamento, e un annuncio
      che porta a una data passata viene disapprovato. Si passa a raccolta
      contatto, mantenendo l'offerta credibile. */
-  function nessunaGiornata(motivo){
+  function nessunaGiornata(){
     document.getElementById('introGiornata').innerHTML =
       'Al momento non ci sono orari prenotabili online. Lasciaci il tuo contatto: '+
       'ti avvisiamo appena apriamo le date, prima che vengano pubblicate.';
@@ -528,7 +528,6 @@ var WA_BASE   = "Ciao, vorrei informazioni o prenotare Visita + Igiene + Spazzol
       'target="_blank" rel="noopener" data-wa="lista-attesa">Avvisami quando apre la prossima →</a>';
     if(recapEl) recapEl.hidden=true;
     if(timesEl) timesEl.hidden=true;
-    ev('hs_no_slots',{page:'visita-igiene-spazzolino', motivo:motivo||'nessuna-data'});
   }
 
   function renderDates(slots){
@@ -544,7 +543,7 @@ var WA_BASE   = "Ciao, vorrei informazioni o prenotare Visita + Igiene + Spazzol
     order.sort();
 
     datesEl.innerHTML='';
-    if(!order.length){ nessunaGiornata('nessuna-data-futura'); return; }
+    if(!order.length){ nessunaGiornata(); return false; }
 
     // i testi della pagina si scrivono da qui: una fonte sola, il database
     var prima=order[0], orari=byDate[prima].slice().sort();
@@ -568,20 +567,48 @@ var WA_BASE   = "Ciao, vorrei informazioni o prenotare Visita + Igiene + Spazzol
       b.addEventListener('click',function(){ pickDate(slot,b); });
       datesEl.appendChild(b);
     });
+    return true;
   }
 
   var slotsLoading=false,lastSlotsLoad=0,lastSlotsJSON=null;
+  // Una sola segnalazione per caricamento pagina, anche dopo refresh o errori.
+  var noSlotsSent=false,slotsErrorSent=false;
+  function trackSlotsOnce(name,params){
+    try{ ev(name,params); }catch(e){} // Analytics non deve alterare la disponibilita'.
+  }
+  function validSlot(s){
+    if(!s || typeof s.date!=='string' || typeof s.time!=='string' ||
+       !/^\d{4}-\d{2}-\d{2}$/.test(s.date) ||
+       !/^([01]\d|2[0-3]):[0-5]\d$/.test(s.time)) return false;
+    var d=new Date(s.date+'T00:00:00Z');
+    return !isNaN(d.getTime()) && d.toISOString().slice(0,10)===s.date;
+  }
   function loadSlots(){
     if(slotsLoading)return;
     slotsLoading=true;
+    var failureReason='network';
     fetch(API+'/api/slots?service='+encodeURIComponent(SERVICE_ID),{cache:'no-store'})
-      .then(function(r){if(!r.ok)throw new Error('no');return r.json();})
+      .then(function(r){
+        if(!r.ok){failureReason='http';throw new Error('slots_http');}
+        failureReason='invalid_response';
+        return r.json();
+      })
       .then(function(d){
-        var slots=d.slots||[],serialized=JSON.stringify(slots);
+        // Un payload assente, malformato o di errore non significa zero posti.
+        if(!d || d.error || d.ok===false || !Array.isArray(d.slots) || !d.slots.every(validSlot))
+          throw new Error('slots_invalid_response');
+        var slots=d.slots,serialized=JSON.stringify(slots);
+        failureReason='render';
         if(serialized!==lastSlotsJSON){
           // Clear obsolete choices when Teamup changes while this page is open.
           chosenDate=null;chosenTime=null;timesEl.hidden=true;recapEl.hidden=true;
-          renderDates(slots);lastSlotsJSON=serialized;
+          var hasSlots=renderDates(slots);
+          lastSlotsJSON=serialized;
+          // Solo dopo risposta valida e rendering completato: mai nello stato iniziale.
+          if(!hasSlots && !noSlotsSent){
+            noSlotsSent=true;
+            trackSlotsOnce('hs_no_slots',{page:'visita-igiene-spazzolino',motivo:'nessuna-data-futura'});
+          }
         }
         lastSlotsLoad=Date.now();
       })
@@ -589,6 +616,10 @@ var WA_BASE   = "Ciao, vorrei informazioni o prenotare Visita + Igiene + Spazzol
         chosenDate=null;chosenTime=null;lastSlotsJSON=null;
         datesEl.innerHTML='<p>Impossibile aggiornare gli orari in questo momento. Riprova tra poco oppure contattaci su WhatsApp.</p>';
         timesEl.hidden=true;recapEl.hidden=true;
+        if(!slotsErrorSent){
+          slotsErrorSent=true;
+          trackSlotsOnce('hs_slots_load_error',{page:'visita-igiene-spazzolino',motivo:failureReason});
+        }
       })
       .finally(function(){slotsLoading=false;});
   }
@@ -689,4 +720,3 @@ var WA_BASE   = "Ciao, vorrei informazioni o prenotare Visita + Igiene + Spazzol
 <script src="/components.js"></script>
 </body>
 </html>
-
