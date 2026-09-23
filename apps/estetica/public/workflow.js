@@ -117,7 +117,7 @@ async function saveArchive(){
  if(snapshot.reduce((sum,v)=>sum+v.photos.reduce((n,[id,p])=>n+p.blob.size,0),0)>249*1024*1024){notify('Archivio oltre 250 MB. Conserva le visite già esportate prima di proseguire.');return;}
  archiveBusy=true;renderFlow();
  try{
- const data={app:'healthy-smile-foto',schema:2,protocol:'viso-1.0',patientCode:code,exportedAt:new Date().toISOString(),visits:[]},entries=[];
+ const data={app:'healthy-smile-foto',schema:2,protocol:'viso-1.0',patientCode:code,notes:typeof cloud!=='undefined'?cloud.patient?.notes||'':'',exportedAt:new Date().toISOString(),visits:[]},entries=[];
  for(let i=0;i<snapshot.length;i++){
   const v=snapshot[i],meta={date:v.date,phase:v.phase,treatment:v.treatment||'',selected:v.selected||null,photos:[]};
   for(const [id,p] of v.photos){const mime=p.blob.type,ext=mime==='image/png'?'png':mime==='image/webp'?'webp':'jpg';const filename=`visita-${String(i+1).padStart(2,'0')}_${v.date}_${id}.${ext}`;entries.push({name:filename,data:new Uint8Array(await p.blob.arrayBuffer())});meta.photos.push(photoMeta(id,p,filename));}
@@ -132,6 +132,7 @@ async function parseArchive(file){
  if(!raw||raw.length>1000000)throw Error('Manca un session.json valido.');const data=JSON.parse(new TextDecoder().decode(raw));
  if(data.app!=='healthy-smile-foto'||![1,2].includes(data.schema))throw Error('Apri un archivio esportato da Healthy Smile Foto.');
  if(typeof data.patientCode!=='string'||!data.patientCode.trim()||data.patientCode.length>40)throw Error('Codice paziente mancante o non valido.');
+ if(data.notes!==undefined&&(typeof data.notes!=='string'||data.notes.length>10000))throw Error('Note paziente non valide.');
  const items=data.schema===1?[{date:data.visitDate,phase:'before',photos:data.photos,station:data.station}]:data.visits;
  if(!Array.isArray(items)||!items.length||items.length>20)throw Error('Numero di visite non valido.');
  const staged=[];
@@ -147,7 +148,7 @@ async function parseArchive(file){
     map.set(p.pose,{blob,url,width:decoded.naturalWidth,height:decoded.naturalHeight,takenAt:p.takenAt||null,station:normalizeStation(p.station||v.station),camera:{label:String(p.camera?.label||'').slice(0,160),deviceId:typeof p.camera?.deviceId==='string'?p.camera.deviceId.slice(0,256):null,zoom:Number.isFinite(p.camera?.zoom)?p.camera.zoom:null,facingMode:p.camera?.facingMode||'unknown'},crop:p.crop||null,level:p.level||null,alignment:p.alignment||null,brightness:brightnessPercent(p)});
    }
   }
-  if(!staged[0].photos.size)throw Error('L’archivio non contiene foto del prima.');return {code:data.patientCode,visits:staged};
+  if(!staged[0].photos.size)throw Error('L’archivio non contiene foto del prima.');return {code:data.patientCode,notes:data.notes||'',visits:staged};
  }catch(e){staged.forEach(v=>v.photos.forEach(revoke));throw e;}
 }
 function releaseVisits(){visits.forEach(v=>v.photos.forEach(revoke));references.forEach(revoke);references.clear();}

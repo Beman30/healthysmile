@@ -2,7 +2,7 @@
 // Patient identity is bound before capture; the cloud is the durable source of truth.
 const cloud={patient:null,version:0,saved:'',saving:null,loading:false,error:'',conflict:false,timer:null,rows:[],blobIds:new WeakMap(),nextBlob:0,createKey:null,switching:false,creating:false};
 function visitIdentity(v){v.id ||=crypto.randomUUID();v.treatment ||= '';}
-function localSignature(){return JSON.stringify(visits.map(v=>{visitIdentity(v);return {id:v.id,date:v.date,phase:v.phase,treatment:v.treatment,selected:v.selected||null,photos:[...v.photos].map(([id,p])=>{if(!cloud.blobIds.has(p.blob))cloud.blobIds.set(p.blob,++cloud.nextBlob);return [id,cloud.blobIds.get(p.blob),p.alignment||null,p.brightness||0];})};}));}
+function localSignature(){return JSON.stringify({notes:cloud.patient?.notes||'',visits:visits.map(v=>{visitIdentity(v);return {id:v.id,date:v.date,phase:v.phase,treatment:v.treatment,selected:v.selected||null,photos:[...v.photos].map(([id,p])=>{if(!cloud.blobIds.has(p.blob))cloud.blobIds.set(p.blob,++cloud.nextBlob);return [id,cloud.blobIds.get(p.blob),p.alignment||null,p.brightness||0];})};})});}
 const cloudDirty=()=>!!cloud.patient&&localSignature()!==cloud.saved;
 async function cloudRequest(path,options={}){
  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),60000);
@@ -18,7 +18,7 @@ function paintCloud(){
  $('cloudStatus').className=cloud.error?'cloud-error':dirty||cloud.saving?'cloud-pending':'cloud-saved';
  $('retryCloud').hidden=!cloud.error||cloud.conflict||!cloud.patient;$('reloadCloud').hidden=!cloud.conflict;
  $('patientPicker').disabled=cloud.loading||!!cloud.saving;$('closePatients').hidden=!cloud.patient;
- $('patientCode').readOnly=true;
+ $('patientCode').readOnly=true;$('patientNotes').disabled=!cloud.patient||cloud.loading;
  $('saveStatus').textContent=cloud.patient?(dirty?'Modifiche da salvare nel cloud.':cloud.saving?'Salvataggio in corso…':'Foto archiviate nel cloud. Il ZIP è una copia aggiuntiva.'):'Seleziona un paziente prima di scattare.';
  $('exportCopy').textContent='Le foto confermate vengono salvate automaticamente nel cloud. Puoi scaricare un ZIP completo come copia aggiuntiva.';
  $('archiveHint').textContent=cloud.patient?`${visits.length} visite · ${totalPhotos()} foto · ${cloud.patient.code}`:'Scegli il paziente per iniziare.';
@@ -39,7 +39,7 @@ async function syncCloud(){
     const patient=cloud.patient.id,signature=localSignature();
     const snap=visits.map(v=>({...v,photos:[...v.photos]}));
     if(snap.reduce((n,v)=>n+v.photos.reduce((s,[id,p])=>s+p.blob.size,0),0)>250*1024*1024)throw Error('Archivio oltre 250 MB. Scarica il ZIP.');
-    const manifest={visits:[]};
+    const manifest={notes:cloud.patient.notes||'',visits:[]};
     for(const v of snap){const meta={id:v.id,date:v.date,phase:v.phase,treatment:v.treatment||'',selected:v.selected||null,photos:[]};
      for(const [pose,p]of v.photos){const hash=await fileHash(p);if(p.cloudPatient!==patient){await cloudRequest(`/${patient}/images/${hash}`,{method:'PUT',headers:{'Content-Type':p.blob.type},body:p.blob});p.cloudPatient=patient;}
       meta.photos.push({...photoMeta(pose,p,''),hash});
@@ -68,7 +68,7 @@ function installCloudVisits(patient,staged,version){
  stopCamera();discardPending();releaseVisits();visits=staged.length?staged:[{id:crypto.randomUUID(),date:localDate(),phase:'before',treatment:'',photos:new Map()}];
  activeVisit=0;lastFollowup=Math.max(1,visits.length-1);photos=visits[0].photos;current=0;view='before';compareA=0;compareB=Math.max(1,visits.length-1);customSlots=[];
  $('patientCode').value=patient.code;$('visitDate').value=visits[0].date;$('visitPhase').value='before';$('treatment').value=visits[0].treatment||'';
- cloud.patient=patient;cloud.version=version;cloud.error='';cloud.conflict=false;cloud.saved=staged.length?localSignature():'';revision=0;exportRevision=0;
+ cloud.patient={...patient,notes:patient.notes||''};$('patientNotes').value=cloud.patient.notes;$('patientNotesPanel').open=false;cloud.version=version;cloud.error='';cloud.conflict=false;cloud.saved=staged.length?localSignature():'';revision=0;exportRevision=0;
  document.body.classList.remove('comparison-full','patient-mode');$('patientNavigation').hidden=true;
 }
 async function openCloudPatient(id,{force=false}={}){
@@ -76,7 +76,7 @@ async function openCloudPatient(id,{force=false}={}){
  cloud.loading=true;paintCloud();$('patientListStatus').textContent='Caricamento delle visite e delle foto…';const staged=[];
  try{const data=await(await cloudRequest('/'+id)).json();
   for(const v of data.manifest.visits){const visit={...v,photos:new Map()};staged.push(visit);for(const meta of v.photos){const blob=await(await cloudRequest(`/${id}/images/${meta.hash}`)).blob();const url=await validatedImage(blob);visit.photos.set(meta.pose,{...meta,blob,url,cloudHash:meta.hash,cloudPatient:id});}}
-  installCloudVisits({id:data.id,code:data.code,name:data.name},staged,data.version);$('patientDialog').close();
+  installCloudVisits({id:data.id,code:data.code,name:data.name,notes:data.manifest.notes||''},staged,data.version);$('patientDialog').close();
  }catch(e){staged.forEach(v=>v.photos.forEach(revoke));$('patientListStatus').textContent=e.message;notify(e.message);}
  finally{cloud.loading=false;cloud.switching=false;render();}
 }
@@ -93,6 +93,8 @@ $('retryCloud').addEventListener('click',()=>{cloud.error='';syncCloud();});
 $('reloadCloud').addEventListener('click',()=>{if(pending||cloud.loading)return;if(window.confirm('Riaprire la versione cloud? Le modifiche locali non salvate saranno rimosse. Scarica prima il ZIP se vuoi conservarle.'))openCloudPatient(cloud.patient.id,{force:true});});
 window.addEventListener('online',()=>{if(cloud.error&&!cloud.conflict){cloud.error='';syncCloud();}});
 window.addEventListener('beforeunload',e=>{if(cloudDirty()||cloud.saving){e.preventDefault();e.returnValue='';}});
+$('patientNotes').addEventListener('input',()=>{if(!cloud.patient||cloud.loading)return;cloud.patient.notes=$('patientNotes').value;revision++;paintCloud();});
+$('patientNotes').addEventListener('blur',()=>{if(cloudDirty()&&!cloud.error)syncCloud();});
 $('treatment').addEventListener('input',()=>{rememberVisit();revision++;paintCloud();});
 // Existing reset buttons now open the patient chooser, never erase the cloud record.
 $('confirmReset').removeEventListener('click',resetSession);
@@ -102,7 +104,7 @@ loadArchive=async function(file){
  if(!file||cloud.loading||cloud.switching||cloud.creating)return;cloud.switching=true;if(!await safePatientChange()){cloud.switching=false;return;}let staged;cloud.loading=true;paintCloud();$('patientListStatus').textContent='Importazione ZIP…';
  try{staged=await parseArchive(file);const code=staged.code.trim().toUpperCase();
   const rows=(await(await cloudRequest('')).json()).patients;if(rows.some(p=>p.code===code))throw Error('Questo codice esiste già nel cloud. Apri il paziente dall’elenco; l’importazione non lo sovrascrive.');
-  const p=await cloudJSON('/'+crypto.randomUUID(),{code,name:''});staged.visits.forEach(visitIdentity);installCloudVisits(p,staged.visits,0);cloud.saved='';$('patientDialog').close();
+  const p=await cloudJSON('/'+crypto.randomUUID(),{code,name:''});staged.visits.forEach(visitIdentity);installCloudVisits({...p,notes:staged.notes},staged.visits,0);cloud.saved='';$('patientDialog').close();
  }catch(e){staged?.visits.forEach(v=>{if(!visits.includes(v))v.photos.forEach(revoke);});$('patientListStatus').textContent=e.message;notify(e.message);}
  finally{cloud.loading=false;cloud.switching=false;render();}
 };

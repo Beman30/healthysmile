@@ -58,3 +58,18 @@ test('domain change preserves storage identifiers and auth-first routing',()=>{
  const s={accountId:'a'.repeat(32),databaseId:crypto.randomUUID(),databaseName:'test',bucket:'test-photos',domain:'one.example.com',accessTeamDomain:'https://studio.cloudflareaccess.com',accessAudience:'b'.repeat(64)};
  const a=makeConfig(s),b=makeConfig({...s,domain:'two.example.com'});assert.deepEqual(a.d1_databases,b.d1_databases);assert.deepEqual(a.r2_buckets,b.r2_buckets);assert.equal(b.assets.run_worker_first,true);assert.equal(b.workers_dev,false);assert.throws(()=>makeConfig({...s,accountId:''}));
 });
+
+test('patient notes: round trip, legacy preservation, length validation and studio isolation',async()=>{
+ const {DB}=database(),env={DB,BUCKET:{}},a={studioId:'a'},b={studioId:'b'},id=crypto.randomUUID();
+ await api(req('/api/patients/'+id,'PUT',{code:'NOTES',name:'Test'}),env,a);
+ const path='/api/patients/'+id+'/manifest',notes='Riga 1\n<script>test</script>';
+ const write=(version,manifest,identity=a)=>api(req(path,'PUT',{version,manifest}),env,identity);
+ assert.equal((await write(0,{visits:[],notes})).status,200);
+ assert.equal((await write(1,{visits:[]})).status,200);
+ assert.equal((await (await api(req('/api/patients/'+id),env,a)).json()).manifest.notes,notes);
+ assert.equal((await write(2,{visits:[],notes:'intruso'},b)).status,404);
+ for(const invalid of [42,null,'a'.repeat(10001)])assert.equal((await write(2,{visits:[],notes:invalid})).status,400);
+ assert.equal((await write(1,{visits:[],notes:'stale'})).status,409);
+ assert.equal((await write(2,{visits:[],notes:''})).status,200);
+ assert.equal((await (await api(req('/api/patients/'+id),env,a)).json()).manifest.notes,'');
+});

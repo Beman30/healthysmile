@@ -10,10 +10,11 @@ async function bodyJSON(r){try{return JSON.parse(new TextDecoder().decode(await 
 const short=(v,max)=>typeof v==='string'&&v.length<=max;
 function validDate(value){const date=new Date(value+'T12:00:00Z');return Number.isFinite(date.getTime())&&date.toISOString().slice(0,10)===value;}
 function cleanAlignment(a){return a?.version===1&&Number.isFinite(a.angle)&&Math.abs(a.angle)<=Math.PI&&Array.isArray(a.points)&&a.points.length===2&&a.points.every(p=>Array.isArray(p)&&p.length===2&&p.every(n=>Number.isFinite(n)&&n>=0&&n<=1))?{version:1,angle:a.angle,points:a.points}:null;}
-function cleanManifest(m){
+function cleanManifest(m,previousNotes=''){
  if(!m||!Array.isArray(m.visits)||m.visits.length>20)fault(400,'Numero di visite non valido.');
+ if(m.notes!==undefined&&!short(m.notes,10000))fault(400,'Le note possono contenere al massimo 10000 caratteri.');
  const seen=new Set();let total=0;
- return {visits:m.visits.map((v,i)=>{
+ return {notes:m.notes===undefined?previousNotes:m.notes,visits:m.visits.map((v,i)=>{
   if(!UUID.test(v.id)||seen.has(v.id)||!/^\d{4}-\d{2}-\d{2}$/.test(v.date)||!validDate(v.date)||!(i===0?v.phase==='before':['immediate','followup'].includes(v.phase))||!short(v.treatment,200)||!Array.isArray(v.photos)||v.photos.length>7)fault(400,'Dati della visita non validi.');
   seen.add(v.id);const poses=new Set();
   const photos=v.photos.map(p=>{
@@ -61,7 +62,7 @@ export async function api(request,env,identity){
   }
   if(parts[3]==='manifest'&&parts.length===4&&method==='PUT'){
    const data=await bodyJSON(request);if(!Number.isInteger(data.version)||data.version<0)fault(400,'Versione non valida.');
-   const manifest=cleanManifest(data.manifest),refs=new Set(manifest.visits.flatMap(v=>v.photos.map(p=>p.hash)));
+   const manifest=cleanManifest(data.manifest,JSON.parse(patient.manifest).notes||''),refs=new Set(manifest.visits.flatMap(v=>v.photos.map(p=>p.hash)));
    const stored=await database.prepare('SELECT hash, size FROM images WHERE patient = ?').bind(id).all(),known=new Map(stored.results.map(r=>[r.hash,r.size]));let total=0;
    for(const hash of refs){if(!known.has(hash))fault(400,'Attendi il caricamento di tutte le foto.');total+=known.get(hash);}if(total>250*1024*1024)fault(413,'Archivio oltre 250 MB. Esporta una copia prima di proseguire.');
    const result=await database.prepare('UPDATE patients SET manifest = ?, version = version + 1, updated = ? WHERE id = ? AND owner = ? AND version = ?').bind(JSON.stringify(manifest),new Date().toISOString(),id,user,data.version).run();
