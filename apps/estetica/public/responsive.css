@@ -1,0 +1,166 @@
+/* Reachable controls on phones, tablets and desktop, without changing photographs. */
+:root { --capture-dock-height: 116px; }
+button, summary, a, input, select, textarea { touch-action: manipulation; }
+button { overflow-wrap: anywhere; }
+button:focus-visible, summary:focus-visible { outline: 3px solid var(--pink); outline-offset: 3px; }
+input, select, textarea { min-width: 0; }
+summary { cursor: pointer; }
+.menu-toggle { gap: 8px; flex: none; }
+.menu-toggle span { font-size: 1.35rem; line-height: 1; }
+.dialog-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.dialog-heading h2 { flex: 1; }
+.dialog-heading button { flex: none; }
+body:has(dialog[open]) { overflow: hidden; }
+dialog { max-height: calc(100dvh - 24px); overflow-y: auto; overscroll-behavior: contain; }
+dialog .review-controls { flex-wrap: wrap; gap: 10px; }
+dialog .review-controls > button { flex: 1 1 140px; }
+dialog .review-controls > a { min-height: 44px; display: inline-flex; align-items: center; }
+#appMenu, #visitDialog, #stationDialog { width: min(520px, calc(100% - 24px)); max-width: 520px; }
+.app-menu .dialog-heading { position: sticky; top: -24px; z-index: 2; background: #fff; padding-block: 12px; }
+#menuPatient { overflow-wrap: anywhere; }
+.menu-group { display: grid; gap: 8px; padding: 16px 0; border-bottom: 1px solid var(--line); }
+.menu-group:last-child { border-bottom: 0; padding-bottom: 0; }
+.menu-group h3 { margin: 0 0 4px; font-size: .85rem; color: #636975; }
+.menu-group > button, .menu-group .phone-save button { width: 100%; margin: 0; justify-content: flex-start; text-align: left; min-height: 48px; }
+.simple-app #appMenu #settingsButton { display: block !important; color: #333946; }
+#appMenu .phone-save { display: grid; margin: 0; }
+.simple-app #visitDialog .session-card, .simple-app #stationDialog #settings { display: block !important; border: 0; padding: 16px 0 0; }
+#visitDialog .session-card > .section-heading { display: none; }
+#stationDialog #closeSettings { flex: none; }
+.capture-match { position: static; }
+.dock-pose { display: none; }
+.comparison-adjustments { background: white; border: 1px solid var(--line); border-radius: 12px; padding: 12px 16px; margin: 16px 0; }
+.comparison-adjustments > summary { font-weight: 650; min-height: 44px; padding: 10px 0; }
+.comparison-adjustments > summary span { display: block; font-size: .8rem; font-weight: 400; color: #636975; margin: 5px 0 0 17px; }
+.brightness-controls { position: static; box-shadow: none; border: 0; padding: 0; }
+.comparison-exports { display: flex; flex-wrap: wrap; gap: 10px; margin: 18px 0; }
+.comparison-exports > button { margin: 0 !important; flex: 1 1 180px; }
+.comparison-exports #backToPhotos { flex-basis: 100%; }
+.comparison-full .comparison-adjustments, .patient-mode .comparison-adjustments,
+.comparison-full .comparison-exports, .patient-mode .comparison-exports { display: none; }
+.patient-bar > div { overflow-wrap: anywhere; min-width: 0; }
+.patient-notes, .sequence { scroll-margin-top: 16px; }
+
+@media (max-width: 900px) {
+ html { scroll-padding-bottom: calc(var(--capture-dock-height) + 16px); }
+ body.capture-view { padding-bottom: calc(var(--capture-dock-height) + 16px); }
+ .simple-app .topbar { height: auto; min-height: 60px; padding: 8px max(12px, env(safe-area-inset-right)) 8px max(12px, env(safe-area-inset-left)); }
+ .brand { gap: 10px; min-width: 0; }
+ .brand-sub { display: none; }
+ .simple-app .patient-bar { margin: 0; padding: 12px 16px; border-radius: 0; flex-direction: row; align-items: center; gap: 8px; }
+ .patient-bar > div { flex: 1 1 150px; }
+ .patient-bar strong { font-size: 1rem; }
+ .patient-bar [role=status] { font-size: .85rem; }
+ .patient-bar > button { padding: 10px 12px; }
+ #retryCloud, #reloadCloud { flex-basis: 100%; }
+ .patient-notes { margin: 10px 12px; padding: 8px 12px; }
+ .patient-notes summary { min-height: 44px; padding: 12px 0; }
+ .simple-app .flow-bar { margin: 10px auto; padding: 0 12px; }
+ .flow-tabs { gap: 3px; padding: 4px; }
+ .simple-app .flow-tabs button { min-width: 0; min-height: 48px; padding: 8px 5px; font-size: .875rem; }
+ .simple-app main { max-width: 760px; padding: 0 12px; margin: 16px auto; }
+ .simple-app .workspace { max-width: none; }
+ .simple-app .camera-shell { width: min(100%, 420px); max-width: none; overflow: visible; border-radius: 14px; }
+ .simple-app .camera { width: min(100%, 42svh); max-height: none; margin: auto; border-radius: 12px; }
+ .camera-empty { padding: 12px; }
+ .camera-empty .camera-icon { display: none; }
+ .camera-empty h2 { font-size: 1.05rem; }
+ .camera-empty .primary { margin: 12px 0; }
+ .camera-footer { padding: 4px 12px; min-height: 44px; }
+ .camera-footer .text-button { min-height: 44px; font-size: .875rem; }
+ .capture-match { margin-bottom: 0; padding: 8px 12px; }
+ .match-axes { gap: 12px; margin: 4px 0 10px; }
+ .match-camera summary { min-height: 44px; padding: 10px 0; }
+ .match-camera { padding-top: 0; }
+ .match-heading { font-size: .95rem; }
+ .match-heading button { min-height: 44px; }
+ .capture-dock { position: fixed; bottom: 0; left: 0; right: 0; z-index: 15; padding: 6px max(12px, env(safe-area-inset-right)) calc(8px + env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left)); background: #fff; border-top: 1px solid var(--line); box-shadow: 0 -4px 18px #20232a12; }
+ .dock-pose { display: block; text-align: center; font-size: .8rem; line-height: 1.35; color: #545c69; }
+ #captureDock #liveControls, #captureDock #reviewControls { margin: 4px auto 0; gap: 24px; max-width: 540px; }
+ #captureDock #reviewControls { gap: 10px; }
+ #captureDock #reviewControls button { flex: 1; min-height: 50px; }
+ #captureDock .shutter { width: 60px; height: 60px; }
+ .editing-field .capture-dock { display: none; }
+ .toast { bottom: calc(var(--capture-dock-height) + 12px); max-height: 30dvh; overflow: auto; padding: 12px 16px; }
+ body:not(.capture-view) .toast { bottom: calc(16px + env(safe-area-inset-bottom)); }
+ .simple-app #shootAfter, .simple-app #usePendingBefore { width: 100%; margin: 14px 0 0; min-width: 0; }
+ .sequence .pose-button { gap: 8px; min-height: 60px; }
+ .sequence li, .pose-name { min-width: 0; overflow-wrap: anywhere; }
+ .sequence .pose-thumb { flex: none; }
+ .compare-page { padding: 0 12px; margin: 18px auto; }
+ .compare-heading { display: grid; grid-template-columns: 1fr 1fr; }
+ .compare-heading > div { grid-column: 1 / -1; min-width: 0; }
+ .compare-heading button { min-width: 0 !important; width: 100%; }
+ .compare-pickers { grid-template-columns: 1fr; gap: 4px; }
+ .compare-pickers > div:last-child { grid-column: auto; }
+ .layout-tabs { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); }
+ .layout-tabs button { min-height: 48px; font-size: .9rem; }
+ .brightness-controls > div { min-width: 0; flex-basis: 100%; }
+ .brightness-controls input { min-height: 44px; }
+ .brightness-controls output { float: none; display: block; margin-top: 4px; }
+ .brightness-controls > button { width: 100%; }
+ .alignment-actions > button { flex: 1 1 160px; }
+ .comparison-caption { overflow-wrap: anywhere; }
+ .comparison-caption select { font-size: 16px; min-height: 48px; }
+ .comparison-adjustments { padding: 8px 12px; }
+ .comparison-full #comparePage { padding: calc(8px + env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) calc(8px + env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left)); }
+ .comparison-full .compare-heading { display: flex; }
+ .comparison-full .compare-heading button { width: auto; }
+ .patient-mode #comparePage { display: flex; flex-direction: column; height: 100dvh; padding: calc(8px + env(safe-area-inset-top)) 12px calc(8px + env(safe-area-inset-bottom)); }
+ .patient-mode .patient-navigation { flex: none; width: 100%; gap: 8px; margin-bottom: 8px; }
+ .patient-mode #comparisonSurface { flex: 1; min-height: 0; width: 100%; grid-template-rows: minmax(0,1fr) auto; }
+ .patient-mode .wipe-box { width: 100%; height: 100%; min-height: 0; }
+ .patient-mode #exitPatientMode { min-height: 44px; }
+ dialog { padding: 16px; max-width: calc(100% - 16px); max-height: calc(100dvh - 16px - env(safe-area-inset-top) - env(safe-area-inset-bottom)); }
+ dialog input:not([type=checkbox]), dialog select, dialog textarea, #cameraSelect { font-size: 16px; }
+ #appMenu .dialog-heading { top: -16px; }
+ #appMenu, #visitDialog, #stationDialog { width: calc(100% - 16px); }
+ .settings-grid { grid-template-columns: 1fr; }
+ .patient-results { max-height: 38dvh; }
+ #patientDialog .review-controls { display: grid; grid-template-columns: 1fr; }
+ #galleryPhotos { gap: 8px; }
+ #beforeImportRows article { grid-template-columns: 64px minmax(0,1fr); gap: 8px; }
+ #beforeImportRows img { width: 64px; height: 86px; }
+ .alignment-nudges { gap: 6px; }
+ .alignment-nudges button { min-width: 44px; padding: 10px; }
+ #alignmentPointCanvas { width: min(100%, 45dvh); }
+ .page-footer { gap: 12px; flex-wrap: wrap; padding: 16px 12px; }
+}
+@media (max-width: 360px) {
+ .simple-app .sequence ol { grid-template-columns: 1fr; }
+ .patient-bar > button { flex: 1 1 100%; }
+ .comparison-exports > button { flex-basis: 100%; }
+}
+@media (max-width: 900px) and (orientation: landscape) {
+ .simple-app .camera-shell { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); width: 100%; align-items: start; gap: 0 12px; background: transparent; box-shadow: none; }
+ .capture-match { grid-column: 1; grid-row: 1 / 3; }
+ .simple-app .camera { grid-column: 2; grid-row: 1; width: min(100%, 46svh, calc((100dvh - var(--capture-dock-height) - 88px) * .75)); }
+ .camera-footer { grid-column: 2; grid-row: 2; background: #15171c; border-radius: 0 0 12px 12px; }
+ .compare-pickers { grid-template-columns: 1fr 1fr 1fr; }
+ .layout-tabs { grid-template-columns: repeat(4,minmax(0,1fr)); }
+ .patient-mode #exitPatientMode { width: auto; }
+}
+@media (prefers-reduced-motion: reduce) {
+ *, *::before, *::after { scroll-behavior: auto !important; }
+}
+@media (max-width: 900px) {
+ .camera-tools:empty { display: none; }
+ .camera-tools .guide-adjustment { position: static; margin: 8px; padding: 10px 12px 4px; }
+ .camera-tools .ghost-controls > div { flex-wrap: wrap; }
+ .camera-tools .ghost-toggle { min-height: 44px; }
+ .camera-tools .guide-adjustment label { flex-wrap: wrap; }
+}
+@media (max-width: 900px) and (orientation: landscape) {
+ .camera-tools { grid-column: 1; grid-row: 3; background: #15171c; border-radius: 12px; }
+ .capture-match { grid-row: 1 / 3; }
+}
+.dock-start { display: none; }
+@media (max-width: 900px) {
+ .camera-idle .dock-start { display: flex; width: min(100%, 440px); margin: 6px auto 0; min-height: 50px; }
+ .camera-idle #captureDock #liveControls { display: none; }
+}
+@media (max-width: 900px) {
+ .simple-app .topbar { position: sticky; top: 0; z-index: 16; padding-top: calc(8px + env(safe-area-inset-top)); }
+ #cameraArea, .patient-notes, .sequence { scroll-margin-top: calc(76px + env(safe-area-inset-top)); }
+}
+.toast { width: max-content; max-width: calc(100vw - 24px); pointer-events: none; }
