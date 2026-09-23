@@ -37,3 +37,12 @@ Il percorso configure/deploy del README resta disponibile per un dominio
 personalizzato. Prima di passare a quel percorso conservare gli stessi ID
 D1/R2, specificare anche jurisdiction: "eu" nel binding R2, aggiornare Access
 e pianificare il mantenimento dei link condivisi già emessi.
+
+## Primo tentativo eseguito sul ramo sbagliato
+
+Se il log riporta `Failed: root directory not found`, controllare il ramo
+mostrato nel dettaglio del tentativo: `apps/estetica` è nel ramo
+`codex/estetica-portable-cloud`, non nel ramo `main` del sito.
+Dopo aver selezionato il ramo corretto in Settings > Builds > Branch control,
+un nuovo commit su quel ramo consente di richiedere una nuova build tramite
+l'integrazione GitHub. Verificare il ramo nella nuova riga di Build history.
