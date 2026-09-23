@@ -20,7 +20,7 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
    }
    const f=path.resolve('public','.'+(url.pathname==='/'?'/index.html':url.pathname));
    if(!f.startsWith(path.resolve('public')+path.sep)){res.writeHead(403).end();return;}
-   res.setHeader('Content-Type',({'.html':'text/html','.js':'application/javascript','.css':'text/css'})[path.extname(f)]||'application/octet-stream');res.end(fs.readFileSync(f));
+   res.setHeader('Content-Type',({'.html':'text/html','.js':'application/javascript','.css':'text/css','.webmanifest':'application/manifest+json','.png':'image/png'})[path.extname(f)]||'application/octet-stream');res.end(fs.readFileSync(f));
   }catch(e){res.writeHead(500).end(String(e));}
  });
  await new Promise(r=>server.listen(0,'127.0.0.1',r));
@@ -41,6 +41,40 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
   await page.locator('.new-patient summary').click();await page.locator('#newPatientName').fill('Paziente dimostrativo con nome lungo');await page.locator('#newPatientCode').fill('MOBILE-TEST');await page.locator('#createPatient').click();
   await page.locator('#patientDialog').waitFor({state:'hidden'});
   await shot('mobile-home');await noOverflow('html');
+  // The manifest is readable by the browser and defines real launcher icons.
+  const cdp=await context.newCDPSession(page);
+  const appManifest=await cdp.send('Page.getAppManifest');
+  assert.equal(appManifest.errors.length,0,JSON.stringify(appManifest.errors));
+  const manifest=JSON.parse(appManifest.data);
+  assert.equal(manifest.display,'standalone');assert.equal(manifest.start_url,'/');
+  assert.equal(await page.locator('link[rel=manifest]').getAttribute('crossorigin'),'use-credentials');
+  for(const icon of manifest.icons){
+   const dimensions=await page.evaluate(src=>new Promise((resolve,reject)=>{const i=new Image();i.onload=()=>resolve(`${i.naturalWidth}x${i.naturalHeight}`);i.onerror=reject;i.src=src;}),icon.src);
+   assert.equal(dimensions,icon.sizes);
+  }
+  await menu();await page.locator('#menuInstall').click();await visible('#installDialog');
+  await noOverflow('#installDialog');await inViewport('#closeInstall');
+  await shot('install-help');await page.locator('#closeInstall').click();
+  assert(await page.locator('#menuToggle').evaluate(e=>e===document.activeElement));
+  // An actual browser install prompt requires a gesture. Exercise its event flow
+  // without installing anything on the test machine.
+  await page.evaluate(()=>{const e=new Event('beforeinstallprompt',{cancelable:true});e.prompt=async()=>{window.installRequested=true;};e.userChoice=Promise.resolve({outcome:'dismissed'});window.dispatchEvent(e);});
+  await menu();await page.locator('#menuInstall').click();await page.locator('#installNow').click();
+  assert(await page.evaluate(()=>window.installRequested));
+  assert.match(await page.locator('#installStatus').textContent(),/in seguito/);
+  await page.locator('#closeInstall').click();
+  for(const profile of ['android','ios','standalone']){
+   const phone=await browser.newContext({viewport:{width:320,height:568},isMobile:true,hasTouch:true,userAgent:profile==='android'?'Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 Chrome/140.0 Mobile Safari/537.36':'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Version/18.0 Mobile/15E148 Safari/604.1'});
+   if(profile==='standalone')await phone.addInitScript(()=>Object.defineProperty(navigator,'standalone',{value:true}));
+   const p=await phone.newPage();await p.goto(base);await p.locator('#patientDialog').waitFor({state:'visible'});
+   await p.evaluate(()=>document.getElementById('patientDialog').close());
+   await p.locator('#menuToggle').click();await p.locator('#menuInstall').click();
+   assert(await p.locator('#installDialog').evaluate(e=>e.scrollWidth<=e.clientWidth+2));
+   if(profile==='standalone')assert.match(await p.locator('#installStatus').textContent(),/già usando/);
+   else assert(await p.locator('#install-'+profile).isVisible());
+   await phone.close();
+  }
+
   await menu();await shot('mobile-menu');await page.keyboard.press('Escape');await page.waitForFunction(()=>document.getElementById('menuToggle').getAttribute('aria-expanded')==='false');
   assert.equal(await page.locator('#menuToggle').getAttribute('aria-expanded'),'false');
   assert(await page.locator('#menuToggle').evaluate(e=>e===document.activeElement),'focus returns to Menu');

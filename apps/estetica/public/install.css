@@ -1,0 +1,11 @@
+#installDialog { width: min(480px, calc(100% - 24px)); }
+.install-intro { display: flex; align-items: center; gap: 14px; margin: 18px 0; }
+.install-intro img { width: 64px; height: 64px; border-radius: 15px; flex: none; }
+.install-intro p { margin: 0; }
+.install-steps { padding-left: 24px; line-height: 1.65; }
+.install-steps li { margin-block: 10px; }
+#installNow { width: 100%; min-height: 48px; margin-block: 12px; }
+#installDialog .hint { margin-top: 16px; }
+@media (display-mode: standalone) {
+ .page-footer { padding-bottom: max(16px, env(safe-area-inset-bottom)); }
+}
