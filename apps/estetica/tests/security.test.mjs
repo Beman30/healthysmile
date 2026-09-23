@@ -10,6 +10,18 @@ import {makeConfig} from '../scripts/configure.mjs';
 const origin='https://estetica.example.com';
 function database(){const sql=new DatabaseSync(':memory:');for(const f of ['0001_patients.sql','0002_studios.sql'])sql.exec(readFileSync(new URL('../migrations/'+f,import.meta.url),'utf8'));return {sql,DB:{prepare(query){return {bind(...args){const s=sql.prepare(query);return {first:async()=>s.get(...args),all:async()=>({results:s.all(...args)}),run:async()=>({meta:s.run(...args)})};}}}}};}
 const req=(path,method='GET',body)=>new Request(origin+path,{method,headers:{Origin:origin,'X-HS-Write':'1','Content-Type':'application/json'},body:body?JSON.stringify(body):undefined});
+test('initial cloud deployment denies studio access before Access configuration',async()=>{
+ const c=JSON.parse(readFileSync(new URL('../wrangler.cloud.json',import.meta.url),'utf8'));
+ assert.equal(c.assets.run_worker_first,true);
+ assert.equal(c.r2_buckets[0].jurisdiction,'eu');
+ const unexpected=()=>{throw Error('Storage must not be reached before authentication');};
+ const env={ASSETS:{fetch:unexpected},DB:{prepare:unexpected},BUCKET:{get:unexpected}};
+ for(const path of ['/','/app.js','/api/session','/api/patients']){
+  const response=await handle(req(path),env);
+  assert.equal(response.status,503);
+  assert.equal((await response.json()).error,'Accesso studio non ancora configurato.');
+ }
+});
 test('signed Access identity: issuer, audience, expiry and cookies validated; spoofed identity rejected',async()=>{
  const {privateKey,publicKey}=await generateKeyPair('RS256'),jwk=await exportJWK(publicKey);jwk.kid='test';const keys=createLocalJWKSet({keys:[jwk]}),env={ACCESS_TEAM_DOMAIN:'https://studio.cloudflareaccess.com',ACCESS_AUD:'a'.repeat(64)};
  const token=async(aud=env.ACCESS_AUD,exp='2h')=>new SignJWT({email:'Owner@Example.com'}).setProtectedHeader({alg:'RS256',kid:'test'}).setSubject('owner').setIssuer(env.ACCESS_TEAM_DOMAIN).setAudience(aud).setExpirationTime(exp).sign(privateKey);
