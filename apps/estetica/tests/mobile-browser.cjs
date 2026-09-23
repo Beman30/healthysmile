@@ -18,7 +18,7 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
     const r=await api(new Request(url,{method:req.method,headers:req.headers,...(chunks.length?{body:Buffer.concat(chunks)}:{})}),env,{studioId:'browser-test'});
     res.writeHead(r.status,Object.fromEntries(r.headers));res.end(Buffer.from(await r.arrayBuffer()));return;
    }
-   const f=path.resolve('public','.'+(url.pathname==='/'?'/index.html':url.pathname));
+   const f=path.resolve('public','.'+(url.pathname==='/'?'/index.html':url.pathname==='/installa'?'/installa.html':url.pathname));
    if(!f.startsWith(path.resolve('public')+path.sep)){res.writeHead(403).end();return;}
    res.setHeader('Content-Type',({'.html':'text/html','.js':'application/javascript','.css':'text/css','.webmanifest':'application/manifest+json','.png':'image/png'})[path.extname(f)]||'application/octet-stream');res.end(fs.readFileSync(f));
   }catch(e){res.writeHead(500).end(String(e));}
@@ -28,6 +28,8 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
  const browser=await chromium.launch({executablePath:process.env.BROWSER_EXECUTABLE||undefined,headless:true,args:['--no-sandbox','--disable-dev-shm-usage','--use-gl=angle','--use-angle=swiftshader','--use-fake-device-for-media-stream','--use-fake-ui-for-media-stream']});
  const errors=[];
  const context=await browser.newContext({viewport:{width:390,height:844},hasTouch:true,isMobile:true,permissions:['camera']});
+ // Simulate the OS standalone flag while exercising the full photo workflow.
+ await context.addInitScript(()=>Object.defineProperty(navigator,'standalone',{value:true}));
  const page=await context.newPage();page.on('pageerror',e=>errors.push(String(e)));
  page.setDefaultTimeout(10000);
  const visible=async selector=>{await page.locator(selector).waitFor({state:'visible'});};
@@ -56,25 +58,31 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
   await noOverflow('#installDialog');await inViewport('#closeInstall');
   await shot('install-help');await page.locator('#closeInstall').click();
   assert(await page.locator('#menuToggle').evaluate(e=>e===document.activeElement));
-  // An actual browser install prompt requires a gesture. Exercise its event flow
-  // without installing anything on the test machine.
-  await page.evaluate(()=>{const e=new Event('beforeinstallprompt',{cancelable:true});e.prompt=async()=>{window.installRequested=true;};e.userChoice=Promise.resolve({outcome:'dismissed'});window.dispatchEvent(e);});
-  await menu();await page.locator('#menuInstall').click();await page.locator('#installNow').click();
-  assert(await page.evaluate(()=>window.installRequested));
-  assert.match(await page.locator('#installStatus').textContent(),/in seguito/);
-  await page.locator('#closeInstall').click();
   for(const profile of ['android','ios','standalone']){
    const phone=await browser.newContext({viewport:{width:320,height:568},isMobile:true,hasTouch:true,userAgent:profile==='android'?'Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 Chrome/140.0 Mobile Safari/537.36':'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Version/18.0 Mobile/15E148 Safari/604.1'});
    if(profile==='standalone')await phone.addInitScript(()=>Object.defineProperty(navigator,'standalone',{value:true}));
-   const p=await phone.newPage();await p.goto(base);await p.locator('#patientDialog').waitFor({state:'visible'});
-   await p.evaluate(()=>document.getElementById('patientDialog').close());
-   await p.locator('#menuToggle').click();await p.locator('#menuInstall').click();
-   assert(await p.locator('#installDialog').evaluate(e=>e.scrollWidth<=e.clientWidth+2));
-   if(profile==='standalone')assert.match(await p.locator('#installStatus').textContent(),/già usando/);
-   else assert(await p.locator('#install-'+profile).isVisible());
+   const p=await phone.newPage(),requests=[];p.on('request',r=>requests.push(new URL(r.url()).pathname));
+   await p.goto(base+(profile==='standalone'?'/installa':'/'));
+   if(profile==='standalone'){
+    await p.locator('#patientDialog').waitFor({state:'visible'});assert.equal(new URL(p.url()).pathname,'/');
+   }else{
+    await p.waitForURL('**/installa');await p.locator('#install-'+profile).waitFor({state:'visible'});
+    assert(await p.locator('html').evaluate(e=>e.scrollWidth<=e.clientWidth+2));
+    assert(!requests.some(p=>p.startsWith('/api/')||p==='/cloud.js'||p==='/app.js'),'browser gate must not load patient data or app code');
+    assert.equal(await p.locator('#patientPicker').count(),0);
+    if(profile==='android'){
+     const client=await phone.newCDPSession(p),m=await client.send('Page.getAppManifest');
+     assert.equal(m.errors.length,0,JSON.stringify(m.errors));assert.equal(JSON.parse(m.data).start_url,'/');
+     await p.evaluate(()=>{const e=new Event('beforeinstallprompt',{cancelable:true});e.prompt=async()=>{window.installRequested=true;};e.userChoice=Promise.resolve({outcome:'dismissed'});window.dispatchEvent(e);});
+     await p.locator('#installNow').click();assert(await p.evaluate(()=>window.installRequested));
+     assert.match(await p.locator('#installStatus').textContent(),/annullata/);assert.equal(new URL(p.url()).pathname,'/installa');
+     if(process.env.UI_SCREENSHOTS)await p.screenshot({path:path.join(process.env.UI_SCREENSHOTS,'installation-required.png'),fullPage:true});
+     await p.goto(base+'/index.html');await p.waitForURL('**/installa');
+     await p.reload();await p.locator('#install-android').waitFor({state:'visible'});
+    }
+   }
    await phone.close();
   }
-
   await menu();await shot('mobile-menu');await page.keyboard.press('Escape');await page.waitForFunction(()=>document.getElementById('menuToggle').getAttribute('aria-expanded')==='false');
   assert.equal(await page.locator('#menuToggle').getAttribute('aria-expanded'),'false');
   assert(await page.locator('#menuToggle').evaluate(e=>e===document.activeElement),'focus returns to Menu');

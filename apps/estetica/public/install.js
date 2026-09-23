@@ -4,6 +4,7 @@
 (() => {
  const button=document.getElementById('menuInstall');
  const dialog=document.getElementById('installDialog');
+ const installPage=document.body.classList.contains('install-page');
  const promptButton=document.getElementById('installNow');
  const status=document.getElementById('installStatus');
  const standalone=matchMedia('(display-mode: standalone)');
@@ -13,8 +14,9 @@
  const isAndroid=/Android/.test(navigator.userAgent);
  function render(){
   const installed=isStandalone();
-  button.textContent=installed?'App installata':'Installa sul telefono';
-  status.textContent=installed?'Stai già usando la versione installata.':'Aggiungi Healthy Smile Foto alla schermata iniziale.';
+  if(installPage&&installed){location.replace('/');return;}
+  if(button)button.textContent=installed?'App installata':'Installa sul telefono';
+  status.textContent=installed?'Stai già usando la versione installata.':'Per usare Healthy Smile Foto devi installarla e aprirla dalla sua icona.';
   promptButton.hidden=installed||!installPrompt;
   for(const type of ['ios','android','desktop'])document.getElementById('install-'+type).hidden=installed||(type!==(isIOS?'ios':isAndroid?'android':'desktop'));
  }
@@ -24,15 +26,15 @@
   status.textContent='Installazione completata. Apri Healthy Smile Foto dalla nuova icona.';
  });
  standalone.addEventListener('change',render);
- button.addEventListener('click',()=>{render();dialog.showModal();});
- document.getElementById('closeInstall').addEventListener('click',()=>dialog.close());
- dialog.addEventListener('close',()=>document.getElementById('menuToggle').focus({preventScroll:true}));
+ button?.addEventListener('click',()=>{render();dialog.showModal();});
+ document.getElementById('closeInstall')?.addEventListener('click',()=>dialog.close());
+ dialog?.addEventListener('close',()=>document.getElementById('menuToggle').focus({preventScroll:true}));
  promptButton.addEventListener('click',async()=>{
   const event=installPrompt;if(!event)return;
   installPrompt=null;promptButton.disabled=true;
   try{
    await event.prompt();const choice=await event.userChoice;
-   status.textContent=choice.outcome==='accepted'?'Installazione richiesta: segui la conferma del telefono.':'Puoi installare l’app in seguito dal menu del browser.';
+   status.textContent=choice.outcome==='accepted'?'Installazione richiesta: segui la conferma del telefono.':'Installazione annullata. Per usare l’app, installala dal menu del browser e apri la nuova icona.';
   }catch{status.textContent='Apri il menu del browser e scegli “Installa app” o “Aggiungi alla schermata Home”.';}
   finally{promptButton.hidden=true;promptButton.disabled=false;}
  });
