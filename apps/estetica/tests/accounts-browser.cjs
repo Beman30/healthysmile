@@ -42,7 +42,12 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
   await p.locator('#authStatus').filter({hasText:'Nuova password generata'}).waitFor();
   await p.locator('#logout').click();await p.waitForURL('**/login');await p.goto(base+'/account');await p.waitForURL('**/login?next=account');
   await login(p,'owner',recovered);await p.waitForURL('**/account');await p.locator('#adminSection').waitFor({state:'visible'});
+  const betaRow=p.locator('.account-row').filter({hasText:'beta'});
+  p.once('dialog',dialog=>dialog.dismiss());await betaRow.getByText('Elimina account').click();assert.equal(await betaRow.count(),1);
+  p.once('dialog',dialog=>dialog.accept());await betaRow.getByText('Elimina account').click();await betaRow.waitFor({state:'detached'});
+  assert.equal(await p.locator('.account-row').filter({hasText:'Amministratore'}).getByText('Elimina account').count(),0);
+  assert(await p.locator('html').evaluate(e=>e.scrollWidth<=e.clientWidth+2));
   const anon=await context(false),r=await anon.newPage();await r.goto(base);await r.waitForURL('**/installa');assert.equal(await r.locator('#password').count(),0);
-  assert.deepEqual(errors,[]);console.log('PASS: browser login, generated tester credentials, separated empty archive, admin UI, suspension, logout and public install page.');
+  assert.deepEqual(errors,[]);console.log('PASS: browser login, tester credentials, isolated archive, suspension, owner recovery, delete cancel/confirm, logout and public install.');
  }finally{await browser.close();await new Promise(resolve=>server.close(resolve));sql.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});

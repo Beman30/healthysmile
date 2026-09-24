@@ -15,13 +15,14 @@
   try{await request('/api/auth/login',{username:get('username').value,password:get('password').value});get('password').value='';location.replace(next);}catch(e){status(e.message);}finally{get('loginSubmit').disabled=false;}
  });
  if(page!=='account')return;
- let me,recoveryAvailable=false;
+ let me,recoveryAvailable=false,credentialsUsername=null;
  function showCredentials(data){
+  credentialsUsername=data.username;
   get('credentialsText').value=`Username: ${data.username}\nPassword: ${data.password}\nInstalla: ${location.origin}/installa`;
   get('credentialsSection').hidden=false;get('credentialsText').style.height='auto';get('credentialsText').style.height=(get('credentialsText').scrollHeight+4)+'px';get('credentialsSection').scrollIntoView({block:'start'});
  }
  get('copyCredentials').addEventListener('click',async()=>{try{await navigator.clipboard.writeText(get('credentialsText').value);status('Credenziali copiate.');}catch{get('credentialsText').focus();get('credentialsText').select();status('Seleziona Copia per conservare le credenziali.');}});
- get('dismissCredentials').addEventListener('click',()=>{get('credentialsText').value='';get('credentialsSection').hidden=true;});
+ get('dismissCredentials').addEventListener('click',()=>{get('credentialsText').value='';get('credentialsSection').hidden=true;credentialsUsername=null;});
  async function list(){
   const data=await request('/api/accounts');get('accountsList').replaceChildren(...data.accounts.map(account=>{
    const row=document.createElement('div');row.className='account-row';
@@ -32,6 +33,16 @@
     toggle.onclick=async()=>{toggle.disabled=true;try{await request(`/api/accounts/${account.id}/active`,{active:!account.active});await list();status('Accesso aggiornato.');}catch(e){status(e.message);toggle.disabled=false;}};
     const reset=document.createElement('button');reset.className='secondary';reset.textContent='Nuova password';
     reset.onclick=async()=>{if(!confirm('Generare una nuova password? La precedente smetterà di funzionare e il tester dovrà accedere di nuovo.'))return;reset.disabled=true;try{showCredentials(await request(`/api/accounts/${account.id}/reset`,{}));status('Nuova password generata.');}catch(e){status(e.message);}finally{reset.disabled=false;}};row.append(toggle,reset);
+    const remove=document.createElement('button');remove.className='secondary';remove.textContent='Elimina account';
+    remove.onclick=async()=>{
+     if(!confirm(`Eliminare l’account “${account.username}”? L’utente verrà disconnesso e le credenziali non funzioneranno più. Foto e pazienti restano conservati. Ricreando lo stesso username si otterrà un nuovo archivio vuoto.`))return;
+     for(const button of row.querySelectorAll('button'))button.disabled=true;
+     try{
+      await request(`/api/accounts/${account.id}/delete`,{confirmUsername:account.username});
+      if(credentialsUsername===account.username){get('credentialsText').value='';get('credentialsSection').hidden=true;credentialsUsername=null;}
+      row.remove();await list();status(`Account “${account.username}” eliminato.`);
+     }catch(e){status(e.message);for(const button of row.querySelectorAll('button'))button.disabled=false;}
+    };row.append(remove);
    }return row;
   }));
  }

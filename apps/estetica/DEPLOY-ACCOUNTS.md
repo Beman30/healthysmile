@@ -31,3 +31,7 @@ New `hs_accounts`, `hs_sessions`, and `hs_login_limits` tables are created idemp
 Open `/account` in the browser that still has the administrator session, or through the original verified Cloudflare Access owner login. **Genera una nuova password per me** rotates only that administrator's password, revokes its previous application sessions, and establishes a new session. Copy the returned credentials before closing the page. The account ID, username, studio and patients remain unchanged; tester accounts and sessions are untouched.
 
 `/api/auth/recovery` accepts an active administrator session or a cryptographically verified Access identity matching `BOOTSTRAP_ADMIN_EMAIL`, an active owner membership and the administrator's studio. A configured email or client-supplied header alone is never sufficient. GET only checks availability; POST requires the same CSRF checks as other writes. If neither verified access nor an active administrator session remains, this recovery route deliberately cannot reset the password.
+
+## Removing a tester login
+
+Administrators can select **Elimina account** and confirm the named tester. The server requires the administrator session, same-origin POST/write header and matching username confirmation. All target sessions and the non-administrator account row are deleted atomically. The administrator cannot be deleted this way. Existing studios, patients and photos are retained: this operation removes login access, not clinical data. Reusing the username creates a new studio and never grants access to the old archive.

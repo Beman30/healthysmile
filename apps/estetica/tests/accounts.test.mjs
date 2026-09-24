@@ -93,3 +93,31 @@ test('owner password recovery requires an active admin session or verified match
  assert.equal((await f.login('owner',secret.password)).response.status,401);
  assert(!JSON.stringify(f.sql.prepare('SELECT * FROM hs_accounts').all()).includes((await second.json()).password));
 });
+
+test('delete tester revokes all sessions, preserves archives and cannot delete the administrator',async()=>{
+ const f=fixture();f.sql.exec('PRAGMA foreign_keys=ON');const owner=await f.bootstrap();
+ const tester=await(await f.call('/api/accounts',{username:'remove-me',name:'Tester'},owner.cookie)).json();
+ const login=await f.login(tester.username,tester.password),second=await f.login(tester.username,tester.password);
+ const identity=await resolveAccount(f.req('/',undefined,login.cookie),f.env);
+ const patient=crypto.randomUUID();f.sql.prepare('INSERT INTO patients(id,owner,code,name,updated) VALUES (?,?,?,?,?)').run(patient,identity.studioId,'TEST','Synthetic patient','now');
+ const path=`/api/accounts/${tester.id}/delete`,body={confirmUsername:tester.username};
+ assert.equal((await f.call(path,body)).status,403);
+ assert.equal((await f.call(path,body,login.cookie)).status,403);
+ assert.equal((await f.call(path,body,owner.cookie,{Origin:'https://evil.example'})).status,403);
+ assert.equal((await f.call(path,undefined,owner.cookie)).status,405);
+ assert.equal((await f.call(path,{confirmUsername:'wrong'},owner.cookie)).status,400);
+ const adminId=f.sql.prepare('SELECT id FROM hs_accounts WHERE is_admin=1').get().id;
+ assert.equal((await f.call(`/api/accounts/${adminId}/delete`,{confirmUsername:'owner'},owner.cookie)).status,403);
+ assert.equal((await handle(f.req(path,body,owner.cookie),f.env)).status,200);
+ assert.equal(f.sql.prepare('SELECT count(*) n FROM hs_sessions WHERE account_id=?').get(tester.id).n,0);
+ for(const cookie of [login.cookie,second.cookie])await assert.rejects(resolveAccount(f.req('/',undefined,cookie),f.env),{status:401});
+ assert.equal((await f.login(tester.username,tester.password)).response.status,401);
+ assert(!(await(await f.call('/api/accounts',undefined,owner.cookie)).json()).accounts.some(a=>a.id===tester.id));
+ assert.equal(f.sql.prepare('SELECT owner FROM patients WHERE id=?').get(patient).owner,identity.studioId);
+ assert.equal((await resolveAccount(f.req('/',undefined,owner.cookie),f.env)).isAdmin,true);
+ assert.equal((await f.call(path,body,owner.cookie)).status,404);
+ const recreated=await(await f.call('/api/accounts',{username:tester.username,name:'New tester'},owner.cookie)).json();
+ const renewed=await f.login(recreated.username,recreated.password);
+ const newIdentity=await resolveAccount(f.req('/',undefined,renewed.cookie),f.env);assert.notEqual(newIdentity.studioId,identity.studioId);
+ assert.equal((await handle(f.req('/api/patients/'+patient,undefined,renewed.cookie),f.env)).status,404);
+});

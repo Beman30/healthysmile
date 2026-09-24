@@ -132,11 +132,19 @@ export async function accountAPI(request,env,accessResolver=resolveStudio){
    ]);}catch(e){if(/UNIQUE/i.test(e.message))fail(409,'Username già utilizzato.');throw e;}
    return json({id,username:name,password:secret.password},201);
   }
-  const match=path.match(/^\/api\/accounts\/([a-f0-9-]{36})\/(active|reset)$/);
+  const match=path.match(/^\/api\/accounts\/([a-f0-9-]{36})\/(active|reset|delete)$/);
   if(match){
    const data=await input(request);await admin(request,env);
    const row=await env.DB.prepare('SELECT id,username,is_admin FROM hs_accounts WHERE id=?').bind(match[1]).first();
    if(!row)fail(404,'Account non trovato.');if(row.is_admin)fail(403,'Questa azione è disponibile solo per i tester.');
+   if(match[2]==='delete'){
+    if(data.confirmUsername!==row.username)fail(400,'Conferma l’account da eliminare.');
+    // Delete only login credentials and sessions. Patient archives are separate.
+    await env.DB.batch([
+     env.DB.prepare('DELETE FROM hs_sessions WHERE account_id=?').bind(row.id),
+     env.DB.prepare('DELETE FROM hs_accounts WHERE id=? AND is_admin=0').bind(row.id)
+    ]);return json({ok:true});
+   }
    if(match[2]==='active'){
     if(typeof data.active!=='boolean')fail(400,'Stato non valido.');
     await env.DB.batch([env.DB.prepare('UPDATE hs_accounts SET active=? WHERE id=?').bind(data.active?1:0,row.id),env.DB.prepare('DELETE FROM hs_sessions WHERE account_id=?').bind(row.id)]);return json({ok:true});
