@@ -15,8 +15,9 @@ test('initial cloud deployment denies studio access before Access configuration'
  assert.equal(c.assets.run_worker_first,true);
  assert.equal(c.r2_buckets[0].jurisdiction,'eu');
  const unexpected=()=>{throw Error('Storage must not be reached before authentication');};
- const env={ASSETS:{fetch:unexpected},DB:{prepare:unexpected},BUCKET:{get:unexpected}};
- for(const path of ['/','/app.js','/api/session','/api/patients']){
+ const env={ASSETS:{fetch:async()=>new Response('public shell')},DB:{prepare:unexpected},BUCKET:{get:unexpected}};
+ for(const path of ['/','/installa','/login','/manifest.webmanifest'])assert.equal((await handle(req(path),env)).status,200);
+ for(const path of ['/app.js','/api/session','/api/patients']){
   const response=await handle(req(path),env);
   assert.equal(response.status,503);
   assert.equal((await response.json()).error,'Accesso studio non ancora configurato.');
@@ -47,9 +48,9 @@ test('patient records and photos are scoped by studio; stale writes cannot overw
  assert.equal((await api(req('/api/patients/'+id+'/manifest','PUT',{version:0,manifest}),env,a)).status,409);
  assert.equal((await api(new Request(origin+'/api/patients/'+id,{method:'PUT',headers:{Origin:'https://other.example','X-HS-Write':'1'},body:'{}'}),env,a)).status,403);
 });
-test('all studio assets and APIs require auth; only exact viewer routes bypass it',async()=>{
+test('public install/login shell contains no patient access; app assets and patient APIs require auth',async()=>{
  const deny=async()=>{throw Object.assign(Error('Login required'),{status:401});},env={ASSETS:{fetch:async()=>new Response('viewer')},BUCKET:{get:async()=>null}};
- for(const path of ['/','/app.js','/viewer.html','/api/patients','/api/session','/s/nope'])assert.equal((await handle(req(path),env,deny)).status,401);
+ for(const path of ['/app.js','/viewer.html','/api/patients','/api/session','/s/nope'])assert.equal((await handle(req(path),env,deny)).status,401);
  assert.equal((await handle(req('/s/'+'a'.repeat(48)),env,deny)).status,200);
  assert.equal((await handle(req('/api/shares/'+'a'.repeat(48)),env,deny)).status,404);
  assert.equal((await handle(req('/api/shares/'+'a'.repeat(48),'DELETE'),env,deny)).status,401);

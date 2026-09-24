@@ -13,6 +13,7 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
  const server=http.createServer(async(req,res)=>{
   try{
    const url=new URL(req.url,'http://'+req.headers.host);
+   if(url.pathname==='/api/auth/me'){res.setHeader('Content-Type','application/json');res.end(JSON.stringify({username:'test',admin:false,studio:{id:'browser-test',name:'Test'}}));return;}
    if(url.pathname.startsWith('/api/')){
     const chunks=[];for await(const c of req)chunks.push(c);
     const r=await api(new Request(url,{method:req.method,headers:req.headers,...(chunks.length?{body:Buffer.concat(chunks)}:{})}),env,{studioId:'browser-test'});

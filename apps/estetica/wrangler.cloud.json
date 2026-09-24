@@ -12,15 +12,22 @@
     "binding": "ASSETS",
     "run_worker_first": true
   },
-  "d1_databases": [{
-    "binding": "DB",
-    "database_name": "healthy-smile-estetica",
-    "database_id": "1c5134f3-41e9-47a3-a77b-b02d93c8111b",
-    "migrations_dir": "migrations"
-  }],
-  "r2_buckets": [{
-    "binding": "BUCKET",
-    "bucket_name": "healthy-smile-estetica-foto",
-    "jurisdiction": "eu"
-  }]
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "healthy-smile-estetica",
+      "database_id": "1c5134f3-41e9-47a3-a77b-b02d93c8111b",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "BUCKET",
+      "bucket_name": "healthy-smile-estetica-foto",
+      "jurisdiction": "eu"
+    }
+  ],
+  "vars": {
+    "BOOTSTRAP_ADMIN_EMAIL": "nicolapalmia@gmail.com"
+  }
 }
