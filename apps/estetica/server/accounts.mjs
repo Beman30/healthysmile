@@ -61,10 +61,36 @@ async function issueSession(env,id){
 }
 async function credentials(){const password='HS-'+btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(24)))).replaceAll('+','-').replaceAll('/','_');return {password,hash:await digest(password)};}
 function summary(identity){return {username:identity.username||identity.userEmail,admin:!!identity.isAdmin,studio:{id:identity.studioId,name:identity.studioName}};}
+async function recoveryOwner(request,env,accessResolver){
+ let identity;
+ try{identity=await session(request,env);}catch(e){if(e.status!==401)throw e;}
+ let studio;
+ if(identity?.isAdmin)studio=identity.studioId;
+ else{
+  const owner=await accessResolver(request,env);
+  if(!env.BOOTSTRAP_ADMIN_EMAIL||owner.userEmail!==env.BOOTSTRAP_ADMIN_EMAIL.toLowerCase()||owner.role!=='owner')fail(403,'Recupero riservato al titolare verificato.');
+  studio=owner.studioId;
+ }
+ await ensureAccounts(env);
+ const row=await env.DB.prepare('SELECT a.id,a.username FROM hs_accounts a JOIN studios s ON s.id=a.studio_id WHERE a.is_admin=1 AND a.active=1 AND s.active=1 AND a.studio_id=?').bind(studio).first();
+ if(!row)fail(403,'Nessun account amministratore recuperabile con questo accesso.');
+ return row;
+}
 
 export async function accountAPI(request,env,accessResolver=resolveStudio){
  try{
   const path=new URL(request.url).pathname;
+  if(path==='/api/auth/recovery'){
+   if(request.method!=='GET')await input(request);
+   const owner=await recoveryOwner(request,env,accessResolver);
+   if(request.method==='GET')return json({available:true,username:owner.username});
+   const secret=await credentials();
+   await env.DB.batch([
+    env.DB.prepare('UPDATE hs_accounts SET password_hash=? WHERE id=?').bind(secret.hash,owner.id),
+    env.DB.prepare('DELETE FROM hs_sessions WHERE account_id=?').bind(owner.id)
+   ]);
+   return json({username:owner.username,password:secret.password},200,{'Set-Cookie':await issueSession(env,owner.id)});
+  }
   if(path==='/api/auth/me'&&request.method==='GET'){
    const identity=await resolveAccount(request,env);return json({...summary(identity),setupAllowed:!identity.accountId&&identity.role==='owner'&&!!env.BOOTSTRAP_ADMIN_EMAIL&&identity.userEmail===env.BOOTSTRAP_ADMIN_EMAIL.toLowerCase()});
   }

@@ -15,7 +15,7 @@
   try{await request('/api/auth/login',{username:get('username').value,password:get('password').value});get('password').value='';location.replace(next);}catch(e){status(e.message);}finally{get('loginSubmit').disabled=false;}
  });
  if(page!=='account')return;
- let me;
+ let me,recoveryAvailable=false;
  function showCredentials(data){
   get('credentialsText').value=`Username: ${data.username}\nPassword: ${data.password}\nInstalla: ${location.origin}/installa`;
   get('credentialsSection').hidden=false;get('credentialsText').style.height='auto';get('credentialsText').style.height=(get('credentialsText').scrollHeight+4)+'px';get('credentialsSection').scrollIntoView({block:'start'});
@@ -36,9 +36,18 @@
   }));
  }
  async function load(){
+  recoveryAvailable=false;
+  try{const recovery=await request('/api/auth/recovery');recoveryAvailable=recovery.available;get('recoveryUsername').textContent=recovery.username;}catch{}
+  get('recoverySection').hidden=!recoveryAvailable;
   try{me=await request('/api/auth/me');get('accountLabel').textContent=`${me.username} · ${me.studio.name}`;get('bootstrapSection').hidden=!me.setupAllowed;get('adminSection').hidden=!me.admin;get('logout').hidden=!!me.setupAllowed;status('');if(me.admin)await list();}
-  catch(e){if(e.status===401||e.status===403){location.replace('/login?next=account');return;}status(e.message);}
+  catch(e){if(e.status===401||e.status===403){if(recoveryAvailable){status('Puoi recuperare il tuo account con l’accesso verificato.');return;}location.replace('/login?next=account');return;}status(e.message);}
  }
+ get('recoverPassword').addEventListener('click',async()=>{
+  if(!get('credentialsSection').hidden){status('Conserva prima le credenziali già visualizzate.');get('credentialsSection').scrollIntoView();return;}
+  if(!confirm('Generare una nuova password per il tuo account? La precedente smetterà di funzionare e gli altri dispositivi dovranno accedere nuovamente.'))return;
+  const button=get('recoverPassword');button.disabled=true;status('Generazione della nuova password…');
+  try{const data=await request('/api/auth/recovery',{});showCredentials(data);await load();status('Nuova password generata. Copiala e conservala prima di chiudere la pagina.');}catch(e){status(e.message);}finally{button.disabled=false;}
+ });
  async function submit(form,path,data){const button=form.querySelector('button');button.disabled=true;status('Creazione…');try{const result=await request(path,data);await load();showCredentials(result);if(form.id==='createAccountForm')form.reset();status('Account creato. Conserva la password.');}catch(e){status(e.message);}finally{button.disabled=false;}}
  get('bootstrapForm').addEventListener('submit',e=>{e.preventDefault();submit(e.currentTarget,'/api/auth/bootstrap',{username:get('ownerUsername').value});});
  get('createAccountForm').addEventListener('submit',e=>{e.preventDefault();if(!get('credentialsSection').hidden){status('Conserva prima le credenziali appena create.');get('credentialsSection').scrollIntoView();return;}submit(e.currentTarget,'/api/accounts',{username:get('testerUsername').value,name:get('testerName').value});});

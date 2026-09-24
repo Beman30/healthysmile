@@ -25,3 +25,9 @@ New `hs_accounts`, `hs_sessions`, and `hs_login_limits` tables are created idemp
 ## Checks
 
 `npm test` covers bootstrap, rate limiting, CSRF, sessions, account revocation and patient isolation. `tests/accounts-browser.cjs` tests the real browser login/administration flow with synthetic data; `tests/mobile-browser.cjs` verifies the installed photo workflow and the browser installation gate.
+
+## Lost administrator password
+
+Open `/account` in the browser that still has the administrator session, or through the original verified Cloudflare Access owner login. **Genera una nuova password per me** rotates only that administrator's password, revokes its previous application sessions, and establishes a new session. Copy the returned credentials before closing the page. The account ID, username, studio and patients remain unchanged; tester accounts and sessions are untouched.
+
+`/api/auth/recovery` accepts an active administrator session or a cryptographically verified Access identity matching `BOOTSTRAP_ADMIN_EMAIL`, an active owner membership and the administrator's studio. A configured email or client-supplied header alone is never sufficient. GET only checks availability; POST requires the same CSRF checks as other writes. If neither verified access nor an active administrator session remains, this recovery route deliberately cannot reset the password.

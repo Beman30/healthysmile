@@ -63,3 +63,33 @@ test('CSRF protection, account enumeration response and persistent rate limit',a
  assert.equal((await f.login('owner',owner.secret.password)).response.status,429);
  const id=f.sql.prepare('SELECT id FROM hs_accounts WHERE is_admin=1').get().id;assert.equal((await f.call(`/api/accounts/${id}/active`,{active:false},owner.cookie)).status,403);
 });
+
+test('owner password recovery requires an active admin session or verified matching Access owner',async()=>{
+ const f=fixture(),owner=await f.bootstrap();
+ const path='/api/auth/recovery';
+ const missing=async()=>{throw Object.assign(Error('No verified identity'),{status:401});};
+ const recover=(data,cookie,resolver=missing,extra)=>accountAPI(f.req(path,data,cookie,extra),f.env,resolver);
+ assert.equal((await recover({})).status,401);
+ assert.equal((await recover({},'',async()=>({userEmail:'intruder@example.com',role:'owner',studioId:'owner-studio'}))).status,403);
+ assert.equal((await recover({},'',async()=>({userEmail:'owner@example.com',role:'viewer',studioId:'owner-studio'}))).status,403);
+ assert.equal((await recover({},'',async()=>({userEmail:'owner@example.com',role:'owner',studioId:'other-studio'}))).status,403);
+ const tester=await(await f.call('/api/accounts',{username:'tester',name:'Tester'},owner.cookie)).json();
+ const beta=await f.login(tester.username,tester.password);
+ assert.equal((await recover({},beta.cookie)).status,401);
+ assert.equal((await recover({},owner.cookie,missing,{Origin:'https://evil.example'})).status,403);
+ const before=f.sql.prepare('SELECT id,studio_id,username FROM hs_accounts ORDER BY id').all();
+ const available=await recover(undefined,owner.cookie);assert.equal(available.status,200);assert.deepEqual(await available.json(),{available:true,username:'owner'});
+ const reset=await recover({},owner.cookie);assert.equal(reset.status,200);const secret=await reset.json();assert.notEqual(secret.password,owner.secret.password);
+ assert.deepEqual(f.sql.prepare('SELECT id,studio_id,username FROM hs_accounts ORDER BY id').all(),before);
+ await assert.rejects(resolveAccount(f.req('/',undefined,owner.cookie),f.env),{status:401});
+ assert.equal((await f.login('owner',owner.secret.password)).response.status,401);
+ assert.equal((await f.login('owner',secret.password)).response.status,200);
+ assert.equal((await resolveAccount(f.req('/',undefined,beta.cookie),f.env)).username,'tester');
+ // Even an expired application cookie must not prevent the verified owner recovering.
+ const access=async()=>({userEmail:'owner@example.com',role:'owner',studioId:'owner-studio'});
+ assert.equal((await recover(undefined,owner.cookie,access)).status,200);
+ const second=await recover({},owner.cookie,access);assert.equal(second.status,200);
+ const renewed=second.headers.get('Set-Cookie').split(';')[0];assert.equal((await resolveAccount(f.req('/',undefined,renewed),f.env)).isAdmin,true);
+ assert.equal((await f.login('owner',secret.password)).response.status,401);
+ assert(!JSON.stringify(f.sql.prepare('SELECT * FROM hs_accounts').all()).includes((await second.json()).password));
+});

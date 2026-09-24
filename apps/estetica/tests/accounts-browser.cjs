@@ -34,7 +34,14 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
   await q.locator('#patientAccount').click();await q.waitForURL('**/account');await q.locator('#accountLabel').filter({hasText:'beta'}).waitFor();assert.equal(await q.locator('#adminSection').isVisible(),false);
   await p.locator('#dismissCredentials').click();await p.locator('.account-row').filter({hasText:'beta'}).getByText('Sospendi accesso').click();await p.locator('.account-row').filter({hasText:'beta'}).getByText('Riattiva accesso').waitFor();
   await q.reload();await q.waitForURL('**/login?next=account');
+  await p.locator('#recoverySection').waitFor({state:'visible'});
+  const before=sql.prepare('SELECT id,studio_id FROM hs_accounts WHERE is_admin=1').get();
+  p.once('dialog',dialog=>dialog.accept());await p.locator('#recoverPassword').click();await p.locator('#credentialsSection').waitFor({state:'visible'});
+  const recovered=(await p.locator('#credentialsText').inputValue()).match(/Password: (\S+)/)[1];assert.notEqual(recovered,owner.password);
+  assert.deepEqual(sql.prepare('SELECT id,studio_id FROM hs_accounts WHERE is_admin=1').get(),before);
+  await p.locator('#authStatus').filter({hasText:'Nuova password generata'}).waitFor();
   await p.locator('#logout').click();await p.waitForURL('**/login');await p.goto(base+'/account');await p.waitForURL('**/login?next=account');
+  await login(p,'owner',recovered);await p.waitForURL('**/account');await p.locator('#adminSection').waitFor({state:'visible'});
   const anon=await context(false),r=await anon.newPage();await r.goto(base);await r.waitForURL('**/installa');assert.equal(await r.locator('#password').count(),0);
   assert.deepEqual(errors,[]);console.log('PASS: browser login, generated tester credentials, separated empty archive, admin UI, suspension, logout and public install page.');
  }finally{await browser.close();await new Promise(resolve=>server.close(resolve));sql.close();}
