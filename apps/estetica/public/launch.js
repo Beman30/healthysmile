@@ -4,7 +4,7 @@
 (async()=>{
  const installed=matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
  if(!installed){location.replace('/installa');return;}
- const scripts=["app.js?v=15", "workflow.js?v=16", "cloud.js?v=2", "presentation.js?v=15", "device.js?v=1", "alignment.js?v=15", "brightness.js?v=15", "position.js?v=15", "sharing.js?v=15", "responsive.js?v=1", "install.js?v=3", "auth-ui.js?v=1"];
+ const scripts=["app.js?v=15", "workflow.js?v=16", "cloud.js?v=2", "presentation.js?v=15", "device.js?v=1", "alignment.js?v=15", "brightness.js?v=15", "position.js?v=15", "sharing.js?v=15", "responsive.js?v=1", "install.js?v=4", "auth-ui.js?v=1"];
  try{
   const auth=await fetch('/api/auth/me',{credentials:'same-origin',cache:'no-store'});
   if(auth.status===401||auth.status===403){location.replace('/login');return;}

@@ -59,15 +59,24 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
   await noOverflow('#installDialog');await inViewport('#closeInstall');
   await shot('install-help');await page.locator('#closeInstall').click();
   assert(await page.locator('#menuToggle').evaluate(e=>e===document.activeElement));
-  for(const profile of ['android','ios','standalone']){
+  for(const profile of ['android','ios','ipad','standalone']){
    const phone=await browser.newContext({viewport:{width:320,height:568},isMobile:true,hasTouch:true,userAgent:profile==='android'?'Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 Chrome/140.0 Mobile Safari/537.36':'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Version/18.0 Mobile/15E148 Safari/604.1'});
    if(profile==='standalone')await phone.addInitScript(()=>Object.defineProperty(navigator,'standalone',{value:true}));
+   if(profile==='ipad')await phone.addInitScript(()=>{Object.defineProperty(navigator,'userAgent',{value:'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15) AppleWebKit/605.1.15 Version/18.0 Safari/605.1.15'});Object.defineProperty(navigator,'platform',{value:'MacIntel'});Object.defineProperty(navigator,'maxTouchPoints',{value:5});});
    const p=await phone.newPage(),requests=[];p.on('request',r=>requests.push(new URL(r.url()).pathname));
    await p.goto(base+(profile==='standalone'?'/installa':'/'));
    if(profile==='standalone'){
     await p.locator('#patientDialog').waitFor({state:'visible'});assert.equal(new URL(p.url()).pathname,'/');
    }else{
-    await p.waitForURL('**/installa');await p.locator('#install-'+profile).waitFor({state:'visible'});
+    const guide=profile==='ipad'?'ios':profile;
+    await p.waitForURL('**/installa');await p.locator('#install-'+guide).waitFor({state:'visible'});
+    await p.locator('#installNow').waitFor({state:'visible'});await p.locator('#installNow').click();
+    assert(await p.locator('#install-'+guide).evaluate(e=>e===document.activeElement));
+    if(guide==='ios'){
+     assert.match(await p.locator('#installStatus').textContent(),/Condividi/);
+     assert.match(await p.locator('#installHelp').textContent(),/conferma finale/);
+     if(process.env.UI_SCREENSHOTS)await p.screenshot({path:path.join(process.env.UI_SCREENSHOTS,'installation-'+profile+'.png'),fullPage:true});
+    }
     assert(await p.locator('html').evaluate(e=>e.scrollWidth<=e.clientWidth+2));
     assert(!requests.some(p=>p.startsWith('/api/')||p==='/cloud.js'||p==='/app.js'),'browser gate must not load patient data or app code');
     assert.equal(await p.locator('#patientPicker').count(),0);
