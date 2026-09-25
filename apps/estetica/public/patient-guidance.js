@@ -78,6 +78,7 @@
    const live=await ask(await bitmap(video,video.videoWidth,video.videoHeight),10000);
    if(!active()||currentKey!==key()||run!==lifecycle)return;
    const instruction=core.patientInstruction(live,target),now=performance.now(),steady=core.steadyFace(live,lastFace);lastFace=live;
+   window.dispatchEvent(new CustomEvent('hs-face-guide',{detail:{target,referenceURL:ref.url,patientId:cloud.patient?.id}}));
    if(candidate!==instruction.key){candidate=instruction.key;candidateAt=now;panel.classList.remove('patient-guide-close');if(instruction.okay)show('Resta fermo un momento…','Controllo che la posizione sia stabile.');}
    if(instruction.okay&&!steady){candidateAt=now;panel.classList.remove('patient-guide-close');show('Resta fermo un momento…','Controllo che la posizione sia stabile.');}
    if(now-candidateAt>=(instruction.okay?1200:350))show(instruction.text,instruction.detail,instruction.okay);
