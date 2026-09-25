@@ -1,8 +1,21 @@
 'use strict';
 // Similarity transform only: no warping, skin retouching or colour adjustment.
-function validAlignment(a){return a?.version===1&&Number.isFinite(a.angle)&&Math.abs(a.angle)<=Math.PI&&Array.isArray(a.points)&&a.points.length===2&&a.points.every(p=>Array.isArray(p)&&p.length===2&&p.every(n=>Number.isFinite(n)&&n>=0&&n<=1));}
+function validAlignment(a){
+ const points=Array.isArray(a?.points)&&a.points.length>=2&&a.points.length<=32&&a.points.every(p=>Array.isArray(p)&&p.length===2&&p.every(n=>Number.isFinite(n)&&n>=0&&n<=1));
+ if(!points)return false;
+ if(a.version===1)return a.points.length===2&&Number.isFinite(a.angle)&&Math.abs(a.angle)<=Math.PI;
+ return a.version===2&&Array.isArray(a.targets)&&a.targets.length===a.points.length&&a.targets.every(p=>Array.isArray(p)&&p.length===2&&p.every(n=>Number.isFinite(n)&&Math.abs(n)<=100));
+}
+function fitAlignmentPoints(source,target){
+ const n=source.length,mean=ps=>ps.reduce((m,p)=>[m[0]+p[0]/n,m[1]+p[1]/n],[0,0]),s=mean(source),t=mean(target);
+ let den=0,dot=0,cross=0;for(let i=0;i<n;i++){const x=source[i][0]-s[0],y=source[i][1]-s[1],u=target[i][0]-t[0],v=target[i][1]-t[1];den+=x*x+y*y;dot+=x*u+y*v;cross+=x*v-y*u;}
+ if(den<1)throw Error('I reperi sono troppo vicini. Scegli riferimenti più distanti.');
+ const a=dot/den,b=cross/den;if(!Number.isFinite(a)||!Number.isFinite(b)||Math.hypot(a,b)<.00001)throw Error('Controlla che i numeri corrispondano nelle due foto.');
+ return [a,b,-b,a,t[0]-a*s[0]+b*s[1],t[1]-b*s[0]-a*s[1]];
+}
 function alignmentMatrix(a,width,height){
  if(!validAlignment(a)||width<=0||height<=0)throw Error('Punti non validi.');
+ if(a.version===2)return fitAlignmentPoints(a.points.map(p=>[p[0]*width,p[1]*height]),a.targets.map(p=>[p[0]*900,p[1]*1200]));
  const points=a.points.map(p=>[p[0]*width,p[1]*height]).sort((p,q)=>p[0]-q[0]);
  const dx=points[1][0]-points[0][0],dy=points[1][1]-points[0][1],distance=Math.hypot(dx,dy);
  if(distance<Math.min(width,height)*.04)throw Error('I punti sono troppo vicini. Scegli due riferimenti più distanti.');
@@ -35,30 +48,31 @@ const renderBeforeAlignment=renderComparison;renderComparison=function(){
 function drawAlignmentEditor(index){
  const editor=alignmentEditor;if(!editor)return;const canvas=$(index?'alignAfterCanvas':'alignBeforeCanvas'),img=editor.images[index],ctx=canvas.getContext('2d');ctx.fillStyle='#15171c';ctx.fillRect(0,0,600,800);drawContain(ctx,img,0,0,600,800,1);
  const scale=Math.min(600/img.naturalWidth,800/img.naturalHeight),w=img.naturalWidth*scale,h=img.naturalHeight*scale,x=(600-w)/2,y=(800-h)/2;
- editor.frames[index]={x,y,w,h};for(const [i,p]of editor.points[index].entries()){const px=x+p[0]*w,py=y+p[1]*h;ctx.beginPath();ctx.arc(px,py,11,0,Math.PI*2);ctx.strokeStyle='#ff408e';ctx.lineWidth=3;ctx.stroke();ctx.fillStyle='#fff';ctx.font='bold 24px sans-serif';ctx.fillText(String(i+1),px+14,py-12);}
- $(index?'alignAfterCount':'alignBeforeCount').textContent=`${editor.points[index].length} / 2 punti`;$('applyAlignment').disabled=editor.points.some(p=>p.length!==2);drawAlignmentPreview();
+ editor.frames[index]={x,y,w,h};for(const [i,p]of editor.points[index].entries()){if(!p)continue;const px=x+p[0]*w,py=y+p[1]*h;ctx.beginPath();ctx.arc(px,py,11,0,Math.PI*2);ctx.strokeStyle='#ff408e';ctx.lineWidth=3;ctx.stroke();ctx.fillStyle='#fff';ctx.font='bold 24px sans-serif';ctx.fillText(String(i+1),px+14,py-12);}
+ $(index?'alignAfterCount':'alignBeforeCount').textContent=`${editor.points[index].filter(Boolean).length} / ${editor.points[index].length} reperi`;$('applyAlignment').disabled=!alignmentComplete(editor);renderAlignmentPointControls();drawAlignmentPreview();
 }
 $('alignFaces').addEventListener('click',async()=>{
  const pair=pairOriginal();if(compareA===compareB||pair.some(p=>!p.photo))return;
  $('alignFaces').disabled=true;
- try{const images=await Promise.all(pair.map(p=>loadedImage(p.photo.url)));alignmentEditor={pair,images,points:pair.map(p=>validAlignment(p.photo.alignment)?p.photo.alignment.points.map(q=>[...q]):[]),frames:[],profile:comparePose.startsWith('profile')};
- $('alignmentHelp').textContent=alignmentEditor.profile?'In entrambe le foto tocca gli stessi due riferimenti: per esempio angolo esterno dell’occhio e attacco superiore dell’orecchio. La posa deve già essere simile.':'Tocca ciascuna pupilla nelle due foto. Nel dettaglio ingrandito centra il riferimento e conferma: quattro punti in tutto.';
+ try{const images=await Promise.all(pair.map(p=>loadedImage(p.photo.url)));alignmentEditor={pair,images,points:pair.map(p=>validAlignment(p.photo.alignment)?p.photo.alignment.points.map(q=>[...q]):[]),frames:[],active:0,profile:comparePose.startsWith('profile')};
+ const count=Math.max(2,...alignmentEditor.points.map(p=>p.length));alignmentEditor.points=alignmentEditor.points.map(p=>Array.from({length:count},(_,i)=>p[i]||null));
+ $('alignmentHelp').textContent='Posiziona lo stesso reperto numerato nel prima e nel dopo. Puoi aggiungerne altri: tutti contribuiranno all’allineamento. Tocca la foto per aprire il dettaglio ingrandito.';
  $('alignmentError').textContent='';$('alignmentPreviewOpacity').value=50;drawAlignmentEditor(0);drawAlignmentEditor(1);$('alignmentDialog').showModal();
  }catch{notify('Non riesco ad aprire le immagini. Riprova.');}finally{$('alignFaces').disabled=false;}
 });
 for(const [i,id]of ['alignBeforeCanvas','alignAfterCanvas'].entries())$(id).addEventListener('click',e=>{
  if(!alignmentEditor)return;const rect=$(id).getBoundingClientRect(),frame=alignmentEditor.frames[i],x=((e.clientX-rect.left)*600/rect.width-frame.x)/frame.w,y=((e.clientY-rect.top)*800/rect.height-frame.y)/frame.h;if(x<0||x>1||y<0||y>1)return;
- const points=alignmentEditor.points[i],pointIndex=points.length<2?points.length:points.reduce((best,p,k)=>Math.hypot((p[0]-x)*frame.w,(p[1]-y)*frame.h)<Math.hypot((points[best][0]-x)*frame.w,(points[best][1]-y)*frame.h)?k:best,0);
+ const pointIndex=alignmentEditor.active;
  alignmentPick={index:i,pointIndex,point:[x,y]};
- $('alignmentPointTitle').textContent=`${i?'Dopo':'Prima'} · ${alignmentEditor.profile?'riferimento':'pupilla'} ${pointIndex+1}`;
- $('alignmentPointHelp').textContent=alignmentEditor.profile?'Tocca il riferimento nel dettaglio e conferma. Scegli lo stesso punto nell’altra foto.':'Tocca il centro della pupilla nel dettaglio. Usa le frecce per piccoli spostamenti.';
+ $('alignmentPointTitle').textContent=`${i?'Dopo':'Prima'} · reperto ${pointIndex+1}`;
+ $('alignmentPointHelp').textContent='Centra il reperto nel dettaglio e conferma. Usa lo stesso numero per lo stesso riferimento nell’altra foto.';
  drawAlignmentPoint();$('alignmentPointDialog').showModal();
 });
-for(const [i,id]of ['redoBeforePoints','redoAfterPoints'].entries())$(id).addEventListener('click',()=>{if(alignmentEditor){alignmentEditor.points[i]=[];drawAlignmentEditor(i);}});
+for(const [i,id]of ['redoBeforePoints','redoAfterPoints'].entries())$(id).addEventListener('click',()=>{if(alignmentEditor){alignmentEditor.points[i]=alignmentEditor.points[i].map(()=>null);alignmentEditor.active=0;drawAlignmentEditor(i);}});
 $('cancelAlignment').addEventListener('click',()=>{$('alignmentDialog').close();alignmentEditor=null;});
 $('alignmentDialog').addEventListener('cancel',e=>{if($('cancelAlignment').disabled)e.preventDefault();else alignmentEditor=null;});
 $('applyAlignment').addEventListener('click',async()=>{
- const e=alignmentEditor;if(!e||e.points.some(p=>p.length!==2))return;$('applyAlignment').disabled=true;$('cancelAlignment').disabled=true;let prepared=[];
+ const e=alignmentEditor;if(!alignmentComplete(e))return;$('applyAlignment').disabled=true;$('cancelAlignment').disabled=true;let prepared=[];
  try{const annotations=alignmentAnnotations(e);
  for(let i=0;i<2;i++)prepared.push(await makeAlignmentView(e.pair[i].photo,annotations[i]));
  e.pair.forEach((snap,i)=>{clearAlignmentCache(snap.photo);snap.photo.alignment=annotations[i];alignmentCache.set(snap.photo,prepared[i]);});prepared=[];revision++;alignmentFailure=false;$('compareZoom').value=1;$('alignmentDialog').close();alignmentEditor=null;renderComparison();if(typeof saveLocalSession==='function')saveLocalSession();
@@ -72,10 +86,22 @@ function alignmentDetailPoint(point,localX,localY,width,height){
  const span=Math.min(width,height)*.18;
  return [Math.max(0,Math.min(1,point[0]+(localX-.5)*span/width)),Math.max(0,Math.min(1,point[1]+(localY-.5)*span/height))];
 }
+function alignmentComplete(editor){return !!editor&&editor.points[0].length>=2&&editor.points[0].length===editor.points[1].length&&editor.points.every(ps=>ps.every(Boolean));}
+function renderAlignmentPointControls(){
+ const e=alignmentEditor;if(!e)return;const select=$('alignmentPointSelect');select.replaceChildren();
+ e.points[0].forEach((p,i)=>select.add(new Option(`Reperto ${i+1} · Prima ${p?'✓':'—'} · Dopo ${e.points[1][i]?'✓':'—'}`,String(i))));select.value=String(e.active);$('removeAlignmentPoint').disabled=e.points[0].length<=2;$('addAlignmentPoint').disabled=e.points[0].length>=32;
+}
+$('alignmentPointSelect').addEventListener('change',e=>{if(alignmentEditor)alignmentEditor.active=Number(e.target.value);});
+$('addAlignmentPoint').addEventListener('click',()=>{const e=alignmentEditor;if(!e||e.points[0].length>=32)return;e.active=e.points[0].length;e.points.forEach(p=>p.push(null));drawAlignmentEditor(0);drawAlignmentEditor(1);});
+$('removeAlignmentPoint').addEventListener('click',()=>{const e=alignmentEditor;if(!e||e.points[0].length<=2)return;e.points.forEach(p=>p.splice(e.active,1));e.active=Math.min(e.active,e.points[0].length-1);drawAlignmentEditor(0);drawAlignmentEditor(1);});
 function alignmentAnnotations(editor){
- const points=editor.points.map(p=>[...p].sort((a,b)=>a[0]-b[0]));let angle=0;
- if(editor.profile){const im=editor.images[0];angle=Math.atan2((points[0][1][1]-points[0][0][1])*im.naturalHeight,(points[0][1][0]-points[0][0][0])*im.naturalWidth);}
- return points.map(p=>({version:1,points:p,angle}));
+ if(!alignmentComplete(editor))throw Error('Completa gli stessi reperi su entrambe le foto.');
+ const points=editor.points.map(ps=>ps.map(p=>[...p]));const first=points[0].slice(0,2).sort((a,b)=>a[0]-b[0]);const im=editor.images[0];let angle=0;
+ if(editor.profile)angle=Math.atan2((first[1][1]-first[0][1])*im.naturalHeight,(first[1][0]-first[0][0])*im.naturalWidth);
+ if(points[0].length===2)return points.map(p=>({version:1,points:[...p].sort((a,b)=>a[0]-b[0]),angle}));
+ const base=alignmentMatrix({version:1,points:first,angle},im.naturalWidth,im.naturalHeight);
+ const targets=points[0].map(p=>{const x=p[0]*im.naturalWidth,y=p[1]*im.naturalHeight;return [(base[0]*x+base[2]*y+base[4])/900,(base[1]*x+base[3]*y+base[5])/1200]});
+ return points.map(p=>({version:2,points:p,targets}));
 }
 function drawAlignmentPoint(){
  if(!alignmentPick||!alignmentEditor)return;
@@ -94,15 +120,15 @@ for(const [id,dx,dy]of [['alignPointLeft',-1,0],['alignPointRight',1,0],['alignP
  alignmentPick.point=[Math.max(0,Math.min(1,alignmentPick.point[0]+dx*step/img.naturalWidth)),Math.max(0,Math.min(1,alignmentPick.point[1]+dy*step/img.naturalHeight))];drawAlignmentPoint();
 });
 $('confirmAlignmentPoint').addEventListener('click',()=>{
- if(!alignmentPick||!alignmentEditor)return;const {index,pointIndex,point}=alignmentPick;alignmentEditor.points[index][pointIndex]=point;alignmentPick=null;$('alignmentPointDialog').close();drawAlignmentEditor(index);
- if(alignmentEditor.points.every(p=>p.length===2))$('alignmentPreview').scrollIntoView({block:'nearest'});
+ if(!alignmentPick||!alignmentEditor)return;const {index,pointIndex,point}=alignmentPick;alignmentEditor.points[index][pointIndex]=point;alignmentPick=null;$('alignmentPointDialog').close();const missing=alignmentEditor.points[index].findIndex(p=>!p);alignmentEditor.active=missing>=0?missing:Math.max(0,alignmentEditor.points[1-index].findIndex(p=>!p));drawAlignmentEditor(index);
+ if(alignmentComplete(alignmentEditor))$('alignmentPreview').scrollIntoView({block:'nearest'});
 });
 $('cancelAlignmentPoint').addEventListener('click',()=>{alignmentPick=null;$('alignmentPointDialog').close();});
 $('alignmentPointDialog').addEventListener('cancel',()=>{alignmentPick=null;});
 function paintAlignmentPreviewOpacity(){const p=Number($('alignmentPreviewOpacity').value);$('alignmentPreviewAfter').style.opacity=String(p/100);$('alignmentPreviewValue').textContent=p===0?'Solo prima':p===100?'Solo dopo':`${p}% dopo`;}
 $('alignmentPreviewOpacity').addEventListener('input',paintAlignmentPreviewOpacity);
 function drawAlignmentPreview(){
- const e=alignmentEditor,complete=e&&e.points.every(p=>p.length===2);$('alignmentPreview').hidden=!complete;if(!complete)return;
+ const e=alignmentEditor,complete=alignmentComplete(e);$('alignmentPreview').hidden=!complete;if(!complete)return;
  try{const annotations=alignmentAnnotations(e);for(let i=0;i<2;i++){const canvas=$(i?'alignmentPreviewAfter':'alignmentPreviewBefore'),ctx=canvas.getContext('2d'),im=e.images[i],m=alignmentMatrix(annotations[i],im.naturalWidth,im.naturalHeight);ctx.setTransform(1,0,0,1,0,0);ctx.fillStyle='#eef0f3';ctx.fillRect(0,0,900,1200);ctx.setTransform(...m);ctx.drawImage(im,0,0);ctx.setTransform(1,0,0,1,0,0);}paintAlignmentPreviewOpacity();$('alignmentError').textContent='';
  }catch(err){$('alignmentPreview').hidden=true;$('alignmentError').textContent=err.message;$('applyAlignment').disabled=true;}
 }

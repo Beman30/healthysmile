@@ -1,5 +1,5 @@
 'use strict';
-// All photographs stay in this page's memory. No analytics, upload or external dependency.
+// Camera capture keeps originals unchanged. Cloud persistence is handled by cloud.js.
 const $ = id => document.getElementById(id);
 const POSES = [
  {id:'front-neutral',title:'Frontale a riposo',note:'Viso rilassato',kind:'front',instruction:'Spalle rilassate, sguardo dritto, labbra a riposo senza stringerle.'},
@@ -20,7 +20,7 @@ const SHOULDERS = {
  oblique:'M117 280 L113 326 Q73 344 3 362 Q-27 380 -35 440 M191 280 L191 315 Q232 333 263 361 Q283 391 286 440',
  profile:'M184 276 Q170 292 177 323 Q232 340 285 363 Q313 380 315 440 M113 244 L111 319 Q68 343 35 365 Q12 385 10 440'
 };
-let current = 0, stream = null, pending = null, cameraBusy = false, captureBusy = false;
+let current = 0, stream = null, pending = null, cameraBusy = false, cameraChoiceExplicit = false, captureBusy = false;
 let cameraGeneration = 0, countdownGeneration = 0, revision = 0, exportRevision = -1;
 let photos = new Map(); const references = new Map();
 let lastLevel = null, sensorActive = false, sensorTimer, toastTimer;
@@ -33,6 +33,7 @@ function stationValues() {return {name:$('station').value.trim(),lights:$('light
 function cancelCountdown() {countdownGeneration++; captureBusy=false; document.querySelector('.countdown')?.remove();}
 function discardPending() {revoke(pending); pending=null; $('reviewImage').removeAttribute('src');}
 function render() {
+ $('cameraFacing').disabled=cameraBusy||captureBusy||!!pending;
  const p=POSES[current], count=photos.size; $('patientCode').readOnly=!!count||!!pending||captureBusy; $('visitDate').readOnly=!!count||!!pending||captureBusy;
  $('poseTitle').textContent=p.title; $('instruction').textContent=p.instruction;
  $('stepCount').textContent=`SCATTO ${current+1} DI ${POSES.length}`;
@@ -70,13 +71,13 @@ function stopCamera(message='Fotocamera non attiva') {
 async function startCamera() {
  if(cameraBusy)return;
  if(!navigator.mediaDevices?.getUserMedia){notify('Apri il sito HTTPS direttamente in Safari su iPhone o Chrome su Android e consenti la fotocamera.');return;}
- stopCamera();cameraBusy=true;const gen=cameraGeneration;$('startCamera').disabled=true;$('startCamera').textContent='Attendo il permesso…';$('cameraStatus').textContent='Connessione alla fotocamera…';
+ stopCamera();cameraBusy=true;const gen=cameraGeneration;$('startCamera').disabled=true;$('startCamera').textContent='Attendo il permesso…';$('cameraFacing').disabled=true;$('cameraStatus').textContent='Connessione alla fotocamera…';
  try {
   let selected=$('cameraSelect').value;
   const cameraRef=typeof captureReference==='function'?captureReference():null;
-  if(!selected&&cameraRef?.camera?.deviceId){try{const available=await navigator.mediaDevices.enumerateDevices();if(available.some(d=>d.deviceId===cameraRef.camera.deviceId))selected=cameraRef.camera.deviceId;}catch{}}
+  if(!selected&&!cameraChoiceExplicit&&cameraRef?.camera?.deviceId){try{const available=await navigator.mediaDevices.enumerateDevices();if(available.some(d=>d.deviceId===cameraRef.camera.deviceId))selected=cameraRef.camera.deviceId;}catch{}}
 
-  const source=selected?{deviceId:{exact:selected}}:{facingMode:{ideal:'environment'}};
+  const source=selected?{deviceId:{exact:selected}}:{facingMode:{ideal:$('cameraFacing').value||'environment'}};
   let media;
   try {media=await navigator.mediaDevices.getUserMedia({audio:false,video:{...source,width:{ideal:1920},height:{ideal:2560},aspectRatio:{ideal:.75}}});}
   catch(e){if(e.name!=='OverconstrainedError')throw e;media=await navigator.mediaDevices.getUserMedia({audio:false,video:source});}
@@ -88,7 +89,7 @@ async function startCamera() {
   const settings=track.getSettings();
   $('cameraBadge').textContent=settings.facingMode==='user'?'CAMERA ANTERIORE · NON SPECCHIATA':settings.facingMode==='environment'?'CAMERA POSTERIORE':'CAMERA · VERIFICA OBIETTIVO';
   $('cameraStatus').textContent=`${settings.width||$('video').videoWidth} × ${settings.height||$('video').videoHeight} · ritaglio 3:4`;
-  if(settings.facingMode==='user')notify('È attiva la camera anteriore. Se disponibile, scegli quella posteriore in Postazione.');
+  if(['user','environment'].includes(settings.facingMode))$('cameraFacing').value=settings.facingMode;
   track.addEventListener('ended',()=>{if(stream===media)stopCamera('Fotocamera interrotta: riattivala.');});
   try {const devices=await navigator.mediaDevices.enumerateDevices();if(gen!==cameraGeneration)return;const old=$('cameraSelect').value;$('cameraSelect').replaceChildren(new Option('Posteriore automatica',''));devices.filter(d=>d.kind==='videoinput').forEach((d,i)=>$('cameraSelect').add(new Option(d.label||`Fotocamera ${i+1}`,d.deviceId)));$('cameraSelect').value=settings.deviceId||old;}catch{/* Camera works even if device listing is unavailable. */}
  } catch(e) {
@@ -214,7 +215,7 @@ function normalizeStation(s){if(!s||typeof s!=='object')return null;const bounde
 function applyReferenceSetup(){const s=references.get(POSES[current].id)?.station;if(!s)return;$('station').value=s.name;$('lights').value=s.lights;$('guideScale').value=s.guideScale;$('shoulderWidth').value=s.shoulderWidth;revision++;render();notify('Impostazioni riprese. Usa il riferimento in trasparenza e la stessa luce della visita precedente.');}
 function resetSession(){referenceGeneration++;cancelCountdown();discardPending();for(const p of photos.values())revoke(p);for(const p of references.values())revoke(p);photos.clear();references.clear();current=0;revision=0;exportRevision=-1;$('patientCode').value='';$('visitDate').value=localDate();$('saveStatus').textContent='Nessuna foto inviata a un server.';$('resetDialog').close();render();}
 function showSettings(show){$('settings').hidden=!show;$('settingsButton').setAttribute('aria-expanded',String(show));if(show)$('settings').scrollIntoView({behavior:'smooth',block:'start'});}
-$('startCamera').addEventListener('click',startCamera);$('stopCamera').addEventListener('click',()=>stopCamera());$('cameraSelect').addEventListener('change',()=>{if(stream)startCamera();});$('video').addEventListener('loadeddata',render);
+$('startCamera').addEventListener('click',startCamera);$('stopCamera').addEventListener('click',()=>stopCamera());$('cameraSelect').addEventListener('change',()=>{cameraChoiceExplicit=true;if(stream)startCamera();});$('cameraFacing').addEventListener('change',()=>{cameraChoiceExplicit=true;$('cameraSelect').value='';if(stream)startCamera();});$('video').addEventListener('loadeddata',render);
 $('capture').addEventListener('click',capture);$('accept').addEventListener('click',acceptPhoto);$('retake').addEventListener('click',()=>{discardPending();render();});$('prevPose').addEventListener('click',()=>typeof stepPose==='function'?stepPose(-1):selectPose(current-1));$('nextPose').addEventListener('click',()=>typeof stepPose==='function'?stepPose(1):selectPose(current+1));
 $('shoulderWidth').addEventListener('input',()=>{revision++;render();});$('setupSettings').addEventListener('click',()=>showSettings(true));$('guideScale').addEventListener('input',()=>{$('showGuide').checked=true;revision++;render();});$('loadReference').addEventListener('click',()=>$('referenceInput').click());$('applyReferenceSetup').addEventListener('click',applyReferenceSetup);$('enableLevel').addEventListener('click',enableLevel);$('showGuide').addEventListener('change',render);$('opacity').addEventListener('input',renderReference);$('referenceInput').addEventListener('change',importReference);$('removeReference').addEventListener('click',()=>{const id=POSES[current].id;revoke(references.get(id));references.delete(id);renderReference();});
 $('exportZip').addEventListener('click',exportZip);$('sharePhotos').addEventListener('click',sharePhotos);$('settingsButton').addEventListener('click',()=>showSettings($('settings').hidden));$('closeSettings').addEventListener('click',()=>showSettings(false));

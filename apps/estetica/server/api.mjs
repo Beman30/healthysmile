@@ -9,7 +9,13 @@ async function bounded(request,limit){const reader=request.body?.getReader();if(
 async function bodyJSON(r){try{return JSON.parse(new TextDecoder().decode(await bounded(r,500000)));}catch(e){if(e.status)throw e;fault(400,'Dati non validi.');}}
 const short=(v,max)=>typeof v==='string'&&v.length<=max;
 function validDate(value){const date=new Date(value+'T12:00:00Z');return Number.isFinite(date.getTime())&&date.toISOString().slice(0,10)===value;}
-function cleanAlignment(a){return a?.version===1&&Number.isFinite(a.angle)&&Math.abs(a.angle)<=Math.PI&&Array.isArray(a.points)&&a.points.length===2&&a.points.every(p=>Array.isArray(p)&&p.length===2&&p.every(n=>Number.isFinite(n)&&n>=0&&n<=1))?{version:1,angle:a.angle,points:a.points}:null;}
+function cleanAlignment(a){
+ const points=Array.isArray(a?.points)&&a.points.length>=2&&a.points.length<=32&&a.points.every(p=>Array.isArray(p)&&p.length===2&&p.every(n=>Number.isFinite(n)&&n>=0&&n<=1));
+ if(!points)return null;
+ if(a.version===1&&a.points.length===2&&Number.isFinite(a.angle)&&Math.abs(a.angle)<=Math.PI)return {version:1,angle:a.angle,points:a.points};
+ if(a.version===2&&Array.isArray(a.targets)&&a.targets.length===a.points.length&&a.targets.every(p=>Array.isArray(p)&&p.length===2&&p.every(n=>Number.isFinite(n)&&Math.abs(n)<=100)))return {version:2,points:a.points,targets:a.targets};
+ return null;
+}
 function cleanManifest(m,previousNotes=''){
  if(!m||!Array.isArray(m.visits)||m.visits.length>20)fault(400,'Numero di visite non valido.');
  if(m.notes!==undefined&&!short(m.notes,10000))fault(400,'Le note possono contenere al massimo 10000 caratteri.');

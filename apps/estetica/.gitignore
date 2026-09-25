@@ -7,3 +7,4 @@ wrangler.local.json
 backups/
 deployment.local.json
 bootstrap.local.sql
+public/pose-vendor/
