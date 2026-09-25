@@ -62,7 +62,16 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
   await page.evaluate(()=>{guideTest.scale=1;guideTest.roll=8;});await page.waitForFunction(()=>document.getElementById('patientGuideInstruction').textContent.includes('Inclina la testa verso la tua destra'),{},{timeout:20000});
   await page.evaluate(()=>{guideTest.roll=0;});
   await page.locator('#startZoneGuide').click();await visible('#zoneGuide');await visible('#zoneCanvas');
-  await page.waitForTimeout(700);await shot('zone-eyes');await inViewport('#zoneNext');
+  await page.waitForFunction(()=>document.getElementById('eyeDistance').dataset.state==='near',{},{timeout:20000});
+  await page.evaluate(()=>{guideTest.scale=1.15;guideTest.x=.08;});
+  await page.waitForFunction(()=>document.getElementById('eyeDistance').textContent.includes('allontanati')&&document.getElementById('eyeCenter').dataset.state==='adjust',{},{timeout:20000});
+  await shot('zone-distance-and-centering');await inViewport('#zoneNext');
+  await page.evaluate(()=>{guideTest.scale=.85;guideTest.x=0;});
+  await page.waitForFunction(()=>document.getElementById('eyeDistance').textContent.includes('avvicinati'),{},{timeout:20000});
+  await page.evaluate(()=>{guideTest.scale=1;});
+  await page.waitForFunction(()=>document.getElementById('eyeDistance').dataset.state==='near'&&document.getElementById('eyeCenter').dataset.state==='near',{},{timeout:20000});
+  await shot('zone-eyes');await inViewport('#zoneNext');
+
   assert((await page.locator('#zoneTitle').textContent()).includes('Occhi'));
   await page.locator('#zoneNext').click();assert((await page.locator('#zoneTitle').textContent()).includes('sinistro'));
   await page.locator('#zoneMap').click({position:{x:40,y:45}});
@@ -75,8 +84,9 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
   await page.evaluate(()=>{guideTest.blank=true;});await page.waitForFunction(()=>document.getElementById('patientGuideInstruction').textContent.includes('Non vedo bene'),{},{timeout:20000});assert(await page.locator('#capture').isEnabled());assert(await page.locator('#referenceContour').isVisible());
   await page.locator('#togglePatientGuidance').click();assert(await page.locator('#referenceContour').isVisible());assert(await page.locator('#capture').isEnabled());
   await page.evaluate(()=>{guideTest.blank=false;});await page.locator('#startZoneGuide').click();
+  await page.waitForFunction(()=>document.getElementById('eyeDistance').dataset.state==='unknown');
   for(let i=0;i<4;i++)await page.locator('#zoneNext').click();
   await page.locator('#zoneNext').click();await visible('#accept');assert(await page.locator('#zoneGuide').isHidden());
-  assert.deepEqual(errors,[]);console.log('PASS actual model on reference/live frames: stable match, left/right, distance, tilt, lost-face fallback, contour retained and shutter usable.');
+  assert.deepEqual(errors,[]);console.log('PASS actual model on reference/live frames: stable match, left/right, distance, tilt, lost-face fallback, simultaneous distance/centering, zone navigation, unavailable fallback and final capture.');
  }catch(e){console.log('LAST GUIDE',await page.locator('#patientGuideInstruction').textContent());throw e;}finally{await browser.close();server.closeAllConnections();await new Promise(r=>server.close(r));db.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});

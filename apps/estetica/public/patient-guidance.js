@@ -17,6 +17,7 @@
   panel.classList.toggle('patient-guide-close',close);
  }
  function dispose(){
+  window.dispatchEvent(new CustomEvent('hs-face-guide',{detail:{unavailable:true}}));
   lifecycle++;worker?.terminate();worker=null;loading=null;
   for(const r of requests.values()){clearTimeout(r.timer);r.reject(Error('Guida interrotta'));}requests.clear();
  }
@@ -32,9 +33,9 @@
   const generation=lifecycle;
   loading=(async()=>{
    if(!window.Worker||!window.OffscreenCanvas||!window.createImageBitmap)throw Error('Guida non supportata');
-   core=await import('./patient-guidance-core.mjs?v=20');
+   core=await import('./patient-guidance-core.mjs?v=22');
    if(generation!==lifecycle)throw Error('Guida interrotta');
-   worker=new Worker('/patient-guidance-worker.js?v=20');
+   worker=new Worker('/patient-guidance-worker.js?v=22');
    worker.onmessage=({data})=>{const r=requests.get(data.id);if(!r)return;requests.delete(data.id);clearTimeout(r.timer);data.error?r.reject(Error(data.error)):r.resolve(data.face);};
    worker.onerror=()=>{failed=true;dispose();};
    await ask();
@@ -62,7 +63,7 @@
   if(panel.hidden||document.hidden)return;
   if(!enabled)return;
   const ref=reference(),currentKey=key();
-  if(contextKey!==currentKey){contextKey=currentKey;candidate='';candidateAt=0;lastFace=null;show('Leggo il prima…','Destra e sinistra sono quelle del paziente.');}
+  if(contextKey!==currentKey){window.dispatchEvent(new CustomEvent('hs-face-guide',{detail:{unavailable:true}}));contextKey=currentKey;candidate='';candidateAt=0;lastFace=null;show('Leggo il prima…','Destra e sinistra sono quelle del paziente.');}
   if(!ref){show('Scegli la foto prima per questa vista','La guida confronta il viso con la tua foto originale.');return;}
   if(POSES[current].kind==='profile'){show('Ritrova il profilo nella sagoma','Di profilo non posso stimare con affidabilità tutte le correzioni. Controlla visivamente.');return;}
   if(!availableCamera(ref)){show('Ripristina la fotocamera del prima','Stesso obiettivo e zoom: altrimenti le indicazioni sulla distanza possono ingannare.');return;}
@@ -75,10 +76,10 @@
    await load();if(!active()||currentKey!==key()||run!==lifecycle)return;
    const target=await readReference(ref);if(!active()||currentKey!==key())return;
    if(target.error||target.clipped||Math.abs(target.yaw)>55||Math.abs(target.pitch)>35){show('Non riesco a misurare bene il prima','Usa i contorni azzurri: il confronto automatico non è affidabile su questa foto.');return;}
-   const live=await ask(await bitmap(video,video.videoWidth,video.videoHeight),10000);
+   const measuredAt=performance.now(),live=await ask(await bitmap(video,video.videoWidth,video.videoHeight),10000);
    if(!active()||currentKey!==key()||run!==lifecycle)return;
    const instruction=core.patientInstruction(live,target),now=performance.now(),steady=core.steadyFace(live,lastFace);lastFace=live;
-   window.dispatchEvent(new CustomEvent('hs-face-guide',{detail:{target,referenceURL:ref.url,patientId:cloud.patient?.id}}));
+   window.dispatchEvent(new CustomEvent('hs-face-guide',{detail:{target,live,eyes:core.eyeAlignmentStatus(live,target),measuredAt,context:currentKey,referenceURL:ref.url,patientId:cloud.patient?.id}}));
    if(candidate!==instruction.key){candidate=instruction.key;candidateAt=now;panel.classList.remove('patient-guide-close');if(instruction.okay)show('Resta fermo un momento…','Controllo che la posizione sia stabile.');}
    if(instruction.okay&&!steady){candidateAt=now;panel.classList.remove('patient-guide-close');show('Resta fermo un momento…','Controllo che la posizione sia stabile.');}
    if(now-candidateAt>=(instruction.okay?1200:350))show(instruction.text,instruction.detail,instruction.okay);

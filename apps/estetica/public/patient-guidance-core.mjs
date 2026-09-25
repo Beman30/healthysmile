@@ -1,5 +1,25 @@
 // Patient coordinates: the live preview and saved photos are never mirrored.
 export const deltaAngle=(a,b)=>((a-b+540)%360)-180;
+// Independent scale and translation checks: aligning one eye cannot pass both.
+// Scale is a relative image-size proxy, never a physical distance in centimetres.
+export function eyeAlignmentStatus(live,target){
+ const unknown=text=>({distance:{key:'unknown',text},centering:{key:'unknown',text:'Da verificare'},eyes:'Controlla entrambi gli occhi nella trasparenza.',ready:false});
+ const valid=f=>f&&!f.error&&['cx','cy','size','yaw','pitch','roll'].every(k=>Number.isFinite(f[k]))&&f.size>.025;
+ if(!valid(live)||!valid(target))return unknown('Occhi non leggibili');
+ if(live.clipped||target.clipped)return unknown('Inquadra tutto il viso');
+ if(Math.abs(live.yaw)>55||Math.abs(target.yaw)>55||Math.abs(live.pitch)>35||Math.abs(target.pitch)>35||Math.abs(deltaAngle(live.yaw,target.yaw))>3||Math.abs(deltaAngle(live.pitch,target.pitch))>3)return unknown('Prima orienta il viso');
+ const ratio=live.size/target.size,dx=live.cx-target.cx,dy=live.cy-target.cy,tolerance=Math.min(.018,target.size*.05);
+ const distance=ratio>1.045?{key:'away',text:'Troppo vicino: allontanati'}:ratio<.955?{key:'closer',text:'Troppo lontano: avvicinati'}:{key:'near',text:'Distanza simile al prima'};
+ const moves=[];if(Math.abs(dx)>tolerance)moves.push(dx>0?'alla tua destra':'alla tua sinistra');if(Math.abs(dy)>tolerance)moves.push(dy>0?'più in alto':'più in basso');
+ const centering=moves.length?{key:'move',text:'Spostati '+moves.join(' e ')}:{key:'near',text:'Occhi centrati'};
+ const pairs=f=>f.anchors?.slice(0,4);
+ const a=pairs(live),b=pairs(target),readable=a?.length===4&&b?.length===4&&[...a,...b].every(p=>p?.length===2&&p.every(Number.isFinite));
+ const both=readable&&a.every((p,i)=>Math.hypot(p[0]-b[i][0],p[1]-b[i][1])<=target.size*.06);
+ const level=Math.abs(deltaAngle(live.roll,target.roll))<=2.5;
+ const ready=distance.key==='near'&&centering.key==='near'&&level&&both;
+ const eyes=ready?'Entrambi gli occhi vicini ai riferimenti. Resta fermo.':!level?'Correggi anche l’inclinazione della testa.':distance.key!=='near'?'Prima regola la distanza, poi ricentra entrambi gli occhi.':!readable?'Riferimenti degli occhi non leggibili: verifica visivamente.':'Fai coincidere tutti i riferimenti, non un solo occhio.';
+ return {distance,centering,eyes,ready};
+}
 export function measureFace(result,width,height){
  const faces=result.faceLandmarks||[];
  if(faces.length!==1)return {error:faces.length?'Inquadra una sola persona':'Non vedo bene il viso'};

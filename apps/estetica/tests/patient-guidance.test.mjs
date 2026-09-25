@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {patientInstruction,measureFace,geometryResidual,steadyFace,deltaAngle} from '../public/patient-guidance-core.mjs';
+import {patientInstruction,measureFace,geometryResidual,steadyFace,deltaAngle,eyeAlignmentStatus} from '../public/patient-guidance-core.mjs';
 const target={cx:.5,cy:.4,size:.2,yaw:0,pitch:0,roll:0};
 test('unmirrored patient directions and distance guidance',()=>{
  const cases=[
@@ -39,4 +39,27 @@ test('local facial mismatch and unstable frames do not imply agreement',()=>{
  assert.equal(steadyFace({...target,cx:.54},target),false);
  assert.equal(steadyFace({...target,pitch:3},target),false);
  assert.equal(steadyFace({error:'missing'},target),false);
+});
+
+
+test('scale and translation remain independent when only one eye is aligned',()=>{
+ const ref={...target,cy:.3,anchors:[[.4,.4],[.44,.4],[.56,.4],[.6,.4],[.5,.45],[.5,.48],[.5,.5]]};
+ assert.equal(eyeAlignmentStatus(ref,ref).ready,true);
+ // Scale about the left eye, preserving that corner exactly. The right eye moves.
+ const oneEye={...ref,cx:.52,size:.24,anchors:ref.anchors.map(([x,y])=>[.4+(x-.4)*1.2,y])};
+ assert.deepEqual(oneEye.anchors[0],ref.anchors[0]);
+ const status=eyeAlignmentStatus(oneEye,ref);
+ assert.equal(status.distance.key,'away');assert.equal(status.centering.key,'move');assert.equal(status.ready,false);
+ const translated={...ref,cx:.55,anchors:ref.anchors.map(([x,y])=>[x+.05,y])};
+ assert.equal(eyeAlignmentStatus(translated,ref).distance.key,'near');assert.equal(eyeAlignmentStatus(translated,ref).ready,false);
+ const smaller={...ref,size:.16,anchors:ref.anchors.map(([x,y])=>[.5+(x-.5)*.8,y])};
+ assert.equal(eyeAlignmentStatus(smaller,ref).distance.key,'closer');
+ const unequal={...ref,anchors:ref.anchors.map(p=>[...p])};unequal.anchors[2][0]+=.05;
+ assert.equal(eyeAlignmentStatus(unequal,ref).ready,false,'both inner and outer corners must agree');
+});
+test('distance is withheld with different head rotation, missing or clipped eyes',()=>{
+ for(const live of [{...target,yaw:15,size:.15},{...target,pitch:8},{...target,clipped:true},{...target,size:NaN},{error:'missing'},null]){
+  const r=eyeAlignmentStatus(live,target);assert.equal(r.distance.key,'unknown');assert.equal(r.ready,false);
+ }
+ const tilted={...target,roll:8};assert.equal(eyeAlignmentStatus(tilted,target).distance.key,'near');assert.equal(eyeAlignmentStatus(tilted,target).ready,false);
 });
