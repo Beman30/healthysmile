@@ -100,18 +100,22 @@ async function startCamera() {
 }
 function cropRect(width,height){const ratio=.75;let sw=width,sh=height;if(width/height>ratio)sw=height*ratio;else sh=width/ratio;return {sx:(width-sw)/2,sy:(height-sh)/2,sw,sh,width:Math.floor(sw),height:Math.floor(sh)};}
 async function capture() {
+ const guided=!!window.hsBeforeCaptureRequested;window.hsBeforeCaptureRequested=false;
  if(!stream||captureBusy||pending)return;
  if(!$('patientCode').value.trim()||!$('visitDate').value){notify('Inserisci codice paziente e data visita prima del primo scatto.');(!$('patientCode').value.trim()?$('patientCode'):$('visitDate')).focus();return;}
  captureBusy=true;const gen=++countdownGeneration;render();
  const counter=document.createElement('div');counter.className='countdown';counter.setAttribute('aria-live','assertive');$('cameraArea').append(counter);
  try {
   counter.remove();const video=$('video');if(!stream||video.readyState<2||!video.videoWidth)throw Error('Attendi che la fotocamera mostri il viso.');
-  const rect=cropRect(video.videoWidth,video.videoHeight), canvas=document.createElement('canvas');canvas.width=rect.width;canvas.height=rect.height;
-  canvas.getContext('2d').drawImage(video,rect.sx,rect.sy,rect.sw,rect.sh,0,0,rect.width,rect.height);
-  const takenAt=new Date().toISOString(), level=currentLevel(), settings=stream.getVideoTracks()[0].getSettings();
+  const chosen=guided?await window.hsBeforeBurst({valid:()=>gen===countdownGeneration&&!!stream&&!pending}):null;
+  if(gen!==countdownGeneration)return;
+  const rect=chosen?.rect||cropRect(video.videoWidth,video.videoHeight), canvas=chosen?.canvas||document.createElement('canvas');
+  if(!chosen){canvas.width=rect.width;canvas.height=rect.height;canvas.getContext('2d').drawImage(video,rect.sx,rect.sy,rect.sw,rect.sh,0,0,rect.width,rect.height);}
+  const takenAt=chosen?.takenAt||new Date().toISOString(), level=chosen?chosen.level:currentLevel(), settings=stream.getVideoTracks()[0].getSettings();
   const blob=await new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(Error('Scatto non riuscito. Riprova.')),'image/jpeg',.95));
   if(gen!==countdownGeneration)return;
   pending={blob,url:URL.createObjectURL(blob),width:rect.width,height:rect.height,takenAt,level,station:stationValues(),camera:{label:stream.getVideoTracks()[0].label,width:settings.width,height:settings.height,facingMode:settings.facingMode||'unknown',frameRate:settings.frameRate,deviceId:settings.deviceId||null,zoom:Number.isFinite(settings.zoom)?settings.zoom:null},crop:rect};
+  if(chosen)notify('Foto scelta dalla raffica. Controllala prima di confermare.');
   $('flashEffect').animate?.([{opacity:.6},{opacity:0}],{duration:200});
  }catch(e){notify(e.message||'Scatto non riuscito. Riprova.');}
  finally{counter.remove();if(gen===countdownGeneration){captureBusy=false;render();}}

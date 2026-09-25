@@ -45,9 +45,9 @@ function renderFlow(){
  $('exportTitle').textContent=totalPhotos()?`${totalPhotos()} foto · ${visits.length} ${visits.length===1?'visita':'visite'}`:'Conserva il prima e il dopo';
  $('exportCopy').textContent='Salva il ZIP completo prima di chiudere. Contiene tutte le visite e si riapre da “Apri archivio ZIP”. Le foto non vengono archiviate automaticamente online.';
  $('archiveHint').textContent=totalPhotos()?`${visits.length} ${visits.length===1?'visita':'visite'} · ${totalPhotos()} foto. ${revision===exportRevision?'Archivio caricato o download avviato: verifica il file salvato.':'Modifiche da salvare nel ZIP prima di uscire.'}`:'Apri il ZIP del paziente oppure inizia le foto del prima. Salva il ZIP prima di chiudere.';
- $('poseHelp').textContent=activeVisit===0?'Viso nella sagoma, telefono dritto. Lascia visibili collo e spalle. Non serve combaciare al millimetro.':'Ritrova occhi, naso, mento e spalle della foto precedente. Ripeti espressione e luce. Regola la trasparenza direttamente sull’inquadratura.';
+ $('poseHelp').textContent=activeVisit===0?'Usa la guida del prima per le viste frontali. Telefono dritto, lente all’altezza degli occhi; lascia visibili collo e spalle.':'Ritrova occhi, naso, mento e spalle della foto precedente. Ripeti espressione e luce. Regola la trasparenza direttamente sull’inquadratura.';
  $('loadReference').hidden=activeVisit!==0;$('removeReference').hidden=activeVisit!==0;
- $('framingLabel').textContent=activeVisit&&visits[0].photos.has(POSES[current].id)?'Segui il prima in trasparenza':activeVisit?'Prima mancante per questa posa':'Viso dentro la fascia guida';
+ $('framingLabel').textContent=activeVisit&&visits[0].photos.has(POSES[current].id)?'Segui il prima in trasparenza':activeVisit?'Prima mancante per questa posa':'Guida della prima foto';
  if(!comparing)renderReference();
 }
 const oldReferenceRender=renderReference;

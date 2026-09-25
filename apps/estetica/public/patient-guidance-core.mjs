@@ -31,8 +31,10 @@ export function measureFace(result,width,height){
  const pitch=Math.atan2(m[6],m[10])*180/Math.PI;
  const roll=Math.atan2(dy,dx)*180/Math.PI;
  if(![yaw,pitch,roll,size].every(Number.isFinite)||size<.025)return {error:'Viso non rilevato con sufficiente precisione'};
+ const distance=(a,b)=>Math.hypot((p[a].x-p[b].x)*width,(p[a].y-p[b].y)*height);
+ const eyeOpen=Math.min(distance(159,145)/Math.max(1,distance(33,133)),distance(386,374)/Math.max(1,distance(362,263)));
  const xs=p.map(v=>v.x),ys=p.map(v=>v.y);
- return {cx:(a.x+b.x)/2,cy:(a.y+b.y)/2,size,yaw,pitch,roll,
+ return {cx:(a.x+b.x)/2,cy:(a.y+b.y)/2,size,yaw,pitch,roll,eyeOpen,
   anchors:[33,133,362,263,168,6,197].map(i=>[p[i].x,p[i].y*height/width]),
   clipped:Math.min(...xs)<.02||Math.max(...xs)>.98||Math.min(...ys)<.02||Math.max(...ys)>.98};
 }

@@ -1,22 +1,22 @@
 'use strict';
-// Guidance is supplementary to the original-photo contour. Only the after view
-// with an actual before photograph is measured. Processing stays on the device.
+// Guidance is supplementary to the original-photo contour. First-photo frontal guidance and after-photo reference measurements. Processing stays on the device.
 (()=>{
  const panel=document.createElement('section');panel.id='patientGuidance';panel.className='patient-guidance';panel.hidden=true;
  panel.innerHTML='<div class="patient-guide-header"><span>GUIDA PER IL DOPO</span><button type="button" id="togglePatientGuidance" aria-pressed="true">Spegni</button></div><div role="status" aria-live="polite" aria-atomic="true"><strong id="patientGuideInstruction">Leggo il prima…</strong><p id="patientGuideDetail">La sagoma resta il riferimento visivo.</p></div>';
  $('captureDock').prepend(panel);
- let enabled=true,worker=null,core=null,loading=null,failed=false,busy=false,serial=0,lifecycle=0,contextKey='',candidate='',candidateAt=0,lastFace=null,previousPatient=null;
+ let enabled=true,worker=null,core=null,beforeCore=null,loading=null,failed=false,busy=false,serial=0,lifecycle=0,contextKey='',candidate='',candidateAt=0,lastFace=null,previousPatient=null;
  const requests=new Map();let cachedReference=null,cachedFace=null,cachedURL='';
  const canvas=document.createElement('canvas');canvas.width=450;canvas.height=600;const ctx=canvas.getContext('2d');
  const reference=()=>activeVisit>0?captureReference():null;
  function key(){return [cloud.patient?.id,activeVisit,current,reference()?.url,stream?.id].join('|');}
- function active(){return enabled&&!!stream&&!pending&&!captureBusy&&view!=='compare'&&activeVisit>0&&!document.hidden;}
+ function active(){return enabled&&!!stream&&!pending&&!captureBusy&&view!=='compare'&&!document.hidden;}
  function show(text,detail='',close=false){
   if($('patientGuideInstruction').textContent!==text)$('patientGuideInstruction').textContent=text;
   if($('patientGuideDetail').textContent!==detail)$('patientGuideDetail').textContent=detail;
   panel.classList.toggle('patient-guide-close',close);
  }
  function dispose(){
+  window.dispatchEvent(new CustomEvent('hs-before-guide',{detail:{unavailable:true}}));
   window.dispatchEvent(new CustomEvent('hs-face-guide',{detail:{unavailable:true}}));
   lifecycle++;worker?.terminate();worker=null;loading=null;
   for(const r of requests.values()){clearTimeout(r.timer);r.reject(Error('Guida interrotta'));}requests.clear();
@@ -33,9 +33,9 @@
   const generation=lifecycle;
   loading=(async()=>{
    if(!window.Worker||!window.OffscreenCanvas||!window.createImageBitmap)throw Error('Guida non supportata');
-   core=await import('./patient-guidance-core.mjs?v=22');
+   [core,beforeCore]=await Promise.all([import('./patient-guidance-core.mjs?v=23'),import('./before-guidance-core.mjs?v=23')]);
    if(generation!==lifecycle)throw Error('Guida interrotta');
-   worker=new Worker('/patient-guidance-worker.js?v=22');
+   worker=new Worker('/patient-guidance-worker.js?v=23');
    worker.onmessage=({data})=>{const r=requests.get(data.id);if(!r)return;requests.delete(data.id);clearTimeout(r.timer);data.error?r.reject(Error(data.error)):r.resolve(data.face);};
    worker.onerror=()=>{failed=true;dispose();};
    await ask();
@@ -58,22 +58,33 @@
   return true;
  }
  async function tick(){
-  panel.hidden=!stream||!!pending||view==='compare'||activeVisit===0;
+  panel.hidden=!stream||!!pending||view==='compare';
+  panel.querySelector('.patient-guide-header span').textContent=activeVisit===0?'GUIDA PER IL PRIMA':'GUIDA PER IL DOPO';
   document.body.classList.toggle('after-guide-open',!panel.hidden);
   if(panel.hidden||document.hidden)return;
   if(!enabled)return;
   const ref=reference(),currentKey=key();
-  if(contextKey!==currentKey){window.dispatchEvent(new CustomEvent('hs-face-guide',{detail:{unavailable:true}}));contextKey=currentKey;candidate='';candidateAt=0;lastFace=null;show('Leggo il prima…','Destra e sinistra sono quelle del paziente.');}
-  if(!ref){show('Scegli la foto prima per questa vista','La guida confronta il viso con la tua foto originale.');return;}
-  if(POSES[current].kind==='profile'){show('Ritrova il profilo nella sagoma','Di profilo non posso stimare con affidabilità tutte le correzioni. Controlla visivamente.');return;}
-  if(!availableCamera(ref)){show('Ripristina la fotocamera del prima','Stesso obiettivo e zoom: altrimenti le indicazioni sulla distanza possono ingannare.');return;}
-  if(failed){show('Guida non disponibile','Segui la sagoma o premi Riprova. Puoi comunque scattare.');$('togglePatientGuidance').textContent='Riprova';return;}
+  if(contextKey!==currentKey){window.dispatchEvent(new CustomEvent('hs-before-guide',{detail:{unavailable:true}}));window.dispatchEvent(new CustomEvent('hs-face-guide',{detail:{unavailable:true}}));contextKey=currentKey;candidate='';candidateAt=0;lastFace=null;show(activeVisit===0?'Preparo la guida del prima…':'Leggo il prima…','Destra e sinistra sono quelle del paziente.');}
+  if(activeVisit>0&&!ref){show('Scegli la foto prima per questa vista','La guida confronta il viso con la tua foto originale.');return;}
+  if(activeVisit>0&&POSES[current].kind==='profile'){show('Ritrova il profilo nella sagoma','Di profilo non posso stimare con affidabilità tutte le correzioni. Controlla visivamente.');return;}
+  if(activeVisit>0&&!availableCamera(ref)){show('Ripristina la fotocamera del prima','Stesso obiettivo e zoom: altrimenti le indicazioni sulla distanza possono ingannare.');return;}
+  if(failed){show('Guida non disponibile','Usa lo scatto manuale o premi Riprova.');$('togglePatientGuidance').textContent='Riprova';return;}
   if(busy||captureBusy)return;
   const video=$('video');if(video.readyState<2||!video.videoWidth)return;
   const run=lifecycle;busy=true;
   try{
-   if(!loading)show('Avvio della guida…','La sagoma è già disponibile; puoi scattare anche durante il caricamento.');
+   if(!loading)show('Avvio della guida…','Puoi usare lo scatto manuale anche durante il caricamento.');
    await load();if(!active()||currentKey!==key()||run!==lifecycle)return;
+   if(activeVisit===0){
+    const measuredAt=performance.now(),live=await ask(await bitmap(video,video.videoWidth,video.videoHeight),10000);
+    if(!active()||currentKey!==key()||run!==lifecycle)return;
+    const state=beforeCore.beforePoseState(live,beforeOptions()),now=performance.now(),steady=core.steadyFace(live,lastFace);lastFace=live;
+    if(candidate!==state.key||!steady){candidate=state.key;candidateAt=now;}
+    const stable=state.ready&&steady&&now-candidateAt>=1200;
+    window.dispatchEvent(new CustomEvent('hs-before-guide',{detail:{state,live,stable,measuredAt,context:currentKey}}));
+    show(stable?'Pronto per lo scatto guidato':state.text,stable?'Premi Scatto guidato: sceglierò una foto reale dalla breve raffica.':state.detail,stable);
+    return;
+   }
    const target=await readReference(ref);if(!active()||currentKey!==key())return;
    if(target.error||target.clipped||Math.abs(target.yaw)>55||Math.abs(target.pitch)>35){show('Non riesco a misurare bene il prima','Usa i contorni azzurri: il confronto automatico non è affidabile su questa foto.');return;}
    const measuredAt=performance.now(),live=await ask(await bitmap(video,video.videoWidth,video.videoHeight),10000);
@@ -84,9 +95,39 @@
    if(instruction.okay&&!steady){candidateAt=now;panel.classList.remove('patient-guide-close');show('Resta fermo un momento…','Controllo che la posizione sia stabile.');}
    if(now-candidateAt>=(instruction.okay?1200:350))show(instruction.text,instruction.detail,instruction.okay);
   }catch{
-   if(enabled&&run===lifecycle){failed=true;dispose();show('Guida non disponibile','Segui la sagoma. Puoi comunque scattare.');$('togglePatientGuidance').textContent='Riprova';}
+   if(enabled&&run===lifecycle){failed=true;dispose();show('Guida non disponibile','Puoi comunque usare lo scatto manuale.');$('togglePatientGuidance').textContent='Riprova';}
   }finally{busy=false;}
  }
+
+ function beforeOptions(){return {phoneConfirmed:$('beforePhoneConfirmed')?.checked||false,level:currentLevel(),screenAngle:screen.orientation?.angle??window.orientation??0,kind:POSES[current].kind};}
+ // Snapshot first, then evaluate that exact frame. Only the selected original is kept.
+ window.hsBeforeBurst=async({valid})=>{
+  if(!enabled||failed||activeVisit!==0||POSES[current].kind!=='front')throw Error('Guida non disponibile. Puoi usare lo scatto manuale.');
+  const currentKey=key(),video=$('video'),start=performance.now();
+  while(busy){if(!valid()||performance.now()-start>2500)throw Error('Attendi che la guida sia pronta.');await new Promise(r=>setTimeout(r,40));}
+  busy=true;
+  const source=document.createElement('canvas'),best=document.createElement('canvas');let result=null,score=-1,previous=null,goodFrames=0;
+  try{
+   await load();
+   for(let i=0;i<6;i++){
+    if(!valid()||currentKey!==key()||document.hidden||!stream||video.readyState<2)throw Error('Raffica interrotta. Riprendi la posa e riprova.');
+    if(performance.now()-start>4500)break;
+    const rect=cropRect(video.videoWidth,video.videoHeight);source.width=rect.width;source.height=rect.height;source.getContext('2d').drawImage(video,rect.sx,rect.sy,rect.sw,rect.sh,0,0,rect.width,rect.height);
+    const takenAt=new Date().toISOString(),level=currentLevel(),options={...beforeOptions(),level};
+    const live=await ask(await bitmap(source,source.width,source.height),2500),state=beforeCore.beforePoseState(live,options);
+    const steady=core.steadyFace(live,previous);previous=live;
+    if(state.ready&&steady){
+     goodFrames++;const sharp=beforeCore.faceSharpness(ctx.getImageData(0,0,450,600).data,450,600,live);
+     if(sharp>score){score=sharp;best.width=source.width;best.height=source.height;best.getContext('2d').drawImage(source,0,0);result={canvas:best,rect,takenAt,level};}
+    }
+    window.dispatchEvent(new CustomEvent('hs-before-burst-progress',{detail:{count:i+1}}));
+    await new Promise(r=>setTimeout(r,120));
+   }
+   if(!valid()||currentKey!==key())throw Error('Raffica interrotta.');
+   if(!result||goodFrames<2)throw Error('Posa non abbastanza stabile nella raffica. Riprova oppure usa lo scatto manuale.');
+   return result;
+  }finally{busy=false;source.width=0;lastFace=null;candidate='';candidateAt=0;}
+ };
  $('togglePatientGuidance').addEventListener('click',()=>{
   if(failed){failed=false;dispose();enabled=true;}else enabled=!enabled;
   $('togglePatientGuidance').setAttribute('aria-pressed',String(enabled));$('togglePatientGuidance').textContent=enabled?'Spegni':'Accendi';
