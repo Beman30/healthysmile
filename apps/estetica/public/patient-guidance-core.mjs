@@ -68,3 +68,17 @@ export function geometryResidual(a,b){
 export function steadyFace(a,b){
  return !!a&&!!b&&!a.error&&!b.error&&Math.abs(deltaAngle(a.yaw,b.yaw))<.8&&Math.abs(deltaAngle(a.pitch,b.pitch))<.8&&Math.abs(deltaAngle(a.roll,b.roll))<.8&&Math.abs(a.cx-b.cx)<.008&&Math.abs(a.cy-b.cy)<.008&&Math.abs(a.size/b.size-1)<.018;
 }
+
+// Compare to the actual before image, never to a frontal template.
+// Pose is ranked first; sharpness breaks ties within a small pose-error band.
+export function afterFrameRank(live,target){
+ const eyes=eyeAlignmentStatus(live,target);
+ if(!eyes.ready||!patientInstruction(live,target).okay||!Number.isFinite(live.eyeOpen)||live.eyeOpen<.12||!Number.isFinite(target.eyeOpen)||target.eyeOpen<.12)return null;
+ const t=target.size*.05;
+ const deviations=[deltaAngle(live.yaw,target.yaw)/3,deltaAngle(live.pitch,target.pitch)/3,deltaAngle(live.roll,target.roll)/2.5,(live.size/target.size-1)/.045,(live.cx-target.cx)/t,(live.cy-target.cy)/t];
+ const error=deviations.reduce((n,v)=>n+v*v,0)/deviations.length;
+ return {error,band:Math.floor(error/.1)};
+}
+export function betterAfterFrame(candidate,best){
+ return !!candidate&&(!best||candidate.band<best.band||(candidate.band===best.band&&candidate.sharpness>best.sharpness));
+}

@@ -78,15 +78,22 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
   await page.locator('#zoneNext').click();assert((await page.locator('#zoneTitle').textContent()).includes('destro'));
   await page.locator('#zoneNext').click();assert((await page.locator('#zoneTitle').textContent()).includes('Fronte'));
   await page.locator('#zoneNext').click();assert((await page.locator('#zoneTitle').textContent()).includes('completo'));await page.waitForTimeout(150);await shot('zone-full');
-  assert(await page.locator('#zoneZoom').isDisabled());await inViewport('#zoneNext');
+  assert(await page.locator('#zoneZoom').isDisabled());await inViewport('#zoneNext');await inViewport('#zoneBurst');
   await page.locator('#zoneBack').click();assert((await page.locator('#zoneTitle').textContent()).includes('Fronte'));
   await page.locator('#closeZoneGuide').click();assert(await page.locator('#zoneGuide').isHidden());
+  await page.waitForFunction(()=>!document.getElementById('afterGuidedShot').disabled,{},{timeout:20000});await shot('after-burst-ready');
+  await page.locator('#afterGuidedShot').click();await visible('#accept');
+  assert(await page.evaluate(()=>pending?.width===450&&pending?.height===600&&pending?.blob?.size>0),'after burst stages a full original frame');await shot('after-burst-selected');
+  await page.locator('#retake').click();await page.waitForFunction(()=>!document.getElementById('afterGuidedShot').disabled,{},{timeout:20000});
+  await page.locator('#afterGuidedShot').click();await page.evaluate(()=>{guideTest.blank=true;});
+  await page.waitForFunction(()=>!captureBusy,{},{timeout:12000});assert(await page.locator('#accept').isHidden(),'no acceptable after frame means no staged photo');assert(await page.locator('#capture').isEnabled());
+
   await page.evaluate(()=>{guideTest.blank=true;});await page.waitForFunction(()=>document.getElementById('patientGuideInstruction').textContent.includes('Non vedo bene'),{},{timeout:20000});assert(await page.locator('#capture').isEnabled());assert(await page.locator('#referenceContour').isVisible());
   await page.locator('#togglePatientGuidance').click();assert(await page.locator('#referenceContour').isVisible());assert(await page.locator('#capture').isEnabled());
   await page.evaluate(()=>{guideTest.blank=false;});await page.locator('#startZoneGuide').click();
   await page.waitForFunction(()=>document.getElementById('eyeDistance').dataset.state==='unknown');
   for(let i=0;i<4;i++)await page.locator('#zoneNext').click();
   await page.locator('#zoneNext').click();await visible('#accept');assert(await page.locator('#zoneGuide').isHidden());
-  assert.deepEqual(errors,[]);console.log('PASS actual model on reference/live frames: stable match, left/right, distance, tilt, lost-face fallback, simultaneous distance/centering, zone navigation, unavailable fallback and final capture.');
+  assert.deepEqual(errors,[]);console.log('PASS actual model on reference/live frames: stable match, left/right, distance, tilt, lost-face fallback, simultaneous distance/centering, after burst selection/rejection, zone navigation and manual fallback.');
  }catch(e){console.log('LAST GUIDE',await page.locator('#patientGuideInstruction').textContent());throw e;}finally{await browser.close();server.closeAllConnections();await new Promise(r=>server.close(r));db.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});

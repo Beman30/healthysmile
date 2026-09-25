@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {patientInstruction,measureFace,geometryResidual,steadyFace,deltaAngle,eyeAlignmentStatus} from '../public/patient-guidance-core.mjs';
+import {patientInstruction,measureFace,geometryResidual,steadyFace,deltaAngle,eyeAlignmentStatus,afterFrameRank,betterAfterFrame} from '../public/patient-guidance-core.mjs';
 const target={cx:.5,cy:.4,size:.2,yaw:0,pitch:0,roll:0};
 test('unmirrored patient directions and distance guidance',()=>{
  const cases=[
@@ -62,4 +62,14 @@ test('distance is withheld with different head rotation, missing or clipped eyes
   const r=eyeAlignmentStatus(live,target);assert.equal(r.distance.key,'unknown');assert.equal(r.ready,false);
  }
  const tilted={...target,roll:8};assert.equal(eyeAlignmentStatus(tilted,target).distance.key,'near');assert.equal(eyeAlignmentStatus(tilted,target).ready,false);
+});
+
+
+test('after burst ranks the recorded pose before sharpness and rejects nonmatching frames',()=>{
+ const ref={...target,yaw:12,pitch:7,roll:-8,eyeOpen:.25,anchors:[[.4,.4],[.44,.4],[.56,.4],[.6,.4],[.5,.45],[.5,.48],[.5,.5]]};
+ const same=afterFrameRank(ref,ref);assert.equal(same.band,0,'match the actual tilted reference');
+ const worse=afterFrameRank({...ref,yaw:14.8,pitch:9.8},ref);assert(worse.band>same.band);
+ assert.equal(betterAfterFrame({...worse,sharpness:1000},{...same,sharpness:10}),false);
+ assert.equal(betterAfterFrame({...same,sharpness:100},{...same,sharpness:10}),true);
+ for(const changes of [{yaw:0},{size:.3},{eyeOpen:.01},{cx:.7},{clipped:true}])assert.equal(afterFrameRank({...ref,...changes},ref),null);
 });
