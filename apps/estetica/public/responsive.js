@@ -6,7 +6,8 @@
  const compact=()=>mobile.matches;
  function placeCameraTools(){
   const target=compact()?$('cameraTools'):$('cameraArea');
-  target.append($('guideAdjustment'),$('ghostControls'));
+  target.append($('guideAdjustment'));
+  $('cameraTools').append($('ghostControls'));
  }
  mobile.addEventListener('change',placeCameraTools);placeCameraTools();
  function closeMenu(){if(menu.open)menu.close();toggle.setAttribute('aria-expanded','false');}
