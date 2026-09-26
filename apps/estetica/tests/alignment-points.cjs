@@ -1,0 +1,12 @@
+const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
+const c={$:()=>({addEventListener(){}}),snapshot(){},revoke(){},renderComparison(){}};vm.createContext(c);vm.runInContext(fs.readFileSync('public/alignment.js','utf8')+'\nglobalThis.test={alignmentAnnotations,alignmentMatrix,validAlignment};',c);const t=c.test;
+const before=[[.3,.3],[.65,.35],[.55,.7],[.2,.6]],theta=.12,scale=.88;
+const after=before.map(([x,y])=>{x*=1200;y*=1600;return [(scale*(Math.cos(theta)*x-Math.sin(theta)*y)+100)/1200,(scale*(Math.sin(theta)*x+Math.cos(theta)*y)+30)/1600]});
+const images=[0,1].map(()=>({naturalWidth:1200,naturalHeight:1600}));const annotations=t.alignmentAnnotations({points:[before,after],images,profile:false});
+assert(annotations.every(a=>a.version===2&&t.validAlignment(a)));
+const apply=(m,p)=>[m[0]*p[0]*1200+m[2]*p[1]*1600+m[4],m[1]*p[0]*1200+m[3]*p[1]*1600+m[5]];
+const matrices=annotations.map(a=>t.alignmentMatrix(a,1200,1600));before.forEach((p,i)=>{const a=apply(matrices[0],p),b=apply(matrices[1],after[i]);assert(Math.hypot(a[0]-b[0],a[1]-b[1])<1e-7)});
+const changed=JSON.parse(JSON.stringify(annotations[1]));changed.points[3][0]+=.03;const m=t.alignmentMatrix(changed,1200,1600);assert(m.some((v,i)=>Math.abs(v-matrices[1][i])>1e-4),'fourth landmark must affect transform');assert.equal(m[0],m[3]);assert.equal(m[1],-m[2]);
+assert(t.validAlignment({version:1,angle:0,points:before.slice(0,2)}));assert.equal(t.alignmentAnnotations({points:[before.slice(0,2),after.slice(0,2)],images,profile:false})[0].version,1);
+assert(!t.validAlignment({version:2,points:before,targets:[[0,0]]}));assert.throws(()=>t.alignmentAnnotations({points:[[null,null],[null,null]],images,profile:false}));
+console.log('PASS: 4 paired landmarks recover known similarity transform; all points contribute; no shear/warp; legacy two-point compatibility; incomplete points rejected.');

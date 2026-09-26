@@ -1,0 +1,15 @@
+'use strict';
+const $=id=>document.getElementById(id);
+function viewerMode(mode){$('stage').className='stage'+(mode==='two'?' two':'');const moving=mode==='slider';$('slider').hidden=!moving;$('sliderLabel').hidden=!moving;for(const name of ['slider','half','two'])$(name+'Mode').setAttribute('aria-pressed',String(mode===name));if(!moving)$('stage').style.setProperty('--split','50%');else $('stage').style.setProperty('--split',$('slider').value+'%');}
+$('slider').addEventListener('input',()=>$('stage').style.setProperty('--split',$('slider').value+'%'));for(const mode of ['slider','half','two'])$(mode+'Mode').addEventListener('click',()=>viewerMode(mode));
+function moveSlider(e){if($('slider').hidden)return;const rect=$('stage').getBoundingClientRect();$('slider').value=Math.round(Math.max(0,Math.min(100,(e.clientX-rect.left)/rect.width*100)));$('stage').style.setProperty('--split',$('slider').value+'%');}
+$('stage').addEventListener('pointerdown',e=>{if(!$('slider').hidden){$('stage').setPointerCapture(e.pointerId);moveSlider(e);}});$('stage').addEventListener('pointermove',e=>{if($('stage').hasPointerCapture(e.pointerId))moveSlider(e);});
+(async()=>{try{
+ const id=location.pathname.split('/').pop(),keyText=location.hash.slice(1);if(!/^[a-f0-9]{48}$/.test(id)||! /^[A-Za-z0-9_-]{43}$/.test(keyText))throw Error('Il link è incompleto. Chiedi allo studio di inviarlo nuovamente.');
+ const raw=Uint8Array.from(atob(keyText.replace(/-/g,'+').replace(/_/g,'/')+'='),c=>c.charCodeAt(0)),key=await crypto.subtle.importKey('raw',raw,'AES-GCM',false,['decrypt']);
+ const response=await fetch('/api/shares/'+id,{cache:'no-store',credentials:'omit'});if(!response.ok)throw Error(response.status===410?'Questo link è scaduto. Chiedi un nuovo confronto allo studio.':'Il confronto non è disponibile: il link può essere scaduto o revocato.');
+ const bytes=new Uint8Array(await response.arrayBuffer());if(bytes.length>10*1024*1024||bytes.length<32)throw Error('Confronto non valido.');
+ const decoded=await crypto.subtle.decrypt({name:'AES-GCM',iv:bytes.slice(0,12)},key,bytes.slice(12)),data=JSON.parse(new TextDecoder().decode(decoded));
+ if(data.version!==1||![data.before,data.after].every(v=>typeof v==='string'&&/^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(v)))throw Error('Confronto non valido.');
+ $('before').src=data.before;$('after').src=data.after;await Promise.all([$('before').decode(),$('after').decode()]);$('pose').textContent=String(data.pose||'');$('dates').textContent=String(data.dates||'');$('brightnessNote').textContent=typeof data.brightnessNote==='string'?data.brightnessNote:'';$('alignment').textContent=data.aligned?'Inquadrature allineate: scala uniforme, rotazione e posizione.':'Posa e luce possono influenzare il confronto.';$('status').hidden=true;$('comparison').hidden=false;
+ }catch(e){$('status').textContent=e.name==='OperationError'?'Non riesco ad aprire questo confronto. Verifica di aver copiato il link completo.':e.message||'Confronto non disponibile.';}})();
