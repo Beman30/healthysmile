@@ -8,6 +8,20 @@
  const compact=document.createElement('section');compact.id='compactCapture';compact.hidden=true;
  compact.innerHTML='<small id="compactLevelLabel">Livella telefono</small><div id="compactLevel"><button type="button" id="compactEnableLevel">Attiva livella</button><div id="compactAxes"><span>Laterale <b id="compactRoll">—</b><i><em id="compactRollDot"></em></i></span><span>Avanti / indietro <b id="compactPitch">—</b><i><em id="compactPitchDot"></em></i></span></div></div><p id="compactInstruction" role="status" aria-live="polite"></p><label id="compactSetup"><input type="checkbox" id="compactPhoneConfirmed"> Lente all’altezza degli occhi, telefono dritto</label><div id="compactActions"><button type="button" id="compactShot" disabled>Attendi la posa…</button><button type="button" id="compactManual">Scatto manuale</button></div>';
  $('captureDock').prepend(compact);
+ // Keep the existing zone workflow one tap away from live after capture.
+ const zoneStart=$('startZoneGuide');zoneStart.textContent='Controlla occhi · profilo · fronte';
+ $('compactActions').before(zoneStart);
+ const zoneLevel=document.createElement('div');zoneLevel.id='zoneLevel';$('zoneGuide').querySelector('header').after(zoneLevel);
+ const levelSlots=new Map(),openZones=zoneStart.onclick;
+ function restoreLevel(){for(const [node,slot]of levelSlots)slot.replaceWith(node);levelSlots.clear();}
+ zoneStart.onclick=()=>{
+  if(!stream||pending||captureBusy||activeVisit===0||!captureReference()||handoff)return;
+  for(const node of [$('compactLevelLabel'),$('compactLevel')]){const slot=document.createComment('live level');node.before(slot);levelSlots.set(node,slot);zoneLevel.append(node);}
+  openZones();
+  if(!$('zoneGuide').open)restoreLevel();
+ };
+ $('zoneGuide').addEventListener('close',()=>{restoreLevel();update();});
+
  const handoffBox=document.createElement('section');handoffBox.id='captureHandoff';handoffBox.hidden=true;
  handoffBox.innerHTML='<strong id="captureHandoffTitle" role="status"></strong><p id="captureHandoffHint"></p><button type="button" id="captureNextPhase" class="primary"></button><button type="button" id="captureRedo" class="text-button">Rifai la foto</button>';
  $('captureDock').prepend(handoffBox);
@@ -95,6 +109,7 @@
   $('compactShot').classList.toggle('ready',ready);
   $('compactShot').textContent=captureBusy?source.textContent:ready?'Scatta ora · raffica':'Attendi la posa…';
   $('compactManual').disabled=$('capture').disabled;
+  zoneStart.disabled=captureBusy||!!handoff;
   let message=captureBusy?'Resta fermo: scelgo la foto migliore.':ready?'Posa stabile. Premi Scatta ora.':$('patientGuideInstruction').textContent;
   if(!captureBusy&&!ready&&activeVisit===0&&!confirmed)message='Sistema il telefono all’altezza degli occhi e conferma sotto.';
   // Phone corrections stay in the level strip, leaving facial guidance visible at the same time.

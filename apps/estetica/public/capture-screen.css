@@ -46,3 +46,7 @@ body.capture-full.simple-app #cameraArea{width:min(100vw,calc((var(--capture-scr
 #captureRedo{display:block;margin:0 auto;min-height:32px;font-size:12px;padding:4px}
 #captureSavedImage{z-index:5;pointer-events:none}
 .capture-handoff #compactInstruction,.capture-handoff #compactSetup,.capture-handoff #compactActions,.capture-handoff .camera-facing-control,.capture-handoff #beforeEyeGuide,.capture-handoff #contourLegend{display:none!important}
+
+#compactCapture>.zone-start{display:block;width:100%;min-height:36px;margin:5px 0;padding:6px 10px;background:#f8edf2;border:1px solid #e5c7d4;font-size:12px}
+.capture-handoff #startZoneGuide{display:none!important}
+#zoneLevel{padding:8px 10px 2px;background:white;border-radius:8px;margin:8px 0}
