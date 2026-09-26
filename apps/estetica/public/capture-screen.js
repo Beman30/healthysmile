@@ -8,6 +8,38 @@
  const compact=document.createElement('section');compact.id='compactCapture';compact.hidden=true;
  compact.innerHTML='<small id="compactLevelLabel">Livella telefono</small><div id="compactLevel"><button type="button" id="compactEnableLevel">Attiva livella</button><div id="compactAxes"><span>Laterale <b id="compactRoll">—</b><i><em id="compactRollDot"></em></i></span><span>Avanti / indietro <b id="compactPitch">—</b><i><em id="compactPitchDot"></em></i></span></div></div><p id="compactInstruction" role="status" aria-live="polite"></p><label id="compactSetup"><input type="checkbox" id="compactPhoneConfirmed"> Lente all’altezza degli occhi, telefono dritto</label><div id="compactActions"><button type="button" id="compactShot" disabled>Attendi la posa…</button><button type="button" id="compactManual">Scatto manuale</button></div>';
  $('captureDock').prepend(compact);
+ const handoffBox=document.createElement('section');handoffBox.id='captureHandoff';handoffBox.hidden=true;
+ handoffBox.innerHTML='<strong id="captureHandoffTitle" role="status"></strong><p id="captureHandoffHint"></p><button type="button" id="captureNextPhase" class="primary"></button><button type="button" id="captureRedo" class="text-button">Rifai la foto</button>';
+ $('captureDock').prepend(handoffBox);
+ const savedImage=document.createElement('img');savedImage.id='captureSavedImage';savedImage.alt='Foto appena acquisita';savedImage.hidden=true;$('cameraArea').append(savedImage);
+ let handoff=null;
+ const acceptBeforeHandoff=acceptPhoto;
+ acceptPhoto=function(){
+  if(!pending)return;
+  const pose=current,visit=activeVisit,photo=pending,patientId=cloud.patient?.id;
+  acceptBeforeHandoff();
+  // Pause on the accepted pose instead of silently advancing to another expression.
+  if(visits[visit]?.photos.get(POSES[pose].id)===photo){
+   current=pose;handoff={patientId,visit,pose,photo};
+   clearTimeout(toastTimer);$('toast').hidden=true;render();
+  }
+ };
+ $('captureRedo').onclick=()=>{handoff=null;render();};
+ $('captureNextPhase').onclick=()=>{
+  if(!handoff||pending||captureBusy)return;
+  const completed=handoff;
+  if(completed.visit===0){
+   if(!setView('after'))return;
+   const selected=visits[activeVisit].selected,id=POSES[completed.pose].id;
+   if(Array.isArray(selected)&&!selected.includes(id)){selected.push(id);revision++;}
+   current=completed.pose;ghostVisible=true;render();if(!stream)startCamera();
+  }else{
+   if(!setView('compare'))return;
+   compareA=0;compareB=completed.visit;comparePose=POSES[completed.pose].id;customSlots=[];renderComparison();
+  }
+  handoff=null;update();
+ };
+
  const dialog=document.createElement('dialog');dialog.id='captureOptionsDialog';dialog.innerHTML='<div class="dialog-heading"><h2>Opzioni fotocamera</h2><button type="button" id="closeCaptureOptions" class="secondary">Chiudi</button></div><div id="captureOptionsContent"></div>';
  document.body.append(dialog);
  let lastStream=null,lastCaptureContext='',full=false;
@@ -25,10 +57,11 @@
  $('compactPhoneConfirmed').onchange=()=>{$('beforePhoneConfirmed').checked=$('compactPhoneConfirmed').checked;$('beforePhoneConfirmed').dispatchEvent(new Event('change'));update();};
  $('compactManual').onclick=()=>{if(!$('capture').disabled)$('capture').click();};
  $('compactShot').onclick=()=>{const b=$(activeVisit?'afterGuidedShot':'beforeGuidedShot');if(!b.disabled)b.click();update();};
- $('capturePose').onchange=()=>{selectPose(Number($('capturePose').value));update();};
+ $('capturePose').onchange=()=>{handoff=null;selectPose(Number($('capturePose').value));update();};
  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!dialog.open)setFull(false);});
  function update(){
-  const active=!!cloud.patient&&view!=='compare'&&(!!stream||!!pending);
+  if(handoff&&(handoff.patientId!==cloud.patient?.id||handoff.visit!==activeVisit||handoff.pose!==current||view==='compare'||pending||visits[handoff.visit]?.photos.get(POSES[handoff.pose].id)!==handoff.photo))handoff=null;
+  const active=!!cloud.patient&&view!=='compare'&&(!!stream||!!pending||!!handoff);
   const captureContext=active?[cloud.patient.id,activeVisit,view].join('|'):'';
   // Enter capture again when moving from before to after, even if the same stream stays open.
   if(active&&(captureContext!==lastCaptureContext||(stream&&stream!==lastStream)))full=true;
@@ -36,6 +69,16 @@
   if(!active)full=false;
   document.body.classList.toggle('capture-full',full);document.body.classList.toggle('compact-capture-active',active);
   bar.hidden=!full;enter.hidden=full||!active;compact.hidden=!active||!!pending;
+  handoffBox.hidden=!handoff;savedImage.hidden=!handoff;
+  document.body.classList.toggle('capture-handoff',!!handoff);
+  if(handoff){
+   if(savedImage.getAttribute('src')!==handoff.photo.url)savedImage.src=handoff.photo.url;
+   const before=handoff.visit===0;
+   $('captureHandoffTitle').textContent=before?'Prima foto acquisita':'Foto del dopo acquisita';
+   $('captureHandoffHint').textContent=before?'Lascia il telefono in posizione. Per il dopo, mantieni lo stesso obiettivo e la stessa luce.':'Ora puoi vedere le due foto a confronto.';
+   $('captureNextPhase').textContent=before?'Scatta il dopo quando sei pronto':'Confronta prima e dopo';
+  }else savedImage.removeAttribute('src');
+  if(handoff)$('cameraFacing').disabled=true;
   if(!active&&dialog.open)options(true);
   const ids=sequenceIds(),signature=ids.join('|');
   if($('capturePose').dataset.ids!==signature){$('capturePose').replaceChildren(...ids.map(id=>new Option(POSES.find(p=>p.id===id).title,String(POSES.findIndex(p=>p.id===id)))));$('capturePose').dataset.ids=signature;}
