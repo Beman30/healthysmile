@@ -13,9 +13,12 @@
  $('compactActions').before(zoneStart);
  const zoneLevel=document.createElement('div');zoneLevel.id='zoneLevel';$('zoneGuide').querySelector('header').after(zoneLevel);
  const levelSlots=new Map(),openZones=zoneStart.onclick;
+ let autoZoneKey='',zoneTimer=null;
+ const zoneContext=()=>[cloud.patient?.id,activeVisit,current,captureReference()?.url,stream?.id].join('|');
  function restoreLevel(){for(const [node,slot]of levelSlots)slot.replaceWith(node);levelSlots.clear();}
  zoneStart.onclick=()=>{
-  if(!stream||pending||captureBusy||activeVisit===0||!captureReference()||handoff)return;
+  if(!stream||pending||captureBusy||activeVisit===0||!captureReference()||handoff||$('zoneGuide').open)return;
+  autoZoneKey=zoneContext();
   for(const node of [$('compactLevelLabel'),$('compactLevel')]){const slot=document.createComment('live level');node.before(slot);levelSlots.set(node,slot);zoneLevel.append(node);}
   openZones();
   if(!$('zoneGuide').open)restoreLevel();
@@ -110,6 +113,15 @@
   $('compactShot').textContent=captureBusy?source.textContent:ready?'Scatta ora · raffica':'Attendi la posa…';
   $('compactManual').disabled=$('capture').disabled;
   zoneStart.disabled=captureBusy||!!handoff;
+  // Start the actual magnified eye/contour workflow when entering after capture.
+  // Defer until the navigation has finished choosing the matching pose.
+  if(activeVisit===0||view==='compare'||!stream)autoZoneKey='';
+  if(full&&activeVisit>0&&stream&&!pending&&!handoff&&!captureBusy&&ref&&!dialog.open&&!$('zoneGuide').open&&autoZoneKey!==zoneContext()&&!zoneTimer){
+   zoneTimer=setTimeout(()=>{
+    zoneTimer=null;
+    if(full&&activeVisit>0&&stream&&!pending&&!handoff&&!captureBusy&&captureReference()&&!dialog.open&&!$('zoneGuide').open&&autoZoneKey!==zoneContext())zoneStart.click();
+   },250);
+  }
   let message=captureBusy?'Resta fermo: scelgo la foto migliore.':ready?'Posa stabile. Premi Scatta ora.':$('patientGuideInstruction').textContent;
   if(!captureBusy&&!ready&&activeVisit===0&&!confirmed)message='Sistema il telefono all’altezza degli occhi e conferma sotto.';
   // Phone corrections stay in the level strip, leaving facial guidance visible at the same time.

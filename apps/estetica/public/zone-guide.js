@@ -14,7 +14,7 @@
  <label class="zone-lines"><input id="zoneLines" type="checkbox" checked> Linee del prima</label><small>Tocca la miniatura o trascina lo zoom per centrare la zona. Le due immagini si spostano insieme.</small></div></div>
  <footer><button type="button" id="zoneBack">Indietro</button><button type="button" id="zoneNext">Zona controllata: avanti</button></footer>`;
  document.body.append(dialog);
- const stages=[['Occhi e distanza','Azzurro: riferimenti del prima. Giallo: occhi live. Fai coincidere entrambi, mantenendo distanza e inclinazione.'],['Lato sinistro','Sinistra del paziente (a destra nell’immagine). Controlla il profilo senza cercare di annullare i cambiamenti del trattamento.'],['Lato destro','Destra del paziente (a sinistra nell’immagine). Ricontrolla anche gli occhi se muovi la testa.'],['Fronte','Confronta fronte e attaccatura solo come controllo visivo: capelli ed espressione possono cambiare.'],['Viso completo','Ricontrolla tutte le zone insieme prima dello scatto. I passaggi precedenti non bloccano la posizione.']];
+ const stages=[['Occhi e distanza','Azzurro: riferimenti del prima. Giallo: occhi live. Fai coincidere entrambi, mantenendo distanza e inclinazione.'],['Contorno sinistro','Sinistra del paziente (a destra nell’immagine). Controlla il profilo senza cercare di annullare i cambiamenti del trattamento.'],['Contorno destro','Destra del paziente (a sinistra nell’immagine). Ricontrolla anche gli occhi se muovi la testa.'],['Fronte','Confronta fronte e attaccatura solo come controllo visivo: capelli ed espressione possono cambiare.'],['Viso completo','Ricontrolla tutte le zone insieme prima dello scatto. I passaggi precedenti non bloccano la posizione.']];
  let step=0,center={x:.5,y:.35},ref=null,image=null,face=null,faceURL='',facePatient='',openKey='',generation=0,raf=0,lastDraw=0,manual=false,holding=false,measurement=null;
  const canvas=$('zoneCanvas'),ctx=canvas.getContext('2d'),map=$('zoneMap'),mctx=map.getContext('2d');
  const stateKey=()=>[cloud.patient?.id,activeVisit,current,captureReference()?.url,stream?.id].join('|');
@@ -75,7 +75,7 @@
  }
  start.onclick=async()=>{
   if(!valid())return;const gen=++generation;ref=captureReference();openKey=stateKey();image=null;mctx.clearRect(0,0,150,200);choose(0);dialog.showModal();raf=requestAnimationFrame(frame);
-  try{const im=await loadedImage(ref.url);if(gen===generation&&dialog.open)image=im;}catch{if(gen===generation){dialog.close();toast('Non riesco ad aprire la foto prima. Riprova.');}}
+  try{const im=await loadedImage(ref.url);if(gen===generation&&dialog.open)image=im;}catch{if(gen===generation){dialog.close();notify('Non riesco ad aprire la foto prima. Riprova.');}}
  };
  $('closeZoneGuide').onclick=()=>dialog.close();
  dialog.addEventListener('close',()=>{generation++;cancelAnimationFrame(raf);image=null;ref=null;holding=false;});

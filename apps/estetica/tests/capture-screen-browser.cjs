@@ -86,6 +86,7 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
   await page.locator('#tabAfter').click();
   await page.waitForFunction(()=>document.body.classList.contains('capture-full'));
   assert(await page.evaluate(()=>stream===window.beforeTransitionStream),'same-stream transition must reopen fullscreen');
+  await visible('#zoneGuide');await page.locator('#closeZoneGuide').click();
   await inViewport('#compactLevel');await inViewport('#compactInstruction');
   assert((await page.locator('#cameraArea').boundingBox()).width>=350);
   await visible('#compactCapture');await inViewport('#compactManual');

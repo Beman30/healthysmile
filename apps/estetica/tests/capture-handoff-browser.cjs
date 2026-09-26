@@ -89,20 +89,24 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
   await page.locator('#compactManual').click();await visible('#accept');await page.locator('#accept').click();await visible('#captureHandoff');
   await page.locator('#captureNextPhase').click();
   await page.waitForFunction(()=>activeVisit===1&&view==='after'&&current===0&&document.body.classList.contains('capture-full'));
-  assert(await page.locator('#captureHandoff').isHidden());await inViewport('#compactLevel');await inViewport('#compactManual');
+  assert(await page.locator('#captureHandoff').isHidden());
   assert(await page.evaluate(()=>captureReference()===visits[0].photos.get('front-neutral')));
-  await inViewport('#startZoneGuide');await page.locator('#startZoneGuide').click();await visible('#zoneGuide');
+  await visible('#zoneGuide'); // Opens directly: no extra button click.
+  assert(Number(await page.locator('#zoneZoom').inputValue())>1,'eyes must be magnified');
+  await page.waitForFunction(()=>document.getElementById('zoneCanvas').getContext('2d').getImageData(300,300,1,1).data[0]!==23);
+  await shot('automatic-eye-zoom');
   await inViewport('#zoneLevel #compactLevel');assert(await page.locator('#captureOptionsDialog').isHidden());
   assert.match(await page.locator('#zoneTitle').textContent(),/Occhi e distanza/);
-  await page.locator('#zoneNext').click();assert.match(await page.locator('#zoneTitle').textContent(),/Lato sinistro/);
-  await page.locator('#zoneNext').click();assert.match(await page.locator('#zoneTitle').textContent(),/Lato destro/);
+  await page.locator('#zoneNext').click();assert.match(await page.locator('#zoneTitle').textContent(),/Contorno sinistro/);
+  await page.locator('#zoneNext').click();assert.match(await page.locator('#zoneTitle').textContent(),/Contorno destro/);
   await page.locator('#zoneNext').click();assert.match(await page.locator('#zoneTitle').textContent(),/Fronte/);
-  await shot('zone-forehead');
+  await page.waitForTimeout(200);await shot('zone-forehead');
   await page.locator('#zoneNext').click();assert.match(await page.locator('#zoneTitle').textContent(),/Viso completo/);
   await page.locator('#closeZoneGuide').click();await inViewport('#compactCapture #compactLevel');await inViewport('#startZoneGuide');
   assert(await page.evaluate(()=>document.body.classList.contains('capture-full')));
   await page.locator('#startZoneGuide').click();await visible('#zoneGuide');await page.locator('#closeZoneGuide').click();
   assert.equal(await page.locator('#compactLevel').count(),1);
+  await page.waitForTimeout(600);assert(await page.locator('#zoneGuide').isHidden(),'closing the guide must not cause immediate reopening');
 
   await page.locator('#compactManual').click();await visible('#accept');await page.locator('#accept').click();await visible('#captureHandoff');
   assert.equal(await page.locator('#captureNextPhase').textContent(),'Confronta prima e dopo');
@@ -112,6 +116,7 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
   await page.locator('#capturePose').selectOption('1');await page.locator('#compactManual').click();await visible('#accept');await page.locator('#accept').click();await visible('#captureHandoff');
   await page.locator('#captureNextPhase').click();await page.waitForFunction(()=>activeVisit===1&&current===1);
   assert(await page.evaluate(()=>captureReference()===visits[0].photos.get('front-smile')),'handoff repeats the exact accepted expression');
+  await visible('#zoneGuide');assert.match(await page.locator('#zoneTitle').textContent(),/Occhi e distanza/);
   assert.deepEqual(errors,[]);console.log('PASS confirmation handoff, small screen, redo preservation, same-pose after capture, fullscreen level, comparison, and smile-pose handoff.');
  }catch(e){console.log('LAST GUIDE',await page.locator('#patientGuideInstruction').textContent(),await page.locator('#toast').textContent());throw e;}finally{await browser.close();server.closeAllConnections();await new Promise(r=>server.close(r));db.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});
