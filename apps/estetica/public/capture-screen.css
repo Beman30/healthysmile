@@ -36,3 +36,5 @@ body.capture-full.simple-app #cameraArea{width:min(100vw,calc((var(--capture-scr
 }
 
 .capture-full #guideAdjustment{display:none!important}
+
+#compactLevelLabel{display:block;font-size:11px;line-height:1.2;color:#545c69;text-align:center;margin-bottom:4px}

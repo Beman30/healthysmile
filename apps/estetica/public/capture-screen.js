@@ -6,11 +6,11 @@
  document.body.append(bar);
  const enter=document.createElement('button');enter.id='openCaptureScreen';enter.className='secondary';enter.textContent='Schermo intero';$('cameraStatus').after(enter);
  const compact=document.createElement('section');compact.id='compactCapture';compact.hidden=true;
- compact.innerHTML='<div id="compactLevel"><button type="button" id="compactEnableLevel">Attiva livella</button><div id="compactAxes"><span>Laterale <b id="compactRoll">—</b><i><em id="compactRollDot"></em></i></span><span>Avanti / indietro <b id="compactPitch">—</b><i><em id="compactPitchDot"></em></i></span></div></div><p id="compactInstruction" role="status" aria-live="polite"></p><label id="compactSetup"><input type="checkbox" id="compactPhoneConfirmed"> Lente all’altezza degli occhi, telefono dritto</label><div id="compactActions"><button type="button" id="compactShot" disabled>Attendi la posa…</button><button type="button" id="compactManual">Scatto manuale</button></div>';
+ compact.innerHTML='<small id="compactLevelLabel">Livella telefono</small><div id="compactLevel"><button type="button" id="compactEnableLevel">Attiva livella</button><div id="compactAxes"><span>Laterale <b id="compactRoll">—</b><i><em id="compactRollDot"></em></i></span><span>Avanti / indietro <b id="compactPitch">—</b><i><em id="compactPitchDot"></em></i></span></div></div><p id="compactInstruction" role="status" aria-live="polite"></p><label id="compactSetup"><input type="checkbox" id="compactPhoneConfirmed"> Lente all’altezza degli occhi, telefono dritto</label><div id="compactActions"><button type="button" id="compactShot" disabled>Attendi la posa…</button><button type="button" id="compactManual">Scatto manuale</button></div>';
  $('captureDock').prepend(compact);
  const dialog=document.createElement('dialog');dialog.id='captureOptionsDialog';dialog.innerHTML='<div class="dialog-heading"><h2>Opzioni fotocamera</h2><button type="button" id="closeCaptureOptions" class="secondary">Chiudi</button></div><div id="captureOptionsContent"></div>';
  document.body.append(dialog);
- let lastStream=null,full=false;
+ let lastStream=null,lastCaptureContext='',full=false;
  const originalParents=new Map();
  function options(close=false){
   if(close){dialog.close();for(const [node,slot]of originalParents){slot.replaceWith(node);}originalParents.clear();return;}
@@ -29,7 +29,10 @@
  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!dialog.open)setFull(false);});
  function update(){
   const active=!!cloud.patient&&view!=='compare'&&(!!stream||!!pending);
-  if(stream&&stream!==lastStream){lastStream=stream;full=true;}
+  const captureContext=active?[cloud.patient.id,activeVisit,view].join('|'):'';
+  // Enter capture again when moving from before to after, even if the same stream stays open.
+  if(active&&(captureContext!==lastCaptureContext||(stream&&stream!==lastStream)))full=true;
+  lastCaptureContext=captureContext;lastStream=stream;
   if(!active)full=false;
   document.body.classList.toggle('capture-full',full);document.body.classList.toggle('compact-capture-active',active);
   bar.hidden=!full;enter.hidden=full||!active;compact.hidden=!active||!!pending;
@@ -41,6 +44,7 @@
   $('compactEnableLevel').hidden=s.usable;$('compactAxes').classList.toggle('level-okay',s.okay);
   for(const [axis,val]of [['Roll',s.roll],['Pitch',s.pitch]]){$('compact'+axis).textContent=val===null?'—':Math.abs(val).toFixed(0)+'°';$('compact'+axis+'Dot').hidden=val===null;$('compact'+axis+'Dot').style.left=(50+Math.max(-20,Math.min(20,val||0))*2)+'%';}
   $('compactLevel').title=ref?.level?'Differenza rispetto all’inclinazione del prima':'Porta i due indicatori al centro';
+  $('compactLevelLabel').textContent=!s.usable?'Livella telefono · attiva il sensore':!s.portrait?'Livella · tieni il telefono verticale':!s.compatible?'Livella · orientamento del prima diverso':s.recorded?(s.okay?'Livella · inclinazione del prima ritrovata':'Livella · ripeti l’inclinazione del prima'):(s.okay?'Livella · telefono dritto':'Livella · porta gli indicatori al centro');
   const confirmed=$('beforePhoneConfirmed').checked;
   $('compactPhoneConfirmed').checked=confirmed;$('compactSetup').hidden=activeVisit!==0||confirmed;
   const source=$(activeVisit?'afterGuidedShot':'beforeGuidedShot'),ready=!source.disabled&&!captureBusy;
@@ -50,7 +54,9 @@
   $('compactManual').disabled=$('capture').disabled;
   let message=captureBusy?'Resta fermo: scelgo la foto migliore.':ready?'Posa stabile. Premi Scatta ora.':$('patientGuideInstruction').textContent;
   if(!captureBusy&&!ready&&activeVisit===0&&!confirmed)message='Sistema il telefono all’altezza degli occhi e conferma sotto.';
-  else if(!captureBusy&&!ready&&activeVisit>0&&source.textContent!=='Attendo la posa del prima…')message=source.textContent;
+  // Phone corrections stay in the level strip, leaving facial guidance visible at the same time.
+  else if(!captureBusy&&!ready&&activeVisit>0&&source.textContent==='Ripristina la fotocamera del prima')message=source.textContent;
+  else if(!captureBusy&&!ready&&activeVisit>0&&$('togglePatientGuidance').getAttribute('aria-pressed')!=='true')message='Attiva la guida in Opzioni per le indicazioni sulla posa.';
   if($('compactInstruction').textContent!==message)$('compactInstruction').textContent=message;
   // Size the preview to the remaining space without changing its 3:4 crop.
   if(full){const height=window.visualViewport?.height||window.innerHeight,top=bar.getBoundingClientRect().height,bottom=$('captureDock').getBoundingClientRect().height;document.documentElement.style.setProperty('--capture-screen-height',height+'px');document.documentElement.style.setProperty('--capture-screen-top',top+'px');document.documentElement.style.setProperty('--capture-screen-bottom',bottom+'px');}
