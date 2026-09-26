@@ -1,0 +1,38 @@
+/* Capture gets the screen; detailed guidance is available in Options. */
+#cameraBadge{display:none!important}
+.compact-capture-active #captureDock>#patientGuidance,.compact-capture-active #captureDock>#liveControls,.compact-capture-active #dockPose{display:none!important}
+#compactCapture{max-width:600px;margin:auto;color:#20232a}
+#compactLevel{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+#compactEnableLevel{font-size:12px;background:#edf0f3;border-radius:8px;padding:6px;min-height:40px;flex:none}
+#compactAxes{display:flex;gap:16px;flex:1;font-size:11px;text-align:left}
+#compactAxes>span{flex:1}#compactAxes b{float:right;font-weight:600}
+#compactAxes i{display:block;height:7px;background:linear-gradient(to right,#e4e7ec 44%,#b5decf 44%,#b5decf 56%,#e4e7ec 56%);border-radius:5px;position:relative;margin:5px 0}
+#compactAxes em{position:absolute;top:-3px;width:13px;height:13px;border-radius:50%;background:#b52663;transform:translateX(-50%)}#compactAxes.level-okay em{background:#19705b}
+#compactInstruction{font-size:15px;font-weight:650;line-height:1.25;text-align:center;margin:5px 0;min-height:20px}
+#compactSetup{display:flex;align-items:center;gap:8px;margin:7px 0;font-size:12px;line-height:1.25}#compactSetup input{width:22px;height:22px;min-height:22px;flex:none;margin:0}
+#compactActions{display:flex;gap:8px;margin:7px 0}#compactActions button{min-height:46px;border-radius:10px;padding:8px;font-weight:650;font-size:13px}
+#compactShot{flex:1;background:#d9dde4;color:#26313b;opacity:1}#compactShot.ready{background:#19705b;color:white}
+#compactManual{background:white;border:1px solid #cbd0d8;color:#38414b;font-size:12px!important}
+#captureScreenBar{position:fixed;top:0;left:0;right:0;z-index:31;display:flex;gap:8px;align-items:center;background:#fff;padding:calc(5px + env(safe-area-inset-top)) 10px 5px;min-height:50px}
+#captureScreenBar button{min-height:40px;background:transparent;font-size:13px;padding:5px;color:#333946}
+#capturePose{flex:1;min-width:0;width:auto;min-height:38px;padding:6px;font-size:13px;border:0;font-weight:650}
+body.capture-full{overflow:hidden;padding:0!important}
+.capture-full>.topbar{display:none!important}
+.capture-full .workspace>.camera-shell{position:fixed;inset:var(--capture-screen-top,50px) 0 auto;z-index:25;height:calc(var(--capture-screen-height,100dvh) - var(--capture-screen-top,50px) - var(--capture-screen-bottom,210px));width:100%;max-width:none!important;margin:0;border-radius:0;display:flex!important;align-items:center;justify-content:center;background:#111318;box-shadow:none}
+body.capture-full.simple-app #cameraArea{width:min(100vw,calc((var(--capture-screen-height,100dvh) - var(--capture-screen-top,50px) - var(--capture-screen-bottom,210px)) * .75));height:auto;max-height:none;aspect-ratio:3/4;margin:0;border-radius:0;flex:none}
+.capture-full .camera-footer,.capture-full .camera-shell>#cameraTools{display:none!important}
+.capture-full #captureDock{position:fixed;left:0;right:0;bottom:auto;top:calc(var(--capture-screen-height,100dvh) - var(--capture-screen-bottom,210px));z-index:30;display:block;padding:8px 12px calc(6px + env(safe-area-inset-bottom));background:#fff;border-top:1px solid #ddd;box-shadow:none}
+.compact-capture-active .camera-facing-control{font-size:12px;gap:8px;margin:2px 0}
+.compact-capture-active .camera-facing-control select{font-size:12px;min-height:32px;min-width:0;padding:4px 8px}
+#captureOptionsDialog{width:min(540px,calc(100% - 20px));max-width:540px}
+#captureOptionsContent>#patientGuidance{display:block;max-width:none;margin-top:15px}
+#captureOptionsContent #cameraTools .guide-adjustment{position:static;margin-top:14px}
+.capture-full .toast{z-index:40;bottom:calc(var(--capture-screen-bottom,210px) + 8px);font-size:12px;max-height:90px;padding:8px 12px}
+@media(max-height:500px) and (orientation:landscape){
+ #captureScreenBar{right:235px}
+ .capture-full .workspace>.camera-shell{right:235px;width:auto;height:calc(var(--capture-screen-height,100dvh) - var(--capture-screen-top,50px))}
+ body.capture-full.simple-app #cameraArea{width:min(calc(100vw - 235px),calc((var(--capture-screen-height,100dvh) - var(--capture-screen-top,50px)) * .75))}
+ .capture-full #captureDock{left:auto;right:0;top:0;bottom:0;width:235px;overflow-y:auto;max-height:var(--capture-screen-height,100dvh)}
+}
+
+.capture-full #guideAdjustment{display:none!important}

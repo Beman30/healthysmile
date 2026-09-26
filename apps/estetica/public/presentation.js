@@ -1,5 +1,5 @@
 'use strict';
-function sequenceIds(){const v=visits[activeVisit];return activeVisit?(v.selected?.some(id=>id!=='front-brows')?v.selected.filter(id=>id!=='front-brows'):FLOW_POSES.filter(p=>visits[0].photos.has(p.id)).map(p=>p.id)):FLOW_POSES.map(p=>p.id);}
+function sequenceIds(){const v=visits[activeVisit],available=FLOW_POSES.filter(p=>!activeVisit||visits[0].photos.has(p.id)).map(p=>p.id);const chosen=available.filter(id=>v.selected?.includes(id));return activeVisit&&chosen.length?chosen:available;}
 function stepPose(delta){const ids=sequenceIds(),at=ids.indexOf(POSES[current].id),next=Math.min(ids.length-1,Math.max(0,at+delta));if(ids[next])selectPose(POSES.findIndex(p=>p.id===ids[next]));}
 const viewBeforeRepeat=setView;setView=function(next){const ok=viewBeforeRepeat(next);if(ok&&next!=='compare'){const ids=sequenceIds(),id=ids.find(id=>!photos.has(id))||ids[0];if(id)current=POSES.findIndex(p=>p.id===id);render();}return ok;};
 const acceptBeforeRepeat=acceptPhoto;acceptPhoto=function(){if(!pending)return;const ids=sequenceIds();acceptBeforeRepeat();const next=ids.find(id=>!photos.has(id));if(next)current=POSES.findIndex(p=>p.id===next);else if(ids.length){current=POSES.findIndex(p=>p.id===ids[ids.length-1]);notify(activeVisit?'Pose scelte completate. Apri Confronto.':'Prima completato. Premi Scatta il dopo.');}render();};
@@ -7,7 +7,7 @@ const flowBeforeRepeat=renderFlow;renderFlow=function(){flowBeforeRepeat();const
  $('repeatPhotos').disabled=!visits[0].photos.size||!!pending||importBusy;
  $('repeatProgress').textContent=activeVisit?`${count} di ${ids.length} pose scelte completate`:'';
  if(activeVisit){$('progressText').textContent=`${count} / ${ids.length}`;$('completionLabel').textContent=count===ids.length?'Pose completate':`${count} di ${ids.length}`;$('stepCount').textContent=`DOPO · SCATTO ${Math.max(1,at+1)} DI ${ids.length}`;}
- [...$('poseList').children].forEach((li,i)=>{li.hidden=i>=6||(activeVisit&&!ids.includes(POSES[i].id));});
+ [...$('poseList').children].forEach((li,i)=>{li.hidden=!ids.includes(POSES[i].id);});
  $('prevPose').disabled=at<=0||!!pending;$('nextPose').disabled=at===ids.length-1||!!pending;
 };
 function poseChoices(container,ids){container.replaceChildren(...ids.map(id=>{const label=document.createElement('label');label.className='check';const input=document.createElement('input');input.type='checkbox';input.value=id;input.checked=true;const span=document.createElement('span');span.textContent=POSES.find(p=>p.id===id).title;label.append(input,span);return label;}));}

@@ -1,6 +1,7 @@
 'use strict';
 // Paired visit workflow. Cloud persistence is integrated by cloud.js; ZIP remains a backup.
-const FLOW_POSES = POSES.slice(0,6);
+// Keep legacy pose definitions/photos for archives; new capture is frontal only.
+const FLOW_POSES = POSES.filter(p=>['front-neutral','front-smile'].includes(p.id));
 let visits=[{date:$('visitDate').value,phase:'before',photos}], activeVisit=0, lastFollowup=1;
 let view='before', comparisonLayout='slider', compareA=0, compareB=1, comparePose=POSES[0].id;
 let customSlots=[], archiveBusy=false, importBusy=false, importGeneration=0, ghostVisible=true;
@@ -34,8 +35,8 @@ function renderFlow(){
  $('visitPhase').disabled=activeVisit===0||importBusy;$('followupControls').hidden=activeVisit===0;
  optionList($('followupSelect'),visits.slice(1).map((v,i)=>[i+1,visitLabel(i+1)]),activeVisit);
  const mainCount=FLOW_POSES.filter(p=>photos.has(p.id)).length;
- $('stepCount').textContent=`${activeVisit===0?'PRIMA':'DOPO'} · ${current===6?'VISTA FACOLTATIVA':`SCATTO ${current+1} DI 6`}`;
- $('progressText').textContent=`${mainCount} / 6`;$('completionLabel').textContent=hasSix(photos)?'6 viste completate':`${mainCount} di 6`;
+ $('stepCount').textContent=`${activeVisit===0?'PRIMA':'DOPO'} · ${`SCATTO ${Math.max(1,FLOW_POSES.findIndex(p=>p.id===POSES[current].id)+1)} DI ${FLOW_POSES.length}`}`;
+ $('progressText').textContent=`${mainCount} / ${FLOW_POSES.length}`;$('completionLabel').textContent=hasSix(photos)?'Frontali completate':`${mainCount} di ${FLOW_POSES.length}`;
  $('saveArchiveTop').disabled=!totalPhotos()||archiveBusy||importBusy;$('exportZip').disabled=!totalPhotos()||archiveBusy||importBusy;
  if(importBusy)$('capture').disabled=true;
  $('choosePrevious').disabled=!!pending||captureBusy||importBusy;
@@ -202,7 +203,7 @@ function renderComparison(){
  document.querySelectorAll('[data-layout]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.layout===comparisonLayout)));
  $('layoutHint').textContent={slider:'Trascina la linea per passare dal prima al dopo della stessa posa.',two:'Stessa posa, due visite affiancate. Lo zoom si applica a entrambe.',half:'Metà sinistra del prima e metà destra del dopo, nella stessa inquadratura.',grid:'Due coppie di foto. Puoi scegliere posa e visita in ogni riquadro.'}[comparisonLayout];
  const surface=$('comparisonSurface');surface.replaceChildren();surface.className=`comparison-surface layout-${comparisonLayout}`;
- if(!totalPhotos()){const p=document.createElement('p');p.className='comparison-empty';p.textContent='Acquisisci le sei foto del prima oppure apri il ZIP del paziente.';surface.append(p);$('exportComparison').disabled=true;return;}
+ if(!totalPhotos()){const p=document.createElement('p');p.className='comparison-empty';p.textContent='Acquisisci le foto frontali del prima oppure apri il ZIP del paziente.';surface.append(p);$('exportComparison').disabled=true;return;}
  if(visits.length<2){const p=document.createElement('p');p.className='comparison-empty';p.textContent='Il prima è pronto. Apri Dopo per scattare la stessa sequenza al termine del trattamento.';surface.append(p);$('exportComparison').disabled=true;return;}
  if(compareA===compareB){const p=document.createElement('p');p.className='same-visit';p.textContent='Stai mostrando la stessa visita in entrambi i lati. Scegli due visite diverse per il prima e dopo.';surface.append(p);}
  if(comparisonLayout==='slider'||comparisonLayout==='half'){
