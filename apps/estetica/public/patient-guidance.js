@@ -33,9 +33,9 @@
   const generation=lifecycle;
   loading=(async()=>{
    if(!window.Worker||!window.OffscreenCanvas||!window.createImageBitmap)throw Error('Guida non supportata');
-   [core,beforeCore]=await Promise.all([import('./patient-guidance-core.mjs?v=24'),import('./before-guidance-core.mjs?v=23')]);
+   [core,beforeCore]=await Promise.all([import('./patient-guidance-core.mjs?v=31'),import('./before-guidance-core.mjs?v=31')]);
    if(generation!==lifecycle)throw Error('Guida interrotta');
-   worker=new Worker('/patient-guidance-worker.js?v=24');
+   worker=new Worker('/patient-guidance-worker.js?v=31');
    worker.onmessage=({data})=>{const r=requests.get(data.id);if(!r)return;requests.delete(data.id);clearTimeout(r.timer);data.error?r.reject(Error(data.error)):r.resolve(data.face);};
    worker.onerror=()=>{failed=true;dispose();};
    await ask();
@@ -80,7 +80,7 @@
     if(!active()||currentKey!==key()||run!==lifecycle)return;
     const state=beforeCore.beforePoseState(live,beforeOptions()),now=performance.now(),steady=core.steadyFace(live,lastFace);lastFace=live;
     if(candidate!==state.key||!steady){candidate=state.key;candidateAt=now;}
-    const stable=state.ready&&steady&&now-candidateAt>=1200;
+    const stable=state.ready&&steady&&now-candidateAt>=core.POSE_HOLD_MS;
     window.dispatchEvent(new CustomEvent('hs-before-guide',{detail:{state,live,stable,measuredAt,context:currentKey}}));
     show(stable?'Pronto per lo scatto guidato':state.text,stable?'Premi Scatto guidato: sceglierò una foto reale dalla breve raffica.':state.detail,stable);
     return;
@@ -92,9 +92,11 @@
    const instruction=core.patientInstruction(live,target),now=performance.now(),steady=core.steadyFace(live,lastFace);lastFace=live;
    if(candidate!==instruction.key){candidate=instruction.key;candidateAt=now;panel.classList.remove('patient-guide-close');if(instruction.okay)show('Resta fermo un momento…','Controllo che la posizione sia stabile.');}
    if(instruction.okay&&!steady){candidateAt=now;panel.classList.remove('patient-guide-close');show('Resta fermo un momento…','Controllo che la posizione sia stabile.');}
-   if(now-candidateAt>=(instruction.okay?1200:350))show(instruction.text,instruction.detail,instruction.okay);
-   const stable=!!instruction.okay&&steady&&now-candidateAt>=1200&&!!core.afterFrameRank(live,target);
-   window.dispatchEvent(new CustomEvent('hs-face-guide',{detail:{target,live,stable,eyes:core.eyeAlignmentStatus(live,target),measuredAt,context:currentKey,referenceURL:ref.url,patientId:cloud.patient?.id}}));
+   if(now-candidateAt>=(instruction.okay?core.POSE_HOLD_MS:350))show(instruction.text,instruction.detail,instruction.okay);
+   const eyes=core.eyeAlignmentStatus(live,target);
+   if(instruction.okay&&!eyes.ready)show(eyes.eyes,'Controlla la trasparenza; lo scatto manuale resta disponibile.');
+   const stable=!!instruction.okay&&steady&&now-candidateAt>=core.POSE_HOLD_MS&&!!core.afterFrameRank(live,target);
+   window.dispatchEvent(new CustomEvent('hs-face-guide',{detail:{target,live,stable,eyes,measuredAt,context:currentKey,referenceURL:ref.url,patientId:cloud.patient?.id}}));
   }catch{
    if(enabled&&run===lifecycle){failed=true;dispose();show('Guida non disponibile','Puoi comunque usare lo scatto manuale.');$('togglePatientGuidance').textContent='Riprova';}
   }finally{busy=false;}

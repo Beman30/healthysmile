@@ -27,3 +27,11 @@ test('sharpness is evaluated on face pixels rather than detailed background',()=
  assert(faceSharpness(sharp,w,h,f)>faceSharpness(flat,w,h,f));
  assert.equal(faceSharpness(background,w,h,f),faceSharpness(flat,w,h,f));
 });
+
+
+test('small first-photo pose and phone deviations no longer block capture',()=>{
+ const state=beforePoseState({...f,cx:.54,cy:.41,yaw:4.7,pitch:5.5,roll:3.5},
+  {...options,level:{roll:3.5,pitch:-3.5}});
+ assert.equal(state.ready,true);
+ assert.equal(beforePoseState(f,{...options,level:{roll:4.5,pitch:0}}).ready,false);
+});

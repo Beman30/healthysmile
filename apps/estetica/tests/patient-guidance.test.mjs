@@ -73,3 +73,17 @@ test('after burst ranks the recorded pose before sharpness and rejects nonmatchi
  assert.equal(betterAfterFrame({...same,sharpness:100},{...same,sharpness:10}),true);
  for(const changes of [{yaw:0},{size:.3},{eyeOpen:.01},{cx:.7},{clipped:true}])assert.equal(afterFrameRank({...ref,...changes},ref),null);
 });
+
+
+test('small pose offsets and natural micro-movements permit the after burst',()=>{
+ const ref={...target,size:.35,eyeOpen:.25,anchors:[[.325,.4],[.39,.4],[.61,.4],[.675,.4],[.5,.45],[.5,.48],[.5,.5]]};
+ const live={...ref,cx:.518,cy:.405,size:.3675,yaw:3.4,pitch:3.4,roll:3.2,
+  anchors:ref.anchors.map(([x,y])=>[.5+(x-.5)*1.05+.018,.4+(y-.4)*1.05+.005])};
+ assert(eyeAlignmentStatus(live,ref).ready);
+ assert(patientInstruction(live,ref).okay);
+ assert(afterFrameRank(live,ref),'newly accepted pose must also survive burst-frame selection');
+ assert(steadyFace({...live,yaw:3.85,cx:.523,size:.371}, {...live,yaw:2.95}));
+ assert.equal(afterFrameRank({...live,yaw:6},ref),null,'clear head rotation still needs correction');
+ assert.equal(afterFrameRank({...live,roll:6},ref),null);
+ assert.equal(afterFrameRank({...live,size:ref.size*1.1},ref),null);
+});

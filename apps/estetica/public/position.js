@@ -9,8 +9,8 @@ function capturePositionState(live,reference,screenAngle=0){
  const portrait=((screenAngle%360)+360)%360===0;
  const compatible=!recorded||recorded.screenAngle===undefined||recorded.screenAngle===0;
  const roll=usable?live.roll-target.roll:null,pitch=usable?live.pitch-target.pitch:null;
- // 3 degrees is an operator aid, not a validated clinical equivalence threshold.
- return {recorded:!!recorded,usable,portrait,compatible,roll,pitch,okay:usable&&portrait&&compatible&&Math.abs(roll)<=3&&Math.abs(pitch)<=3};
+ // 4 degrees is an operator aid, not a validated clinical equivalence threshold.
+ return {recorded:!!recorded,usable,portrait,compatible,roll,pitch,okay:usable&&portrait&&compatible&&Math.abs(roll)<=4&&Math.abs(pitch)<=4};
 }
 function cameraMatchState(reference,track){
  if(!reference||!track)return {text:'',warning:false};

@@ -1,3 +1,4 @@
+export const POSE_HOLD_MS=800;
 // Patient coordinates: the live preview and saved photos are never mirrored.
 export const deltaAngle=(a,b)=>((a-b+540)%360)-180;
 // Independent scale and translation checks: aligning one eye cannot pass both.
@@ -7,15 +8,15 @@ export function eyeAlignmentStatus(live,target){
  const valid=f=>f&&!f.error&&['cx','cy','size','yaw','pitch','roll'].every(k=>Number.isFinite(f[k]))&&f.size>.025;
  if(!valid(live)||!valid(target))return unknown('Occhi non leggibili');
  if(live.clipped||target.clipped)return unknown('Inquadra tutto il viso');
- if(Math.abs(live.yaw)>55||Math.abs(target.yaw)>55||Math.abs(live.pitch)>35||Math.abs(target.pitch)>35||Math.abs(deltaAngle(live.yaw,target.yaw))>3||Math.abs(deltaAngle(live.pitch,target.pitch))>3)return unknown('Prima orienta il viso');
- const ratio=live.size/target.size,dx=live.cx-target.cx,dy=live.cy-target.cy,tolerance=Math.min(.018,target.size*.05);
- const distance=ratio>1.045?{key:'away',text:'Troppo vicino: allontanati'}:ratio<.955?{key:'closer',text:'Troppo lontano: avvicinati'}:{key:'near',text:'Distanza simile al prima'};
+ if(Math.abs(live.yaw)>55||Math.abs(target.yaw)>55||Math.abs(live.pitch)>35||Math.abs(target.pitch)>35||Math.abs(deltaAngle(live.yaw,target.yaw))>4||Math.abs(deltaAngle(live.pitch,target.pitch))>4)return unknown('Prima orienta il viso');
+ const ratio=live.size/target.size,dx=live.cx-target.cx,dy=live.cy-target.cy,tolerance=Math.min(.022,target.size*.065);
+ const distance=ratio>1.06?{key:'away',text:'Troppo vicino: allontanati'}:ratio<.94?{key:'closer',text:'Troppo lontano: avvicinati'}:{key:'near',text:'Distanza simile al prima'};
  const moves=[];if(Math.abs(dx)>tolerance)moves.push(dx>0?'alla tua destra':'alla tua sinistra');if(Math.abs(dy)>tolerance)moves.push(dy>0?'più in alto':'più in basso');
  const centering=moves.length?{key:'move',text:'Spostati '+moves.join(' e ')}:{key:'near',text:'Occhi centrati'};
  const pairs=f=>f.anchors?.slice(0,4);
  const a=pairs(live),b=pairs(target),readable=a?.length===4&&b?.length===4&&[...a,...b].every(p=>p?.length===2&&p.every(Number.isFinite));
- const both=readable&&a.every((p,i)=>Math.hypot(p[0]-b[i][0],p[1]-b[i][1])<=target.size*.06);
- const level=Math.abs(deltaAngle(live.roll,target.roll))<=2.5;
+ const both=readable&&a.every((p,i)=>Math.hypot(p[0]-b[i][0],p[1]-b[i][1])<=target.size*.08);
+ const level=Math.abs(deltaAngle(live.roll,target.roll))<=3.5;
  const ready=distance.key==='near'&&centering.key==='near'&&level&&both;
  const eyes=ready?'Entrambi gli occhi vicini ai riferimenti. Resta fermo.':!level?'Correggi anche l’inclinazione della testa.':distance.key!=='near'?'Prima regola la distanza, poi ricentra entrambi gli occhi.':!readable?'Riferimenti degli occhi non leggibili: verifica visivamente.':'Fai coincidere tutti i riferimenti, non un solo occhio.';
  return {distance,centering,eyes,ready};
@@ -44,14 +45,14 @@ export function patientInstruction(live,target){
  if(Math.abs(live.yaw)>55||Math.abs(live.pitch)>35)return {key:'unreliable',text:'Torna verso la posizione del riferimento',detail:'Con questa inclinazione la guida non è affidabile: usa la trasparenza.'};
  const yaw=deltaAngle(live.yaw,target.yaw),pitch=deltaAngle(live.pitch,target.pitch),roll=deltaAngle(live.roll,target.roll);
  // Correct orientation before estimating distance from eye spacing.
- if(Math.abs(yaw)>3)return {key:'yaw'+Math.sign(yaw),text:'Gira il viso verso la tua '+(yaw>0?'destra':'sinistra'),detail:'Ruota lentamente, senza inclinare la testa.'};
- if(Math.abs(pitch)>3)return {key:'pitch'+Math.sign(pitch),text:pitch>0?'Solleva un poco il mento':'Abbassa un poco il mento',detail:'Un piccolo movimento, poi fermati.'};
- if(Math.abs(roll)>2.5)return {key:'roll'+Math.sign(roll),text:'Inclina la testa verso la tua '+(roll>0?'destra':'sinistra'),detail:'Avvicina leggermente l’orecchio alla spalla, senza girare il viso.'};
+ if(Math.abs(yaw)>4)return {key:'yaw'+Math.sign(yaw),text:'Gira il viso verso la tua '+(yaw>0?'destra':'sinistra'),detail:'Ruota lentamente, senza inclinare la testa.'};
+ if(Math.abs(pitch)>4)return {key:'pitch'+Math.sign(pitch),text:pitch>0?'Solleva un poco il mento':'Abbassa un poco il mento',detail:'Un piccolo movimento, poi fermati.'};
+ if(Math.abs(roll)>3.5)return {key:'roll'+Math.sign(roll),text:'Inclina la testa verso la tua '+(roll>0?'destra':'sinistra'),detail:'Avvicina leggermente l’orecchio alla spalla, senza girare il viso.'};
  const scale=live.size/target.size;
- if(scale>1.045||scale<.955)return {key:scale>1?'away':'closer',text:scale>1?'Allontanati un poco':'Avvicinati un poco',detail:'Mantieni la testa nella stessa posizione, senza cambiare zoom.'};
- if(Math.abs(live.cx-target.cx)>.018)return {key:'x'+Math.sign(live.cx-target.cx),text:'Spostati un poco alla tua '+(live.cx>target.cx?'destra':'sinistra'),detail:'Sposta anche il busto, senza girare la testa.'};
- if(Math.abs(live.cy-target.cy)>.018)return {key:'y'+Math.sign(live.cy-target.cy),text:live.cy>target.cy?'Portati un poco più in alto':'Portati un poco più in basso',detail:'Mantieni l’inclinazione. Se serve, l’operatore regola l’altezza della fotocamera.'};
- if(live.anchors&&target.anchors&&geometryResidual(live.anchors,target.anchors)>.012)return {key:'shape',text:'Controlla la testa nella sagoma',detail:'I riferimenti non coincidono ancora: verifica rotazione ed espressione.'};
+ if(scale>1.06||scale<.94)return {key:scale>1?'away':'closer',text:scale>1?'Allontanati un poco':'Avvicinati un poco',detail:'Mantieni la testa nella stessa posizione, senza cambiare zoom.'};
+ if(Math.abs(live.cx-target.cx)>.022)return {key:'x'+Math.sign(live.cx-target.cx),text:'Spostati un poco alla tua '+(live.cx>target.cx?'destra':'sinistra'),detail:'Sposta anche il busto, senza girare la testa.'};
+ if(Math.abs(live.cy-target.cy)>.022)return {key:'y'+Math.sign(live.cy-target.cy),text:live.cy>target.cy?'Portati un poco più in alto':'Portati un poco più in basso',detail:'Mantieni l’inclinazione. Se serve, l’operatore regola l’altezza della fotocamera.'};
+ if(live.anchors&&target.anchors&&geometryResidual(live.anchors,target.anchors)>.015)return {key:'shape',text:'Controlla la testa nella sagoma',detail:'I riferimenti non coincidono ancora: verifica rotazione ed espressione.'};
  return {key:'okay',text:'Posizione vicina: resta fermo',detail:'Controlla i contorni azzurri e l’espressione prima di scattare.',okay:true};
 }
 // Residual after fitting a rigid 2D similarity; used only to reject a match.
@@ -66,7 +67,7 @@ export function geometryResidual(a,b){
  return Math.sqrt(a.reduce((sum,p,i)=>{const x=p[0]-ac[0],y=p[1]-ac[1];return sum+(c*x-s*y+bc[0]-b[i][0])**2+(s*x+c*y+bc[1]-b[i][1])**2;},0)/n);
 }
 export function steadyFace(a,b){
- return !!a&&!!b&&!a.error&&!b.error&&Math.abs(deltaAngle(a.yaw,b.yaw))<.8&&Math.abs(deltaAngle(a.pitch,b.pitch))<.8&&Math.abs(deltaAngle(a.roll,b.roll))<.8&&Math.abs(a.cx-b.cx)<.008&&Math.abs(a.cy-b.cy)<.008&&Math.abs(a.size/b.size-1)<.018;
+ return !!a&&!!b&&!a.error&&!b.error&&Math.abs(deltaAngle(a.yaw,b.yaw))<1.1&&Math.abs(deltaAngle(a.pitch,b.pitch))<1.1&&Math.abs(deltaAngle(a.roll,b.roll))<1.1&&Math.abs(a.cx-b.cx)<.01&&Math.abs(a.cy-b.cy)<.01&&Math.abs(a.size/b.size-1)<.024;
 }
 
 // Compare to the actual before image, never to a frontal template.
@@ -74,8 +75,8 @@ export function steadyFace(a,b){
 export function afterFrameRank(live,target){
  const eyes=eyeAlignmentStatus(live,target);
  if(!eyes.ready||!patientInstruction(live,target).okay||!Number.isFinite(live.eyeOpen)||live.eyeOpen<.12||!Number.isFinite(target.eyeOpen)||target.eyeOpen<.12)return null;
- const t=target.size*.05;
- const deviations=[deltaAngle(live.yaw,target.yaw)/3,deltaAngle(live.pitch,target.pitch)/3,deltaAngle(live.roll,target.roll)/2.5,(live.size/target.size-1)/.045,(live.cx-target.cx)/t,(live.cy-target.cy)/t];
+ const t=Math.min(.022,target.size*.065);
+ const deviations=[deltaAngle(live.yaw,target.yaw)/4,deltaAngle(live.pitch,target.pitch)/4,deltaAngle(live.roll,target.roll)/3.5,(live.size/target.size-1)/.06,(live.cx-target.cx)/t,(live.cy-target.cy)/t];
  const error=deviations.reduce((n,v)=>n+v*v,0)/deviations.length;
  return {error,band:Math.floor(error/.1)};
 }

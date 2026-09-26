@@ -49,7 +49,7 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
    const NativeWorker=window.Worker;
    window.Worker=class{
     constructor(url){if(!String(url).includes('patient-guidance-worker'))return new NativeWorker(url);}
-    postMessage({id,bitmap}){bitmap?.close();setTimeout(()=>{this.onmessage?.({data:{id,face:id===1?null:{...window.beforeFixture.face,...(window.beforeFixture.unstable?{yaw:22}:{})}}});},20);}
+    postMessage({id,bitmap}){bitmap?.close();setTimeout(()=>{this.onmessage?.({data:{id,face:id===1?null:{...window.beforeFixture.face,...(window.beforeFixture.unstable?{yaw:22}:{}),...(window.beforeFixture.jitter?{yaw:window.beforeFixture.face.yaw+(id%2?.45:-.45)}:{})}}});},20);}
     terminate(){this.onmessage=null;}
    };
    navigator.mediaDevices.getUserMedia=async()=>{
@@ -66,6 +66,14 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
   await page.waitForTimeout(400);const preview=await page.locator('#cameraArea').boundingBox();
   assert(preview.width>=350,'preview should fill the phone width');assert(preview.height>=460,'preview should be large');
   await page.locator('#compactPhoneConfirmed').check();
+  // A well-positioned face with small detector jitter previously never became ready.
+  await page.evaluate(()=>{window.fixtureOriginal=structuredClone(beforeFixture.face);Object.assign(beforeFixture.face,{cx:.54,cy:.41,yaw:4.4,pitch:5.5,roll:3.5});beforeFixture.jitter=true;
+   window.testMotionTimer=setInterval(()=>onMotion({accelerationIncludingGravity:{x:.6,y:9.8,z:.6}}),150);});
+  await page.waitForFunction(()=>!document.getElementById('compactShot').disabled,{},{timeout:15000});
+  await page.locator('#compactShot').click();await visible('#accept');
+  assert(await page.evaluate(()=>pending?.blob?.size>0),'slightly imperfect first pose must produce a real staged photo');
+  await page.locator('#retake').click();
+  await page.evaluate(()=>{beforeFixture.face=structuredClone(window.fixtureOriginal);beforeFixture.jitter=false;clearInterval(window.testMotionTimer);window.testMotionTimer=null;lastLevel=null;});
   await page.waitForFunction(()=>!document.getElementById('compactShot').disabled,{},{timeout:15000});
   assert.match(await page.locator('#compactShot').textContent(),/Scatta ora/);
   await page.evaluate(()=>{onMotion({accelerationIncludingGravity:{x:0,y:9.8,z:0}});window.testMotionTimer??=setInterval(()=>onMotion({accelerationIncludingGravity:{x:0,y:9.8,z:0}}),150);});
@@ -108,7 +116,21 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
   assert.equal(await page.locator('#compactLevel').count(),1);
   await page.waitForTimeout(600);assert(await page.locator('#zoneGuide').isHidden(),'closing the guide must not cause immediate reopening');
 
-  await page.locator('#compactManual').click();await visible('#accept');await page.locator('#accept').click();await visible('#captureHandoff');
+  await page.waitForFunction(()=>!document.getElementById('compactShot').disabled,{},{timeout:15000});
+  await page.evaluate(()=>{const f=beforeFixture.face;Object.assign(f,{cx:.518,cy:.365,size:.3675,yaw:3.3,pitch:3.4,roll:3.2});f.anchors=f.anchors.map(([x,y])=>[.5+(x-.5)*1.05+.018,.48+(y-.48)*1.05+.005]);beforeFixture.jitter=true;
+   clearInterval(window.testMotionTimer);window.testMotionTimer=setInterval(()=>onMotion({accelerationIncludingGravity:{x:.6,y:9.8,z:.6}}),150);});
+  // Wait past old detector data before checking the tolerant live button and burst.
+  await page.waitForTimeout(2200);
+  await page.waitForFunction(()=>!document.getElementById('compactShot').disabled,{},{timeout:15000});
+  await page.evaluate(()=>{beforeFixture.jitter=false;beforeFixture.face.yaw=8;});
+  await page.waitForFunction(()=>document.getElementById('compactShot').disabled);
+  assert(await page.locator('#compactManual').isEnabled(),'manual option remains available');
+  await page.evaluate(()=>{beforeFixture.face.yaw=3.3;beforeFixture.jitter=true;});
+  await page.waitForFunction(()=>!document.getElementById('compactShot').disabled,{},{timeout:15000});
+  await page.locator('#compactShot').click();await visible('#accept');
+  assert(await page.evaluate(()=>pending?.blob?.size>0),'same relaxed tolerance must apply to captured after frames');
+  await page.locator('#accept').click();await visible('#captureHandoff');
+  await page.evaluate(()=>{beforeFixture.face=structuredClone(window.fixtureOriginal);beforeFixture.jitter=false;});
   assert.equal(await page.locator('#captureNextPhase').textContent(),'Confronta prima e dopo');
   await page.locator('#captureNextPhase').click();await visible('#comparePage');
   assert(await page.evaluate(()=>view==='compare'&&comparePose==='front-neutral'&&compareA===0&&compareB===1));
@@ -117,6 +139,6 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
   await page.locator('#captureNextPhase').click();await page.waitForFunction(()=>activeVisit===1&&current===1);
   assert(await page.evaluate(()=>captureReference()===visits[0].photos.get('front-smile')),'handoff repeats the exact accepted expression');
   await visible('#zoneGuide');assert.match(await page.locator('#zoneTitle').textContent(),/Occhi e distanza/);
-  assert.deepEqual(errors,[]);console.log('PASS confirmation handoff, small screen, redo preservation, same-pose after capture, fullscreen level, comparison, and smile-pose handoff.');
+  assert.deepEqual(errors,[]);console.log('PASS tolerant before/after bursts with natural jitter and small phone tilt, large mismatch rejection, confirmation handoff, small screen, redo preservation, same-pose after capture, fullscreen level, comparison, and smile-pose handoff.');
  }catch(e){console.log('LAST GUIDE',await page.locator('#patientGuideInstruction').textContent(),await page.locator('#toast').textContent());throw e;}finally{await browser.close();server.closeAllConnections();await new Promise(r=>server.close(r));db.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});
