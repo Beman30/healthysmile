@@ -97,3 +97,6 @@ body.before-guided #guide{display:none!important}
 #beforeGuidedShot{min-height:40px;padding:8px 12px;border-radius:7px;background:var(--pink);color:white;font-size:.8rem;font-weight:650;margin:5px 0;width:100%}#beforeGuideNote{display:block;font-size:.62rem;color:#d5d8df;line-height:1.2}
 
 #afterGuidedShot{min-height:40px;padding:8px 12px;border-radius:7px;background:var(--pink);color:white;font-size:.8rem;font-weight:650;margin:6px 0 3px;width:100%}#afterBurstHint{display:block;font-size:.63rem;color:#d5d8df;line-height:1.25}#zoneBurst{background:var(--pink);color:white;flex:1}#zoneGuide footer:has(#zoneBurst:not([hidden])){flex-wrap:wrap}#zoneGuide footer:has(#zoneBurst:not([hidden])) #zoneNext{background:#e4e5e9;color:#252a34;flex:1}
+
+/* Keep sensor state and the shared camera handler, without duplicate capture UI. */
+#captureMatch,#cameraEmpty #startCamera{display:none!important}
