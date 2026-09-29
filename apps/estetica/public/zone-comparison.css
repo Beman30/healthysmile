@@ -1,0 +1,20 @@
+#zoneReview{margin:14px 0;background:#fff;border:1px solid #e0e2e8;border-radius:10px;padding:12px;text-align:center}
+#zoneGuide #zoneCanvas{max-height:42dvh}
+#zoneReview p{font-weight:650}
+#zoneReview img{max-width:100%;height:min(49dvh,460px);aspect-ratio:1;object-fit:contain;background:#15171c;border-radius:8px}
+#zoneReview>div{display:flex;gap:8px;margin-top:10px}#zoneReview button{flex:1;min-height:46px}#zoneConfirm{background:#b82c68;color:white}
+#zoneGuide.zone-reviewing .zone-view,#zoneGuide.zone-reviewing .zone-feedback,#zoneGuide.zone-reviewing .zone-tools,#zoneGuide.zone-reviewing footer,#zoneGuide.zone-reviewing #zoneHint,#zoneGuide.zone-reviewing #zoneSteps{display:none}
+.zone-comparison-active .layout-tabs,.zone-comparison-active #layoutHint,.zone-comparison-active #comparisonAdjustments,.zone-comparison-active #patientMode,.zone-comparison-active #patientNavigation,.zone-comparison-active #comparePage>p.hint{display:none!important}
+.zone-comparison-active .zone-comparison-surface{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;align-items:stretch}
+.zone-pair{background:white;border:1px solid #d9dce2;border-radius:12px;padding:12px;min-width:0}
+.zone-pair h2{font-size:18px;margin:0 0 9px}.zone-pair>p{margin:8px 0 0;font-size:13px;color:#545c69}
+.zone-pair-twoup{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:10px}
+.zone-pair-twoup>div{min-width:0}.zone-pair-twoup span{display:block;font-size:12px;font-weight:700;margin-bottom:4px;color:#454853}
+.zone-pair-twoup img{display:block;width:100%;aspect-ratio:1;object-fit:fill;background:#15171c}
+.zone-pair-stage{position:relative;aspect-ratio:1;overflow:hidden;background:#15171c;max-width:100%}
+.zone-pair-stage img{position:absolute;inset:0;width:100%;height:100%;object-fit:fill}
+.zone-pair-stage .zone-before{clip-path:inset(0 calc(100% - var(--wipe)) 0 0)}
+.zone-divider{position:absolute;top:0;bottom:0;left:var(--wipe);width:2px;background:#fff;box-shadow:0 0 7px #0008}
+.zone-pair input[type=range]{width:100%;min-height:40px;accent-color:#b82c68}
+.zone-comparison-active #comparisonSurface.zone-comparison-surface{grid-template-rows:auto}
+@media(max-width:650px){.zone-comparison-active .zone-comparison-surface{grid-template-columns:1fr}.zone-pair{padding:10px}}

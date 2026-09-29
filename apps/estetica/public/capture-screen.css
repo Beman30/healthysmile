@@ -50,3 +50,4 @@ body.capture-full.simple-app #cameraArea{width:min(100vw,calc((var(--capture-scr
 #compactCapture>.zone-start{display:block;width:100%;min-height:36px;margin:5px 0;padding:6px 10px;background:#f8edf2;border:1px solid #e5c7d4;font-size:12px}
 .capture-handoff #startZoneGuide{display:none!important}
 #zoneLevel{padding:8px 10px 2px;background:white;border-radius:8px;margin:8px 0}
+body.zone-after-active #compactActions,body.zone-after-active #afterBurstControls,body.zone-after-active #zoneBurst{display:none!important}

@@ -12,14 +12,18 @@ async function refreshSharedLinks(){
  }catch(e){$('shareStatus').textContent=e.message;}
 }
 $('shareComparison').addEventListener('click',async()=>{
- shareSelection={a:compareA,b:compareB,pose:comparePose};$('shareResult').hidden=true;$('shareStatus').textContent='';$('sharePose').textContent=POSES.find(p=>p.id===comparePose)?.title||'';const valid=compareA!==compareB&&pairOriginal().every(s=>s.photo);$('createShareLink').disabled=!valid;if(!valid)$('shareStatus').textContent='Seleziona una posa con entrambe le foto prima e dopo.';$('shareDialog').showModal();await refreshSharedLinks();
+ shareSelection={a:compareA,b:compareB,pose:comparePose,zones:window.hasZoneComparison?.()||false};$('shareResult').hidden=true;$('shareStatus').textContent='';$('sharePose').textContent=POSES.find(p=>p.id===comparePose)?.title||'';const valid=shareSelection.zones?window.hasAllZonePairs?.():compareA!==compareB&&pairOriginal().every(s=>s.photo);$('createShareLink').disabled=!valid;if(!valid)$('shareStatus').textContent='Completa le quattro zone del dopo per creare il link.';$('shareDialog').showModal();await refreshSharedLinks();
 });
 $('closeShareDialog').addEventListener('click',()=>{if(!shareBusy)$('shareDialog').close();});$('shareDialog').addEventListener('cancel',e=>{if(shareBusy)e.preventDefault();});
 async function shareImageURL(photo){const img=await loadedComparisonImage(photo),canvas=document.createElement('canvas');canvas.width=900;canvas.height=1200;const ctx=canvas.getContext('2d');ctx.fillStyle='#eef0f3';ctx.fillRect(0,0,900,1200);drawContain(ctx,img,0,0,900,1200,1);return canvas.toDataURL('image/jpeg',.95);}
 $('createShareLink').addEventListener('click',async()=>{
  if(shareBusy||!shareSelection)return;shareBusy=true;$('createShareLink').disabled=true;$('closeShareDialog').disabled=true;$('shareResult').hidden=true;$('shareStatus').textContent='Preparazione del link…';
- try{if(await ensureAlignmentViews()===false)throw Error('Completa l’allineamento prima di creare il link.');const {a,b,pose}=shareSelection,pair=[snapshot(`${a}|${pose}`),snapshot(`${b}|${pose}`)];if(a===b||pair.some(p=>!p.photo))throw Error('Manca una delle due foto.');
- const [before,after]=await Promise.all(pair.map(p=>shareImageURL(p.photo))),payload={version:1,before,after,pose:POSES.find(p=>p.id===pose).title,dates:visitLabel(a)+' → '+visitLabel(b),aligned:pair.every(p=>validAlignment(p.photo.alignment)),brightnessNote:brightnessSummary(pair.map(p=>p.photo))};
+ try{const {a,b,pose,zones}=shareSelection;
+ if(!zones&&await ensureAlignmentViews()===false)throw Error('Completa l’allineamento prima di creare il link.');
+ const pair=zones?null:[snapshot(`${a}|${pose}`),snapshot(`${b}|${pose}`)];
+ if(a===b||(zones?!window.hasAllZonePairs?.():pair.some(p=>!p.photo)))throw Error('Mancano le foto necessarie al confronto.');
+ const [before,after]=zones?await Promise.all([zoneShareImageURL(true,pose,b),zoneShareImageURL(false,pose,b)]):await Promise.all(pair.map(p=>shareImageURL(p.photo)));
+ const payload={version:1,before,after,pose:POSES.find(p=>p.id===pose).title+(zones?' · quattro zone':''),dates:visitLabel(a)+' → '+visitLabel(b),aligned:zones?false:pair.every(p=>validAlignment(p.photo.alignment)),brightnessNote:zones?'Ritagli di occhi, lati e fronte dalle fotografie originali.':brightnessSummary(pair.map(p=>p.photo))};
  const raw=crypto.getRandomValues(new Uint8Array(32)),iv=crypto.getRandomValues(new Uint8Array(12)),key=await crypto.subtle.importKey('raw',raw,'AES-GCM',false,['encrypt']),cipher=new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM',iv},key,new TextEncoder().encode(JSON.stringify(payload)))),body=new Uint8Array(12+cipher.length);body.set(iv);body.set(cipher,12);
  const data=await sharingRequest('',{method:'POST',headers:{'Content-Type':'application/octet-stream'},body}),fragment=btoa(String.fromCharCode(...raw)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,''),url=location.origin+'/s/'+data.id+'#'+fragment;
  const keys=readShareKeys();keys[data.id]={url,label:($('patientCode').value||'Confronto')+' · '+payload.pose};writeShareKeys(keys);$('sharedUrl').value=url;$('openSharedLink').href=url;$('shareResult').hidden=false;$('shareStatus').textContent='Link pronto. Scade il '+new Date(data.expires).toLocaleDateString('it-IT')+'.';await refreshSharedLinks();

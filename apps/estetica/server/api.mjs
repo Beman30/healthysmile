@@ -1,4 +1,12 @@
-const POSES=new Set(['front-neutral','front-smile','oblique-right','profile-right','oblique-left','profile-left','front-brows']);
+const FRONT=['front-neutral','front-smile'];
+const ZONES=['eyes','left','right','forehead'];
+const POSES=new Set(['front-neutral','front-smile','oblique-right','profile-right','oblique-left','profile-left','front-brows',...FRONT.flatMap(p=>ZONES.map(z=>`${p}--${z}`))]);
+function cleanZone(zone,pose){
+ if(!zone)return null;
+ const roi=zone.roi;
+ if(!FRONT.includes(zone.source)||!ZONES.includes(zone.id)||pose!==`${zone.source}--${zone.id}`||!roi||!['x','y','w','h'].every(k=>Number.isFinite(roi[k]))||roi.w<.1||roi.h<.075||roi.x<0||roi.y<0||roi.x+roi.w>1.000001||roi.y+roi.h>1.000001||Math.abs(roi.h-roi.w*.75)>.001)fault(400,'Ritaglio della zona non valido.');
+ return {source:zone.source,id:zone.id,roi:{x:roi.x,y:roi.y,w:roi.w,h:roi.h}};
+}
 const UUID=/^[a-f0-9-]{36}$/i, HASH=/^[a-f0-9]{64}$/;
 const headers={'Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer'};
 const json=(x,status=200)=>Response.json(x,{status,headers});
@@ -21,11 +29,11 @@ function cleanManifest(m,previousNotes=''){
  if(m.notes!==undefined&&!short(m.notes,10000))fault(400,'Le note possono contenere al massimo 10000 caratteri.');
  const seen=new Set();let total=0;
  return {notes:m.notes===undefined?previousNotes:m.notes,visits:m.visits.map((v,i)=>{
-  if(!UUID.test(v.id)||seen.has(v.id)||!/^\d{4}-\d{2}-\d{2}$/.test(v.date)||!validDate(v.date)||!(i===0?v.phase==='before':['immediate','followup'].includes(v.phase))||!short(v.treatment,200)||!Array.isArray(v.photos)||v.photos.length>7)fault(400,'Dati della visita non validi.');
+  if(!UUID.test(v.id)||seen.has(v.id)||!/^\d{4}-\d{2}-\d{2}$/.test(v.date)||!validDate(v.date)||!(i===0?v.phase==='before':['immediate','followup'].includes(v.phase))||!short(v.treatment,200)||!Array.isArray(v.photos)||v.photos.length>(i===0?7:15))fault(400,'Dati della visita non validi.');
   seen.add(v.id);const poses=new Set();
   const photos=v.photos.map(p=>{
    if(!POSES.has(p.pose)||poses.has(p.pose)||!HASH.test(p.hash)||!Number.isInteger(p.width)||p.width<1||p.width>20000||!Number.isInteger(p.height)||p.height<1||p.height>20000)fault(400,'Foto non valida.');
-   poses.add(p.pose);return {pose:p.pose,hash:p.hash,width:p.width,height:p.height,takenAt:short(p.takenAt,40)?p.takenAt:null,station:p.station&&typeof p.station==='object'?{name:String(p.station.name||'').slice(0,80),lights:String(p.station.lights||'').slice(0,200),guideScale:Number(p.station.guideScale)||70,shoulderWidth:Number(p.station.shoulderWidth)||100}:null,camera:{label:String(p.camera?.label||'').slice(0,160),deviceId:typeof p.camera?.deviceId==='string'?p.camera.deviceId.slice(0,256):null,zoom:Number.isFinite(p.camera?.zoom)?p.camera.zoom:null},crop:null,level:p.level&&typeof p.level==='object'?{roll:Number.isFinite(p.level.roll)?p.level.roll:null,pitch:Number.isFinite(p.level.pitch)?p.level.pitch:null,screenAngle:Number.isFinite(p.level.screenAngle)?p.level.screenAngle:null}:null,alignment:cleanAlignment(p.alignment),brightness:Number.isFinite(p.brightness)?Math.max(-50,Math.min(50,Math.round(p.brightness))):0};
+   poses.add(p.pose);const zone=cleanZone(p.zone,p.pose);if(p.pose.includes('--')&&!zone||i===0&&zone)fault(400,'Zona fotografica non valida.');return {pose:p.pose,hash:p.hash,width:p.width,height:p.height,takenAt:short(p.takenAt,40)?p.takenAt:null,station:p.station&&typeof p.station==='object'?{name:String(p.station.name||'').slice(0,80),lights:String(p.station.lights||'').slice(0,200),guideScale:Number(p.station.guideScale)||70,shoulderWidth:Number(p.station.shoulderWidth)||100}:null,camera:{label:String(p.camera?.label||'').slice(0,160),deviceId:typeof p.camera?.deviceId==='string'?p.camera.deviceId.slice(0,256):null,zoom:Number.isFinite(p.camera?.zoom)?p.camera.zoom:null},crop:null,zone,level:p.level&&typeof p.level==='object'?{roll:Number.isFinite(p.level.roll)?p.level.roll:null,pitch:Number.isFinite(p.level.pitch)?p.level.pitch:null,screenAngle:Number.isFinite(p.level.screenAngle)?p.level.screenAngle:null}:null,alignment:cleanAlignment(p.alignment),brightness:Number.isFinite(p.brightness)?Math.max(-50,Math.min(50,Math.round(p.brightness))):0};
   });
   const selected=Array.isArray(v.selected)?[...new Set(v.selected.filter(x=>POSES.has(x)))]:null;
   return {id:v.id,date:v.date,phase:v.phase,treatment:v.treatment,selected,photos};

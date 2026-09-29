@@ -2,6 +2,7 @@
 // Paired visit workflow. Cloud persistence is integrated by cloud.js; ZIP remains a backup.
 // Keep legacy pose definitions/photos for archives; new capture is frontal only.
 const FLOW_POSES = POSES.filter(p=>['front-neutral','front-smile'].includes(p.id));
+const ZONE_POSES=new Set(FLOW_POSES.flatMap(p=>['eyes','left','right','forehead'].map(z=>`${p.id}--${z}`)));
 let visits=[{date:$('visitDate').value,phase:'before',photos}], activeVisit=0, lastFollowup=1;
 let view='before', comparisonLayout='slider', compareA=0, compareB=1, comparePose=POSES[0].id;
 let customSlots=[], archiveBusy=false, importBusy=false, importGeneration=0, ghostVisible=true;
@@ -109,7 +110,7 @@ $('usePendingBefore').addEventListener('click',()=>{
  render();
 });
 function imageMime(bytes){if(bytes[0]===0xff&&bytes[1]===0xd8)return'image/jpeg';if(bytes[0]===137&&bytes[1]===80)return'image/png';if(String.fromCharCode(...bytes.slice(0,4))==='RIFF')return'image/webp';throw Error('Formato immagine non riconosciuto.');}
-function photoMeta(id,p,filename){return {pose:id,title:POSES.find(x=>x.id===id).title,filename,width:p.width,height:p.height,takenAt:p.takenAt,level:p.level,station:p.station,camera:p.camera,crop:p.crop,alignment:p.alignment,brightness:p.brightness};}
+function photoMeta(id,p,filename){return {pose:id,title:POSES.find(x=>x.id===id)?.title||id,filename,width:p.width,height:p.height,takenAt:p.takenAt,level:p.level,station:p.station,camera:p.camera,crop:p.crop,zone:p.zone||null,alignment:p.alignment,brightness:p.brightness};}
 async function saveArchive(){
  if(archiveBusy||!totalPhotos())return;if(pending){notify('Conferma o scarta la foto in anteprima prima di salvare.');return;}
  if(!$('patientCode').value.trim()){notify('Inserisci il codice paziente.');return;}rememberVisit();
@@ -139,14 +140,15 @@ async function parseArchive(file){
  const staged=[];
  try{
   for(let i=0;i<items.length;i++){
-   const v=items[i];if(!v||!/^\d{4}-\d{2}-\d{2}$/.test(v.date)||!Array.isArray(v.photos)||v.photos.length>7)throw Error('Dati della visita non validi.');
+   const v=items[i];if(!v||!/^\d{4}-\d{2}-\d{2}$/.test(v.date)||!Array.isArray(v.photos)||v.photos.length>(i===0?7:15))throw Error('Dati della visita non validi.');
    if(i===0&&v.phase!=='before'||i>0&&!['immediate','followup'].includes(v.phase))throw Error('Fase della visita non valida.');
    const map=new Map();staged.push({date:v.date,phase:v.phase,treatment:String(v.treatment||'').slice(0,200),selected:Array.isArray(v.selected)?v.selected.filter(id=>POSES.some(p=>p.id===id)):null,photos:map});
    for(const p of v.photos){
-    if(!p||!POSES.some(x=>x.id===p.pose)||map.has(p.pose)||typeof p.filename!=='string'||!entries.has(p.filename))throw Error('Fotografie duplicate o mancanti nell’archivio.');
+    if(!p||!(POSES.some(x=>x.id===p.pose)||i>0&&ZONE_POSES.has(p.pose))||map.has(p.pose)||typeof p.filename!=='string'||!entries.has(p.filename))throw Error('Fotografie duplicate o mancanti nell’archivio.');
+    const r=p.zone?.roi;if(ZONE_POSES.has(p.pose)&&(!r||p.zone.source+'--'+p.zone.id!==p.pose||!['x','y','w','h'].every(k=>Number.isFinite(r[k]))||r.x<0||r.y<0||r.w<.1||r.h<.075||r.x+r.w>1.000001||r.y+r.h>1.000001||Math.abs(r.h-r.w*.75)>.001))throw Error('Zona del dopo non valida.');
     const bytes=entries.get(p.filename),blob=new Blob([bytes],{type:imageMime(bytes)}),url=await validatedImage(blob);
     const decoded=new Image();decoded.src=url;await decoded.decode();
-    map.set(p.pose,{blob,url,width:decoded.naturalWidth,height:decoded.naturalHeight,takenAt:p.takenAt||null,station:normalizeStation(p.station||v.station),camera:{label:String(p.camera?.label||'').slice(0,160),deviceId:typeof p.camera?.deviceId==='string'?p.camera.deviceId.slice(0,256):null,zoom:Number.isFinite(p.camera?.zoom)?p.camera.zoom:null,facingMode:p.camera?.facingMode||'unknown'},crop:p.crop||null,level:p.level||null,alignment:p.alignment||null,brightness:brightnessPercent(p)});
+    map.set(p.pose,{blob,url,width:decoded.naturalWidth,height:decoded.naturalHeight,takenAt:p.takenAt||null,station:normalizeStation(p.station||v.station),camera:{label:String(p.camera?.label||'').slice(0,160),deviceId:typeof p.camera?.deviceId==='string'?p.camera.deviceId.slice(0,256):null,zoom:Number.isFinite(p.camera?.zoom)?p.camera.zoom:null,facingMode:p.camera?.facingMode||'unknown'},crop:p.crop||null,zone:ZONE_POSES.has(p.pose)?{source:p.zone.source,id:p.zone.id,roi:{x:r.x,y:r.y,w:r.w,h:r.h}}:null,level:p.level||null,alignment:p.alignment||null,brightness:brightnessPercent(p)});
    }
   }
   if(!staged[0].photos.size)throw Error('L’archivio non contiene foto del prima.');return {code:data.patientCode,notes:data.notes||'',visits:staged};
