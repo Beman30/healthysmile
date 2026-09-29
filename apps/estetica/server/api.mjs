@@ -5,7 +5,9 @@ function cleanZone(zone,pose){
  if(!zone)return null;
  const roi=zone.roi;
  if(!FRONT.includes(zone.source)||!ZONES.includes(zone.id)||pose!==`${zone.source}--${zone.id}`||!roi||!['x','y','w','h'].every(k=>Number.isFinite(roi[k]))||roi.w<.1||roi.h<.075||roi.x<0||roi.y<0||roi.x+roi.w>1.000001||roi.y+roi.h>1.000001||Math.abs(roi.h-roi.w*.75)>.001)fault(400,'Ritaglio della zona non valido.');
- return {source:zone.source,id:zone.id,roi:{x:roi.x,y:roi.y,w:roi.w,h:roi.h}};
+ const marks=zone.landmarks||[];
+ if(!Array.isArray(marks)||marks.length>12||!marks.every(m=>m&&['before','after'].every(side=>Array.isArray(m[side])&&m[side].length===2&&m[side].every(n=>Number.isFinite(n)&&n>=0&&n<=1))))fault(400,'Reperi della zona non validi.');
+ return {source:zone.source,id:zone.id,roi:{x:roi.x,y:roi.y,w:roi.w,h:roi.h},landmarks:marks.map(m=>({before:[...m.before],after:[...m.after]}))};
 }
 const UUID=/^[a-f0-9-]{36}$/i, HASH=/^[a-f0-9]{64}$/;
 const headers={'Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer'};

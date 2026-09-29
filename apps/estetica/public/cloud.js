@@ -2,7 +2,7 @@
 // Patient identity is bound before capture; the cloud is the durable source of truth.
 const cloud={patient:null,version:0,saved:'',saving:null,loading:false,error:'',conflict:false,timer:null,rows:[],blobIds:new WeakMap(),nextBlob:0,createKey:null,switching:false,creating:false};
 function visitIdentity(v){v.id ||=crypto.randomUUID();v.treatment ||= '';}
-function localSignature(){return JSON.stringify({notes:cloud.patient?.notes||'',visits:visits.map(v=>{visitIdentity(v);return {id:v.id,date:v.date,phase:v.phase,treatment:v.treatment,selected:v.selected||null,photos:[...v.photos].map(([id,p])=>{if(!cloud.blobIds.has(p.blob))cloud.blobIds.set(p.blob,++cloud.nextBlob);return [id,cloud.blobIds.get(p.blob),p.alignment||null,p.brightness||0];})};})});}
+function localSignature(){return JSON.stringify({notes:cloud.patient?.notes||'',visits:visits.map(v=>{visitIdentity(v);return {id:v.id,date:v.date,phase:v.phase,treatment:v.treatment,selected:v.selected||null,photos:[...v.photos].map(([id,p])=>{if(!cloud.blobIds.has(p.blob))cloud.blobIds.set(p.blob,++cloud.nextBlob);return [id,cloud.blobIds.get(p.blob),p.alignment||null,p.brightness||0,p.zone?.landmarks||null];})};})});}
 const cloudDirty=()=>!!cloud.patient&&localSignature()!==cloud.saved;
 async function cloudRequest(path,options={}){
  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),60000);

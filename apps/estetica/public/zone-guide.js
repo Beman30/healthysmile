@@ -19,11 +19,11 @@ const zonePhotoKey=(pose,zone)=>`${pose}--${zone}`;
  <footer><button type="button" id="zoneBack">Indietro</button><button type="button" id="zoneNext">Scatta questa zona</button></footer>`;
  document.body.append(dialog);
  const stages=[['Occhi','Allinea entrambi gli occhi; questo scatto verrà confrontato solo con gli occhi del prima.'],['Lato sinistro','Sinistra del paziente, a destra nell’immagine. Allinea questa zona e scatta.'],['Lato destro','Destra del paziente, a sinistra nell’immagine. Allinea questa zona e scatta.'],['Fronte','Allinea la fronte; attaccatura dei capelli ed espressione possono cambiare.']];
- let step=0,center={x:.5,y:.35},ref=null,image=null,face=null,faceURL='',facePatient='',openKey='',generation=0,raf=0,lastDraw=0,manual=false,holding=false,measurement=null,zonePending=null;
+ let step=0,retakeAll=false,center={x:.5,y:.35},ref=null,image=null,face=null,faceURL='',facePatient='',openKey='',generation=0,raf=0,lastDraw=0,manual=false,holding=false,measurement=null,zonePending=null;
  const canvas=$('zoneCanvas'),ctx=canvas.getContext('2d'),map=$('zoneMap'),mctx=map.getContext('2d');
  const stateKey=()=>[cloud.patient?.id,activeVisit,current,captureReference()?.url,stream?.id].join('|');
  const valid=()=>!!stream&&activeVisit>0&&!pending&&view!=='compare'&&!!captureReference();
- stages.forEach((s,i)=>{const b=document.createElement('button');b.type='button';b.textContent=(i+1)+' '+s[0];b.onclick=()=>choose(i);$('zoneSteps').append(b);});
+ stages.forEach((s,i)=>{const b=document.createElement('button');b.type='button';b.textContent=(i+1)+' '+s[0];b.onclick=()=>{if(!retakeAll)choose(i);};$('zoneSteps').append(b);});
  function roi(){const w=1/Number($('zoneZoom').value),h=w*.75;return {x:Math.max(0,Math.min(1-w,center.x-w/2)),y:Math.max(0,Math.min(1-h,center.y-h/2)),w,h};}
  function locate(){
   const target=faceURL===ref?.url&&facePatient===cloud.patient?.id?face:null,x=target?.cx??.5,y=target?.cy??.36,s=target?.size??.3;
@@ -33,7 +33,7 @@ const zonePhotoKey=(pose,zone)=>`${pose}--${zone}`;
   step=n;manual=false;locate();const size=faceURL===ref?.url&&facePatient===cloud.patient?.id?face?.size:null;const z=size?1/(size*(step===0?1.6:step===3?1.45:1.1)):(step===0?2.5:3.5);$('zoneZoom').value=String(Math.max(1.5,Math.min(8,z)));
   canvas.width=600;canvas.height=600;
   $('zoneTitle').textContent=(step+1)+'/4 · '+stages[step][0];$('zoneHint').textContent=stages[step][1];
-  [...$('zoneSteps').children].forEach((b,i)=>b.setAttribute('aria-current',String(i===step)));
+  [...$('zoneSteps').children].forEach((b,i)=>{b.setAttribute('aria-current',String(i===step));b.disabled=retakeAll;});
   $('zoneBack').disabled=step===0;$('zoneNext').textContent=photos.has(zonePhotoKey(POSES[current].id,ZONE_IDS[step]))?'Rifai questa zona':'Scatta questa zona';
  }
  function layer(context,source,sw,sh,r,width,height,alpha=1){
@@ -94,7 +94,7 @@ const zonePhotoKey=(pose,zone)=>`${pose}--${zone}`;
  }
  start.onclick=async()=>{
   if(!valid())return;const gen=++generation;ref=captureReference();openKey=stateKey();image=null;mctx.clearRect(0,0,150,200);
-  const next=ZONE_IDS.findIndex(id=>!photos.has(zonePhotoKey(POSES[current].id,id)));choose(next<0?0:next);dialog.showModal();raf=requestAnimationFrame(frame);
+  const next=ZONE_IDS.findIndex(id=>!photos.has(zonePhotoKey(POSES[current].id,id)));retakeAll=next<0;choose(retakeAll?0:next);dialog.showModal();raf=requestAnimationFrame(frame);
   try{const im=await loadedImage(ref.url);if(gen===generation&&dialog.open)image=im;}catch{if(gen===generation){dialog.close();notify('Non riesco ad aprire la foto prima. Riprova.');}}
  };
  $('closeZoneGuide').onclick=()=>dialog.close();
@@ -106,7 +106,7 @@ const zonePhotoKey=(pose,zone)=>`${pose}--${zone}`;
   if(!zonePending||!valid()||openKey!==stateKey()||zonePending.zone.id!==ZONE_IDS[step])return;
   const id=zonePhotoKey(zonePending.zone.source,zonePending.zone.id),old=photos.get(id);
   photos.set(id,zonePending);zonePending=null;$('zoneReview').hidden=true;dialog.classList.remove('zone-reviewing');$('zoneReviewImage').removeAttribute('src');revoke(old);revision++;render();
-  const next=ZONE_IDS.findIndex(id=>!photos.has(zonePhotoKey(POSES[current].id,id)));
+  const next=retakeAll?(step<ZONE_IDS.length-1?step+1:-1):ZONE_IDS.findIndex(id=>!photos.has(zonePhotoKey(POSES[current].id,id)));
   if(next<0){dialog.close();compareA=0;compareB=activeVisit;comparePose=POSES[current].id;customSlots=[];setView('compare');}
   else choose(next);
  };

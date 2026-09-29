@@ -16,7 +16,7 @@ test('four after-zone crops persist with one original before photo; invalid crop
   assert.equal((await api(request(path,'PUT',{code:'ZONE-1',name:'Test'}),env,who)).status,200);
   for(const hash of hashes)sql.prepare('INSERT INTO images (id,patient,hash,mime,size) VALUES (?,?,?,?,?)').run('patients/'+id+'/'+hash,id,hash,'image/jpeg',12345);
   const photo=(pose,hash,zone=null)=>({pose,hash,width:900,height:1200,takenAt:'2026-09-29T10:00:00.000Z',zone});
-  const zones=['eyes','left','right','forehead'].map((name,i)=>photo('front-neutral--'+name,hashes[i+1],{source:'front-neutral',id:name,roi:{x:.1+i*.1,y:.1,w:.4,h:.3}}));
+  const zones=['eyes','left','right','forehead'].map((name,i)=>photo('front-neutral--'+name,hashes[i+1],{source:'front-neutral',id:name,roi:{x:.1+i*.1,y:.1,w:.4,h:.3},landmarks:i===0?[{before:[.3,.4],after:[.35,.38]}]:[]}));
   const manifest={visits:[{id:before,date:'2026-09-29',phase:'before',treatment:'',photos:[photo('front-neutral',hashes[0])]},
    {id:after,date:'2026-09-29',phase:'followup',treatment:'',photos:zones}]};
   const put=(version,value)=>api(request(path+'/manifest','PUT',{version,manifest:value}),env,who);
@@ -24,10 +24,12 @@ test('four after-zone crops persist with one original before photo; invalid crop
   const saved=(await(await api(request(path),env,who)).json()).manifest;
   assert.equal(saved.visits[0].photos.length,1);
   assert.deepEqual(saved.visits[1].photos.map(p=>[p.pose,p.zone.roi]),zones.map(p=>[p.pose,p.zone.roi]));
+  assert.deepEqual(saved.visits[1].photos[0].zone.landmarks,zones[0].zone.landmarks);
   for(const bad of [
    {...manifest,visits:[{...manifest.visits[0],photos:zones},manifest.visits[1]]},
    {...manifest,visits:[manifest.visits[0],{...manifest.visits[1],photos:zones.map((p,i)=>i===0?{...p,zone:{...p.zone,roi:{...p.zone.roi,x:.9}}}:p)}]},
-   {...manifest,visits:[manifest.visits[0],{...manifest.visits[1],photos:zones.map((p,i)=>i===0?{...p,zone:null}:p)}]}
+   {...manifest,visits:[manifest.visits[0],{...manifest.visits[1],photos:zones.map((p,i)=>i===0?{...p,zone:null}:p)}]},
+   {...manifest,visits:[manifest.visits[0],{...manifest.visits[1],photos:zones.map((p,i)=>i===0?{...p,zone:{...p.zone,landmarks:[{before:[.3,1.5],after:[.5,.5]}]}}:p)}]}
   ])assert.equal((await put(1,bad)).status,400);
  }finally{sql.close();}
 });
