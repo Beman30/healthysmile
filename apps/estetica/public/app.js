@@ -101,7 +101,7 @@ async function startCamera() {
 function cropRect(width,height){const ratio=.75;let sw=width,sh=height;if(width/height>ratio)sw=height*ratio;else sh=width/ratio;return {sx:(width-sw)/2,sy:(height-sh)/2,sw,sh,width:Math.floor(sw),height:Math.floor(sh)};}
 async function capture() {
  const guided=window.hsBeforeCaptureRequested?'before':window.hsAfterCaptureRequested?'after':null;window.hsBeforeCaptureRequested=false;window.hsAfterCaptureRequested=false;
- if(typeof activeVisit!=='undefined'&&activeVisit>0&&typeof ZONE_IDS!=='undefined'){notify('Per il dopo apri la guida e scatta separatamente occhi, lato sinistro, lato destro e fronte.');return;}
+ if(typeof activeVisit!=='undefined'&&activeVisit>0&&typeof ZONE_IDS!=='undefined'){notify('Per il dopo apri la guida e scatta le quattro zone e il viso intero.');return;}
  if(!stream||captureBusy||pending)return;
  if(!$('patientCode').value.trim()||!$('visitDate').value){notify('Inserisci codice paziente e data visita prima del primo scatto.');(!$('patientCode').value.trim()?$('patientCode'):$('visitDate')).focus();return;}
  captureBusy=true;const gen=++countdownGeneration;render();

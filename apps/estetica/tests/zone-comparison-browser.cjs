@@ -59,26 +59,27 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
   });
   await page.goto(base);await visible('#patientDialog');await page.locator('.new-patient summary').click();await page.locator('#newPatientName').fill('Quattro zone');await page.locator('#newPatientCode').fill('ZONETEST');await page.locator('#createPatient').click();await page.locator('#patientDialog').waitFor({state:'hidden'});
   await page.locator('#dockStart').click();await visible('#compactCapture');await page.locator('#compactManual').click();await visible('#accept');await page.locator('#accept').click();await visible('#captureHandoff');
-  await page.locator('#captureNextPhase').click();await visible('#zoneGuide');assert.equal(await page.locator('#zoneSteps button').count(),4);
+  await page.locator('#captureNextPhase').click();await visible('#zoneGuide');assert.equal(await page.locator('#zoneSteps button').count(),5);
   assert(await page.locator('#compactActions').isHidden(),'after full-face capture should be replaced by zones');
-  for(let i=0;i<4;i++){
-   assert.match(await page.locator('#zoneTitle').textContent(),new RegExp('^'+(i+1)+'/4'));
+  for(let i=0;i<5;i++){
+   assert.match(await page.locator('#zoneTitle').textContent(),new RegExp('^'+(i+1)+'/5'));
    if(i===0){await page.locator('#zoneZoom').fill('3.2');await page.locator('#zoneZoom').dispatchEvent('input');}
    await page.locator('#zoneNext').click();await visible('#zoneReview');
-   const shape=await page.locator('#zoneReviewImage').evaluate(async img=>{await img.decode();return [img.naturalWidth,img.naturalHeight]});assert(shape[0]>0&&Math.abs(shape[0]-shape[1])<2,'saved crop must be square');
+   const shape=await page.locator('#zoneReviewImage').evaluate(async img=>{await img.decode();return [img.naturalWidth,img.naturalHeight]});assert(shape[0]>0&&Math.abs(shape[1]/shape[0]-(i===4?4/3:1))<.02,'detail crops are square, whole face is 3:4');
    await page.locator('#zoneConfirm').click();
-   if(i<3)await page.waitForFunction(n=>document.getElementById('zoneTitle').textContent.startsWith((n+2)+'/4'),i);
+   if(i<4)await page.waitForFunction(n=>document.getElementById('zoneTitle').textContent.startsWith((n+2)+'/5'),i);
   }
   await page.waitForFunction(()=>view==='compare'&&document.body.classList.contains('zone-comparison-active'));
-  assert.equal(await page.locator('.zone-pair').count(),4);
+  assert.equal(await page.locator('.zone-pair').count(),5);
   assert.equal(await page.locator('.zone-pair-stage').count(),4);
   assert.equal(await page.locator('.zone-pair-twoup img').count(),8);
+  assert.equal(await page.locator('.zone-full-photos img').count(),2);
   await page.locator('.zone-edit-points').first().click();await visible('#zonePointsDialog');
   await page.locator('#zonePointBefore').click({position:{x:150,y:150}});
   await page.locator('#zonePointAfter').click({position:{x:160,y:160}});
   await page.locator('#zoneSavePoints').click();
   assert.equal(await page.locator('.zone-pair').first().locator('.zone-pair-twoup .zone-marker').count(),2);
-  assert(await page.evaluate(()=>!visits[1].photos.has('front-neutral')&&visits[0].photos.has('front-neutral')&&['eyes','left','right','forehead'].every(z=>visits[1].photos.has('front-neutral--'+z))));
+  assert(await page.evaluate(()=>visits[1].photos.has('front-neutral')&&visits[0].photos.has('front-neutral')&&['eyes','left','right','forehead'].every(z=>visits[1].photos.has('front-neutral--'+z))));
   const before=await page.locator('.zone-before').first().getAttribute('src');assert(before.startsWith('data:image/jpeg'),'before crops should derive from the one saved photo');
   await page.locator('.zone-pair input[type=range]').first().fill('70');assert.equal(await page.locator('.zone-pair-stage').first().evaluate(e=>e.style.getPropertyValue('--wipe')),'70%');
   await page.waitForFunction(()=>document.getElementById('cloudStatus').textContent==='Salvato nel cloud',null,{timeout:15000});
@@ -89,10 +90,10 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
   await page.locator('#exportComparison').click();
   await page.locator('#pdfCompare').click();
   await page.locator('#backToPhotos').click();await visible('#zoneGuide');
-  assert.match(await page.locator('#zoneTitle').textContent(),/^1\/4/);
+  assert.match(await page.locator('#zoneTitle').textContent(),/^1\/5/);
   await page.locator('#zoneNext').click();await visible('#zoneReview');await page.locator('#zoneConfirm').click();
-  assert.match(await page.locator('#zoneTitle').textContent(),/^2\/4/,'back must retake all four zones');
-  assert.deepEqual(errors,[]);console.log('PASS four independent after-zone photos, same-ROI before crop, interactive comparisons, cloud persistence, JPG and PDF.');
+  assert.match(await page.locator('#zoneTitle').textContent(),/^2\/5/,'back must retake all four zones and the whole face');
+  assert.deepEqual(errors,[]);console.log('PASS four independent after-zone photos and full face, same-ROI before crop, interactive comparisons, cloud persistence, JPG and PDF.');
 
  }catch(e){console.log('LAST GUIDE',await page.locator('#patientGuideInstruction').textContent(),await page.locator('#toast').textContent());throw e;}finally{await browser.close();server.closeAllConnections();await new Promise(r=>server.close(r));db.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});

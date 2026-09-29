@@ -42,6 +42,11 @@
    const edit=document.createElement('button');edit.type='button';edit.className='zone-edit-points';edit.textContent=marks.length?`Modifica ${marks.length} reperi`:'Posiziona reperi';edit.onclick=()=>openPoints(id,before,after);
    card.append(twoup,stage,range,labels,edit);surface.append(card);
   }
+  const full=visits[compareB]?.photos.get(comparePose),card=document.createElement('article');card.className='zone-pair zone-full-pair';
+  const title=document.createElement('h2');title.textContent='5. Viso intero · foto affiancate';card.append(title);
+  if(full){const photos=document.createElement('div');photos.className='zone-full-photos';
+   for(const [label,url]of [['Prima',visits[0].photos.get(comparePose).url],['Dopo',full.url]]){const panel=document.createElement('div'),caption=document.createElement('strong'),img=document.createElement('img');caption.textContent=label;img.src=url;img.alt=`Viso intero · ${label}`;panel.append(caption,img);photos.append(panel);}card.append(photos);
+  }else{const missing=document.createElement('p');missing.textContent='Viso intero del dopo da scattare. Torna alle fotografie per aggiungerlo.';card.append(missing);}surface.append(card);
  }
  function drawPointCanvas(side){
   if(!editor)return;const canvas=$(side==='before'?'zonePointBefore':'zonePointAfter'),image=editor.images[side];if(!image)return;
@@ -98,6 +103,11 @@
   const pose=comparePose;if(!setView('after'))return;current=POSES.findIndex(p=>p.id===pose);render();if(!stream)await startCamera();
  },true);
  const legacyRender=renderComparison;
+ const legacyFlow=renderFlow;
+ renderFlow=function(){legacyFlow();if(view==='after'){
+  const ids=sequenceIds(),total=ids.length*5,count=ids.reduce((sum,id)=>sum+(visits[activeVisit].photos.has(id)?1:0)+ZONE_IDS.filter(z=>visits[activeVisit].photos.has(zonePhotoKey(id,z))).length,0);
+  $('repeatProgress').textContent=`${count} di ${total} scatti completati`;$('progressText').textContent=`${count} / ${total}`;$('completionLabel').textContent=count===total?'Scatti completati':`${count} di ${total}`;
+ }};
  renderComparison=function(){
   if(!zoneMode()){document.body.classList.remove('zone-comparison-active');generation++;legacyRender();return;}
   rememberVisit();document.body.classList.add('zone-comparison-active');
@@ -124,22 +134,42 @@
   g.fillStyle='#626873';g.font='18px sans-serif';g.fillText('Ritagli originali · Inquadrature e luce possono differire · Nessuna deformazione del viso',48,1172);
   return c;
  }
+ async function fullSheet(){
+  const afterPhoto=visits[compareB]?.photos.get(comparePose);if(!afterPhoto)return null;
+  const [before,after]=await Promise.all([loadedImage(visits[0].photos.get(comparePose).url),loadedImage(afterPhoto.url)]);
+  const c=document.createElement('canvas');c.width=1684;c.height=1190;const g=c.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,c.width,c.height);
+  g.fillStyle='#b82c68';g.font='bold 40px sans-serif';g.fillText('Healthy Smile · Viso intero',48,70);
+  g.fillStyle='#333';g.font='23px sans-serif';g.fillText(`${POSES.find(p=>p.id===comparePose).title} · ${visitLabel(0)} / ${visitLabel(compareB)}`,48,110);
+  for(const [i,img]of [before,after].entries()){
+   const x=i?934:150;g.fillStyle='#24242b';g.font='bold 28px sans-serif';g.fillText(i?'DOPO':'PRIMA',x,165);
+   g.fillStyle='#15171c';g.fillRect(x,185,600,800);drawContain(g,img,x,185,600,800,1);
+  }
+  g.fillStyle='#626873';g.font='20px sans-serif';g.fillText('Foto originali affiancate · Posa e luce possono influenzare il confronto',48,1135);
+  return c;
+ }
  // The existing JPG and PDF buttons dispatch through this module only for zone visits.
  document.addEventListener('click',async e=>{
   if(!zoneMode()||!['exportComparison','pdfCompare'].includes(e.target.id))return;
   e.preventDefault();e.stopImmediatePropagation();if(busy||!whole())return;busy=true;
   const button=e.target;button.disabled=true;
-  try{const canvas=await contactSheet(),jpeg=await new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(Error('Immagine non pronta')),'image/jpeg',.94));
-   const name=`${safeName($('patientCode').value)}_quattro_zone`;
-   if(button.id==='exportComparison')download(jpeg,name+'.jpg');
-   else download(buildPhotoPDF([{bytes:new Uint8Array(await jpeg.arrayBuffer()),width:canvas.width,height:canvas.height}]),name+'.pdf');
-   canvas.width=0;notify('Confronto delle quattro zone preparato. Verifica il file scaricato.');
+  try{const canvases=[await contactSheet()],full=await fullSheet();if(full)canvases.push(full);
+   const name=`${safeName($('patientCode').value)}_confronto_zone_e_viso`;
+   if(button.id==='exportComparison'){
+    const combined=document.createElement('canvas');combined.width=1684;combined.height=1190*canvases.length;
+    canvases.forEach((canvas,i)=>combined.getContext('2d').drawImage(canvas,0,i*1190));
+    const jpeg=await new Promise((resolve,reject)=>combined.toBlob(b=>b?resolve(b):reject(Error('Immagine non pronta')),'image/jpeg',.94));download(jpeg,name+'.jpg');combined.width=0;
+   }else{
+    const pages=[];for(const canvas of canvases){const jpeg=await new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(Error('Immagine non pronta')),'image/jpeg',.94));pages.push({bytes:new Uint8Array(await jpeg.arrayBuffer()),width:canvas.width,height:canvas.height});}
+    download(buildPhotoPDF(pages),name+'.pdf');
+   }
+   canvases.forEach(canvas=>canvas.width=0);notify('Confronto preparato. Verifica il file scaricato.');
   }catch{notify('Non riesco a creare il confronto. Riprova.');}finally{busy=false;button.disabled=!whole();}
  },true);
  // Existing encrypted share viewer can display both 2×2 contact sheets as a pair.
  window.zoneShareImageURL=async(beforePhase,pose=comparePose,visit=compareB)=>{
   const ref=await loadedImage(visits[0].photos.get(pose).url),after=beforePhase?null:await Promise.all(ZONE_IDS.map(id=>loadedImage(visits[visit].photos.get(zonePhotoKey(pose,id)).url)));
-  const c=document.createElement('canvas');c.width=900;c.height=1200;const g=c.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,900,1200);
+  const wholePhoto=visits[visit].photos.get(pose),full=wholePhoto?(beforePhase?ref:await loadedImage(wholePhoto.url)):null;
+  const c=document.createElement('canvas');c.width=900;c.height=full?2040:1200;const g=c.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,c.width,c.height);
   g.fillStyle='#b82c68';g.font='bold 36px sans-serif';g.fillText(beforePhase?'PRIMA · QUATTRO ZONE':'DOPO · QUATTRO ZONE',32,54);
   for(let i=0;i<4;i++){
    const x=32+(i%2)*445,y=85+Math.floor(i/2)*550,roi=visits[visit].photos.get(zonePhotoKey(pose,ZONE_IDS[i])).zone.roi;
@@ -147,6 +177,7 @@
    if(beforePhase)drawBefore(g,ref,roi,x,y+46,405);else g.drawImage(after[i],x,y+46,405,405);
    drawMarkers(g,visits[visit].photos.get(zonePhotoKey(pose,ZONE_IDS[i])).zone.landmarks||[],beforePhase?'before':'after',x,y+46,405);
   }
+  if(full){g.fillStyle='#25252d';g.font='bold 30px sans-serif';g.fillText('Viso intero',32,1200);drawContain(g,full,175,1240,550,733,1);}
   return c.toDataURL('image/jpeg',.9);
  };
  window.hasZoneComparison=zoneMode;window.hasAllZonePairs=whole;

@@ -18,23 +18,25 @@ const zonePhotoKey=(pose,zone)=>`${pose}--${zone}`;
  <div id="zoneReview" hidden><p>Controlla questa zona prima di salvarla.</p><img id="zoneReviewImage" alt="Foto della zona appena scattata"><div><button type="button" id="zoneRetake">Rifai</button><button type="button" id="zoneConfirm">Salva questa zona</button></div></div>
  <footer><button type="button" id="zoneBack">Indietro</button><button type="button" id="zoneNext">Scatta questa zona</button></footer>`;
  document.body.append(dialog);
- const stages=[['Occhi','Allinea entrambi gli occhi; questo scatto verrà confrontato solo con gli occhi del prima.'],['Lato sinistro','Sinistra del paziente, a destra nell’immagine. Allinea questa zona e scatta.'],['Lato destro','Destra del paziente, a sinistra nell’immagine. Allinea questa zona e scatta.'],['Fronte','Allinea la fronte; attaccatura dei capelli ed espressione possono cambiare.']];
+ const stages=[['Occhi','Allinea entrambi gli occhi; questo scatto verrà confrontato solo con gli occhi del prima.'],['Lato sinistro','Sinistra del paziente, a destra nell’immagine. Allinea questa zona e scatta.'],['Lato destro','Destra del paziente, a sinistra nell’immagine. Allinea questa zona e scatta.'],['Fronte','Allinea la fronte; attaccatura dei capelli ed espressione possono cambiare.'],['Viso intero','Mantieni la stessa distanza e inquadratura del prima. Questa foto sarà mostrata solo affiancata.']];
  let step=0,retakeAll=false,center={x:.5,y:.35},ref=null,image=null,face=null,faceURL='',facePatient='',openKey='',generation=0,raf=0,lastDraw=0,manual=false,holding=false,measurement=null,zonePending=null;
  const canvas=$('zoneCanvas'),ctx=canvas.getContext('2d'),map=$('zoneMap'),mctx=map.getContext('2d');
  const stateKey=()=>[cloud.patient?.id,activeVisit,current,captureReference()?.url,stream?.id].join('|');
  const valid=()=>!!stream&&activeVisit>0&&!pending&&view!=='compare'&&!!captureReference();
+ const photoKey=index=>index<ZONE_IDS.length?zonePhotoKey(POSES[current].id,ZONE_IDS[index]):POSES[current].id;
+ const nextMissing=()=>stages.findIndex((_,i)=>!photos.has(photoKey(i)));
  stages.forEach((s,i)=>{const b=document.createElement('button');b.type='button';b.textContent=(i+1)+' '+s[0];b.onclick=()=>{if(!retakeAll)choose(i);};$('zoneSteps').append(b);});
- function roi(){const w=1/Number($('zoneZoom').value),h=w*.75;return {x:Math.max(0,Math.min(1-w,center.x-w/2)),y:Math.max(0,Math.min(1-h,center.y-h/2)),w,h};}
+ function roi(){if(step===ZONE_IDS.length)return {x:0,y:0,w:1,h:1};const w=1/Number($('zoneZoom').value),h=w*.75;return {x:Math.max(0,Math.min(1-w,center.x-w/2)),y:Math.max(0,Math.min(1-h,center.y-h/2)),w,h};}
  function locate(){
   const target=faceURL===ref?.url&&facePatient===cloud.patient?.id?face:null,x=target?.cx??.5,y=target?.cy??.36,s=target?.size??.3;
   center={x:x+(step===1?s*.62:step===2?-s*.62:0),y:y+(step===1||step===2?s*.35:step===3?-s*.48:0)};
  }
  function choose(n){
   step=n;manual=false;locate();const size=faceURL===ref?.url&&facePatient===cloud.patient?.id?face?.size:null;const z=size?1/(size*(step===0?1.6:step===3?1.45:1.1)):(step===0?2.5:3.5);$('zoneZoom').value=String(Math.max(1.5,Math.min(8,z)));
-  canvas.width=600;canvas.height=600;
-  $('zoneTitle').textContent=(step+1)+'/4 · '+stages[step][0];$('zoneHint').textContent=stages[step][1];
+  canvas.width=step===ZONE_IDS.length?450:600;canvas.height=600;dialog.classList.toggle('zone-full-face',step===ZONE_IDS.length);
+  $('zoneTitle').textContent=(step+1)+'/'+stages.length+' · '+stages[step][0];$('zoneHint').textContent=stages[step][1];
   [...$('zoneSteps').children].forEach((b,i)=>{b.setAttribute('aria-current',String(i===step));b.disabled=retakeAll;});
-  $('zoneBack').disabled=step===0;$('zoneNext').textContent=photos.has(zonePhotoKey(POSES[current].id,ZONE_IDS[step]))?'Rifai questa zona':'Scatta questa zona';
+  $('zoneBack').disabled=step===0;$('zoneNext').textContent=step===ZONE_IDS.length?(photos.has(photoKey(step))?'Rifai il viso intero':'Scatta il viso intero'):(photos.has(photoKey(step))?'Rifai questa zona':'Scatta questa zona');
  }
  function layer(context,source,sw,sh,r,width,height,alpha=1){
   if(!source||!sw||!sh||!alpha)return;
@@ -88,13 +90,13 @@ const zonePhotoKey=(pose,zone)=>`${pose}--${zone}`;
   try{const blob=await new Promise((resolve,reject)=>shot.toBlob(b=>b?resolve(b):reject(Error('Scatto non riuscito.')),'image/jpeg',.95));
    if(!dialog.open||key!==stateKey()||patientId!==cloud.patient?.id||visit!==activeVisit)return;
    const settings=stream.getVideoTracks()[0].getSettings();
-   zonePending={blob,url:URL.createObjectURL(blob),width:shot.width,height:shot.height,takenAt:new Date().toISOString(),level:currentLevel(),station:stationValues(),camera:{label:stream.getVideoTracks()[0].label,deviceId:settings.deviceId||null,zoom:Number.isFinite(settings.zoom)?settings.zoom:null,facingMode:settings.facingMode||'unknown'},zone:{source:pose,id:ZONE_IDS[step],roi:r}};
+   zonePending={blob,url:URL.createObjectURL(blob),width:shot.width,height:shot.height,takenAt:new Date().toISOString(),level:currentLevel(),station:stationValues(),camera:{label:stream.getVideoTracks()[0].label,deviceId:settings.deviceId||null,zoom:Number.isFinite(settings.zoom)?settings.zoom:null,facingMode:settings.facingMode||'unknown'},zone:step===ZONE_IDS.length?null:{source:pose,id:ZONE_IDS[step],roi:r}};
    $('zoneReviewImage').src=zonePending.url;$('zoneReview').hidden=false;dialog.classList.add('zone-reviewing');
   }catch{notify('Non riesco a scattare la zona. Riprova.');}finally{shot.width=0;$('zoneNext').disabled=false;}
  }
  start.onclick=async()=>{
   if(!valid())return;const gen=++generation;ref=captureReference();openKey=stateKey();image=null;mctx.clearRect(0,0,150,200);
-  const next=ZONE_IDS.findIndex(id=>!photos.has(zonePhotoKey(POSES[current].id,id)));retakeAll=next<0;choose(retakeAll?0:next);dialog.showModal();raf=requestAnimationFrame(frame);
+  const next=nextMissing();retakeAll=next<0;choose(retakeAll?0:next);dialog.showModal();raf=requestAnimationFrame(frame);
   try{const im=await loadedImage(ref.url);if(gen===generation&&dialog.open)image=im;}catch{if(gen===generation){dialog.close();notify('Non riesco ad aprire la foto prima. Riprova.');}}
  };
  $('closeZoneGuide').onclick=()=>dialog.close();
@@ -103,10 +105,10 @@ const zonePhotoKey=(pose,zone)=>`${pose}--${zone}`;
  $('zoneNext').onclick=takeZone;
  $('zoneRetake').onclick=clearReview;
  $('zoneConfirm').onclick=()=>{
-  if(!zonePending||!valid()||openKey!==stateKey()||zonePending.zone.id!==ZONE_IDS[step])return;
-  const id=zonePhotoKey(zonePending.zone.source,zonePending.zone.id),old=photos.get(id);
+  if(!zonePending||!valid()||openKey!==stateKey()||(step===ZONE_IDS.length?zonePending.zone!==null:zonePending.zone?.id!==ZONE_IDS[step]))return;
+  const id=photoKey(step),old=photos.get(id);
   photos.set(id,zonePending);zonePending=null;$('zoneReview').hidden=true;dialog.classList.remove('zone-reviewing');$('zoneReviewImage').removeAttribute('src');revoke(old);revision++;render();
-  const next=retakeAll?(step<ZONE_IDS.length-1?step+1:-1):ZONE_IDS.findIndex(id=>!photos.has(zonePhotoKey(POSES[current].id,id)));
+  const next=retakeAll?(step<stages.length-1?step+1:-1):nextMissing();
   if(next<0){dialog.close();compareA=0;compareB=activeVisit;comparePose=POSES[current].id;customSlots=[];setView('compare');}
   else choose(next);
  };

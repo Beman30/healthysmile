@@ -9,7 +9,7 @@
  compact.innerHTML='<small id="compactLevelLabel">Livella telefono</small><div id="compactLevel"><button type="button" id="compactEnableLevel">Attiva livella</button><div id="compactAxes"><span>Laterale <b id="compactRoll">—</b><i><em id="compactRollDot"></em></i></span><span>Avanti / indietro <b id="compactPitch">—</b><i><em id="compactPitchDot"></em></i></span></div></div><p id="compactInstruction" role="status" aria-live="polite"></p><label id="compactSetup"><input type="checkbox" id="compactPhoneConfirmed"> Lente all’altezza degli occhi, telefono dritto</label><div id="compactActions"><button type="button" id="compactShot" disabled>Attendi la posa…</button><button type="button" id="compactManual">Scatto manuale</button></div>';
  $('captureDock').prepend(compact);
  // Keep the existing zone workflow one tap away from live after capture.
- const zoneStart=$('startZoneGuide');zoneStart.textContent='Scatta le quattro zone del dopo';
+ const zoneStart=$('startZoneGuide');zoneStart.textContent='Scatta le quattro zone e il viso intero';
  $('compactActions').before(zoneStart);
  const zoneLevel=document.createElement('div');zoneLevel.id='zoneLevel';$('zoneGuide').querySelector('header').after(zoneLevel);
  const levelSlots=new Map(),openZones=zoneStart.onclick;
@@ -123,7 +123,7 @@
     if(full&&activeVisit>0&&stream&&!pending&&!handoff&&!captureBusy&&captureReference()&&!dialog.open&&!$('zoneGuide').open&&autoZoneKey!==zoneContext())zoneStart.click();
    },250);
   }
-  let message=activeVisit>0?'Scatta occhi, lato sinistro, lato destro e fronte. Ogni zona sarà salvata separatamente.':captureBusy?'Resta fermo: scelgo la foto migliore.':ready?'Posa stabile. Premi Scatta ora.':$('patientGuideInstruction').textContent;
+  let message=activeVisit>0?'Scatta occhi, lato sinistro, lato destro, fronte e viso intero. Ogni foto sarà salvata separatamente.':captureBusy?'Resta fermo: scelgo la foto migliore.':ready?'Posa stabile. Premi Scatta ora.':$('patientGuideInstruction').textContent;
   if(!captureBusy&&!ready&&activeVisit===0&&!confirmed)message='Sistema il telefono all’altezza degli occhi e conferma sotto.';
   // Phone corrections stay in the level strip, leaving facial guidance visible at the same time.
   if($('compactInstruction').textContent!==message)$('compactInstruction').textContent=message;
