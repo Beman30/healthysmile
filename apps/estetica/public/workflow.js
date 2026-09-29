@@ -1,8 +1,9 @@
 'use strict';
 // Paired visit workflow. Cloud persistence is integrated by cloud.js; ZIP remains a backup.
-// Keep legacy pose definitions/photos for archives; new capture is frontal only.
-const FLOW_POSES = POSES.filter(p=>['front-neutral','front-smile'].includes(p.id));
-const ZONE_POSES=new Set(FLOW_POSES.flatMap(p=>['eyes','left','right','forehead'].map(z=>`${p.id}--${z}`)));
+const FLOW_POSES = POSES.slice(0,6);
+// Preserve photographs from the later zone experiment in cloud and ZIP archives.
+// The restored six-view workflow does not present or require those zone photos.
+const LEGACY_ZONE_POSES=new Set(FLOW_POSES.flatMap(p=>['eyes','left','right','forehead'].map(z=>`${p.id}--${z}`)));
 let visits=[{date:$('visitDate').value,phase:'before',photos}], activeVisit=0, lastFollowup=1;
 let view='before', comparisonLayout='slider', compareA=0, compareB=1, comparePose=POSES[0].id;
 let customSlots=[], archiveBusy=false, importBusy=false, importGeneration=0, ghostVisible=true;
@@ -36,8 +37,8 @@ function renderFlow(){
  $('visitPhase').disabled=activeVisit===0||importBusy;$('followupControls').hidden=activeVisit===0;
  optionList($('followupSelect'),visits.slice(1).map((v,i)=>[i+1,visitLabel(i+1)]),activeVisit);
  const mainCount=FLOW_POSES.filter(p=>photos.has(p.id)).length;
- $('stepCount').textContent=`${activeVisit===0?'PRIMA':'DOPO'} · ${`SCATTO ${Math.max(1,FLOW_POSES.findIndex(p=>p.id===POSES[current].id)+1)} DI ${FLOW_POSES.length}`}`;
- $('progressText').textContent=`${mainCount} / ${FLOW_POSES.length}`;$('completionLabel').textContent=hasSix(photos)?'Frontali completate':`${mainCount} di ${FLOW_POSES.length}`;
+ $('stepCount').textContent=`${activeVisit===0?'PRIMA':'DOPO'} · ${current===6?'VISTA FACOLTATIVA':`SCATTO ${current+1} DI 6`}`;
+ $('progressText').textContent=`${mainCount} / 6`;$('completionLabel').textContent=hasSix(photos)?'6 viste completate':`${mainCount} di 6`;
  $('saveArchiveTop').disabled=!totalPhotos()||archiveBusy||importBusy;$('exportZip').disabled=!totalPhotos()||archiveBusy||importBusy;
  if(importBusy)$('capture').disabled=true;
  $('choosePrevious').disabled=!!pending||captureBusy||importBusy;
@@ -47,9 +48,9 @@ function renderFlow(){
  $('exportTitle').textContent=totalPhotos()?`${totalPhotos()} foto · ${visits.length} ${visits.length===1?'visita':'visite'}`:'Conserva il prima e il dopo';
  $('exportCopy').textContent='Salva il ZIP completo prima di chiudere. Contiene tutte le visite e si riapre da “Apri archivio ZIP”. Le foto non vengono archiviate automaticamente online.';
  $('archiveHint').textContent=totalPhotos()?`${visits.length} ${visits.length===1?'visita':'visite'} · ${totalPhotos()} foto. ${revision===exportRevision?'Archivio caricato o download avviato: verifica il file salvato.':'Modifiche da salvare nel ZIP prima di uscire.'}`:'Apri il ZIP del paziente oppure inizia le foto del prima. Salva il ZIP prima di chiudere.';
- $('poseHelp').textContent=activeVisit===0?'Usa la guida del prima per le viste frontali. Telefono dritto, lente all’altezza degli occhi; lascia visibili collo e spalle.':'Ritrova occhi, naso, mento e spalle della foto precedente. Ripeti espressione e luce. Regola la trasparenza direttamente sull’inquadratura.';
+ $('poseHelp').textContent=activeVisit===0?'Viso nella sagoma, telefono dritto. Lascia visibili collo e spalle. Non serve combaciare al millimetro.':'Ritrova occhi, naso, mento e spalle della foto precedente. Ripeti espressione e luce. Regola la trasparenza direttamente sull’inquadratura.';
  $('loadReference').hidden=activeVisit!==0;$('removeReference').hidden=activeVisit!==0;
- $('framingLabel').textContent=activeVisit&&visits[0].photos.has(POSES[current].id)?'Segui il prima in trasparenza':activeVisit?'Prima mancante per questa posa':'Guida della prima foto';
+ $('framingLabel').textContent=activeVisit&&visits[0].photos.has(POSES[current].id)?'Segui il prima in trasparenza':activeVisit?'Prima mancante per questa posa':'Viso dentro la fascia guida';
  if(!comparing)renderReference();
 }
 const oldReferenceRender=renderReference;
@@ -144,13 +145,12 @@ async function parseArchive(file){
    if(i===0&&v.phase!=='before'||i>0&&!['immediate','followup'].includes(v.phase))throw Error('Fase della visita non valida.');
    const map=new Map();staged.push({date:v.date,phase:v.phase,treatment:String(v.treatment||'').slice(0,200),selected:Array.isArray(v.selected)?v.selected.filter(id=>POSES.some(p=>p.id===id)):null,photos:map});
    for(const p of v.photos){
-    if(!p||!(POSES.some(x=>x.id===p.pose)||i>0&&ZONE_POSES.has(p.pose))||map.has(p.pose)||typeof p.filename!=='string'||!entries.has(p.filename))throw Error('Fotografie duplicate o mancanti nell’archivio.');
-    const r=p.zone?.roi;if(ZONE_POSES.has(p.pose)&&(!r||p.zone.source+'--'+p.zone.id!==p.pose||!['x','y','w','h'].every(k=>Number.isFinite(r[k]))||r.x<0||r.y<0||r.w<.1||r.h<.075||r.x+r.w>1.000001||r.y+r.h>1.000001||Math.abs(r.h-r.w*.75)>.001))throw Error('Zona del dopo non valida.');
+    if(!p||!(POSES.some(x=>x.id===p.pose)||i>0&&LEGACY_ZONE_POSES.has(p.pose))||map.has(p.pose)||typeof p.filename!=='string'||!entries.has(p.filename))throw Error('Fotografie duplicate o mancanti nell’archivio.');
+    const r=p.zone?.roi;if(LEGACY_ZONE_POSES.has(p.pose)&&(!r||p.zone.source+'--'+p.zone.id!==p.pose||!['x','y','w','h'].every(k=>Number.isFinite(r[k]))||r.x<0||r.y<0||r.w<.1||r.h<.075||r.x+r.w>1.000001||r.y+r.h>1.000001||Math.abs(r.h-r.w*.75)>.001))throw Error('Zona del dopo non valida.');
+    const marks=p.zone?.landmarks||[];if(LEGACY_ZONE_POSES.has(p.pose)&&(!Array.isArray(marks)||marks.length>12||!marks.every(m=>m&&['before','after'].every(side=>Array.isArray(m[side])&&m[side].length===2&&m[side].every(n=>Number.isFinite(n)&&n>=0&&n<=1)))))throw Error('Reperi della zona non validi.');
     const bytes=entries.get(p.filename),blob=new Blob([bytes],{type:imageMime(bytes)}),url=await validatedImage(blob);
     const decoded=new Image();decoded.src=url;await decoded.decode();
-    const marks=p.zone?.landmarks||[];
-    if(ZONE_POSES.has(p.pose)&&(!Array.isArray(marks)||marks.length>12||!marks.every(m=>m&&['before','after'].every(side=>Array.isArray(m[side])&&m[side].length===2&&m[side].every(n=>Number.isFinite(n)&&n>=0&&n<=1)))))throw Error('Reperi della zona non validi.');
-    map.set(p.pose,{blob,url,width:decoded.naturalWidth,height:decoded.naturalHeight,takenAt:p.takenAt||null,station:normalizeStation(p.station||v.station),camera:{label:String(p.camera?.label||'').slice(0,160),deviceId:typeof p.camera?.deviceId==='string'?p.camera.deviceId.slice(0,256):null,zoom:Number.isFinite(p.camera?.zoom)?p.camera.zoom:null,facingMode:p.camera?.facingMode||'unknown'},crop:p.crop||null,zone:ZONE_POSES.has(p.pose)?{source:p.zone.source,id:p.zone.id,roi:{x:r.x,y:r.y,w:r.w,h:r.h},landmarks:marks.map(m=>({before:[...m.before],after:[...m.after]}))}:null,level:p.level||null,alignment:p.alignment||null,brightness:brightnessPercent(p)});
+    map.set(p.pose,{blob,url,width:decoded.naturalWidth,height:decoded.naturalHeight,takenAt:p.takenAt||null,station:normalizeStation(p.station||v.station),camera:{label:String(p.camera?.label||'').slice(0,160),deviceId:typeof p.camera?.deviceId==='string'?p.camera.deviceId.slice(0,256):null,zoom:Number.isFinite(p.camera?.zoom)?p.camera.zoom:null,facingMode:p.camera?.facingMode||'unknown'},crop:p.crop||null,zone:LEGACY_ZONE_POSES.has(p.pose)?{source:p.zone.source,id:p.zone.id,roi:{x:r.x,y:r.y,w:r.w,h:r.h},landmarks:marks.map(m=>({before:[...m.before],after:[...m.after]}))}:null,level:p.level||null,alignment:p.alignment||null,brightness:brightnessPercent(p)});
    }
   }
   if(!staged[0].photos.size)throw Error('L’archivio non contiene foto del prima.');return {code:data.patientCode,notes:data.notes||'',visits:staged};
@@ -207,7 +207,7 @@ function renderComparison(){
  document.querySelectorAll('[data-layout]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.layout===comparisonLayout)));
  $('layoutHint').textContent={slider:'Trascina la linea per passare dal prima al dopo della stessa posa.',two:'Stessa posa, due visite affiancate. Lo zoom si applica a entrambe.',half:'Metà sinistra del prima e metà destra del dopo, nella stessa inquadratura.',grid:'Due coppie di foto. Puoi scegliere posa e visita in ogni riquadro.'}[comparisonLayout];
  const surface=$('comparisonSurface');surface.replaceChildren();surface.className=`comparison-surface layout-${comparisonLayout}`;
- if(!totalPhotos()){const p=document.createElement('p');p.className='comparison-empty';p.textContent='Acquisisci le foto frontali del prima oppure apri il ZIP del paziente.';surface.append(p);$('exportComparison').disabled=true;return;}
+ if(!totalPhotos()){const p=document.createElement('p');p.className='comparison-empty';p.textContent='Acquisisci le sei foto del prima oppure apri il ZIP del paziente.';surface.append(p);$('exportComparison').disabled=true;return;}
  if(visits.length<2){const p=document.createElement('p');p.className='comparison-empty';p.textContent='Il prima è pronto. Apri Dopo per scattare la stessa sequenza al termine del trattamento.';surface.append(p);$('exportComparison').disabled=true;return;}
  if(compareA===compareB){const p=document.createElement('p');p.className='same-visit';p.textContent='Stai mostrando la stessa visita in entrambi i lati. Scegli due visite diverse per il prima e dopo.';surface.append(p);}
  if(comparisonLayout==='slider'||comparisonLayout==='half'){
