@@ -17,3 +17,20 @@ test('completed treatment updates phase 2 without creating a quote',()=>{const s
 test('invalid targets, unknown IDs, duplicate rows and NaN cannot be applied',()=>{for(const rows of [[row('restauro','19')],[row('arc','')],[row('unknown')],[row('restauro'),row('restauro')],[row('restauro','12',{prezzo:NaN})]])assert.throws(()=>C.apply({},sel(rows),att,plan));});
 test('memory relevance retrieves matching corrections beyond frequency top ten',()=>{const m=Array.from({length:30},(_,i)=>({input:'altro argomento '+i}));m.push({input:'carie distale',confirmed:{},id:'relevant'});assert.equal(C.relevant(m,'carie distale 12')[0].id,'relevant');assert.equal(C.relevant([{input:'carie',reusable:false}],'carie').length,0);});
 test('applying an empty rejected proposal does not fill the whole chart',()=>{const s=C.apply({},sel([],[]),att,plan);assert.deepEqual(s.teethAttuale,{});});
+test('unknown status removes prior healthy default and clinical notes prevent future healthy defaults',()=>{
+ const s=C.apply({teethAttuale:{16:['sano']},teethNote:{25:'Da precisare'}},sel([],[{target:'16',description:'Terapia canalare da chiarire',id_listino:''}]),att,plan);
+ assert.deepEqual(s.teethAttuale[16],[]);assert.equal(s.teethAttuale[25],undefined);assert.deepEqual(s.teethAttuale[11],['sano']);
+ assert.match(C.clarificationIssues([{target:'16',id_listino:''}],[])[0],/Dente 16/);
+});
+const chainIds=['impianto_osteointegrabile','abutment','corona_zirconio_su_impianto','terapia_endodontica_pluricanal','ricostruzione_moncone_perno_in','corona_provvisoria_in_resina','corona_zirconio'];
+const chainCatalog=chainIds.map(id=>({id,label:id,scope:'TOOTH_LEVEL',prezzo:100}));
+test('implant and endodontic completion use distinct catalogued crowns, correct teeth and no automatic charges',()=>{
+ const rows=[row(chainIds[0],'25'),row(chainIds[3],'16')];const out=C.completionSuggestions(rows,chainCatalog);
+ assert.deepEqual(out.filter(s=>s.target==='25').map(s=>s.id_listino),chainIds.slice(1,3));assert.deepEqual(out.filter(s=>s.target==='16').map(s=>s.id_listino),chainIds.slice(4));assert.equal(rows.length,2);
+});
+test('completion skips existing, excluded, disabled and completed treatments and never substitutes an unrelated item',()=>{
+ const rows=[row(chainIds[0],'25'),row(chainIds[3],'16',{status:'eseguito'})];
+ assert.deepEqual(C.completionSuggestions(rows,chainCatalog,{teethPiano:{25:[{tid:'abutment',stato:'eseguito'}]}},[],[{target:'25',id_listino:'corona_zirconio_su_impianto'}]),[]);
+ assert.deepEqual(C.completionSuggestions(rows,chainCatalog,{},[{rule_id:'path_implant',enabled:false}]),[]);
+ const missing=C.completionSuggestions(rows,[{id:'abutment_zigomatico',label:'Abutment zigomatico'}]);assert.equal(missing.length,2);assert.ok(missing.every(s=>s.id_listino===''));
+});

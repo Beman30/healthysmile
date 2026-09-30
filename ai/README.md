@@ -1,5 +1,12 @@
 # Cartella clinica — AI v6
 
+## Aggiornamento 6.1
+
+- Riquadro «Integra e aggiorna la proposta»: invia la nota cumulativa e la bozza revisionata; conserva i prezzi modificati per le stesse prestazioni. Le revisioni intermedie sono registrate nella memoria solo alla conferma. Se la richiesta fallisce, proposta e integrazione restano disponibili.
+- Stati non abbinati al listino sono evidenziati prima della conferma. Nell'odontogramma un dente con sola nota clinica mostra `?`; cliccandolo si legge la nota. Non diventa sano in analisi successive solo perché non menzionato.
+- Percorsi richiesti dallo studio, proposti come gruppi da accettare: impianto singolo → abutment + corona zirconio su impianto; terapia endodontica → perno in fibra + provvisorio in resina + corona zirconio. Voci già presenti, rifiutate o escluse dall'AI su indicazione del medico non sono riproposte. Nessuna fase è aggiunta al preventivo prima della conferma.
+- Pubblicare anche il Worker rigenerato: il formato rimane compatibile con v6, con il campo aggiuntivo `excluded_suggestions` e il contesto `reviewed_draft`. Le nuove esclusioni e la gestione delle correzioni nella rianalisi richiedono questo aggiornamento del Worker.
+
 La nota clinica produce una proposta di rilievi e terapie, revisionata dal medico prima della scrittura. I denti non menzionati e senza dati precedenti rimangono sani per convenzione dello studio.
 
 ## Componenti

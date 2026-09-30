@@ -67,7 +67,8 @@
     });
     if (!findings.length && !treatments.length && !issues.length) issues.push('Nessun risultato clinico: precisare la nota e ripetere l’analisi.');
     findings.filter(f => !isTooth(f.target)).forEach(f=>issues.push(`Dente non valido: ${f.target || 'mancante'}`));
-    return {version:6, findings, treatments, suggestions, warnings:[...new Set(warnings)], issues:[...new Set(issues)], summary:text(raw.summary || raw.sommario || raw.terapie_da_attuare?.valutazione), transcription:text(raw.transcription_corrected || raw.transcription_raw)};
+    const excluded_suggestions=(raw.excluded_suggestions||[]).map(s=>({target:target(s.target),id_listino:text(s.id_listino),label:text(s.label),rationale:text(s.rationale),rule_id:text(s.rule_id)}));
+    return {version:6, findings, treatments, suggestions, excluded_suggestions, warnings:[...new Set(warnings)], issues:[...new Set(issues)], summary:text(raw.summary || raw.sommario || raw.terapie_da_attuare?.valutazione), transcription:text(raw.transcription_corrected || raw.transcription_raw)};
   }
   function validate(selection, currentCatalog, planCatalog) {
     const errors = [];
@@ -105,7 +106,7 @@
     for (const f of selection.findings) {
       const values = next.teethAttuale[f.target] ||= [];
       if (f.id_listino && !values.includes(f.id_listino)) values.push(f.id_listino);
-      if (f.id_listino && f.id_listino!==sano) next.teethAttuale[f.target] = values.filter(id=>id!==sano);
+      if (f.id_listino!==sano) next.teethAttuale[f.target] = values.filter(id=>id!==sano);
     }
     // Preserve all findings for a tooth in its note; do not erase earlier clinical notes.
     for (const tooth of new Set(selection.findings.map(f=>f.target))) {
@@ -116,7 +117,7 @@
     if (sano && (selection.findings.length || selection.treatments.length)) {
       for(let q=1;q<=4;q++) for(let d=1;d<=8;d++) {
         const tooth=String(q*10+d);
-        if(!mentionedSet.has(tooth) && !next.teethAttuale[tooth]?.length) next.teethAttuale[tooth]=[sano];
+        if(!mentionedSet.has(tooth) && !next.teethAttuale[tooth]?.length && !next.teethNote[tooth]) next.teethAttuale[tooth]=[sano];
       }
     }
     for (const t of selection.treatments) {
@@ -142,6 +143,32 @@
     return next;
   }
   const tokens = s => new Set(key(s).split(' ').filter(x=>x.length>2));
+  // Studio-requested completion checklists. They remain optional proposals, never diagnoses.
+  function completionSuggestions(treatments, catalog, state = {}, preferences = [], ignored = []) {
+    const rules = [
+      {id:'path_implant',title:'Percorso implantare',triggers:['impianto_osteointegrabile'],ids:['abutment','corona_zirconio_su_impianto']},
+      {id:'path_endodontics',title:'Percorso post-endodontico',triggers:['terapia_endodontica_monocanala','terapia_endodontica_bicanalare','terapia_endodontica_pluricanal','ritrattamento_monocanalare','ritrattamento_pluricanalare'],ids:['ricostruzione_moncone_perno_in','corona_provvisoria_in_resina','corona_zirconio']}
+    ];
+    const result=[];
+    for (const rule of rules) {
+      if (preferences.some(p=>(p.rule_id||p.id)===rule.id && p.enabled===false)) continue;
+      const locations = new Set(treatments.filter(t=>rule.triggers.includes(t.id_listino) && t.status!=='eseguito' && isTooth(t.target)).map(t=>t.target));
+      for (const loc of locations) for (const id of rule.ids) {
+        if (treatments.some(t=>t.target===loc && t.id_listino===id) || ignored.some(t=>t.target===loc && t.id_listino===id)) continue;
+        const existing=state.teethPiano?.[loc] || [];
+        if (existing.some(t=>(t.tid||t)===id) || (state.prevRows||[]).some(t=>String(t.dente)===loc && t.tid===id)) continue;
+        const item=catalog.find(t=>t.id===id);
+        result.push({target:loc,id_listino:item?.id||'',label:item?.label||({abutment:'Abutment',corona_zirconio_su_impianto:'Corona zirconio su impianto',ricostruzione_moncone_perno_in:'Ricostruzione moncone con perno in fibra',corona_provvisoria_in_resina:'Corona provvisoria in resina',corona_zirconio:'Corona zirconio'}[id]),scope:'TOOTH_LEVEL',rule_id:rule.id,
+          rationale:rule.title+' dello studio: verifica indicazione, restaurabilità e fasi già eseguite prima di aggiungere.',completion:true});
+      }
+    }
+    return result;
+  }
+  function clarificationIssues(findings, treatments, state = {}) {
+    const locations=new Set(findings.filter(f=>!f.id_listino && isTooth(f.target)).map(f=>f.target));
+    for(const t of treatments) if(isTooth(t.target) && !findings.some(f=>f.target===t.target) && !(state.teethAttuale?.[t.target]||[]).some(id=>id!=='sano')) locations.add(t.target);
+    return [...locations].map(t=>`Dente ${t}: stato dell’odontogramma non definito. Precisa il rilievo/diagnosi e se la terapia è da fare, in corso o già eseguita, oppure conserva solo la nota clinica.`);
+  }
   function relevant(memories,note,limit=16) {
     const query=tokens(note);
     return memories.filter(m=>m.reusable!==false).map((m,i)=>{
@@ -150,7 +177,7 @@
       return {m,i,score:overlap/Math.max(1,words.size),overlap};
     }).filter(r=>r.overlap>0).sort((a,b)=>b.score-a.score || a.i-b.i).slice(0,limit).map(r=>r.m);
   }
-  root.HSClinical = {copy,key,text,isTooth,target,status,match,normalize,validate,apply,relevant,effectiveScope};
+  root.HSClinical = {copy,key,text,isTooth,target,status,match,normalize,validate,apply,relevant,effectiveScope,completionSuggestions,clarificationIssues};
   if(typeof module!=='undefined' && module.exports) module.exports=root.HSClinical;
 })(globalThis);
 
@@ -171,7 +198,7 @@ function outputSchema(context) {
     id_listino:enumeration(['',...context.listino_piano.map(t=>t.id)]),scope:enumeration(['TOOTH_LEVEL','ARCH_LEVEL','QUADRANT_LEVEL','CASE_LEVEL','SESSION_LEVEL']),
     status:enumeration(['dafare','incorso','eseguito']),qta:{type:'number'},diagnosis:string,rationale:string,note:string,evidence:string,needs_review:{type:'boolean'},confidence:{type:'number'}});
   const suggestion=object({target:enumeration(['',...teeth,'AS','AI','Q1','Q2','Q3','Q4']),label:string,id_listino:enumeration(['',...context.listino_piano.map(t=>t.id)]),scope:enumeration(['TOOTH_LEVEL','ARCH_LEVEL','QUADRANT_LEVEL','CASE_LEVEL','SESSION_LEVEL']),rationale:string,rule_id:string});
-  return object({transcription_corrected:string,findings:array(finding),treatments:array(treatment),suggestions:array(suggestion),summary:string,warnings:array(string),issues:array(string)});
+  return object({transcription_corrected:string,findings:array(finding),treatments:array(treatment),suggestions:array(suggestion),excluded_suggestions:array(suggestion),summary:string,warnings:array(string),issues:array(string)});
 }
 function buildPrompt(context,note) {
   const memories=HSClinical.relevant(context.correction_memory||[],note,16).map(m=>({input:m.input,patient_context:m.patient_context,proposed:m.proposed,confirmed:m.confirmed,reason:m.reason,ignored_suggestions:m.ignored_suggestions,created_ms:m.created_ms}));
@@ -192,6 +219,15 @@ COMPITO
 11. Rispetta scope del listino (allowed_scopes elenca eventuali ambiti alternativi consentiti per la stessa voce): TOOTH_LEVEL numero FDI; ARCH_LEVEL AS/AI; QUADRANT_LEVEL Q1–Q4; CASE_LEVEL e SESSION_LEVEL sede vuota. Non perdere la sede di arcata/quadrante.
 12. Catene terapeutiche ulteriori e alternative vanno in suggestions, non inserite automaticamente nel piano. Sono proposte al medico, non obblighi universali; motiva sul caso. Rispetta ai_rule_preferences disabilitate.
 13. evidence è una breve citazione della nota, rationale una motivazione sintetica verificabile. Non attribuire certezza a informazioni mancanti. Segnala in issues dubbi e dati da verificare.
+14. Se una nota come 'terapia canalare 16' non chiarisce situazione attuale o temporalità, non segnare il dente come già devitalizzato: conserva il rilievo e chiedi esplicitamente in issues 'Sul 16 la terapia canalare è da fare, in corso o già eseguita? Qual è il rilievo/diagnosi attuale?'. Quando manca uno stato del listino, spiega che resterà una nota clinica con indicatore da precisare.
+
+PERCORSI DELLO STUDIO DA PROPORRE AL MEDICO
+Per un impianto singolo pianificato, considera in suggestions tutte le fasi mancanti: ABUTMENT e CORONA ZIRCONIO SU IMPIANTO (regola path_implant). Per terapia endodontica pianificata considera RICOSTRUZIONE MONCONE PERNO IN FIBRA, CORONA PROVVISORIA IN RESINA e CORONA ZIRCONIO (regola path_endodontics). È la preferenza operativa dello studio, da verificare per questo paziente e non un obbligo clinico universale. Se lo stato attuale è devitalizzato e il restauro è ancora da pianificare, considera il percorso post-endodontico senza proporre di nuovo la devitalizzazione. Distingui corona su dente naturale da corona su impianto e provvisorio ordinario da carico immediato. Usa esclusivamente le voci reali del listino; segnala quelle mancanti. Non duplicare fasi già presenti o eseguite. Rispetta esclusioni esplicite, preferenze disabilitate, alternative già scelte e controindicazioni descritte. Non aggiungere queste fasi a treatments senza richiesta esplicita: il medico può accettare il gruppo di suggerimenti.
+Restituisci in excluded_suggestions le singole fasi da NON riproporre per quel dente quando sono escluse dalla nota, dalla bozza revisionata o da una correzione pertinente del medico, oppure incompatibili con l'alternativa scelta. Indica sempre sede, ID esatto del listino e motivo dell'esclusione. Per esempio 'sul 16 non voglio perno' esclude solo il perno sul 16, non su altri denti. Senza esclusioni restituisci un array vuoto. Queste esclusioni servono anche a filtrare i promemoria di completamento dell'interfaccia.
+
+INTEGRAZIONE DELLA STESSA PROPOSTA
+Se è presente BOZZA REVISIONATA, stai aggiornando una proposta ancora da confermare. L'integrazione del medico chiarisce la nota iniziale: risolvi le domande cui ha risposto e non ripeterle senza motivo. Confronta proposed e reviewed per riconoscere correzioni manuali, aggiunte ed eliminazioni. Mantieni queste scelte, compresi dente, stato, quantità e prestazioni; cambia solo ciò che l'integrazione rende incompatibile, spiegandolo in issues. Non reinserire righe eliminate o suggerimenti esclusi salvo nuova richiesta esplicita. Restituisci l'intera proposta aggiornata, non soltanto il dente precisato. Non descrivere la bozza come terapia già confermata o eseguita.
+BOZZA REVISIONATA:\n${JSON.stringify(context.reviewed_draft||null)}
 
 MEMORIA DEL MEDICO
 Le revisioni sono esempi clinici confermati, non addestramento dei pesi. Usa le correzioni pertinenti per casi simili, incluse eliminazioni e scelte negative. Il motivo e il contesto delimitano la correzione: non generalizzare una scelta a ogni paziente. Per lo stesso caso/espressione una revisione più recente prevale su quella vecchia. Le istruzioni esplicite del medico nella nota corrente prevalgono sulle preferenze precedenti. Non copiare denti, dati del paziente o terapie senza pertinenza dal caso memorizzato.
@@ -234,7 +270,7 @@ async function analyse(note,context,apiKey) {
     data.issues.push(...review.issues);data.warnings.push(...review.warnings);
   }catch{data.warnings.push('Controllo aggiuntivo non disponibile: verificare la proposta.');}
   // Deterministic validation is independent of the model's self-reported confidence.
-  data.issues.push(...HSClinical.validate(data,context.listino_attuale,context.listino_piano));
+  data.issues.push(...HSClinical.validate(data,context.listino_attuale,context.listino_piano),...HSClinical.clarificationIssues(data.findings,data.treatments,context.patient_context));
   data.issues=[...new Set(data.issues)];data.warnings=[...new Set(data.warnings)];
   if(!data.treatments.length && !data.issues.length)data.issues.push('Nessuna terapia proposta: verificare o precisare la problematica.');
   return legacyResponse(data,note,context);
@@ -262,7 +298,7 @@ export default {
         if(!file || typeof file==='string' || !file.size)return response({ok:false,error:'File audio mancante'},400);
         if(file.size>24*1024*1024)return response({ok:false,error:'Registrazione troppo grande: dividi la dettatura.'},400);
         context={};
-        for(const field of ['listino_attuale','listino_piano','patient_context','correction_memory','esempi_attuale','esempi_piano','ai_rule_preferences','protocolli','clinical_deps']) {
+        for(const field of ['listino_attuale','listino_piano','patient_context','correction_memory','esempi_attuale','esempi_piano','ai_rule_preferences','protocolli','clinical_deps','reviewed_draft']) {
           const value=form.get(field);context[field]=value?JSON.parse(value):(['patient_context'].includes(field)?{}:[]);
         }
         for(const field of ['studio_id','doctor_id','codice_paziente'])context[field]=form.get(field)||'';

@@ -66,7 +66,8 @@
     });
     if (!findings.length && !treatments.length && !issues.length) issues.push('Nessun risultato clinico: precisare la nota e ripetere l’analisi.');
     findings.filter(f => !isTooth(f.target)).forEach(f=>issues.push(`Dente non valido: ${f.target || 'mancante'}`));
-    return {version:6, findings, treatments, suggestions, warnings:[...new Set(warnings)], issues:[...new Set(issues)], summary:text(raw.summary || raw.sommario || raw.terapie_da_attuare?.valutazione), transcription:text(raw.transcription_corrected || raw.transcription_raw)};
+    const excluded_suggestions=(raw.excluded_suggestions||[]).map(s=>({target:target(s.target),id_listino:text(s.id_listino),label:text(s.label),rationale:text(s.rationale),rule_id:text(s.rule_id)}));
+    return {version:6, findings, treatments, suggestions, excluded_suggestions, warnings:[...new Set(warnings)], issues:[...new Set(issues)], summary:text(raw.summary || raw.sommario || raw.terapie_da_attuare?.valutazione), transcription:text(raw.transcription_corrected || raw.transcription_raw)};
   }
   function validate(selection, currentCatalog, planCatalog) {
     const errors = [];
@@ -104,7 +105,7 @@
     for (const f of selection.findings) {
       const values = next.teethAttuale[f.target] ||= [];
       if (f.id_listino && !values.includes(f.id_listino)) values.push(f.id_listino);
-      if (f.id_listino && f.id_listino!==sano) next.teethAttuale[f.target] = values.filter(id=>id!==sano);
+      if (f.id_listino!==sano) next.teethAttuale[f.target] = values.filter(id=>id!==sano);
     }
     // Preserve all findings for a tooth in its note; do not erase earlier clinical notes.
     for (const tooth of new Set(selection.findings.map(f=>f.target))) {
@@ -115,7 +116,7 @@
     if (sano && (selection.findings.length || selection.treatments.length)) {
       for(let q=1;q<=4;q++) for(let d=1;d<=8;d++) {
         const tooth=String(q*10+d);
-        if(!mentionedSet.has(tooth) && !next.teethAttuale[tooth]?.length) next.teethAttuale[tooth]=[sano];
+        if(!mentionedSet.has(tooth) && !next.teethAttuale[tooth]?.length && !next.teethNote[tooth]) next.teethAttuale[tooth]=[sano];
       }
     }
     for (const t of selection.treatments) {
@@ -141,6 +142,32 @@
     return next;
   }
   const tokens = s => new Set(key(s).split(' ').filter(x=>x.length>2));
+  // Studio-requested completion checklists. They remain optional proposals, never diagnoses.
+  function completionSuggestions(treatments, catalog, state = {}, preferences = [], ignored = []) {
+    const rules = [
+      {id:'path_implant',title:'Percorso implantare',triggers:['impianto_osteointegrabile'],ids:['abutment','corona_zirconio_su_impianto']},
+      {id:'path_endodontics',title:'Percorso post-endodontico',triggers:['terapia_endodontica_monocanala','terapia_endodontica_bicanalare','terapia_endodontica_pluricanal','ritrattamento_monocanalare','ritrattamento_pluricanalare'],ids:['ricostruzione_moncone_perno_in','corona_provvisoria_in_resina','corona_zirconio']}
+    ];
+    const result=[];
+    for (const rule of rules) {
+      if (preferences.some(p=>(p.rule_id||p.id)===rule.id && p.enabled===false)) continue;
+      const locations = new Set(treatments.filter(t=>rule.triggers.includes(t.id_listino) && t.status!=='eseguito' && isTooth(t.target)).map(t=>t.target));
+      for (const loc of locations) for (const id of rule.ids) {
+        if (treatments.some(t=>t.target===loc && t.id_listino===id) || ignored.some(t=>t.target===loc && t.id_listino===id)) continue;
+        const existing=state.teethPiano?.[loc] || [];
+        if (existing.some(t=>(t.tid||t)===id) || (state.prevRows||[]).some(t=>String(t.dente)===loc && t.tid===id)) continue;
+        const item=catalog.find(t=>t.id===id);
+        result.push({target:loc,id_listino:item?.id||'',label:item?.label||({abutment:'Abutment',corona_zirconio_su_impianto:'Corona zirconio su impianto',ricostruzione_moncone_perno_in:'Ricostruzione moncone con perno in fibra',corona_provvisoria_in_resina:'Corona provvisoria in resina',corona_zirconio:'Corona zirconio'}[id]),scope:'TOOTH_LEVEL',rule_id:rule.id,
+          rationale:rule.title+' dello studio: verifica indicazione, restaurabilità e fasi già eseguite prima di aggiungere.',completion:true});
+      }
+    }
+    return result;
+  }
+  function clarificationIssues(findings, treatments, state = {}) {
+    const locations=new Set(findings.filter(f=>!f.id_listino && isTooth(f.target)).map(f=>f.target));
+    for(const t of treatments) if(isTooth(t.target) && !findings.some(f=>f.target===t.target) && !(state.teethAttuale?.[t.target]||[]).some(id=>id!=='sano')) locations.add(t.target);
+    return [...locations].map(t=>`Dente ${t}: stato dell’odontogramma non definito. Precisa il rilievo/diagnosi e se la terapia è da fare, in corso o già eseguita, oppure conserva solo la nota clinica.`);
+  }
   function relevant(memories,note,limit=16) {
     const query=tokens(note);
     return memories.filter(m=>m.reusable!==false).map((m,i)=>{
@@ -149,6 +176,6 @@
       return {m,i,score:overlap/Math.max(1,words.size),overlap};
     }).filter(r=>r.overlap>0).sort((a,b)=>b.score-a.score || a.i-b.i).slice(0,limit).map(r=>r.m);
   }
-  root.HSClinical = {copy,key,text,isTooth,target,status,match,normalize,validate,apply,relevant,effectiveScope};
+  root.HSClinical = {copy,key,text,isTooth,target,status,match,normalize,validate,apply,relevant,effectiveScope,completionSuggestions,clarificationIssues};
   if(typeof module!=='undefined' && module.exports) module.exports=root.HSClinical;
 })(globalThis);

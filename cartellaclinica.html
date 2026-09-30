@@ -682,6 +682,13 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--gray-50);color:
             <!-- Nota originale -->
             <div style="font-size:10px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px">Nota dettata</div>
             <div class="ai-orig-box" id="ai-orig-nota" style="margin-bottom:16px"></div>
+            <div id="ai-quality-box" role="status" style="display:none;margin-bottom:12px"></div>
+            <div class="ai-orig-box" style="margin-bottom:16px">
+              <label for="ai-additional-info"><strong>Vuoi aggiungere o precisare informazioni?</strong></label>
+              <textarea id="ai-additional-info" style="width:100%;min-height:70px;margin:8px 0" placeholder="Es. sul 16 la terapia canalare è da fare; aggiungo questi rilievi…"></textarea>
+              <button class="ai-btn ai-btn-primary" onclick="aiIntegraInformazioni()">Integra e aggiorna la proposta</button>
+              <small style="display:block;margin-top:6px">Invia anche le correzioni che hai fatto nelle righe. Controlla la nuova proposta prima di confermarla.</small>
+            </div>
 
             <!-- Proposta situazione attuale -->
             <div class="ai-proposal-box" id="ai-prop-sit">
@@ -718,7 +725,6 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--gray-50);color:
             </div>
 
             <!-- Quality check / warnings v2 -->
-            <div id="ai-quality-box" style="display:none;margin-bottom:12px"></div>
             <div id="ai-alert-suggestions" style="display:none;margin-bottom:12px"></div>
 
             <datalist id="ai-locations"><option value="AS"><option value="AI"><option value="Q1"><option value="Q2"><option value="Q3"><option value="Q4"></datalist>
@@ -1506,11 +1512,21 @@ function refreshOdonto(type) {
     if (!el || !sg) return;
 
     const entry = data[num];
+    const group = document.getElementById(`${svgId}-g-${num}`);
+    group?.querySelector('title')?.remove();
+    if(type==='attuale' && teethNote[num]) {
+      const title=document.createElementNS('http://www.w3.org/2000/svg','title');
+      title.textContent=teethNote[num];group?.appendChild(title);
+    }
     if (!entry || (Array.isArray(entry) && !entry.length) || (typeof entry==='object' && !Array.isArray(entry) && !entry.tid)) {
       el.setAttribute('fill','#FFFFFF');
       el.setAttribute('stroke','#C4C2BA');
       el.setAttribute('stroke-width','1.5');
       sg.innerHTML = '';
+      if(type==='attuale' && teethNote[num]) {
+        el.setAttribute('fill','#FEF3E2');el.setAttribute('stroke','#B7651A');
+        sg.innerHTML='<text x="0" y="4" text-anchor="middle" font-size="12" font-weight="700" fill="#B7651A">?</text>';
+      }
       return;
     }
 
@@ -1576,6 +1592,10 @@ function selectTooth(num, type) {
       <div class="popup-hdr"><strong>Dente ${num} — situazione attuale</strong>
         <button class="popup-close" onclick="closePopup('${popupId}')">✕</button></div>
       <div class="treat-grid">${btns}</div>`;
+    if(teethNote[num]) {
+      const note=document.createElement('div');note.style.cssText='padding:10px;white-space:pre-wrap;background:#FEF3E2';
+      note.textContent='Nota clinica: '+teethNote[num];popup.appendChild(note);
+    }
   } else {
     const items = teethPiano[num] || [];
     const btns = (type==='attuale' ? TR_ATTUALE : TR_PIANO).map(t => {
@@ -3165,7 +3185,7 @@ function closeSidebar() {
 // Close sidebar when a patient is selected on mobile — handled in renderList
 
 </script>
-<script src="ai/clinical-core.js?v=6"></script>
-<script src="ai/cartella-ai.js?v=6"></script>
+<script src="ai/clinical-core.js?v=6.1"></script>
+<script src="ai/cartella-ai.js?v=6.1"></script>
 </body>
 </html>
