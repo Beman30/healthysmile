@@ -1,0 +1,154 @@
+/* Shared contract: browser + standalone Cloudflare Worker. No network or storage. */
+(function (root) {
+  'use strict';
+  const copy = x => JSON.parse(JSON.stringify(x));
+  const text = x => typeof x === 'string' ? x.trim() : '';
+  const key = x => text(x).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+  const isTooth = x => /^[1-4][1-8]$/.test(String(x));
+  const target = x => ({SUP:'AS', INF:'AI', SUPERIORE:'AS', INFERIORE:'AI'}[String(x || '').toUpperCase()] || String(x || '').toUpperCase());
+  const status = x => ({'da fare':'dafare','in corso':'incorso','completato':'eseguito','eseguita':'eseguito'}[x] || (['dafare','incorso','eseguito'].includes(x) ? x : 'dafare'));
+  // Only explicit equivalences; ambiguous partial substrings never select a price-list item.
+  const aliases = [['assente','mancante','estratto','estratto assente'],['devitalizzato','devitaliz'],['coroato','corona'],['carie','cariato']];
+  function match(catalog, id, label, diagnostic = false) {
+    const direct = catalog.find(t => t.id === id);
+    if (direct) return direct;
+    const names = [key(label), key(id)].filter(Boolean);
+    let hits = catalog.filter(t => names.includes(key(t.label)) || names.includes(key(t.id)));
+    if (hits.length === 1) return hits[0];
+    if (diagnostic) {
+      const family = aliases.find(a => a.some(n => names.includes(n)));
+      if (family) hits = catalog.filter(t => family.includes(key(t.id)) || family.includes(key(t.label)));
+      if (family && hits.length === 1) return hits[0];
+    }
+    return null;
+  }
+  function effectiveScope(item, location) {
+    const allowed = item.allowed_scopes || [item.scope || 'TOOTH_LEVEL'];
+    if (/^Q[1-4]$/.test(location) && allowed.includes('QUADRANT_LEVEL')) return 'QUADRANT_LEVEL';
+    if (['AS','AI'].includes(location) && allowed.includes('ARCH_LEVEL')) return 'ARCH_LEVEL';
+    return item.scope || 'TOOTH_LEVEL';
+  }
+  function normalize(raw, currentCatalog = [], planCatalog = []) {
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) throw new Error('Risposta AI non valida');
+    const warnings = (raw.warnings || []).filter(x => typeof x === 'string');
+    const issues = (raw.issues || raw.dubbi_da_revisionare || []).map(x => typeof x === 'string' ? x : JSON.stringify(x));
+    let findings = Array.isArray(raw.findings) ? raw.findings : [];
+    let treatments = Array.isArray(raw.treatments) ? raw.treatments : [];
+    if (!Array.isArray(raw.findings)) {
+      findings = Object.entries(raw.situazione_attuale?.denti || {}).flatMap(([tooth,d]) =>
+        (Array.isArray(d.stati) ? d.stati : [d]).map(f => ({...f, target:tooth, description:f.stato || f.label || f.finding, note:f.note || f.problema})));
+    }
+    if (!Array.isArray(raw.treatments)) {
+      treatments = Object.entries(raw.terapie_da_attuare?.denti || {}).flatMap(([tooth,d]) =>
+        (Array.isArray(d.terapie) ? d.terapie : [d]).map(t => ({...t, target:tooth, label:t.label || t.stato || t.proposed_treatment})));
+      treatments.push(...(raw.terapie_da_attuare?.generali || []).map(t => ({...t,target:t.target || t.dente || t.arcata || t.quadrante || '',label:t.label || t.stato})));
+      if (!treatments.length && Array.isArray(raw.treatment_plan)) treatments = raw.treatment_plan.map(t => ({...t,target:t.tooth,label:t.proposed_treatment}));
+    }
+    findings = findings.map(f => {
+      const description = text(f.description || f.stato || f.finding || f.label);
+      const item = match(currentCatalog, f.id_listino, description, true);
+      return {target:target(f.target || f.tooth), description, id_listino:item?.id || '', note:text(f.note || f.notes), evidence:text(f.evidence), confidence:typeof f.confidence === 'number' ? f.confidence : null};
+    });
+    treatments = treatments.map(t => {
+      const label = text(t.label || t.stato || t.proposed_treatment);
+      const item = match(planCatalog, t.id_listino, label);
+      const loc = target(t.target || t.tooth || t.dente);
+      const scope = item ? effectiveScope(item,loc) : t.scope || 'TOOTH_LEVEL';
+      if (!item) warnings.push(`Prestazione da abbinare al listino: ${label || '(descrizione mancante)'}`);
+      return {target:loc, id_listino:item?.id || '', label:label || item?.label || 'Terapia da precisare', scope,
+        status:status(t.status || t.stato_esecuzione), qta:Number.isFinite(Number(t.qta ?? t.quantity)) && Number(t.qta ?? t.quantity)>0 ? Number(t.qta ?? t.quantity) : 1,
+        prezzo:Number(item?.prezzo || 0), diagnosis:text(t.diagnosis), rationale:text(t.rationale || t.motivo), note:text(t.note || t.notes), evidence:text(t.evidence),
+        needs_review:!!t.needs_review || !item, confidence:typeof t.confidence==='number' ? t.confidence : null};
+    });
+    const suggestions = (raw.suggestions || raw.suggerimenti_clinici || raw.suggerimenti_clinici_opzionali || []).map(t => {
+      const item = match(planCatalog,t.id_listino,t.label || t.prestazione);
+      return {target:target(t.target || t.dente),id_listino:item?.id || '',label:text(t.label || t.prestazione),scope:item?.scope || t.scope || 'TOOTH_LEVEL',rationale:text(t.rationale || t.motivo),rule_id:text(t.rule_id)};
+    });
+    if (!findings.length && !treatments.length && !issues.length) issues.push('Nessun risultato clinico: precisare la nota e ripetere l’analisi.');
+    findings.filter(f => !isTooth(f.target)).forEach(f=>issues.push(`Dente non valido: ${f.target || 'mancante'}`));
+    return {version:6, findings, treatments, suggestions, warnings:[...new Set(warnings)], issues:[...new Set(issues)], summary:text(raw.summary || raw.sommario || raw.terapie_da_attuare?.valutazione), transcription:text(raw.transcription_corrected || raw.transcription_raw)};
+  }
+  function validate(selection, currentCatalog, planCatalog) {
+    const errors = [];
+    for (const f of selection.findings) {
+      if (!isTooth(f.target)) errors.push(`Dente non valido: ${f.target}`);
+      if (!f.description) errors.push(`Descrizione clinica mancante sul ${f.target}`);
+      if (f.id_listino && !currentCatalog.some(t=>t.id===f.id_listino)) errors.push(`Stato non presente nel listino: ${f.id_listino}`);
+    }
+    const seen = new Set();
+    for (const t of selection.treatments) {
+      const item = planCatalog.find(i=>i.id===t.id_listino);
+      if (!item) { errors.push(`Seleziona la prestazione per «${t.label}» oppure elimina la riga.`); continue; }
+      const scope = effectiveScope(item,t.target);
+      if (scope==='TOOTH_LEVEL' && !isTooth(t.target)) errors.push(`«${item.label}»: indica un dente FDI valido.`);
+      if (scope==='ARCH_LEVEL' && !['AS','AI'].includes(t.target)) errors.push(`«${item.label}»: scegli AS o AI.`);
+      if (scope==='QUADRANT_LEVEL' && !/^Q[1-4]$/.test(t.target)) errors.push(`«${item.label}»: scegli Q1–Q4.`);
+      if (['CASE_LEVEL','SESSION_LEVEL'].includes(scope) && t.target) errors.push(`«${item.label}»: usa la sede Generale.`);
+      if (!['TOOTH_LEVEL','ARCH_LEVEL','QUADRANT_LEVEL','CASE_LEVEL','SESSION_LEVEL'].includes(scope)) errors.push(`Ambito non valido per ${item.label}`);
+      if (!['dafare','incorso','eseguito'].includes(t.status)) errors.push('Stato terapia non valido');
+      if (!Number.isFinite(t.qta) || t.qta<=0 || !Number.isFinite(t.prezzo) || t.prezzo<0) errors.push(`Quantità o prezzo non validi: ${item.label}`);
+      const sig = t.target+'|'+t.id_listino;
+      if (seen.has(sig)) errors.push(`Prestazione duplicata: ${item.label} ${t.target}`);
+      seen.add(sig);
+    }
+    return [...new Set(errors)];
+  }
+  function apply(state, selection, currentCatalog, planCatalog, mentioned = []) {
+    const errors = validate(selection,currentCatalog,planCatalog);
+    if (errors.length) throw new Error(errors.join('\n'));
+    const next = copy(state);
+    for (const field of ['teethAttuale','teethNote','teethPiano','arcatePiano','arcatePianoPresta','quadrantePiano']) next[field] ||= {};
+    next.prevRows ||= [];
+    const mentionedSet = new Set([...mentioned,...selection.findings.map(f=>f.target),...selection.treatments.map(t=>t.target)]);
+    const sano = match(currentCatalog,'sano','Sano',true)?.id;
+    for (const f of selection.findings) {
+      const values = next.teethAttuale[f.target] ||= [];
+      if (f.id_listino && !values.includes(f.id_listino)) values.push(f.id_listino);
+      if (f.id_listino && f.id_listino!==sano) next.teethAttuale[f.target] = values.filter(id=>id!==sano);
+    }
+    // Preserve all findings for a tooth in its note; do not erase earlier clinical notes.
+    for (const tooth of new Set(selection.findings.map(f=>f.target))) {
+      const additions = selection.findings.filter(f=>f.target===tooth).map(f=>[f.description,f.note].filter(Boolean).join(' — '));
+      next.teethNote[tooth] = [...new Set([next.teethNote[tooth],...additions].filter(Boolean))].join('\n');
+    }
+    // Deliberate studio convention: only unmentioned, previously empty teeth default to healthy.
+    if (sano && (selection.findings.length || selection.treatments.length)) {
+      for(let q=1;q<=4;q++) for(let d=1;d<=8;d++) {
+        const tooth=String(q*10+d);
+        if(!mentionedSet.has(tooth) && !next.teethAttuale[tooth]?.length) next.teethAttuale[tooth]=[sano];
+      }
+    }
+    for (const t of selection.treatments) {
+      const item = planCatalog.find(i=>i.id===t.id_listino);
+      const scope = effectiveScope(item,t.target);
+      let map,loc=t.target;
+      if(scope==='TOOTH_LEVEL') map=next.teethPiano;
+      if(scope==='ARCH_LEVEL') {map=item.catalog==='arch' ? next.arcatePiano : next.arcatePianoPresta;loc=t.target==='AS'?'sup':'inf';}
+      if(scope==='QUADRANT_LEVEL') {map=next.quadrantePiano;loc=t.target.toLowerCase();}
+      if(map) {
+        const rows=map[loc] ||= [];
+        const row=rows.find(r=>(r.tid||r)===t.id_listino);
+        if(row && typeof row==='object') row.stato=t.status;
+        else if(!row) rows.push({tid:t.id_listino,stato:t.status});
+      }
+      const prev=next.prevRows.find(r=>String(r.dente||'').toUpperCase()===t.target && r.tid===t.id_listino);
+      // Completed work is recorded in phase 2, never added as a new charge automatically.
+      if(t.status!=='eseguito') {
+        if(prev) Object.assign(prev,{qta:t.qta,prezzo:t.prezzo,scope});
+        else next.prevRows.push({id:'ai_'+Date.now()+'_'+next.prevRows.length,dente:t.target,tid:t.id_listino,label:item.label,qta:t.qta,prezzo:t.prezzo,sconto:0,scope});
+      }
+    }
+    return next;
+  }
+  const tokens = s => new Set(key(s).split(' ').filter(x=>x.length>2));
+  function relevant(memories,note,limit=16) {
+    const query=tokens(note);
+    return memories.filter(m=>m.reusable!==false).map((m,i)=>{
+      const words=tokens(m.input || m.stato_ai || m.trigger_label || '');
+      const overlap=[...words].filter(w=>query.has(w)).length;
+      return {m,i,score:overlap/Math.max(1,words.size),overlap};
+    }).filter(r=>r.overlap>0).sort((a,b)=>b.score-a.score || a.i-b.i).slice(0,limit).map(r=>r.m);
+  }
+  root.HSClinical = {copy,key,text,isTooth,target,status,match,normalize,validate,apply,relevant,effectiveScope};
+  if(typeof module!=='undefined' && module.exports) module.exports=root.HSClinical;
+})(globalThis);
