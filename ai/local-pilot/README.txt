@@ -1,4 +1,4 @@
-PROVA DI COMPRENSIONE LOCALE V2 - HEALTHY SMILE
+PROVA DI COMPRENSIONE LOCALE V3 - HEALTHY SMILE
 
 1. Estrai tutto lo ZIP in una nuova cartella sul PC Windows.
 2. Apri Ollama (il modello previsto e' qwen3:4b, gia' usato dall'agente).
@@ -9,11 +9,17 @@ Servono Python 3 e Ollama, come per l'agente precedente.
 Se manca il modello, il programma indica: ollama pull qwen3:4b.
 La prima risposta puo' richiedere piu' tempo per caricare il modello.
 Prima dei casi clinici viene eseguita una prova brevissima, limite 60 secondi.
+Solo una risposta completa OK, senza ragionamento, consente di avviare i casi.
+Viene aggiunto il comando /no_think previsto da Qwen3 per disattivare il
+ragionamento: e' una richiesta al modello, non una garanzia di qualita'.
 Ogni caso clinico ha un limite totale di 120 secondi. Ogni 10 secondi viene
 mostrato il tempo trascorso e il numero di caratteri ricevuti.
 Al primo errore la prova si interrompe; tempi ed errori sono nel risultato.
 Versione Ollama e memoria usata dai modelli caricati sono rilevate automaticamente.
-La v2 usa contesto 4096 e massimo 1500 token di risposta per ridurre il carico;
+Viene registrata anche la configurazione del modello (template e controlli thinking).
+Sedi e alcuni numeri di impianti non documentati sono segnalati nel risultato;
+questi controlli sono limitati e non rilevano tutti gli errori clinici.
+La v3 mantiene contesto 4096 e massimo 1500 token di risposta della v2;
 questo puo' cambiare i risultati rispetto alla prova precedente.
 
 Questa e' una prova iniziale, NON un modello addestrato.

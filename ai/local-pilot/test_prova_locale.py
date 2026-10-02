@@ -33,7 +33,7 @@ class PilotTests(unittest.TestCase):
     def test_truncated_response_rejected(self):
         response = {"done": True, "done_reason": "length", "message": {"content": json.dumps(self.result())}}
         with patch.object(pilot, "stream_chat", return_value=response):
-            with self.assertRaises(ValueError):
+            with self.assertRaises(pilot.ChatFailure):
                 pilot.analyze({"trascrizione": "Controllo."}, self.protocol)
 
     def test_redirect_rejected(self):
@@ -77,6 +77,28 @@ class PilotTests(unittest.TestCase):
                                   ("chunk", {"message": {"content": "K"}, "done": True})]
         result = pilot.wait_chat(worker, events, limit=1)
         self.assertEqual(result["message"]["content"], "OK")
+
+    def test_quick_probe_rejects_reported_v2_failure(self):
+        value = {"done": True, "done_reason": "length", "message": {
+            "content": 'Okay, the user wants me to respond only with "OK". Let me check'}}
+        self.assertFalse(pilot.quick_response_valid(value))
+        self.assertTrue(pilot.quick_response_valid({"done": True, "done_reason": "stop",
+                                                    "message": {"content": "OK"}}))
+
+    def test_reported_hallucinated_sites_and_implant_count_flagged(self):
+        value = self.result()
+        value["diary_entries"][0]["text"] = "Controllo di quattro impianti."
+        value["findings"] = [{"target": "Q1", "evidence_ids": [1]}]
+        issues = pilot.source_issues(value, [{"id": 1, "text": "Impianti inseriti una settimana fa."}])
+        self.assertTrue(any("FDI" in text for text in issues))
+        self.assertTrue(any("Sede" in text for text in issues))
+        self.assertTrue(any("Numero" in text for text in issues))
+
+    def test_explicit_number_and_site_are_not_flagged(self):
+        value = self.result()
+        value["diary_entries"][0]["text"] = "Controllo di 4 impianti."
+        value["findings"] = [{"target": "36", "evidence_ids": [1]}]
+        self.assertEqual(pilot.source_issues(value, [{"id": 1, "text": "Controllo di quattro impianti, incluso 36."}]), [])
 
 
 if __name__ == "__main__":
