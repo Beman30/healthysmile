@@ -1,0 +1,8 @@
+node_modules/
+__pycache__/
+*.pyc
+api-settings.local.json
+api-key.local.bin
+ultima-analisi-debug.json
+.env
+.env.*

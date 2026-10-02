@@ -64,10 +64,12 @@
       const item = match(planCatalog,t.id_listino,t.label || t.prestazione);
       return {target:target(t.target || t.dente),id_listino:item?.id || '',label:text(t.label || t.prestazione),scope:item?.scope || t.scope || 'TOOTH_LEVEL',rationale:text(t.rationale || t.motivo),rule_id:text(t.rule_id)};
     });
-    if (!findings.length && !treatments.length && !issues.length) issues.push('Nessun risultato clinico: precisare la nota e ripetere l’analisi.');
+    const diary = text(typeof raw.diary === 'string' ? raw.diary : raw.diary?.text);
+    const events = (Array.isArray(raw.events) ? raw.events : []).map(e=>({label:text(e.label),status:status(e.status),timing:text(e.timing),evidence:text(e.evidence)})).filter(e=>e.label);
+    if (!findings.length && !treatments.length && !diary && !issues.length) issues.push('Nessun risultato clinico: precisare la nota e ripetere l’analisi.');
     findings.filter(f => !isTooth(f.target)).forEach(f=>issues.push(`Dente non valido: ${f.target || 'mancante'}`));
     const excluded_suggestions=(raw.excluded_suggestions||[]).map(s=>({target:target(s.target),id_listino:text(s.id_listino),label:text(s.label),rationale:text(s.rationale),rule_id:text(s.rule_id)}));
-    return {version:6, findings, treatments, suggestions, excluded_suggestions, warnings:[...new Set(warnings)], issues:[...new Set(issues)], summary:text(raw.summary || raw.sommario || raw.terapie_da_attuare?.valutazione), transcription:text(raw.transcription_corrected || raw.transcription_raw)};
+    return {version:6, findings, treatments, suggestions, excluded_suggestions, diary, events, source:text(raw.source), warnings:[...new Set(warnings)], issues:[...new Set(issues)], summary:text(raw.summary || raw.sommario || raw.terapie_da_attuare?.valutazione), transcription:text(raw.transcription_corrected || raw.transcription_raw)};
   }
   function validate(selection, currentCatalog, planCatalog) {
     const errors = [];
@@ -94,7 +96,7 @@
     }
     return [...new Set(errors)];
   }
-  function apply(state, selection, currentCatalog, planCatalog, mentioned = []) {
+  function apply(state, selection, currentCatalog, planCatalog, mentioned = [], options = {}) {
     const errors = validate(selection,currentCatalog,planCatalog);
     if (errors.length) throw new Error(errors.join('\n'));
     const next = copy(state);
@@ -113,7 +115,7 @@
       next.teethNote[tooth] = [...new Set([next.teethNote[tooth],...additions].filter(Boolean))].join('\n');
     }
     // Deliberate studio convention: only unmentioned, previously empty teeth default to healthy.
-    if (sano && (selection.findings.length || selection.treatments.length)) {
+    if (options.defaultHealthy !== false && sano && (selection.findings.length || selection.treatments.length)) {
       for(let q=1;q<=4;q++) for(let d=1;d<=8;d++) {
         const tooth=String(q*10+d);
         if(!mentionedSet.has(tooth) && !next.teethAttuale[tooth]?.length && !next.teethNote[tooth]) next.teethAttuale[tooth]=[sano];
@@ -138,6 +140,11 @@
         if(prev) Object.assign(prev,{qta:t.qta,prezzo:t.prezzo,scope});
         else next.prevRows.push({id:'ai_'+Date.now()+'_'+next.prevRows.length,dente:t.target,tid:t.id_listino,label:item.label,qta:t.qta,prezzo:t.prezzo,sconto:0,scope});
       }
+    }
+    if (text(selection.diary)) {
+      next.diary ||= [];
+      if (selection.visit_id && next.diary.some(d=>d.ai_visit_id===selection.visit_id)) throw new Error('Questa visita è già stata confermata.');
+      next.diary.push({ts:selection.ts,author:text(selection.author)||'Medico',text:text(selection.diary),ai_visit_id:selection.visit_id||'',events:copy(selection.events||[])});
     }
     return next;
   }

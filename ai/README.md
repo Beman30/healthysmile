@@ -1,4 +1,28 @@
-# Cartella clinica — AI v6
+# Cartella clinica — comprensione API e compilazione locale v8
+
+## Integrazione v8
+
+La sezione AI della cartella esistente ora offre «OpenAI API + agente sul PC». Usa il bridge della demo con supporto al sito `healthysmile.it`/`www.healthysmile.it`, al listino corrente della cartella e ai rilievi attuali con dente esplicito. Il listino resta sul PC; l'API riceve solo le frasi minimizzate. Il motore precedente rimane selezionabile e il Worker esistente non richiede un aggiornamento per questa modalità.
+
+La trascrizione si incolla da Buzz o si carica da un file `.txt`; l'invio automatico da Buzz non è implementato. Il diario è modificabile e può essere confermato da solo se una prestazione richiede ancora tipo o sede. Le attività senza voce commerciale rimangono nel diario/eventi. Solo prestazioni future risolte e confermate entrano nel preventivo; quelle eseguite aggiornano il piano senza nuovi addebiti. Nella modalità API un controllo non riempie i denti non valutati con lo stato Sano.
+
+La bozza è conservata come `ai_visit_draft` nel documento del paziente e ripristinata alla riapertura. La conferma API salva diario, odontogramma, piano, preventivo e revisione in una transazione Firestore; verifiche sul paziente, sulle modifiche concorrenti e sull'identificativo della visita impediscono conferme duplicate o la sovrascrittura di una cartella modificata nel frattempo. La conferma del solo diario mantiene la parte ancora da completare.
+
+### Aggiornamento sul PC
+
+Scaricare `agente-healthysmile-v8.zip` dalla cartella clinica, chiudere il vecchio agente e sostituire gli otto file del programma nella medesima cartella. Conservare `api-settings.local.json` e `api-key.local.bin`: non sono inclusi nella distribuzione. Avviare nuovamente `AVVIA-AGENTE.bat`. Con la configurazione 1 rimane obbligatorio utilizzare esclusivamente casi fittizi e selezionare la relativa casella. L'opzione 2 richiede requisiti API europei e trattamento verificati dallo studio; non abilita da sola il progetto né certifica GDPR.
+
+Il nuovo schema di comprensione include anche i rilievi attuali confermati, oltre a diario e azioni. I test di integrazione usano API e Firebase simulate e un bridge HTTP locale: non verificano la qualità del modello reale né scrivono pazienti. La chiave è protetta con DPAPI sul PC; `store=false` e rimozione identificativi non garantiscono rispettivamente ZDR e anonimizzazione.
+
+La memoria delle correzioni viene conservata alla conferma. In questa modalità non viene inviata all'API e non viene utilizzata per riaddestrare automaticamente il modello.
+
+### Verifiche v8
+
+`NODE_PATH=/percorso/deps/node_modules node --test ai/test/*.cjs ai/test/*.mjs`
+
+`python -m unittest discover -s ai/local-agent -p 'test_*.py'`
+
+Copertura aggiunta: controllo senza preventivo, suture eseguite e ribasatura futura, conferma parziale, ripristino bozza, prezzi del listino locale, più denti con stessa prestazione, fonti distanti, conflitti tra operatori, fallimento salvataggio, selezione paziente, barriera test-only, CORS e distribuzione senza chiavi.
 
 ## Aggiornamento 6.1
 

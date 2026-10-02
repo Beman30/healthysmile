@@ -651,7 +651,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--gray-50);color:
             <div class="card-title">
               <span>🎙 Nota clinica vocale</span>
             </div>
-            <div style="font-size:12px;color:var(--gray-500);margin-bottom:10px">Ditta liberamente: situazione dei denti, terapie necessarie, priorità. L'AI struttura tutto e propone il piano completo.</div>
+            <div style="font-size:12px;color:var(--gray-500);margin-bottom:10px">Riporta la visita: l'AI distingue i fatti clinici, le prestazioni eseguite e quelle programmate.</div>
             <div class="ai-rec-row">
               <button class="ai-btn ai-btn-rec" id="ai-btn-rec-nota" onclick="aiStartRec()">
                 <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><circle cx="5.5" cy="5.5" r="2.8" fill="white"/><circle cx="5.5" cy="5.5" r="5" stroke="white" stroke-width=".9"/></svg>
@@ -669,7 +669,18 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--gray-50);color:
           </div>
 
           <!-- Pulsante analisi -->
-          <div style="display:flex;justify-content:flex-end;gap:8px;margin-bottom:1rem">
+          <div class="card" style="margin-bottom:1rem">
+            <div class="fg"><label for="ai-engine">Comprensione della visita</label><select id="ai-engine" onchange="aiEngineChanged()"><option value="local-openai">OpenAI API + agente sul PC</option><option value="worker">Dettatura precedente</option></select></div>
+            <div id="ai-local-settings">
+              <p style="font-size:12px;margin:8px 0">Incolla la trascrizione di Buzz oppure carica il file .txt. Rivedi diario e prestazioni prima di confermare la visita.</p>
+              <a class="ai-btn ai-btn-outline" href="ai/agente-healthysmile-v8.zip" download>Scarica agente v8 per PC</a>
+              <p style="font-size:11px;color:var(--gray-500);margin:8px 0">Per aggiornare, conserva i file api-settings.local.json e api-key.local.bin e sostituisci gli altri file. La chiave rimane sul PC.</p>
+              <label style="display:block;font-size:12px;margin-top:10px"><input type="checkbox" id="ai-fictional"> Il testo contiene esclusivamente un caso fittizio per la prova API</label>
+            </div>
+          </div>
+          <div style="display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;margin-bottom:1rem">
+            <input id="ai-transcript-file" type="file" accept=".txt,text/plain" onchange="aiImportTranscript(this)" hidden>
+            <button class="ai-btn ai-btn-outline" id="ai-btn-file" onclick="document.getElementById('ai-transcript-file').click()">Carica trascrizione Buzz</button>
             <button class="ai-btn ai-btn-primary" id="ai-btn-analizza" onclick="aiAvviaAnalisi()" style="padding:10px 22px;font-size:13px">
               <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 1.5C3.7 1.5 1.5 3.7 1.5 6.5S3.7 11.5 6.5 11.5 11.5 9.3 11.5 6.5" stroke="white" stroke-width="1.6" stroke-linecap="round"/><path d="M9 2.5l2.5-.5-.5 2.5" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
               Analizza con AI
@@ -683,6 +694,15 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--gray-50);color:
             <div style="font-size:10px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px">Nota dettata</div>
             <div class="ai-orig-box" id="ai-orig-nota" style="margin-bottom:16px"></div>
             <div id="ai-quality-box" role="status" style="display:none;margin-bottom:12px"></div>
+            <div class="ai-proposal-box" id="ai-diary-box" style="display:none">
+              <div class="ai-prop-head blue"><span>Diario clinico della visita — modificabile</span></div>
+              <div class="ai-prop-body">
+                <textarea id="ai-diary" style="width:100%;min-height:130px" aria-label="Diario clinico proposto"></textarea>
+                <div id="ai-events" style="font-size:12px;margin:10px 0"></div>
+                <button class="ai-btn ai-btn-outline" id="ai-btn-diary" onclick="aiConferma(true)">Conferma solo il diario</button>
+                <small style="display:block;margin-top:6px">Puoi salvare il diario mentre precisi una prestazione o la sua sede.</small>
+              </div>
+            </div>
             <div class="ai-orig-box" style="margin-bottom:16px">
               <label for="ai-additional-info"><strong>Vuoi aggiungere o precisare informazioni?</strong></label>
               <textarea id="ai-additional-info" style="width:100%;min-height:70px;margin:8px 0" placeholder="Es. sul 16 la terapia canalare è da fare; aggiungo questi rilievi…"></textarea>
@@ -736,10 +756,10 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--gray-50);color:
             </div>
             <!-- Pulsante conferma -->
             <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:4px;margin-bottom:2rem">
-              <button class="ai-btn ai-btn-outline" onclick="document.getElementById('ai-results').style.display='none'">Annulla</button>
+              <button class="ai-btn ai-btn-outline" onclick="document.getElementById('ai-results').style.display='none'">Chiudi proposta</button>
               <button class="ai-btn ai-btn-primary" id="ai-btn-conferma" onclick="aiConferma()" style="padding:10px 22px;font-size:13px">
                 <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 6.5l3.5 3.5 5.5-6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                Applica tutto all'odontogramma e al preventivo
+                Conferma visita e aggiorna cartella
               </button>
             </div>
 
@@ -1303,6 +1323,7 @@ async function openPatient(id) {
   renderDiary();
   renderAlerts();
   renderDocs();
+  if(typeof aiRestoreDraft==='function')aiRestoreDraft(p.ai_visit_draft);
   document.getElementById('welcome').style.display = 'none';
   document.getElementById('record').style.display = 'block';
   document.getElementById('rec-code').textContent = p.codice||id;
@@ -1323,6 +1344,8 @@ async function openPatient(id) {
     quadrantePiano = safeJson(d.quad_piano, {});
     arcateAttualePresta = safeJson(d.arcate_attuale_presta, {});
     arcatePianoPresta   = safeJson(d.arcate_piano_presta, {});
+    diary         = safeJson(d.diario, []);
+    prevRows      = safeJson(d.preventivi, []);
     refreshOdonto('attuale');
     refreshOdonto('piano');
     refreshArcate('attuale');
@@ -1331,6 +1354,8 @@ async function openPatient(id) {
     refreshArcatePresta('attuale');
     refreshArcatePresta('piano');
     renderPianoRiepilogo();
+    renderDiary();
+    renderPrevRows();
     setSyncPill('ok');
   });
 
@@ -1378,11 +1403,12 @@ function collectData() {
 
 async function savePatient() {
   if (!currentId) return;
+  if (typeof aiProposta!=='undefined' && aiProposta.saving) return;
   setSyncPill('sy');
   try {
     _lastSaveTime = Date.now();
     const data = collectData();
-    await patientsCol().doc(currentId).set(data);
+    await patientsCol().doc(currentId).set(data,{merge:true});
     setSyncPill('ok');
     notify('Salvato!','ok');
     await loadPatients();
@@ -2084,7 +2110,7 @@ function renderDiary() {
   if (!diary.length) { el.innerHTML='<div style="color:var(--gray-300);font-size:13px;padding:.3rem 0;margin-bottom:.6rem">Nessuna voce ancora</div>'; return; }
   el.innerHTML = [...diary].reverse().map(e=>`
     <div class="diary-entry">
-      <div class="diary-meta"><span>${e.ts}</span><span class="diary-author">${e.author||'—'}</span></div>
+      <div class="diary-meta"><span>${esc(e.ts)}</span><span class="diary-author">${esc(e.author||'—')}</span></div>
       <div class="diary-text">${esc(e.text)}</div>
     </div>`).join('');
 }
@@ -3185,7 +3211,7 @@ function closeSidebar() {
 // Close sidebar when a patient is selected on mobile — handled in renderList
 
 </script>
-<script src="ai/clinical-core.js?v=6.1"></script>
-<script src="ai/cartella-ai.js?v=6.1"></script>
+<script src="ai/clinical-core.js?v=8"></script>
+<script src="ai/cartella-ai.js?v=8"></script>
 </body>
 </html>
