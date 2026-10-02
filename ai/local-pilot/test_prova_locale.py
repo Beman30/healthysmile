@@ -100,6 +100,33 @@ class PilotTests(unittest.TestCase):
         value["findings"] = [{"target": "36", "evidence_ids": [1]}]
         self.assertEqual(pilot.source_issues(value, [{"id": 1, "text": "Controllo di quattro impianti, incluso 36."}]), [])
 
+    def test_template_closes_forced_thinking_and_preserves_other_content(self):
+        source = '{{ .System }}{{ range .Messages }}{{ .Content }}{{ end }}<|im_start|>assistant\n<think>\n{{ end }}'
+        result = pilot.direct_template(source)
+        self.assertIn('<think>\n\n</think>\n\n', result)
+        self.assertEqual(result.replace('<think>\n\n</think>\n\n','<think>\n'), source)
+        with self.assertRaises(ValueError):
+            pilot.direct_template('unexpected template')
+
+    def test_copy_uses_installed_weights_and_does_not_overwrite_source(self):
+        source = '<|im_start|>assistant\n<think>\n'
+        with patch.object(pilot, 'local_request', side_effect=[
+            {'models':[{'name':pilot.BASE_MODEL}]}, {'template':source}, {'status':'success'}]) as request:
+            result = pilot.prepare_direct_model()
+        endpoint, body = request.call_args.args
+        self.assertEqual(endpoint,'/api/create')
+        self.assertEqual(body['from'],pilot.BASE_MODEL)
+        self.assertNotEqual(body['model'],pilot.BASE_MODEL)
+        self.assertFalse(result['addestramento'])
+
+    def test_existing_different_copy_is_not_overwritten(self):
+        with patch.object(pilot, 'local_request', side_effect=[
+            {'models':[{'name':pilot.BASE_MODEL},{'name':pilot.MODEL}]},
+            {'template':'<|im_start|>assistant\n<think>\n'}, {'template':'another config'}]) as request:
+            with self.assertRaises(RuntimeError):
+                pilot.prepare_direct_model()
+        self.assertNotIn('/api/create',[call.args[0] for call in request.call_args_list])
+
 
 if __name__ == "__main__":
     unittest.main()

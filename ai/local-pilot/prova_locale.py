@@ -9,7 +9,8 @@ from pathlib import Path
 from urllib.request import Request, build_opener, ProxyHandler, HTTPRedirectHandler
 
 ROOT = Path(__file__).resolve().parent
-MODEL = "qwen3:4b"
+BASE_MODEL = "qwen3:4b"
+MODEL = "healthysmile-qwen3-diretto-v1:4b"
 ENDPOINT = "http://127.0.0.1:11434"
 
 
@@ -19,7 +20,7 @@ class NoRedirect(HTTPRedirectHandler):
 
 
 def local_request(path, body=None, timeout=10):
-    if path not in ("/api/tags", "/api/version", "/api/ps", "/api/show", "/api/chat"):
+    if path not in ("/api/tags", "/api/version", "/api/ps", "/api/show", "/api/create", "/api/chat"):
         raise ValueError("Percorso locale non autorizzato")
     data = None if body is None else json.dumps(body, ensure_ascii=False).encode("utf-8")
     req = Request(ENDPOINT + path, data=data, headers={"Content-Type": "application/json"})
@@ -121,6 +122,40 @@ def diagnostic_snapshot():
     except Exception as error:
         result["configurazione_modello"] = {"errore": str(error)}
     return result
+
+
+def direct_template(template):
+    # La copia locale conserva il template originale tranne il prefisso finale.
+    # Qwen3 con enable_thinking=False usa lo stesso blocco think vuoto e chiuso.
+    prefix = "<|im_start|>assistant\n<think>\n"
+    suffix = "<|im_start|>assistant\n<think>\n\n</think>\n\n"
+    if template.count(prefix) != 1:
+        raise ValueError("Template di base diverso da quello diagnosticato: nessuna modifica effettuata")
+    return template.replace(prefix, suffix)
+
+
+def prepare_direct_model():
+    tags = local_request("/api/tags")
+    names = {row.get("name") for row in tags.get("models", [])}
+    if BASE_MODEL not in names:
+        raise RuntimeError("Modello qwen3:4b assente. Esegui in un terminale: ollama pull qwen3:4b")
+    show = local_request("/api/show", {"model": BASE_MODEL})
+    template = direct_template(show.get("template", ""))
+    if MODEL in names:
+        existing = local_request("/api/show", {"model": MODEL})
+        if existing.get("template") != template:
+            raise RuntimeError("Esiste gia una copia con configurazione diversa: non viene sovrascritta")
+        status = "copia gia presente"
+    else:
+        print("Creo una copia locale con il blocco di ragionamento chiuso; stessi pesi.", flush=True)
+        created = local_request("/api/create", {
+            "model": MODEL, "from": BASE_MODEL, "template": template, "stream": False,
+            "parameters": {"num_ctx": 4096}}, timeout=60)
+        if created.get("status") != "success":
+            raise RuntimeError("Ollama non ha completato la creazione della copia locale")
+        status = "copia creata"
+    return {"base": BASE_MODEL, "copia": MODEL, "stato": status,
+            "addestramento": False, "pesi": "riutilizzati dal modello locale esistente"}
 
 
 def quick_response_valid(result):
@@ -233,7 +268,7 @@ def analyze(case, protocol):
 
 
 def main():
-    report = {"prova": "baseline locale v3, nessun addestramento", "modello": MODEL,
+    report = {"prova": "baseline locale v4, nessun addestramento", "modello": MODEL,
               "parametri": {"num_ctx": 4096, "num_predict": 1500, "think": False, "soft_switch": "/no_think"},
               "data_utc": datetime.now(timezone.utc).isoformat(), "casi": []}
     output = ROOT / "risultato-prova-locale.json"
@@ -242,9 +277,7 @@ def main():
         protocol = json.loads((ROOT / "protocollo.json").read_text(encoding="utf-8"))
         cases = json.loads((ROOT / "casi-prova.json").read_text(encoding="utf-8"))
         print("Prova locale: nessun costo API, nessun aggiornamento delle cartelle.", flush=True)
-        tags = local_request("/api/tags", timeout=10)
-        if MODEL not in {m.get("name") for m in tags.get("models", [])}:
-            raise RuntimeError("Modello qwen3:4b assente. Esegui in un terminale: ollama pull qwen3:4b")
+        report["preparazione"] = prepare_direct_model()
         report["diagnostica_prima"] = diagnostic_snapshot()
         print("Prova brevissima di funzionamento: limite totale 60 secondi.", flush=True)
         try:
