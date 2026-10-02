@@ -8,7 +8,15 @@ La trascrizione si incolla da Buzz o si carica da un file `.txt`; l'invio automa
 
 La bozza è conservata come `ai_visit_draft` nel documento del paziente e ripristinata alla riapertura. La conferma API salva diario, odontogramma, piano, preventivo e revisione in una transazione Firestore; verifiche sul paziente, sulle modifiche concorrenti e sull'identificativo della visita impediscono conferme duplicate o la sovrascrittura di una cartella modificata nel frattempo. La conferma del solo diario mantiene la parte ancora da completare.
 
-### Aggiornamento sul PC
+### Revisione odontogramma v8.1 (solo aggiornamento del sito)
+
+La scheda «Vuoi aggiornare l’odontogramma?» permette di modificare/eliminare i rilievi e di salvare solo la situazione attuale, conservando diario e prestazioni come bozza. Il motore locale del browser propone l’overdenture di un’arcata esplicita dalla manutenzione eseguita sulla protesi già presente. Procedure future, protesi negate e contesti con più arcate non stabiliscono una situazione attuale. La regola richiede che l’overdenture sia nominata: il solo cambio gommini non identifica automaticamente il tipo di protesi.
+
+Il numero dei gommini può suggerire un conteggio da verificare, ma non conferma quello degli impianti. Il medico deve confermare il numero effettivo; le sedi FDI sono opzionali e non vengono inventate. I reperti per arcata si salvano in `arcate`, le note e il numero confermato in `arcate_cliniche`; soltanto sedi FDI fornite dal medico aggiornano i denti come impianti. L’odontogramma mostra il manufatto e il conteggio con «sedi da indicare». Il salvataggio include questi campi nelle verifiche di conflitto e preserva i dati esistenti. Questa revisione non richiede un nuovo download dell’agente v8.
+
+I test simulati coprono anteprima, correzione, esclusione, conteggio non confermato, sedi esplicite, salvataggio parziale, ripristino della bozza e conflitti sulle arcate; non sostituiscono una prova reale di comprensione del modello.
+
+### Configurazione del bridge v8
 
 Scaricare `agente-healthysmile-v8.zip` dalla cartella clinica, chiudere il vecchio agente e sostituire gli otto file del programma nella medesima cartella. Conservare `api-settings.local.json` e `api-key.local.bin`: non sono inclusi nella distribuzione. Avviare nuovamente `AVVIA-AGENTE.bat`. Con la configurazione 1 rimane obbligatorio utilizzare esclusivamente casi fittizi e selezionare la relativa casella. L'opzione 2 richiede requisiti API europei e trattamento verificati dallo studio; non abilita da sola il progetto né certifica GDPR.
 

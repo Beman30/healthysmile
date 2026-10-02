@@ -11,7 +11,8 @@ function aiCatalog() {
     ...QUAD_TR.map(t=>({...t,scope:'QUADRANT_LEVEL',catalog:'quad'}))]
     .filter((t,i,a)=>a.findIndex(x=>x.id===t.id)===i).map(t=>({...t,allowed_scopes:[...new Set([t.scope,...(QUAD_TR.some(q=>q.id===t.id)?['QUADRANT_LEVEL']:[]),...(ARCH_TR.some(q=>q.id===t.id)?['ARCH_LEVEL']:[])])]}));
 }
-function aiState() { return HSClinical.copy({teethAttuale,teethNote,teethPiano,arcatePiano,arcatePianoPresta,quadrantePiano,prevRows,diary}); }
+function aiCurrentCatalog(){return [...TR_ATTUALE.map(t=>({...t,scope:'TOOTH_LEVEL'})),...currentArchCatalog().map(t=>({...t,scope:'ARCH_LEVEL'}))];}
+function aiState() { return HSClinical.copy({teethAttuale,teethNote,teethPiano,arcateAttuale,arcateAttualePresta,arcateCliniche,arcatePiano,arcatePianoPresta,quadrantePiano,prevRows,diary}); }
 function aiEngine() {return aiEl('ai-engine')?.value || 'worker';}
 function aiEngineChanged() {
   const local=aiEngine()==='local-openai';
@@ -25,7 +26,7 @@ async function aiImportTranscript(input) {
   catch(e){notify(e.message,'err');}finally{input.value='';}
 }
 function aiFields(state) {
-  const keys={odontogramma:'teethAttuale',note_cliniche_denti:'teethNote',piano:'teethPiano',arcate_piano:'arcatePiano',arcate_piano_presta:'arcatePianoPresta',quad_piano:'quadrantePiano',preventivi:'prevRows',diario:'diary'};
+  const keys={odontogramma:'teethAttuale',note_cliniche_denti:'teethNote',arcate:'arcateAttuale',arcate_attuale_presta:'arcateAttualePresta',arcate_cliniche:'arcateCliniche',piano:'teethPiano',arcate_piano:'arcatePiano',arcate_piano_presta:'arcatePianoPresta',quad_piano:'quadrantePiano',preventivi:'prevRows',diario:'diary'};
   return Object.fromEntries(Object.entries(keys).map(([field,key])=>[field,JSON.stringify(state[key]||(['prevRows','diary'].includes(key)?[]:{}))]));
 }
 function aiStoredFields(doc) {
@@ -43,7 +44,9 @@ async function aiLocalComprehension(note, audio) {
   const ids=['f-nome','f-cognome','f-codice','f-cf','f-telefono','f-dob','f-via'].map(gv).filter(Boolean);
   const r=await fetch(AI_LOCAL_AGENT+'/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({transcript:note,provider:'openai',fictional,identifiers:ids,catalog:{plan:aiCatalog()}})});
   const result=await r.json();if(!r.ok || !result.proposal)throw new Error(result.error||'Analisi API non completata');
-  return {...result.proposal,findings:(result.proposal.findings||[]).map(f=>({...f,id_listino:HSClinical.match(TR_ATTUALE,'',f.state,true)?.id||''})),source:'local-openai',issues:result.proposal.questions||[],warnings:[]};
+  const proposal={...result.proposal,findings:(result.proposal.findings||[]).map(f=>({...f,id_listino:HSClinical.match(TR_ATTUALE,'',f.state,true)?.id||''})),source:'local-openai',issues:result.proposal.questions||[],warnings:[]};
+  proposal.findings=HSClinical.currentProposals(proposal,note,aiCurrentCatalog());
+  return proposal;
 }
 function aiRestoreDraft(draft) {
   if(!draft?.proposal || !draft.input || !currentId)return;
@@ -110,7 +113,7 @@ async function aiRequest(note, audio=null, expectedPatient=currentId, expectedRe
     if(local)data=await aiLocalComprehension(note,audio);
     else {const resp=await fetch(AI_WORKER_STRUTTURA,{method:'POST',headers,body});data=await resp.json();if(!resp.ok || data.ok===false)throw new Error(data.error || 'Risposta AI non disponibile');}
     if(currentId!==expectedPatient || aiProposta.request!==req) return;
-    const normalized=HSClinical.normalize(data,TR_ATTUALE,aiCatalog());
+    const normalized=HSClinical.normalize(data,aiCurrentCatalog(),aiCatalog());
     const visitId=globalThis.crypto?.randomUUID?.() || 'visit_'+Date.now()+'_'+Math.random().toString(36).slice(2);
     if(local){_lastSaveTime=Date.now();await patientsCol().doc(expectedPatient).set({ai_visit_draft:{input:note,proposal:normalized,context:before,serverContext,visitId}},{merge:true});if(currentId!==expectedPatient || aiProposta.request!==req)return;}
     aiProposta.patientId=expectedPatient;aiProposta.context=before;
@@ -154,7 +157,7 @@ function aiAvviaAnalisi() {
   return aiRequest(note);
 }
 function aiApplicaRisposta(raw) {
-  const data=HSClinical.normalize(raw,TR_ATTUALE,aiCatalog());
+  const data=HSClinical.normalize(raw,aiCurrentCatalog(),aiCatalog());
   aiProposta.data=HSClinical.copy(data);aiProposta.applied=false;
   aiProposta.findings=data.findings.map((f,i)=>({...f,key:'s'+i}));
   aiProposta.rows=data.treatments.map((t,i)=>({...t,key:'t'+i,group:t.target}));
@@ -178,18 +181,29 @@ function aiApplicaRisposta(raw) {
 function aiOptions(catalog,id,empty) {return `<option value="">${empty}</option>`+catalog.map(t=>`<option value="${aiEsc(t.id)}" ${t.id===id?'selected':''}>${aiEsc(t.label)}${t.prezzo!=null?' — €'+t.prezzo:''}</option>`).join('');}
 function aiUpdateWarnings() {
   const data=aiProposta.data;if(!data)return;
-  const issues=data.source==='local-openai'?HSClinical.validate({findings:aiProposta.findings,treatments:aiProposta.rows},TR_ATTUALE,aiCatalog()):data.issues;
+  const issues=data.source==='local-openai'?HSClinical.validate({findings:aiProposta.findings,treatments:aiProposta.rows},aiCurrentCatalog(),aiCatalog()):data.issues;
   const warnings=[...new Set([...HSClinical.clarificationIssues(aiProposta.findings,aiProposta.rows,aiState()),...data.warnings,...issues])];
   if(!aiProposta.rows.length && data.source!=='local-openai')warnings.push('Nessuna terapia proposta: verifica se è appropriato o aggiungi una prestazione.');
   aiEl('ai-quality-box').style.display=warnings.length?'block':'none';
   aiEl('ai-quality-box').innerHTML=warnings.length?'<div class="ai-orig-box"><strong>Da verificare</strong><ul>'+warnings.map(w=>'<li>'+aiEsc(w)+'</li>').join('')+'</ul></div>':'';
 }
 function aiRenderFindings() {
-  aiEl('ai-table-sit').innerHTML='<table class="ai-table"><thead><tr><th>Dente</th><th>Descrizione clinica (correggibile)</th><th>Stato odontogramma</th><th></th></tr></thead><tbody>'+aiProposta.findings.map(f=>`<tr id="ai-sit-row-${f.key}" style="${f.id_listino?'':'background:var(--amber-light)'}"><td><input id="ai-sit-num-${f.key}" value="${aiEsc(f.target)}" style="width:55px"></td><td><input id="ai-sit-desc-${f.key}" value="${aiEsc(f.description)}" style="width:100%;min-width:180px"><small>${aiEsc(f.note)}</small>${f.id_listino?'':'<small style="display:block;color:#92400e">Stato da precisare: puoi aggiungere informazioni nel riquadro sopra.</small>'}</td><td><select id="ai-sit-sel-${f.key}">${aiOptions(TR_ATTUALE,f.id_listino,'Solo nota clinica')}</select></td><td><button onclick="aiRemoveFinding('${f.key}')">✕</button></td></tr>`).join('')+'</tbody></table><button class="ai-btn ai-btn-outline" onclick="aiAddFinding()">+ Aggiungi rilievo clinico</button>';
+  aiEl('ai-table-sit').innerHTML='<table class="ai-table"><thead><tr><th>Dente</th><th>Descrizione clinica (correggibile)</th><th>Stato odontogramma</th><th></th></tr></thead><tbody>'+aiProposta.findings.filter(f=>f.scope!=='ARCH_LEVEL').map(f=>`<tr id="ai-sit-row-${f.key}" style="${f.id_listino?'':'background:var(--amber-light)'}"><td><input id="ai-sit-num-${f.key}" value="${aiEsc(f.target)}" style="width:55px"></td><td><input id="ai-sit-desc-${f.key}" value="${aiEsc(f.description)}" style="width:100%;min-width:180px"><small>${aiEsc(f.note)}</small>${f.id_listino?'':'<small style="display:block;color:#92400e">Stato da precisare: puoi aggiungere informazioni nel riquadro sopra.</small>'}</td><td><select id="ai-sit-sel-${f.key}">${aiOptions(TR_ATTUALE,f.id_listino,'Solo nota clinica')}</select></td><td><button onclick="aiRemoveFinding('${f.key}')">✕</button></td></tr>`).join('')+'</tbody></table><button class="ai-btn ai-btn-outline" onclick="aiAddFinding()">+ Aggiungi rilievo clinico</button>';
+  aiEl('ai-table-arcate').innerHTML=aiProposta.findings.filter(f=>f.scope==='ARCH_LEVEL').map(f=>`<div style="border:var(--border);border-radius:8px;padding:12px;margin-top:12px">
+    <strong>Aggiornamento dell’arcata</strong> <button style="float:right" onclick="aiRemoveFinding('${f.key}')">Elimina</button>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0"><select id="ai-sit-num-${f.key}"><option value="">Scegli arcata</option><option value="AS" ${f.target==='AS'?'selected':''}>Superiore</option><option value="AI" ${f.target==='AI'?'selected':''}>Inferiore</option></select><select id="ai-sit-sel-${f.key}">${aiOptions(currentArchCatalog(),f.id_listino,'Solo nota clinica')}</select></div>
+    <input id="ai-sit-desc-${f.key}" value="${aiEsc(f.description)}" style="width:100%"><small style="display:block;margin:6px 0">${aiEsc(f.note)}</small>
+    <label>Numero di impianti <input id="ai-sit-count-${f.key}" type="number" min="1" max="16" value="${f.implant_count??''}" style="width:60px"></label>
+    <label style="display:block;margin:6px 0"><input id="ai-sit-count-ok-${f.key}" type="checkbox" ${f.count_confirmed?'checked':''}> Confermo il numero di impianti presenti</label>
+    <small style="display:block">Il numero di gommini non conferma da solo il numero di impianti. Il conteggio viene salvato solo se lo confermi.</small>
+    <label style="display:block;margin-top:8px">Sedi FDI, se note <input id="ai-sit-positions-${f.key}" value="${aiEsc((f.implant_targets||[]).join(', '))}" placeholder="Lascia vuoto se non conosci le sedi" style="width:100%"></label>
+    <details style="font-size:11px;margin-top:6px"><summary>Da cosa deriva la proposta</summary>${aiEsc(f.evidence)}</details></div>`).join('');
+  aiEl('ai-btn-odonto').disabled=!aiProposta.findings.length || aiProposta.applied;
 }
-function aiSyncFindings() {for(const f of aiProposta.findings){f.target=HSClinical.target(aiEl('ai-sit-num-'+f.key)?.value);f.description=aiEl('ai-sit-desc-'+f.key)?.value.trim()||'';f.id_listino=aiEl('ai-sit-sel-'+f.key)?.value||'';}}
+function aiSyncFindings() {for(const f of aiProposta.findings){f.target=HSClinical.target(aiEl('ai-sit-num-'+f.key)?.value);f.description=aiEl('ai-sit-desc-'+f.key)?.value.trim()||'';f.id_listino=aiEl('ai-sit-sel-'+f.key)?.value||'';if(f.scope==='ARCH_LEVEL'){const n=aiEl('ai-sit-count-'+f.key)?.value;f.implant_count=n?Number(n):null;f.count_confirmed=!!aiEl('ai-sit-count-ok-'+f.key)?.checked;f.implant_targets=(aiEl('ai-sit-positions-'+f.key)?.value||'').split(/[\s,;]+/).filter(Boolean);}}}
 function aiAddFinding(){aiSyncFindings();aiProposta.findings.push({key:'s'+Date.now(),target:'',description:'',id_listino:'',note:''});aiRenderFindings();aiEl('ai-btn-conferma').disabled=false;}
-function aiRemoveFinding(k){aiSyncFindings();aiProposta.findings=aiProposta.findings.filter(f=>f.key!==k);aiRenderFindings();}
+function aiRemoveFinding(k){aiSyncFindings();aiProposta.findings=aiProposta.findings.filter(f=>f.key!==k);aiRenderFindings();aiUpdateWarnings();}
+function aiRejectFindings(){aiProposta.findings=[];aiRenderFindings();aiUpdateWarnings();aiStatus('ai-badge-sit','Escluso dal medico');}
 function aiSyncRows() {
   for(const t of aiProposta.rows) {
     t.target=HSClinical.target(aiEl('ai-ter-num-'+t.key)?.value);
@@ -240,7 +254,7 @@ function aiIgnoreSuggestion(i){const s=aiProposta.suggestions[i];if(s)(aiPropost
 function aiApriModalNuovaPrestazione(rowKey){const row=aiProposta.rows.find(t=>t.key===rowKey);_apriModalNuovaPrestazione(rowKey,row?.label||'','piano');}
 function aiApriModalNuovaPrestazioneTipo(tipo){_apriModalNuovaPrestazione('','',tipo);}
 function _apriModalNuovaPrestazione(rowKey,label,tipo){renderPrestazioniModal();newPrestazioneUnified();aiEl('pe-ai-rowkey').value=rowKey;const radio=document.querySelector(`input[name="pe-dest"][value="${tipo}"]`);if(radio)radio.checked=true;updatePrestDest();aiEl('pe-label').value=label;aiEl('prest-modal').classList.add('open');}
-async function aiConferma(diaryOnly=false) {
+async function aiConferma(diaryOnly=false,odontogramOnly=false) {
   if(aiProposta.saving || aiProposta.applied)return;
   if(aiEl('ai-additional-info').value.trim())return notify('Premi «Integra e aggiorna la proposta» per usare le informazioni aggiunte, oppure svuota il campo.','err');
   if(!aiProposta.data || currentId!==aiProposta.patientId)return notify('Ripeti l’analisi nella cartella aperta','err');
@@ -248,18 +262,18 @@ async function aiConferma(diaryOnly=false) {
   aiSyncFindings();aiSyncRows();
   const diaryText=aiEl('ai-diary').value.trim();if(diaryOnly && !diaryText)return;
   const catalog=aiCatalog();
-  const selection={findings:diaryOnly?[]:aiProposta.findings.map(({key,...f})=>f),treatments:diaryOnly?[]:aiProposta.rows.map(({key,group,...t})=>({...t,label:catalog.find(c=>c.id===t.id_listino)?.label||t.label})),diary:diaryText,events:aiProposta.data.events||[],visit_id:aiProposta.visitId,ts:new Date().toLocaleString('it-IT',{dateStyle:'short',timeStyle:'short'}),author:gv('f-op')||'Medico'};
-  if(!selection.findings.length && !selection.treatments.length && !diaryText)return;
+  const selection={findings:diaryOnly?[]:aiProposta.findings.map(({key,...f})=>f),treatments:diaryOnly||odontogramOnly?[]:aiProposta.rows.map(({key,group,...t})=>({...t,label:catalog.find(c=>c.id===t.id_listino)?.label||t.label})),diary:odontogramOnly?'':diaryText,events:aiProposta.data.events||[],visit_id:aiProposta.visitId,ts:new Date().toLocaleString('it-IT',{dateStyle:'short',timeStyle:'short'}),author:gv('f-op')||'Medico'};
+  if(!selection.findings.length && !selection.treatments.length && !selection.diary)return;
   const before=aiState(),local=aiProposta.data.source==='local-openai';
   let next;
-  try {next=HSClinical.apply(before,selection,TR_ATTUALE,catalog,aiProposta.data.findings.map(f=>f.target),{defaultHealthy:!local});}
+  try {next=HSClinical.apply(before,selection,aiCurrentCatalog(),catalog,aiProposta.data.findings.map(f=>f.target),{defaultHealthy:!local && !odontogramOnly});}
   catch(e){notify(e.message,'err');return;}
   const capturedId=currentId;
   const memory={doctor_id:DOCTOR_ID,created_ms:Date.now(),created_at:firebase.firestore.FieldValue.serverTimestamp(),input:aiProposta.input,
     patient_context:aiProposta.context,proposed:aiProposta.data,confirmed:selection,ignored_suggestions:aiProposta.ignoredSuggestions||[],
     reason:aiEl('ai-feedback-reason').value.trim(),reusable:aiEl('ai-feedback-reuse').checked,clarification_history:aiProposta.history||[]};
-  const remaining={...aiProposta.data,diary:'',findings:HSClinical.copy(aiProposta.findings),treatments:HSClinical.copy(aiProposta.rows)};
-  const hasRemaining=diaryOnly&&(remaining.findings.length||remaining.treatments.length);
+  const remaining={...aiProposta.data,diary:odontogramOnly?diaryText:'',findings:odontogramOnly?[]:HSClinical.copy(aiProposta.findings),treatments:HSClinical.copy(aiProposta.rows)};
+  const hasRemaining=(diaryOnly||odontogramOnly)&&!!(remaining.diary||remaining.findings.length||remaining.treatments.length);
   const fields={...aiFields(next),ai_visit_draft:hasRemaining?{input:aiProposta.input,proposal:remaining,context:next,serverContext:aiFields(next),visitId:aiProposta.visitId}:null};
   aiProposta.saving=true;aiEl('ai-results').inert=true;aiEl('ai-btn-conferma').disabled=true;aiEl('ai-btn-analizza').disabled=true;
   clearTimeout(_odSaveTimer);
@@ -267,7 +281,7 @@ async function aiConferma(diaryOnly=false) {
     // Chart and correction are committed together: no false "learned" success on a failed write.
     _lastSaveTime=Date.now();
     if(local){
-      const patientRef=patientsCol().doc(capturedId),memoryRef=aiCol('ai_corrections_v6').doc(aiProposta.visitId+(diaryOnly?'_diary':'_all'));
+      const patientRef=patientsCol().doc(capturedId),memoryRef=aiCol('ai_corrections_v6').doc(aiProposta.visitId+(diaryOnly?'_diary':odontogramOnly?'_odontogram':'_all'));
       await db.runTransaction(async tx=>{
         const saved=await tx.get(patientRef),prior=await tx.get(memoryRef);
         if(!saved.exists)throw new Error('Cartella paziente non trovata');
@@ -278,14 +292,17 @@ async function aiConferma(diaryOnly=false) {
       });
     }else{const batch=db.batch();batch.set(patientsCol().doc(capturedId),fields,{merge:true});batch.set(aiCol('ai_corrections_v6').doc(),memory);await batch.commit();}
     if(currentId===capturedId){
-      ({teethAttuale,teethNote,teethPiano,arcatePiano,arcatePianoPresta,quadrantePiano,prevRows,diary}=next);renderDiary();
-      refreshOdonto('attuale');refreshOdonto('piano');refreshArcate('piano');refreshQuadranti();renderPianoRiepilogo();renderPrevRows();
-      aiProposta.applied=!hasRemaining;aiEl('ai-btn-conferma').textContent=hasRemaining?'Conferma le prestazioni rimanenti':'✓ Visita confermata';setSyncPill('ok');
-      aiProposta.serverContext=aiFields(next);aiEl('ai-btn-diary').disabled=true;
+      ({teethAttuale,teethNote,teethPiano,arcateAttuale,arcateAttualePresta,arcateCliniche,arcatePiano,arcatePianoPresta,quadrantePiano,prevRows,diary}=next);renderDiary();
+      refreshOdonto('attuale');refreshOdonto('piano');refreshArcate('attuale');refreshArcate('piano');refreshQuadranti();renderPianoRiepilogo();renderPrevRows();
+      aiProposta.applied=!hasRemaining;aiEl('ai-btn-conferma').textContent=hasRemaining?'Conferma le parti rimanenti':'✓ Visita confermata';setSyncPill('ok');
+      aiProposta.serverContext=aiFields(next);aiEl('ai-btn-diary').disabled=!hasRemaining || !remaining.diary;
+      if(hasRemaining)aiProposta.data=HSClinical.copy(remaining);
+      if(odontogramOnly){aiProposta.findings=[];aiRenderFindings();aiStatus('ai-badge-sit','Odontogramma salvato');}
       if(diaryOnly)aiEl('ai-diary').value='';
+      aiEl('ai-btn-odonto').disabled=!hasRemaining || !aiProposta.findings.length;
       aiEl('ai-btn-conferma').disabled=!hasRemaining;
     }
-    notify('Cartella aggiornata e revisione memorizzata','ok');
+    notify(odontogramOnly?'Odontogramma aggiornato. Diario e prestazioni restano da confermare.':'Cartella aggiornata e revisione memorizzata','ok');
   } catch(e){notify('Nessuna modifica salvata: '+e.message,'err');if(currentId===capturedId)aiEl('ai-btn-conferma').disabled=false;}
   finally{aiProposta.saving=false;aiEl('ai-results').inert=false;aiEl('ai-btn-analizza').disabled=false;}
 }

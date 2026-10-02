@@ -47,7 +47,8 @@
     findings = findings.map(f => {
       const description = text(f.description || f.stato || f.finding || f.label);
       const item = match(currentCatalog, f.id_listino, description, true);
-      return {target:target(f.target || f.tooth), description, id_listino:item?.id || '', note:text(f.note || f.notes), evidence:text(f.evidence), confidence:typeof f.confidence === 'number' ? f.confidence : null};
+      return {target:target(f.target || f.tooth), description, id_listino:item?.id || '', scope:f.scope || 'TOOTH_LEVEL', note:text(f.note || f.notes), evidence:text(f.evidence), confidence:typeof f.confidence === 'number' ? f.confidence : null,
+        implant_count:f.implant_count ?? null, count_confirmed:f.count_confirmed===true, implant_targets:Array.isArray(f.implant_targets)?f.implant_targets:[]};
     });
     treatments = treatments.map(t => {
       const label = text(t.label || t.stato || t.proposed_treatment);
@@ -67,16 +68,22 @@
     const diary = text(typeof raw.diary === 'string' ? raw.diary : raw.diary?.text);
     const events = (Array.isArray(raw.events) ? raw.events : []).map(e=>({label:text(e.label),status:status(e.status),timing:text(e.timing),evidence:text(e.evidence)})).filter(e=>e.label);
     if (!findings.length && !treatments.length && !diary && !issues.length) issues.push('Nessun risultato clinico: precisare la nota e ripetere l’analisi.');
-    findings.filter(f => !isTooth(f.target)).forEach(f=>issues.push(`Dente non valido: ${f.target || 'mancante'}`));
+    findings.filter(f => f.scope==='ARCH_LEVEL'?!['AS','AI'].includes(f.target):!isTooth(f.target)).forEach(f=>issues.push(`Sede non valida: ${f.target || 'mancante'}`));
     const excluded_suggestions=(raw.excluded_suggestions||[]).map(s=>({target:target(s.target),id_listino:text(s.id_listino),label:text(s.label),rationale:text(s.rationale),rule_id:text(s.rule_id)}));
     return {version:6, findings, treatments, suggestions, excluded_suggestions, diary, events, source:text(raw.source), warnings:[...new Set(warnings)], issues:[...new Set(issues)], summary:text(raw.summary || raw.sommario || raw.terapie_da_attuare?.valutazione), transcription:text(raw.transcription_corrected || raw.transcription_raw)};
   }
   function validate(selection, currentCatalog, planCatalog) {
     const errors = [];
     for (const f of selection.findings) {
-      if (!isTooth(f.target)) errors.push(`Dente non valido: ${f.target}`);
+      const arch=f.scope==='ARCH_LEVEL';
+      if (arch?!['AS','AI'].includes(f.target):!isTooth(f.target)) errors.push(`Sede non valida: ${f.target}`);
       if (!f.description) errors.push(`Descrizione clinica mancante sul ${f.target}`);
       if (f.id_listino && !currentCatalog.some(t=>t.id===f.id_listino)) errors.push(`Stato non presente nel listino: ${f.id_listino}`);
+      const item=currentCatalog.find(t=>t.id===f.id_listino);
+      if(item && (item.scope==='ARCH_LEVEL')!==arch)errors.push(`Stato non applicabile a questa sede: ${item.label}`);
+      if(arch && f.count_confirmed && (!Number.isInteger(f.implant_count) || f.implant_count<1 || f.implant_count>16))errors.push('Conferma un numero di impianti valido (1–16).');
+      const positions=f.implant_targets||[];
+      if(positions.length && (!arch || !f.count_confirmed || positions.length>f.implant_count || new Set(positions).size!==positions.length || positions.some(t=>!isTooth(t) || (f.target==='AI'?!/^[34]/.test(t):!/^[12]/.test(t)))))errors.push('Le sedi degli impianti devono essere distinte, coerenti con l’arcata e con il numero confermato.');
     }
     const seen = new Set();
     for (const t of selection.treatments) {
@@ -100,17 +107,27 @@
     const errors = validate(selection,currentCatalog,planCatalog);
     if (errors.length) throw new Error(errors.join('\n'));
     const next = copy(state);
-    for (const field of ['teethAttuale','teethNote','teethPiano','arcatePiano','arcatePianoPresta','quadrantePiano']) next[field] ||= {};
+    for (const field of ['teethAttuale','teethNote','teethPiano','arcateAttuale','arcateAttualePresta','arcateCliniche','arcatePiano','arcatePianoPresta','quadrantePiano']) next[field] ||= {};
     next.prevRows ||= [];
     const mentionedSet = new Set([...mentioned,...selection.findings.map(f=>f.target),...selection.treatments.map(t=>t.target)]);
     const sano = match(currentCatalog,'sano','Sano',true)?.id;
     for (const f of selection.findings) {
+      if(f.scope==='ARCH_LEVEL') {
+        const loc=f.target==='AS'?'sup':'inf',values=next.arcateAttuale[loc] ||= [];
+        if(f.id_listino && !values.includes(f.id_listino))values.push(f.id_listino);
+        const facts=next.arcateCliniche[loc] ||= {};
+        facts.notes=[...new Set([...(facts.notes||[]),[f.description,f.note].filter(Boolean).join(' — ')].filter(Boolean))];
+        if(f.count_confirmed){facts.implant_count=f.implant_count;facts.implant_targets=copy(f.implant_targets||[]);}
+        const implant=match(currentCatalog,'impianto','Impianto',true)?.id;
+        if(implant && f.count_confirmed)for(const tooth of f.implant_targets||[]){const ids=next.teethAttuale[tooth] ||= [];if(!ids.includes(implant))ids.push(implant);next.teethAttuale[tooth]=ids.filter(id=>id!==sano);}
+        continue;
+      }
       const values = next.teethAttuale[f.target] ||= [];
       if (f.id_listino && !values.includes(f.id_listino)) values.push(f.id_listino);
       if (f.id_listino!==sano) next.teethAttuale[f.target] = values.filter(id=>id!==sano);
     }
     // Preserve all findings for a tooth in its note; do not erase earlier clinical notes.
-    for (const tooth of new Set(selection.findings.map(f=>f.target))) {
+    for (const tooth of new Set(selection.findings.filter(f=>f.scope!=='ARCH_LEVEL').map(f=>f.target))) {
       const additions = selection.findings.filter(f=>f.target===tooth).map(f=>[f.description,f.note].filter(Boolean).join(' — '));
       next.teethNote[tooth] = [...new Set([next.teethNote[tooth],...additions].filter(Boolean))].join('\n');
     }
@@ -175,6 +192,43 @@
     for(const t of treatments) if(isTooth(t.target) && !findings.some(f=>f.target===t.target) && !(state.teethAttuale?.[t.target]||[]).some(id=>id!=='sano')) locations.add(t.target);
     return [...locations].map(t=>`Dente ${t}: stato dell’odontogramma non definito. Precisa il rilievo/diagnosi e se la terapia è da fare, in corso o già eseguita, oppure conserva solo la nota clinica.`);
   }
+  // Local interpretation of already understood, completed procedures. No API call or diagnosis.
+  function currentProposals(data, transcript, catalog) {
+    const result=copy(data.findings||[]);
+    const add=f=>{if(!result.some(r=>r.target===f.target && r.id_listino===f.id_listino))result.push(f);};
+    const number=s=>{const m=key(s).match(/\b(\d+|uno|due|tre|quattro|cinque|sei|sette|otto)\s+(?:gommini|impianti|attacchi|locator)\b/);return m?Number(({uno:1,due:2,tre:3,quattro:4,cinque:5,sei:6,sette:7,otto:8})[m[1]]||m[1]):null;};
+    for(const t of data.treatments||[]) {
+      const states={impianto_osteointegrabile:'impianto',corona_zirconio:'corona',corona_zirconio_su_impianto:'corona'};
+      const id=states[t.id_listino];
+      if(t.status==='eseguito' && isTooth(t.target) && id && catalog.some(c=>c.id===id))add({target:t.target,id_listino:id,description:catalog.find(c=>c.id===id).label+' presente dopo la procedura eseguita',note:'Derivato dalla prestazione eseguita; verificare.',evidence:t.evidence||t.rationale,scope:'TOOTH_LEVEL'});
+    }
+    const events=(data.events||[]).filter(e=>e.status==='eseguito' && /ribasatur|gommin|cappett/.test(key(e.label)));
+    if(!events.length)return result;
+    // A single prosthesis context can link distant clauses. Multiple contexts require clarification.
+    const contexts=[...String(transcript||'').matchAll(/over\s*denture[^.!?\n;]{0,100}/gi)].map(m=>{
+      const before=String(transcript).slice(Math.max(0,m.index-65),m.index).split(/[.!?\n;]/).pop(),phrase=before+m[0];
+      if(/\b(non ha|senza|non c e|da fare|da realizzare|da consegnare|faremo|metteremo|nuova)\b/.test(key(phrase)))return null;
+      const locs=[/inferior|\binf\b/.test(key(phrase))?'AI':'',/superior|\bsup\b/.test(key(phrase))?'AS':''].filter(Boolean);
+      return {quote:m[0],target:locs.length===1?locs[0]:''};
+    }).filter(Boolean);
+    const keys=new Set(contexts.map(c=>c.target));
+    if(contexts.length && keys.size===1 && keys.has(''))return result; // No invented arch.
+    if(keys.size!==1)return result;
+    const loc=[...keys][0];
+    const quotes=events.map(e=>e.evidence).filter(Boolean);
+    // Do not attach maintenance of the opposite arch to this prosthesis.
+    const opposite=loc==='AI'?/superior/:/inferior/;
+    const bothArches=/inferior/.test(key(transcript)) && /superior/.test(key(transcript));
+    const same=loc==='AI'?/inferior/:/superior/;
+    const linked=quotes.filter(q=>!opposite.test(key(q)) && (!bothArches || same.test(key(q))));
+    if(!linked.length)return result;
+    const quote=[...contexts.map(c=>c.quote),...linked].join(' ');
+    const counts=linked.map(number).filter(n=>n!==null),uniqueCounts=[...new Set(counts)];
+    const count=uniqueCounts.length===1?uniqueCounts[0]:null;
+    add({target:loc,scope:'ARCH_LEVEL',id_listino:'overdenture',description:'Overdenture '+(loc==='AI'?'inferiore':'superiore')+' presente',note:'Presenza ricavata dalla manutenzione eseguita sulla protesi.',evidence:quote,
+      implant_count:count,count_confirmed:false,implant_targets:[]});
+    return result;
+  }
   function relevant(memories,note,limit=16) {
     const query=tokens(note);
     return memories.filter(m=>m.reusable!==false).map((m,i)=>{
@@ -183,6 +237,6 @@
       return {m,i,score:overlap/Math.max(1,words.size),overlap};
     }).filter(r=>r.overlap>0).sort((a,b)=>b.score-a.score || a.i-b.i).slice(0,limit).map(r=>r.m);
   }
-  root.HSClinical = {copy,key,text,isTooth,target,status,match,normalize,validate,apply,relevant,effectiveScope,completionSuggestions,clarificationIssues};
+  root.HSClinical = {copy,key,text,isTooth,target,status,match,normalize,validate,apply,relevant,effectiveScope,completionSuggestions,clarificationIssues,currentProposals};
   if(typeof module!=='undefined' && module.exports) module.exports=root.HSClinical;
 })(globalThis);

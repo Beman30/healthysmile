@@ -61,7 +61,7 @@ async function hybridSetup(proposal, options={}) {
  const ctx=await setup(),{w}=ctx;
  w.document.getElementById('ai-engine').value='local-openai';w.aiEngineChanged();
  w.document.getElementById('ai-fictional').checked=options.fictional!==false;
- w.document.getElementById('ai-tx-nota').value='Trascrizione del caso interamente fittizio.';
+ w.document.getElementById('ai-tx-nota').value=options.transcript||'Trascrizione del caso interamente fittizio.';
  if(options.initialDiary)w.eval(`diary=${JSON.stringify(options.initialDiary)};_storedPatient=aiFields(aiState());`);
  const requests=[];
  w.fetch=async(url,opt)=>{requests.push({url,body:opt?.body?JSON.parse(opt.body):null});return{ok:true,json:async()=>url.endsWith('/version')?{release:options.release||8,provider:'openai',test_only:true}:{proposal}};};
@@ -113,4 +113,44 @@ test('hybrid test guard and old bridge block before the paid API request',async(
 test('hybrid confirmed tooth findings map clinical state to the local odontogramma catalog',async()=>{
  const {dom,w,writes}=await hybridSetup({diary:{text:'Carie distale sul 12.'},findings:[{target:'12',state:'Cariato',description:'Carie distale sul 12',id_listino:''}],treatments:[],events:[],questions:[]});
  try{assert.equal(w.document.getElementById('ai-sit-sel-s0').value,'cariato');await w.aiConferma();assert.equal(writes.length,2);assert.equal(w.eval('teethAttuale[12][0]'),'cariato');assert.equal(w.eval('teethAttuale[11]'),undefined);}finally{dom.window.close();}
+});
+const archTranscript='Presente overdenture inferiore. Abbiamo ribasato la protesi inferiore. Abbiamo cambiato quattro gommini della protesi inferiore.';
+const archProposal=()=>({diary:{text:'Eseguita ribasatura e sostituzione di quattro gommini dell’overdenture inferiore.'},findings:[],treatments:[{target:'',id_listino:'',label:'Ribasatura',status:'eseguito'}],events:[{label:'Ribasatura',status:'eseguito',evidence:'Abbiamo ribasato la protesi inferiore.'},{label:'Cambio gommini',status:'eseguito',evidence:'Abbiamo cambiato quattro gommini della protesi inferiore.'}],questions:[]});
+test('overdenture preview asks for review, saves only current chart and keeps diary and unresolved treatments pending',async()=>{
+ const {dom,w,writes,errors}=await hybridSetup(archProposal(),{transcript:archTranscript});
+ try{
+ assert.match(w.document.getElementById('ai-prop-sit').textContent,/Vuoi aggiornare/);assert.match(w.document.getElementById('ai-table-arcate').textContent,/Overdenture/);
+ assert.equal(w.eval('Object.keys(arcateAttuale).length'),0);assert.equal(writes.length,0);
+ const key=w.eval('aiProposta.findings[0].key');assert.equal(w.document.getElementById('ai-sit-count-'+key).value,'4');assert.equal(w.document.getElementById('ai-sit-count-ok-'+key).checked,false);
+ w.document.getElementById('ai-sit-count-ok-'+key).checked=true;await w.aiConferma(false,true);
+ assert.equal(writes.length,2);assert.deepEqual(JSON.parse(w._storedPatient.arcate),{inf:['overdenture']});assert.equal(JSON.parse(w._storedPatient.arcate_cliniche).inf.implant_count,4);
+ assert.deepEqual(JSON.parse(w._storedPatient.odontogramma),{});assert.deepEqual(JSON.parse(w._storedPatient.piano),{});assert.deepEqual(JSON.parse(w._storedPatient.preventivi),[]);assert.deepEqual(JSON.parse(w._storedPatient.diario),[]);
+ assert.match(w.document.getElementById('arcate-attuali-clinica').textContent,/4 impianti presenti · sedi da indicare/);
+ assert.equal(w._storedPatient.ai_visit_draft.proposal.findings.length,0);assert.ok(w._storedPatient.ai_visit_draft.proposal.diary);
+ const draft=JSON.parse(JSON.stringify(w._storedPatient.ai_visit_draft));w.aiInvalidate();w.aiRestoreDraft(draft);assert.equal(w.eval('aiProposta.findings.length'),0);
+ w.aiRemoveTreatment('t0');await w.aiConferma();assert.equal(writes.length,4);assert.equal(w.eval('diary.length'),1);assert.equal(w._storedPatient.ai_visit_draft,null);
+ assert.equal(JSON.parse(w.collectData().arcate_cliniche).inf.implant_count,4);assert.deepEqual(errors,[]);
+ }finally{dom.window.close();}
+});
+test('unconfirmed implant count is not stored; rejected odontogram changes leave the current chart empty',async()=>{
+ for(const reject of [false,true]){
+ const {dom,w,writes}=await hybridSetup(archProposal(),{transcript:archTranscript});try{
+ w.aiRemoveTreatment('t0');if(reject)w.aiRejectFindings();await w.aiConferma();assert.equal(writes.length,2);
+ assert.equal(w.eval('Object.keys(teethAttuale).length'),0);assert.equal(w.eval('prevRows.length'),0);assert.equal(w.eval('diary.length'),1);
+ if(reject)assert.deepEqual(JSON.parse(w._storedPatient.arcate),{});else{assert.deepEqual(JSON.parse(w._storedPatient.arcate),{inf:['overdenture']});assert.equal(JSON.parse(w._storedPatient.arcate_cliniche).inf.implant_count,undefined);}
+ }finally{dom.window.close();}}
+});
+test('clinician can change the current prosthesis, confirm actual implant count and provide only known positions',async()=>{
+ const {dom,w,writes}=await hybridSetup(archProposal(),{transcript:archTranscript});try{
+ w.eval(`TR_ATTUALE.push({id:'impianto',label:'Impianto',sym:'I',color:'green'});`);
+ const key=w.eval('aiProposta.findings[0].key');w.document.getElementById('ai-sit-sel-'+key).value='tot_rimov';w.document.getElementById('ai-sit-desc-'+key).value='Protesi rimovibile inferiore su attacchi';w.document.getElementById('ai-sit-count-'+key).value='2';w.document.getElementById('ai-sit-count-ok-'+key).checked=true;w.document.getElementById('ai-sit-positions-'+key).value='33, 43';
+ await w.aiConferma(false,true);assert.equal(writes.length,2);assert.deepEqual(JSON.parse(w._storedPatient.arcate),{inf:['tot_rimov']});assert.deepEqual(JSON.parse(w._storedPatient.odontogramma),{33:['impianto'],43:['impianto']});assert.equal(JSON.parse(w._storedPatient.arcate_cliniche).inf.implant_count,2);assert.match(w.document.getElementById('arcate-attuali-clinica').textContent,/sedi: 33, 43/);
+ }finally{dom.window.close();}
+});
+test('current arch save rejects concurrent modifications and failed writes retain the editable proposal',async()=>{
+ for(const conflict of [false,true]){
+ const {dom,w,writes}=await hybridSetup(archProposal(),{transcript:archTranscript});try{
+ if(conflict)w._storedPatient.arcate_cliniche=JSON.stringify({inf:{implant_count:2}});else w._fail=true;
+ await w.aiConferma(false,true);assert.equal(writes.length,0);assert.equal(w.eval('Object.keys(arcateAttuale).length'),0);assert.equal(w.eval('aiProposta.findings.length'),1);assert.ok(w._storedPatient.ai_visit_draft);
+ }finally{dom.window.close();}}
 });

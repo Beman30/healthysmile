@@ -5,6 +5,30 @@ const plan=[{id:'restauro',label:'Restauro composito',scope:'TOOTH_LEVEL',prezzo
 const row=(id,target='12',extra={})=>({id_listino:id,target,label:id,qta:1,prezzo:100,status:'dafare',...extra});
 const finding=(target='12')=>({target,description:'Carie distale',id_listino:'cariato',note:''});
 const sel=(rows=[],findings=[finding()])=>({findings,treatments:rows});
+const currentArch=[...att,{id:'overdenture',label:'Overdenture su attacchi',scope:'ARCH_LEVEL'},{id:'impianto',label:'Impianto'}];
+const prostheticText='Presente overdenture inferiore. Abbiamo ribasato la protesi inferiore. Abbiamo cambiato quattro gommini della protesi inferiore.';
+const prostheticEvents=[{label:'Ribasatura della protesi',status:'eseguito',evidence:'Abbiamo ribasato la protesi inferiore.'},{label:'Cambio gommini',status:'eseguito',evidence:'Abbiamo cambiato quattro gommini della protesi inferiore.'}];
+test('local maintenance proposes an existing overdenture and a count requiring confirmation, never tooth positions',()=>{
+ const findings=C.currentProposals({findings:[],events:prostheticEvents},prostheticText,currentArch);
+ assert.equal(findings.length,1);assert.equal(findings[0].target,'AI');assert.equal(findings[0].implant_count,4);assert.equal(findings[0].count_confirmed,false);assert.deepEqual(findings[0].implant_targets,[]);
+ const n=C.normalize({findings},currentArch,plan),s=C.apply({},sel([],n.findings),currentArch,plan,[],{defaultHealthy:false});
+ assert.deepEqual(s.arcateAttuale.inf,['overdenture']);assert.equal(s.arcateCliniche.inf.implant_count,undefined);assert.deepEqual(s.teethAttuale,{});assert.deepEqual(s.prevRows,[]);
+});
+test('confirmed arch implant count survives without arbitrary teeth and explicit compatible positions can be added',()=>{
+ const f={...C.currentProposals({events:prostheticEvents},prostheticText,currentArch)[0],count_confirmed:true};
+ let s=C.apply({arcateAttuale:{sup:['tot_rimov']},teethAttuale:{16:['devitaliz']}},sel([],[f]),currentArch,plan,[],{defaultHealthy:false});
+ assert.equal(s.arcateCliniche.inf.implant_count,4);assert.deepEqual(s.teethAttuale,{16:['devitaliz']});assert.deepEqual(s.arcateAttuale.sup,['tot_rimov']);
+ s=C.apply(s,sel([],[{...f,implant_targets:['33','43']}]),currentArch,plan,[],{defaultHealthy:false});
+ assert.deepEqual(s.teethAttuale[33],['impianto']);assert.deepEqual(s.teethAttuale[43],['impianto']);assert.equal(s.teethAttuale[31],undefined);
+ for(const edit of [{implant_count:0},{implant_count:4.5},{implant_targets:['13']},{implant_targets:['33','33']},{implant_targets:['33'],count_confirmed:false}])assert.throws(()=>C.apply({},sel([],[{...f,...edit}]),currentArch,plan));
+});
+test('future work, negated prosthesis and ambiguous arches never establish an existing overdenture',()=>{
+ assert.deepEqual(C.currentProposals({events:prostheticEvents.map(e=>({...e,status:'dafare'}))},prostheticText,currentArch),[]);
+ assert.deepEqual(C.currentProposals({events:prostheticEvents},'Non ha overdenture inferiore.',currentArch),[]);
+ assert.deepEqual(C.currentProposals({events:prostheticEvents},'Faremo una nuova overdenture inferiore.',currentArch),[]);
+ assert.deepEqual(C.currentProposals({events:prostheticEvents},'Overdenture inferiore. Overdenture superiore.',currentArch),[]);
+ assert.deepEqual(C.currentProposals({events:[{...prostheticEvents[0],evidence:'Ribasatura della protesi superiore.'}]},'Overdenture inferiore.',currentArch),[]);
+});
 test('v5 label is readable and invalid ID recovers by exact label',()=>{const n=C.normalize({terapie_da_attuare:{denti:{12:{terapie:[{id_listino:'inventato',label:'Restauro composito',qta:2}]}}}},att,plan);assert.equal(n.treatments[0].label,'Restauro composito');assert.equal(n.treatments[0].id_listino,'restauro');assert.equal(n.treatments[0].qta,2);});
 test('ambiguous substring and missing labels do not select a random item',()=>{assert.equal(C.match([{id:'a',label:'Corona su impianto'},{id:'b',label:'Impianto'}],'','corona'),null);assert.equal(C.match(att,'','',true),null);});
 test('multiple findings on one tooth survive',()=>{const n=C.normalize({findings:[finding(),{...finding(),description:'Frattura',id_listino:'frattura'}],treatments:[]},att,plan);const s=C.apply({},n,att,plan);assert.deepEqual(s.teethAttuale[12],['cariato','frattura']);assert.match(s.teethNote[12],/Frattura/);});

@@ -515,6 +515,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--gray-50);color:
             <div style="font-size:10px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.04em;margin-bottom:.4rem">Arcate complete</div>
             <div class="arcate-row" id="arcate-attuali-btns"></div>
             <div id="arcata-attuale-popup" class="arcata-popup"></div>
+            <div id="arcate-attuali-clinica" style="margin-top:10px"></div>
 
             <div class="odonto-wrap">
               <svg id="odonto-attuale" viewBox="0 0 660 200" style="width:100%;min-width:580px"></svg>
@@ -713,14 +714,20 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--gray-50);color:
             <!-- Proposta situazione attuale -->
             <div class="ai-proposal-box" id="ai-prop-sit">
               <div class="ai-prop-head blue">
-                <span>Situazione attuale — proposta AI</span>
+                <span>Vuoi aggiornare l’odontogramma?</span>
                 <div style="display:flex;align-items:center;gap:8px">
                   <button onclick="aiApriModalNuovaPrestazioneTipo('attuale')" style="background:white;color:#2563eb;border:1px solid #93c5fd;border-radius:4px;padding:2px 9px;font-size:11px;cursor:pointer;font-weight:600">+ Nuova prestazione</button>
                   <div class="ai-status ai-s-proc" id="ai-badge-sit"><div class="ai-dot"></div><span>Elaborazione…</span></div>
                 </div>
               </div>
               <div class="ai-prop-body">
+                <p style="font-size:12px;margin:0 0 12px">Queste sono le modifiche proposte alla situazione attuale. Puoi correggerle o eliminarle prima di salvarle.</p>
                 <div id="ai-table-sit"><div style="display:flex;align-items:center;gap:8px;padding:20px;color:var(--gray-500);font-size:13px"><div class="ai-spin"></div>Analisi in corso…</div></div>
+                <div id="ai-table-arcate"></div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+                  <button class="ai-btn ai-btn-primary" id="ai-btn-odonto" onclick="aiConferma(false,true)">Conferma e salva solo odontogramma</button>
+                  <button class="ai-btn ai-btn-outline" onclick="aiRejectFindings()">Non aggiornare l’odontogramma</button>
+                </div>
               </div>
             </div>
 
@@ -1167,7 +1174,10 @@ let currentId = null;
 // Odontogramma attuale (situazione in bocca)
 let teethAttuale = {};   // {16: ['impianto','corona']}
 let arcateAttuale = {};  // {sup: ['tot_rimov']}
+let arcateCliniche = {}; // Arch facts without invented tooth positions: counts and clinical notes.
 let teethNote = {};      // {48: 'semi incluso, gengiva dolente'}
+const CURRENT_ARCH_STATES = [{id:'overdenture',label:'Overdenture su attacchi',color:'#C05621',sym:'OVD',scope:'ARCH_LEVEL'}];
+function currentArchCatalog(){return [...CURRENT_ARCH_STATES,...ARCH_TR.filter(t=>!CURRENT_ARCH_STATES.some(c=>c.id===t.id))];}
 
 // Odontogramma piano (trattamenti da fare/eseguiti)
 let teethPiano = {};     // {16: [{tid:'estrazione', stato:'dafare'}]}
@@ -1301,6 +1311,7 @@ async function openPatient(id) {
   teethAttuale  = safeJson(p.odontogramma, {});
   teethNote     = safeJson(p.note_cliniche_denti, {});
   arcateAttuale = safeJson(p.arcate, {});
+  arcateCliniche = safeJson(p.arcate_cliniche, {});
   teethPiano    = safeJson(p.piano, {});
   arcatePiano    = safeJson(p.arcate_piano, {});
   quadrantePiano = safeJson(p.quad_piano, {});
@@ -1339,6 +1350,7 @@ async function openPatient(id) {
     teethAttuale  = safeJson(d.odontogramma, {});
     teethNote     = safeJson(d.note_cliniche_denti, {});
     arcateAttuale = safeJson(d.arcate, {});
+    arcateCliniche = safeJson(d.arcate_cliniche, {});
     teethPiano    = safeJson(d.piano, {});
     arcatePiano    = safeJson(d.arcate_piano, {});
     quadrantePiano = safeJson(d.quad_piano, {});
@@ -1388,6 +1400,7 @@ function collectData() {
     odontogramma:  JSON.stringify(teethAttuale),
     note_cliniche_denti: JSON.stringify(teethNote),
     arcate:        JSON.stringify(arcateAttuale),
+    arcate_cliniche: JSON.stringify(arcateCliniche),
     piano:         JSON.stringify(teethPiano),
     arcate_piano:  JSON.stringify(arcatePiano),
     quad_piano:    JSON.stringify(quadrantePiano),
@@ -1727,7 +1740,7 @@ function refreshArcate(type) {
     const hasAny = archItems.length > 0 || presItems.length > 0;
     btn.classList.toggle('has', hasAny);
     const archSyms = (type==='attuale' ? archItems : archItems.map(x=>x.tid||x)).map(tid => {
-      const t = ARCH_TR.find(x=>x.id===tid);
+      const t = (type==='attuale'?currentArchCatalog():ARCH_TR).find(x=>x.id===tid);
       return t ? `<span style="background:${t.color};color:white;font-size:9px;font-weight:700;padding:1px 4px;border-radius:3px;margin-left:2px">${t.sym}</span>` : '';
     }).join('');
     const presIds = type==='attuale' ? presItems : presItems.map(x=>x.tid||x);
@@ -1738,6 +1751,18 @@ function refreshArcate(type) {
     const extra = presItems.length > 4 ? `<span style="font-size:9px;color:var(--gray-500);margin-left:2px">+${presItems.length-4}</span>` : '';
     btn.innerHTML = `${a.label}${archSyms}${presSyms}${extra}`;
   });
+  if(type==='attuale')renderCurrentArchFacts();
+}
+
+function renderCurrentArchFacts() {
+  const el=document.getElementById('arcate-attuali-clinica');if(!el)return;
+  el.innerHTML=ARCATE.map(a=>{
+    const facts=arcateCliniche[a.id]||{},ids=arcateAttuale[a.id]||[];
+    const labels=ids.map(id=>currentArchCatalog().find(t=>t.id===id)?.label).filter(Boolean);
+    if(!labels.length && !facts.implant_count && !facts.notes?.length)return '';
+    const positions=(facts.implant_targets||[]).filter(t=>(teethAttuale[t]||[]).includes('impianto'));
+    return `<div style="border:var(--border);border-radius:8px;padding:10px;margin-bottom:8px"><strong>${esc(a.label)}</strong>${labels.length?' · '+labels.map(esc).join(', '):''}${facts.implant_count?`<div>${facts.implant_count} impianti presenti · ${positions.length?'sedi: '+positions.map(esc).join(', '):'sedi da indicare'}${positions.length && positions.length<facts.implant_count?' (sedi parziali)':''}</div>`:''}${(facts.notes||[]).map(n=>`<div style="font-size:12px;color:var(--gray-500)">${esc(n)}</div>`).join('')}</div>`;
+  }).join('');
 }
 
 function selectArcata(aid, type, rowId, popupId) {
@@ -1752,7 +1777,7 @@ function selectArcata(aid, type, rowId, popupId) {
   const arcata    = ARCATE.find(a=>a.id===aid);
 
   // Sezione 1: ARCH_TR (protesi, ortodonzia)
-  const archBtns = ARCH_TR.map(t => {
+  const archBtns = (type==='attuale'?currentArchCatalog():ARCH_TR).map(t => {
     const on = type==='attuale' ? archItems.includes(t.id) : archItems.some(x=>(x.tid||x)===t.id);
     return `<button class="treat-btn ${on?'on':''}"
       style="color:${t.color};${on?'background:'+t.color+';':''}border-color:${on?t.color:'#E5E3DC'}"
@@ -3211,7 +3236,7 @@ function closeSidebar() {
 // Close sidebar when a patient is selected on mobile — handled in renderList
 
 </script>
-<script src="ai/clinical-core.js?v=8"></script>
-<script src="ai/cartella-ai.js?v=8"></script>
+<script src="ai/clinical-core.js?v=8.1"></script>
+<script src="ai/cartella-ai.js?v=8.1"></script>
 </body>
 </html>
