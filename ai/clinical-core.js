@@ -5,7 +5,7 @@
   const text = x => typeof x === 'string' ? x.trim() : '';
   const key = x => text(x).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
   const isTooth = x => /^[1-4][1-8]$/.test(String(x));
-  const target = x => ({SUP:'AS', INF:'AI', SUPERIORE:'AS', INFERIORE:'AI'}[String(x || '').toUpperCase()] || String(x || '').toUpperCase());
+  const target = x => {const value=String(x || '').trim().toUpperCase();return ({SUP:'AS', INF:'AI', SUPERIORE:'AS', INFERIORE:'AI','ARCATA SUPERIORE':'AS','ARCATA INFERIORE':'AI'}[value] || value);};
   const status = x => ({'da fare':'dafare','in corso':'incorso','completato':'eseguito','eseguita':'eseguito'}[x] || (['dafare','incorso','eseguito'].includes(x) ? x : 'dafare'));
   // Only explicit equivalences; ambiguous partial substrings never select a price-list item.
   const aliases = [['assente','mancante','estratto','estratto assente'],['devitalizzato','devitaliz'],['coroato','corona'],['carie','cariato']];
@@ -47,8 +47,10 @@
     findings = findings.map(f => {
       const description = text(f.description || f.stato || f.finding || f.label);
       const item = match(currentCatalog, f.id_listino, description, true);
-      return {target:target(f.target || f.tooth), description, id_listino:item?.id || '', scope:f.scope || 'TOOTH_LEVEL', note:text(f.note || f.notes), evidence:text(f.evidence), confidence:typeof f.confidence === 'number' ? f.confidence : null,
-        implant_count:f.implant_count ?? null, count_confirmed:f.count_confirmed===true, implant_targets:Array.isArray(f.implant_targets)?f.implant_targets:[]};
+      const loc=target(f.target || f.tooth),scope=['AS','AI'].includes(loc)||item?.scope==='ARCH_LEVEL'?'ARCH_LEVEL':f.scope || 'TOOTH_LEVEL';
+      return {target:loc, description, id_listino:item?.id || '', scope, note:text(f.note || f.notes), evidence:text(f.evidence), confidence:typeof f.confidence === 'number' ? f.confidence : null,
+        implant_count:f.implant_count ?? null, count_confirmed:f.count_confirmed===true, implant_targets:Array.isArray(f.implant_targets)?f.implant_targets:[],
+        prosthesis_review:f.prosthesis_review===true,prosthesis_confirmed:f.prosthesis_confirmed===true};
     });
     treatments = treatments.map(t => {
       const label = text(t.label || t.stato || t.proposed_treatment);
@@ -81,6 +83,7 @@
       if (f.id_listino && !currentCatalog.some(t=>t.id===f.id_listino)) errors.push(`Stato non presente nel listino: ${f.id_listino}`);
       const item=currentCatalog.find(t=>t.id===f.id_listino);
       if(item && (item.scope==='ARCH_LEVEL')!==arch)errors.push(`Stato non applicabile a questa sede: ${item.label}`);
+      if(arch && f.id_listino && f.prosthesis_review && !f.prosthesis_confirmed)errors.push('Conferma il tipo di protesi proposto, correggilo oppure elimina la riga.');
       if(arch && f.count_confirmed && (!Number.isInteger(f.implant_count) || f.implant_count<1 || f.implant_count>16))errors.push('Conferma un numero di impianti valido (1–16).');
       const positions=f.implant_targets||[];
       if(positions.length && (!arch || !f.count_confirmed || positions.length>f.implant_count || new Set(positions).size!==positions.length || positions.some(t=>!isTooth(t) || (f.target==='AI'?!/^[34]/.test(t):!/^[12]/.test(t)))))errors.push('Le sedi degli impianti devono essere distinte, coerenti con l’arcata e con il numero confermato.');
@@ -211,6 +214,21 @@
       const locs=[/inferior|\binf\b/.test(key(phrase))?'AI':'',/superior|\bsup\b/.test(key(phrase))?'AS':''].filter(Boolean);
       return {quote:m[0],target:locs.length===1?locs[0]:''};
     }).filter(Boolean);
+    if(!contexts.length){
+      // Retentive components imply an existing attachment-supported device, not a certain subtype.
+      const retained=events.filter(e=>/gommin|cappett/.test(key(e.label)) && /gommin|cappett/.test(key(e.evidence)));
+      const reline=events.filter(e=>/ribasatur/.test(key(e.label)));
+      if(!retained.length || !reline.length || /over\s*denture/i.test(transcript))return result;
+      const quotes=[...retained,...reline].map(e=>e.evidence).filter(Boolean),source=quotes.join(' ');
+      const diary=typeof data.diary==='string'?data.diary:data.diary?.text||'';
+      const area=/inferior|superior/.test(key(source))?source:/protesi/.test(key(diary))?diary:'';
+      const locs=[/inferior/.test(key(area))?'AI':'',/superior/.test(key(area))?'AS':''].filter(Boolean);
+      if(locs.length!==1)return result;
+      const loc=locs[0],counts=[...new Set(retained.map(e=>number(e.evidence)).filter(n=>n!==null))];
+      add({target:loc,scope:'ARCH_LEVEL',id_listino:'overdenture',description:'Overdenture '+(loc==='AI'?'inferiore':'superiore'),note:'Tipo proposto dalla ribasatura e dai gommini ritentivi: confermare che sia effettivamente un’overdenture.',evidence:source,
+        prosthesis_review:true,prosthesis_confirmed:false,implant_count:counts.length===1?counts[0]:null,count_confirmed:false,implant_targets:[]});
+      return result;
+    }
     const keys=new Set(contexts.map(c=>c.target));
     if(contexts.length && keys.size===1 && keys.has(''))return result; // No invented arch.
     if(keys.size!==1)return result;

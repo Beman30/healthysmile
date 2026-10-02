@@ -8,6 +8,19 @@ const sel=(rows=[],findings=[finding()])=>({findings,treatments:rows});
 const currentArch=[...att,{id:'overdenture',label:'Overdenture su attacchi',scope:'ARCH_LEVEL'},{id:'impianto',label:'Impianto'}];
 const prostheticText='Presente overdenture inferiore. Abbiamo ribasato la protesi inferiore. Abbiamo cambiato quattro gommini della protesi inferiore.';
 const prostheticEvents=[{label:'Ribasatura della protesi',status:'eseguito',evidence:'Abbiamo ribasato la protesi inferiore.'},{label:'Cambio gommini',status:'eseguito',evidence:'Abbiamo cambiato quattro gommini della protesi inferiore.'}];
+test('an overdenture finding is arch-level even without an explicit scope, and arch abbreviations accept whitespace',()=>{
+ for(const input of ['AI',' ai ','arcata inferiore','inferiore']){
+  const n=C.normalize({findings:[{target:input,description:'overdenture'}]},currentArch,plan);
+  assert.equal(n.findings[0].target,'AI');assert.equal(n.findings[0].scope,'ARCH_LEVEL');assert.equal(n.findings[0].id_listino,'overdenture');assert.deepEqual(C.validate(n,currentArch,plan),[]);
+ }
+});
+test('maintenance without the prosthesis name proposes a subtype requiring confirmation independently of the therapy list',()=>{
+ const text='Abbiamo ribasato la protesi inferiore. Abbiamo cambiato quattro gommini della protesi inferiore.';
+ const findings=C.currentProposals({events:prostheticEvents},text,currentArch);assert.equal(findings.length,1);assert.equal(findings[0].prosthesis_review,true);
+ assert.throws(()=>C.apply({},sel([],findings),currentArch,[]),/Conferma il tipo/);
+ const s=C.apply({},sel([],[{...findings[0],prosthesis_confirmed:true}]),currentArch,[],[],{defaultHealthy:false});assert.deepEqual(s.arcateAttuale.inf,['overdenture']);assert.equal(s.arcateCliniche.inf.implant_count,undefined);assert.deepEqual(s.prevRows,[]);
+ const diaryLinked=C.currentProposals({diary:'Ribasatura della protesi inferiore e sostituzione di quattro gommini.',events:prostheticEvents.map(e=>({...e,evidence:e.evidence.replace(' della protesi inferiore','').replace(' la protesi inferiore',' la protesi')}))},text,currentArch);assert.equal(diaryLinked[0].target,'AI');
+});
 test('local maintenance proposes an existing overdenture and a count requiring confirmation, never tooth positions',()=>{
  const findings=C.currentProposals({findings:[],events:prostheticEvents},prostheticText,currentArch);
  assert.equal(findings.length,1);assert.equal(findings[0].target,'AI');assert.equal(findings[0].implant_count,4);assert.equal(findings[0].count_confirmed,false);assert.deepEqual(findings[0].implant_targets,[]);

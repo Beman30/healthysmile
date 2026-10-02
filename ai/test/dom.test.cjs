@@ -116,6 +116,30 @@ test('hybrid confirmed tooth findings map clinical state to the local odontogram
 });
 const archTranscript='Presente overdenture inferiore. Abbiamo ribasato la protesi inferiore. Abbiamo cambiato quattro gommini della protesi inferiore.';
 const archProposal=()=>({diary:{text:'Eseguita ribasatura e sostituzione di quattro gommini dell’overdenture inferiore.'},findings:[],treatments:[{target:'',id_listino:'',label:'Ribasatura',status:'eseguito'}],events:[{label:'Ribasatura',status:'eseguito',evidence:'Abbiamo ribasato la protesi inferiore.'},{label:'Cambio gommini',status:'eseguito',evidence:'Abbiamo cambiato quattro gommini della protesi inferiore.'}],questions:[]});
+test('typing AI on a manually added overdenture row promotes it to an editable arch and saves it without a tooth error',async()=>{
+ const {dom,w,writes}=await hybridSetup({diary:{text:'Controllo protesi inferiore.'},findings:[],treatments:[],events:[],questions:[]});
+ try{
+ w.aiAddFinding();const key=w.eval('aiProposta.findings[0].key');
+ w.document.getElementById('ai-sit-num-'+key).value=' ai ';w.document.getElementById('ai-sit-desc-'+key).value='overdenture';
+ w.document.getElementById('ai-sit-num-'+key).dispatchEvent(new w.Event('change'));
+ assert.equal(w.document.getElementById('ai-sit-num-'+key).tagName,'SELECT');assert.equal(w.document.getElementById('ai-sit-num-'+key).value,'AI');assert.equal(w.document.getElementById('ai-sit-sel-'+key).value,'overdenture');
+ await w.aiConferma(false,true);assert.equal(writes.length,2);assert.deepEqual(JSON.parse(w._storedPatient.arcate),{inf:['overdenture']});assert.deepEqual(JSON.parse(w._storedPatient.odontogramma),{});
+ assert.equal(w._storedPatient.ai_visit_draft.proposal.diary,'Controllo protesi inferiore.');
+ }finally{dom.window.close();}
+});
+test('pending unscoped overdenture proposals render an arch selector and save AS correctly',async()=>{
+ const {dom,w,writes}=await hybridSetup({diary:{text:'Controllo.'},findings:[{target:'',state:'',description:'overdenture',id_listino:''}],treatments:[],events:[],questions:[]});
+ try{const key=w.eval('aiProposta.findings[0].key');assert.equal(w.document.getElementById('ai-sit-num-'+key).tagName,'SELECT');w.document.getElementById('ai-sit-num-'+key).value='AS';await w.aiConferma(false,true);assert.equal(writes.length,2);assert.deepEqual(JSON.parse(w._storedPatient.arcate),{sup:['overdenture']});}finally{dom.window.close();}
+});
+test('unnamed prosthesis maintenance proposes an overdenture with an explicit type confirmation before adding it to the chart',async()=>{
+ const transcript=archTranscript.replace('Presente overdenture inferiore. ','');
+ const {dom,w,writes}=await hybridSetup(archProposal(),{transcript});
+ try{
+ const key=w.eval('aiProposta.findings[0].key');assert.ok(w.document.getElementById('ai-sit-type-ok-'+key));assert.equal(w.document.getElementById('ai-sit-type-ok-'+key).checked,false);
+ await w.aiConferma(false,true);assert.equal(writes.length,0);assert.match(w.document.getElementById('notif').textContent,/Conferma il tipo/);
+ w.document.getElementById('ai-sit-type-ok-'+key).checked=true;await w.aiConferma(false,true);assert.equal(writes.length,2);assert.deepEqual(JSON.parse(w._storedPatient.arcate),{inf:['overdenture']});assert.deepEqual(JSON.parse(w._storedPatient.preventivi),[]);
+ }finally{dom.window.close();}
+});
 test('overdenture preview asks for review, saves only current chart and keeps diary and unresolved treatments pending',async()=>{
  const {dom,w,writes,errors}=await hybridSetup(archProposal(),{transcript:archTranscript});
  try{

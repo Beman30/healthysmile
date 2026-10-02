@@ -188,11 +188,12 @@ function aiUpdateWarnings() {
   aiEl('ai-quality-box').innerHTML=warnings.length?'<div class="ai-orig-box"><strong>Da verificare</strong><ul>'+warnings.map(w=>'<li>'+aiEsc(w)+'</li>').join('')+'</ul></div>':'';
 }
 function aiRenderFindings() {
-  aiEl('ai-table-sit').innerHTML='<table class="ai-table"><thead><tr><th>Dente</th><th>Descrizione clinica (correggibile)</th><th>Stato odontogramma</th><th></th></tr></thead><tbody>'+aiProposta.findings.filter(f=>f.scope!=='ARCH_LEVEL').map(f=>`<tr id="ai-sit-row-${f.key}" style="${f.id_listino?'':'background:var(--amber-light)'}"><td><input id="ai-sit-num-${f.key}" value="${aiEsc(f.target)}" style="width:55px"></td><td><input id="ai-sit-desc-${f.key}" value="${aiEsc(f.description)}" style="width:100%;min-width:180px"><small>${aiEsc(f.note)}</small>${f.id_listino?'':'<small style="display:block;color:#92400e">Stato da precisare: puoi aggiungere informazioni nel riquadro sopra.</small>'}</td><td><select id="ai-sit-sel-${f.key}">${aiOptions(TR_ATTUALE,f.id_listino,'Solo nota clinica')}</select></td><td><button onclick="aiRemoveFinding('${f.key}')">✕</button></td></tr>`).join('')+'</tbody></table><button class="ai-btn ai-btn-outline" onclick="aiAddFinding()">+ Aggiungi rilievo clinico</button>';
+  aiEl('ai-table-sit').innerHTML='<table class="ai-table"><thead><tr><th>Dente / arcata</th><th>Descrizione clinica (correggibile)</th><th>Stato odontogramma</th><th></th></tr></thead><tbody>'+aiProposta.findings.filter(f=>f.scope!=='ARCH_LEVEL').map(f=>`<tr id="ai-sit-row-${f.key}" style="${f.id_listino?'':'background:var(--amber-light)'}"><td><input id="ai-sit-num-${f.key}" value="${aiEsc(f.target)}" list="ai-locations" placeholder="FDI / AS / AI" onchange="aiFindingChanged()" style="width:90px"></td><td><input id="ai-sit-desc-${f.key}" value="${aiEsc(f.description)}" onchange="aiFindingChanged()" style="width:100%;min-width:180px"><small>${aiEsc(f.note)}</small>${f.id_listino?'':'<small style="display:block;color:#92400e">Stato da precisare: puoi aggiungere informazioni nel riquadro sopra.</small>'}</td><td><select id="ai-sit-sel-${f.key}">${aiOptions(TR_ATTUALE,f.id_listino,'Solo nota clinica')}</select></td><td><button onclick="aiRemoveFinding('${f.key}')">✕</button></td></tr>`).join('')+'</tbody></table><button class="ai-btn ai-btn-outline" onclick="aiAddFinding()">+ Aggiungi rilievo clinico</button>';
   aiEl('ai-table-arcate').innerHTML=aiProposta.findings.filter(f=>f.scope==='ARCH_LEVEL').map(f=>`<div style="border:var(--border);border-radius:8px;padding:12px;margin-top:12px">
     <strong>Aggiornamento dell’arcata</strong> <button style="float:right" onclick="aiRemoveFinding('${f.key}')">Elimina</button>
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0"><select id="ai-sit-num-${f.key}"><option value="">Scegli arcata</option><option value="AS" ${f.target==='AS'?'selected':''}>Superiore</option><option value="AI" ${f.target==='AI'?'selected':''}>Inferiore</option></select><select id="ai-sit-sel-${f.key}">${aiOptions(currentArchCatalog(),f.id_listino,'Solo nota clinica')}</select></div>
     <input id="ai-sit-desc-${f.key}" value="${aiEsc(f.description)}" style="width:100%"><small style="display:block;margin:6px 0">${aiEsc(f.note)}</small>
+    ${f.prosthesis_review?`<label style="display:block;margin:8px 0"><input id="ai-sit-type-ok-${f.key}" type="checkbox" ${f.prosthesis_confirmed?'checked':''}> Confermo il tipo di protesi selezionato</label>`:''}
     <label>Numero di impianti <input id="ai-sit-count-${f.key}" type="number" min="1" max="16" value="${f.implant_count??''}" style="width:60px"></label>
     <label style="display:block;margin:6px 0"><input id="ai-sit-count-ok-${f.key}" type="checkbox" ${f.count_confirmed?'checked':''}> Confermo il numero di impianti presenti</label>
     <small style="display:block">Il numero di gommini non conferma da solo il numero di impianti. Il conteggio viene salvato solo se lo confermi.</small>
@@ -200,7 +201,28 @@ function aiRenderFindings() {
     <details style="font-size:11px;margin-top:6px"><summary>Da cosa deriva la proposta</summary>${aiEsc(f.evidence)}</details></div>`).join('');
   aiEl('ai-btn-odonto').disabled=!aiProposta.findings.length || aiProposta.applied;
 }
-function aiSyncFindings() {for(const f of aiProposta.findings){f.target=HSClinical.target(aiEl('ai-sit-num-'+f.key)?.value);f.description=aiEl('ai-sit-desc-'+f.key)?.value.trim()||'';f.id_listino=aiEl('ai-sit-sel-'+f.key)?.value||'';if(f.scope==='ARCH_LEVEL'){const n=aiEl('ai-sit-count-'+f.key)?.value;f.implant_count=n?Number(n):null;f.count_confirmed=!!aiEl('ai-sit-count-ok-'+f.key)?.checked;f.implant_targets=(aiEl('ai-sit-positions-'+f.key)?.value||'').split(/[\s,;]+/).filter(Boolean);}}}
+function aiSyncFindings() {
+  let changedLayout=false;
+  for(const f of aiProposta.findings){
+    const wasArch=f.scope==='ARCH_LEVEL';
+    f.target=HSClinical.target(aiEl('ai-sit-num-'+f.key)?.value);
+    f.description=aiEl('ai-sit-desc-'+f.key)?.value.trim()||'';
+    f.id_listino=aiEl('ai-sit-sel-'+f.key)?.value||'';
+    const archItem=HSClinical.match(currentArchCatalog(),f.id_listino,f.description,true);
+    if(!wasArch && (['AS','AI'].includes(f.target) || archItem)){
+      f.scope='ARCH_LEVEL';f.id_listino=archItem?.id||'';
+      f.implant_count=null;f.count_confirmed=false;f.implant_targets=[];changedLayout=true;
+    }
+    if(wasArch){
+      if(f.prosthesis_review)f.prosthesis_confirmed=!!aiEl('ai-sit-type-ok-'+f.key)?.checked;
+      const n=aiEl('ai-sit-count-'+f.key)?.value;f.implant_count=n?Number(n):null;
+      f.count_confirmed=!!aiEl('ai-sit-count-ok-'+f.key)?.checked;
+      f.implant_targets=(aiEl('ai-sit-positions-'+f.key)?.value||'').split(/[\s,;]+/).filter(Boolean);
+    }
+  }
+  if(changedLayout)aiRenderFindings();
+}
+function aiFindingChanged(){aiSyncFindings();aiUpdateWarnings();}
 function aiAddFinding(){aiSyncFindings();aiProposta.findings.push({key:'s'+Date.now(),target:'',description:'',id_listino:'',note:''});aiRenderFindings();aiEl('ai-btn-conferma').disabled=false;}
 function aiRemoveFinding(k){aiSyncFindings();aiProposta.findings=aiProposta.findings.filter(f=>f.key!==k);aiRenderFindings();aiUpdateWarnings();}
 function aiRejectFindings(){aiProposta.findings=[];aiRenderFindings();aiUpdateWarnings();aiStatus('ai-badge-sit','Escluso dal medico');}
