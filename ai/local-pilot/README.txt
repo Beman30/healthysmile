@@ -1,4 +1,4 @@
-PROVA DI COMPRENSIONE LOCALE - HEALTHY SMILE
+PROVA DI COMPRENSIONE LOCALE V2 - HEALTHY SMILE
 
 1. Estrai tutto lo ZIP in una nuova cartella sul PC Windows.
 2. Apri Ollama (il modello previsto e' qwen3:4b, gia' usato dall'agente).
@@ -8,7 +8,13 @@ PROVA DI COMPRENSIONE LOCALE - HEALTHY SMILE
 Servono Python 3 e Ollama, come per l'agente precedente.
 Se manca il modello, il programma indica: ollama pull qwen3:4b.
 La prima risposta puo' richiedere piu' tempo per caricare il modello.
-Ogni caso ha un limite di attesa di 6 minuti; tempi ed errori sono nel risultato.
+Prima dei casi clinici viene eseguita una prova brevissima, limite 60 secondi.
+Ogni caso clinico ha un limite totale di 120 secondi. Ogni 10 secondi viene
+mostrato il tempo trascorso e il numero di caratteri ricevuti.
+Al primo errore la prova si interrompe; tempi ed errori sono nel risultato.
+Versione Ollama e memoria usata dai modelli caricati sono rilevate automaticamente.
+La v2 usa contesto 4096 e massimo 1500 token di risposta per ridurre il carico;
+questo puo' cambiare i risultati rispetto alla prova precedente.
 
 Questa e' una prova iniziale, NON un modello addestrato.
 I tre casi sono esempi fittizi adattati ai problemi discussi: non sono una

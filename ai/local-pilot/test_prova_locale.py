@@ -24,7 +24,7 @@ class PilotTests(unittest.TestCase):
     def test_expected_answers_never_sent_and_no_clinical_pass_claim(self):
         case = {"trascrizione": "Controllo.", "aspetti_attesi_per_revisione": ["SEGRETO_ATTESO"]}
         response = {"done": True, "message": {"content": json.dumps(self.result())}}
-        with patch.object(pilot, "local_request", return_value=response) as request:
+        with patch.object(pilot, "stream_chat", return_value=response) as request:
             result = pilot.analyze(case, self.protocol)
         self.assertNotIn("SEGRETO_ATTESO", json.dumps(request.call_args.args))
         self.assertIsNone(result["errore_struttura"])
@@ -32,7 +32,7 @@ class PilotTests(unittest.TestCase):
 
     def test_truncated_response_rejected(self):
         response = {"done": True, "done_reason": "length", "message": {"content": json.dumps(self.result())}}
-        with patch.object(pilot, "local_request", return_value=response):
+        with patch.object(pilot, "stream_chat", return_value=response):
             with self.assertRaises(ValueError):
                 pilot.analyze({"trascrizione": "Controllo."}, self.protocol)
 
@@ -55,6 +55,28 @@ class PilotTests(unittest.TestCase):
                          "http://127.0.0.1:11434/api/tags")
         with self.assertRaises(ValueError):
             pilot.local_request("https://example.com")
+
+    def test_total_timeout_terminates_worker_even_when_fragments_arrive(self):
+        from unittest.mock import Mock
+        worker = Mock()
+        worker.is_alive.return_value = True
+        events = Mock()
+        events.get.return_value = ("chunk", {"message": {"content": "{"}, "done": False})
+        with patch.object(pilot.time, "perf_counter", side_effect=[0, 0.1, 2]):
+            with self.assertRaises(pilot.ChatFailure) as error:
+                pilot.wait_chat(worker, events, limit=1)
+        self.assertEqual(error.exception.details["risposta_parziale"], "{")
+        worker.terminate.assert_called_once()
+        worker.join.assert_called_once()
+
+    def test_stream_fragments_are_assembled(self):
+        from unittest.mock import Mock
+        worker = Mock()
+        events = Mock()
+        events.get.side_effect = [("chunk", {"message": {"content": "O"}, "done": False}),
+                                  ("chunk", {"message": {"content": "K"}, "done": True})]
+        result = pilot.wait_chat(worker, events, limit=1)
+        self.assertEqual(result["message"]["content"], "OK")
 
 
 if __name__ == "__main__":
