@@ -1,0 +1,39 @@
+[
+  {
+    "id": "controllo-post-impianti",
+    "titolo": "Rimozione punti oggi, ribasatura futura",
+    "trascrizione": "Buonasera, dopo gli impiantini come sta? Nei primi giorni un po' male poi passato. Gli impianti li abbiamo messi una settimana fa. Adesso togliamo i punticini, faccio piano. Ecco abbiamo tolto tutti i punti. Le gengive sono chiuse, guarite, un po' di gonfiore c'e ancora. Guardiamo le due protesi che ha portato. Provi a chiudere, quale trova meglio? Il provvisorio, quello piu leggero. Allora adesso lo puo mettere con un po' di colla dentro. Fare una ribasatura oggi e un po' presto. Ci rivediamo fra una settimana dieci giorni e allora lo ribaso, aggiungiamo un po' di resina. Devo continuare gli sciacqui col collutorio? Non e piu obbligatorio, le ferite sono chiuse, puo farli ma non servono piu come prima. Oggi solo i punti e la prova, la prossima volta facciamo la ribasatura.",
+    "aspetti_attesi_per_revisione": [
+      "Rimozione delle suture eseguita oggi.",
+      "Ribasatura da eseguire tra 7-10 giorni, non eseguita oggi.",
+      "Impianti inseriti una settimana prima: procedura pregressa, sedi non specificate.",
+      "Prova delle protesi esistenti e uso temporaneo del provvisorio con adesivo; nessuna nuova consegna.",
+      "Dolore iniziale risolto, ferite chiuse, residuo gonfiore.",
+      "Collutorio facoltativo: nessuna nuova prescrizione."
+    ]
+  },
+  {
+    "id": "manutenzione-overdenture",
+    "titolo": "Ribasatura e cambio gommini eseguiti",
+    "trascrizione": "Quella sotto si muove e faccio fatica a mangiare. E l'overdenture inferiore che ha gia, giusto? Si. Allora adesso la risolviamo, facciamo una ribasatura e cambiamo i quattro gommini degli attacchi. Va bene faccia piano. Eccoci, abbiamo fatto la ribasatura, abbiamo cambiato tutti e quattro i gommini. Chiuda e provi. Le fa male? No non mi fa male. Perfetto. Se ha bisogno ci richiami, non prendiamo nuovi appuntamenti.",
+    "aspetti_attesi_per_revisione": [
+      "Ribasatura dell'overdenture inferiore eseguita oggi.",
+      "Sostituzione di quattro gommini degli attacchi eseguita oggi.",
+      "Protesi inferiore gia presente: nessuna nuova overdenture da realizzare o preventivare.",
+      "Nessun dolore riferito al termine; richiamo al bisogno senza appuntamento programmato.",
+      "Quattro gommini non provano da soli numero e sedi degli impianti: chiedere conferma prima dell'odontogramma."
+    ]
+  },
+  {
+    "id": "controllo-gengive",
+    "titolo": "Gonfiore risolto, ipotesi e monitoraggio",
+    "trascrizione": "Mi si sono gonfiate le gengive ma non sanguinavano. Col cortisone che ho preso e passato. Secondo me potrebbe esserci stato un abbassamento del sistema immunitario. A volte puo essere herpes o candida, ma non abbiamo una diagnosi certa. Comunque adesso col cortisone e passata quindi oggi non facciamo niente, teniamo sotto controllo. Se le gengive si gonfiano ancora richiamami, ti vedo subito e cerchiamo di capire prima di prendere qualsiasi altro farmaco. Va bene buona giornata.",
+    "aspetti_attesi_per_revisione": [
+      "Controllo per precedente gonfiore gengivale senza sanguinamento, risolto dopo cortisone gia assunto.",
+      "Abbassamento delle difese, herpes e candida sono ipotesi, non diagnosi o cause certe.",
+      "Nessuna procedura terapeutica eseguita o nuova terapia prescritta oggi; nessun preventivo.",
+      "Monitoraggio e rivalutazione tempestiva se il gonfiore ricompare, prima di altri farmaci.",
+      "Non aggiungere antibiotico, prescrittore o denti coinvolti: non sono indicati nel testo."
+    ]
+  }
+]
