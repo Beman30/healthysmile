@@ -62,7 +62,12 @@
     "#hs-cookie .hs-cookie-accept:hover{opacity:0.85}",
     "#hs-cookie .hs-cookie-reject{font-family:var(--hs-sans);font-size:13px;font-weight:500;background:#2a2a2a;color:#fff;border:none;padding:9px 20px;border-radius:6px;cursor:pointer;transition:opacity 0.15s}",
     "#hs-cookie .hs-cookie-reject:hover{opacity:0.85}",
-    "@media(max-width:600px){#hs-cookie{flex-direction:column;align-items:flex-start}#hs-cookie .hs-cookie-btns{width:100%}#hs-cookie .hs-cookie-accept,#hs-cookie .hs-cookie-reject{flex:1;text-align:center}}"
+    "@media(max-width:600px){#hs-cookie{flex-direction:column;align-items:flex-start}#hs-cookie .hs-cookie-btns{width:100%}#hs-cookie .hs-cookie-accept,#hs-cookie .hs-cookie-reject{flex:1;text-align:center}}",
+    "#hs-nav .hs-nav-item:nth-child(3) .hs-dropdown{left:auto;right:0}",
+    "#hs-nav .hs-dropdown .hs-friday-menu,.hs-drawer .hs-friday-menu{color:#f0a0c0;background:rgba(200,0,92,.08);margin-top:6px;border-radius:6px}",
+    "#hs-nav .hs-dropdown .hs-friday-menu small,.hs-drawer .hs-friday-menu small{display:block;font-family:var(--hs-serif);font-size:15px;font-style:italic;line-height:1.4;margin-top:3px}",
+    ".hs-drawer:not(.open){visibility:hidden}",
+    "#hs-nav .hs-nav-item:not(.open) .hs-dropdown{display:none}",
   ].join('');
   document.head.appendChild(style);
 
@@ -93,11 +98,18 @@
         '<button aria-expanded="false">Viso <span class="hs-caret"></span></button>' +
         '<div class="hs-dropdown">' +
           '<a href="/medicina-estetica">Medicina estetica</a>' +
-          '<a href="/trattamenti/ringiovanimentoviso">Ringiovanimento viso</a>' +
+          '<a href="/medicina-estetica#trattamenti">Trattamenti viso</a>' +
+    '<a class="hs-friday-menu" href="/beauty-friday">Beauty Friday<small>Il venerdì è tuo.</small></a>' +
         '</div>' +
       '</div>' +
-      '<div class="hs-nav-item"><a href="/#principio">Chi siamo</a></div>' +
-      '<div class="hs-nav-item"><a href="/filosofia">Filosofia</a></div>' +
+      '<div class="hs-nav-item" data-hs-drop>' +
+        '<button aria-expanded="false">Studio <span class="hs-caret"></span></button>' +
+        '<div class="hs-dropdown">' +
+          '<a href="/#principio">Chi siamo</a>' +
+          '<a href="/filosofia">Filosofia</a>' +
+          '<a href="/#contatti">Contatti</a>' +
+        '</div>' +
+      '</div>' +
       '<a href="' + WA_URL + '" class="hs-nav-cta">Scrivici</a>' +
     '</div>' +
     '<button class="hs-hamburger" id="hs-hamburger" aria-label="Menu" aria-expanded="false">' +
@@ -123,7 +135,8 @@
     '<a href="/riabilitazione-completa">Riabilitazione completa</a>' +
     '<div class="hs-drawer-group">Viso</div>' +
     '<a href="/medicina-estetica">Medicina estetica</a>' +
-    '<a href="/trattamenti/ringiovanimentoviso">Ringiovanimento viso</a>' +
+    '<a href="/medicina-estetica#trattamenti">Trattamenti viso</a>' +
+    '<a class="hs-friday-menu" href="/beauty-friday">Beauty Friday<small>Il venerdì è tuo.</small></a>' +
     '<div class="hs-drawer-group">Studio</div>' +
     '<a href="/#principio">Chi siamo</a>' +
     '<a href="/filosofia">Filosofia</a>' +
@@ -180,7 +193,7 @@
     var path = location.pathname.replace(/\/index\.html$/, '/').replace(/\/$/, '') || '/';
     document.querySelectorAll('#hs-nav a, .hs-drawer a').forEach(function(a){
       var ap = (new URL(a.href)).pathname.replace(/\/$/, '') || '/';
-      if(ap === path) a.classList.add('active'); else a.classList.remove('active');
+      if(ap === path && (!new URL(a.href).hash || new URL(a.href).hash === location.hash)) a.classList.add('active'); else a.classList.remove('active');
     });
 
     // Dropdown desktop: stesso comportamento della home.
